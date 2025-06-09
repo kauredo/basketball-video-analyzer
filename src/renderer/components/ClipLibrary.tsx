@@ -11,6 +11,7 @@ import {
   faClock,
   faShare,
 } from "@fortawesome/free-solid-svg-icons";
+import styles from "../styles/ClipLibrary.module.css";
 
 interface Category {
   id: number;
@@ -42,6 +43,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [filteredClips, setFilteredClips] = useState<Clip[]>([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     loadData();
@@ -49,7 +51,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
 
   useEffect(() => {
     filterClips();
-  }, [clips, selectedCategory]);
+  }, [clips, selectedCategory, searchTerm]);
 
   const loadData = async () => {
     try {
@@ -66,10 +68,10 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
   };
 
   const filterClips = () => {
-    if (selectedCategory === null) {
-      setFilteredClips(clips);
-    } else {
-      const filtered = clips.filter(clip => {
+    let filtered = clips;
+
+    if (selectedCategory !== null) {
+      filtered = filtered.filter(clip => {
         try {
           const clipCategories = JSON.parse(clip.categories);
           return clipCategories.includes(selectedCategory);
@@ -77,8 +79,15 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
           return false;
         }
       });
-      setFilteredClips(filtered);
     }
+
+    if (searchTerm) {
+      filtered = filtered.filter(clip =>
+        clip.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredClips(filtered);
   };
 
   const formatTime = (time: number): string => {
@@ -205,19 +214,19 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
   const stats = getClipStats();
 
   return (
-    <div className="clip-library">
-      <div className="library-header">
+    <div className={styles.clipLibrary}>
+      <div className={styles.clipLibraryHeader}>
         <h3>
           <FontAwesomeIcon icon={faFilm} /> Clip Library
         </h3>
-        <div className="library-actions">
-          <button onClick={openClipFolder} className="folder-btn">
+        <div className={styles.libraryActions}>
+          <button onClick={openClipFolder} className={styles.folderBtn}>
             <FontAwesomeIcon icon={faFolder} /> Open Folder
           </button>
           <button
             onClick={selectedCategory ? handleExportCategory : handleExportAll}
             disabled={isExporting || filteredClips.length === 0}
-            className="export-btn"
+            className={styles.exportBtn}
           >
             {isExporting ? (
               <>
@@ -233,13 +242,13 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
       </div>
 
       {/* Category Filter */}
-      <div className="category-filter">
+      <div className={styles.categoryFilter}>
         <h4>Filter by Category</h4>
-        <div className="filter-buttons">
+        <div className={styles.filterButtons}>
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`filter-btn ${
-              selectedCategory === null ? "active" : ""
+            className={`${styles.filterBtn} ${
+              selectedCategory === null ? styles.active : ""
             }`}
           >
             All ({clips.length})
@@ -258,8 +267,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`filter-btn ${
-                  selectedCategory === category.id ? "active" : ""
+                className={`${styles.filterBtn} ${
+                  selectedCategory === category.id ? styles.active : ""
                 }`}
                 style={{
                   borderColor: category.color,
@@ -279,25 +288,25 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
       </div>
 
       {/* Stats */}
-      <div className="library-stats">
-        <div className="stat-item">
-          <span className="stat-label">Clips:</span>
-          <span className="stat-value">{stats.count}</span>
+      <div className={styles.libraryStats}>
+        <div className={styles.statItem}>
+          <span className={styles.statLabel}>Clips:</span>
+          <span className={styles.statValue}>{stats.count}</span>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">Total Duration:</span>
-          <span className="stat-value">{stats.totalDuration}</span>
+        <div className={styles.statItem}>
+          <span className={styles.statLabel}>Total Duration:</span>
+          <span className={styles.statValue}>{stats.totalDuration}</span>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">Avg Duration:</span>
-          <span className="stat-value">{stats.avgDuration}</span>
+        <div className={styles.statItem}>
+          <span className={styles.statLabel}>Avg Duration:</span>
+          <span className={styles.statValue}>{stats.avgDuration}</span>
         </div>
       </div>
 
       {/* Clips Grid */}
-      <div className="clips-grid">
+      <div className={styles.clipsGrid}>
         {filteredClips.length === 0 ? (
-          <div className="empty-state">
+          <div className={styles.emptyState}>
             {selectedCategory === null ? (
               <div>
                 <h4>
@@ -321,27 +330,27 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
             const createdDate = new Date(clip.created_at).toLocaleDateString();
 
             return (
-              <div key={clip.id} className="clip-card">
+              <div key={clip.id} className={styles.clipCard}>
                 {/* Clip Thumbnail Placeholder */}
-                <div className="clip-thumbnail">
-                  <div className="thumbnail-placeholder">
-                    <span className="play-icon">▶️</span>
-                    <div className="clip-duration">
+                <div className={styles.clipThumbnail}>
+                  <div className={styles.thumbnailPlaceholder}>
+                    <span className={styles.playIcon}>▶️</span>
+                    <div className={styles.clipDuration}>
                       {formatTime(clip.duration)}
                     </div>
                   </div>
                 </div>
 
                 {/* Clip Info */}
-                <div className="clip-info">
-                  <h4 className="clip-title">{clip.title}</h4>
+                <div className={styles.clipInfo}>
+                  <h4 className={styles.clipTitle}>{clip.title}</h4>
 
                   {/* Categories */}
-                  <div className="clip-categories">
+                  <div className={styles.clipCategories}>
                     {clipCategories.map(category => (
                       <span
                         key={category.id}
-                        className="category-tag"
+                        className={styles.categoryTag}
                         style={{ backgroundColor: category.color }}
                       >
                         {category.name}
@@ -350,10 +359,12 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
                   </div>
 
                   {/* Notes */}
-                  {clip.notes && <div className="clip-notes">{clip.notes}</div>}
+                  {clip.notes && (
+                    <div className={styles.clipNotes}>{clip.notes}</div>
+                  )}
 
                   {/* Metadata */}
-                  <div className="clip-metadata">
+                  <div className={styles.clipMetadata}>
                     <span>
                       <FontAwesomeIcon icon={faCalendar} /> {createdDate}
                     </span>
@@ -366,10 +377,10 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
                 </div>
 
                 {/* Actions */}
-                <div className="clip-actions">
+                <div className={styles.clipActions}>
                   <button
                     onClick={() => handlePlayClip(clip.output_path)}
-                    className="play-btn"
+                    className={styles.playBtn}
                     title="Play clip"
                   >
                     <FontAwesomeIcon icon={faPlay} /> Play
@@ -377,7 +388,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
 
                   <button
                     onClick={() => handleDeleteClip(clip.id)}
-                    className="delete-btn"
+                    className={styles.deleteBtn}
                     title="Delete clip"
                   >
                     <FontAwesomeIcon icon={faTrash} />
@@ -391,7 +402,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
 
       {/* Export Instructions */}
       {filteredClips.length > 0 && (
-        <div className="export-info">
+        <div className={styles.exportInfo}>
           <h4>
             <FontAwesomeIcon icon={faShare} /> Sharing Clips
           </h4>

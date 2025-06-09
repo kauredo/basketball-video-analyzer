@@ -10,12 +10,13 @@ import {
   faShare,
   faTags,
   faScissors,
+  faLocationPin,
 } from "@fortawesome/free-solid-svg-icons";
 import { VideoPlayer } from "./components/VideoPlayer";
 import { CategoryManager } from "./components/CategoryManager";
 import { ClipCreator } from "./components/ClipCreator";
 import { ClipLibrary } from "./components/ClipLibrary";
-import "./App.css";
+import styles from "./styles/App.module.css";
 
 export const App: React.FC = () => {
   const [videoPath, setVideoPath] = useState<string | null>(null);
@@ -89,61 +90,49 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="app">
-      {/* Header */}
-      <header className="app-header">
-        <div className="header-content">
-          <div className="header-left">
+    <div className={styles.app}>
+      <header className={styles.appHeader}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerLeft}>
             <h1>
-              <FontAwesomeIcon icon={faBasketball} /> Basketball Clip Cutter
+              <FontAwesomeIcon icon={faBasketball} /> Basketball Video Analyzer
             </h1>
-            <p>Create and organize video clips for team scouting</p>
+            <p>Cut and organize your basketball game clips</p>
           </div>
 
-          <div className="header-controls">
-            <button
-              onClick={handleSelectVideo}
-              className="select-video-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <FontAwesomeIcon icon={faSpinner} spin /> Loading...
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faFolderOpen} /> Select Video
-                </>
-              )}
-            </button>
-          </div>
+          <button onClick={handleSelectVideo} className={styles.selectVideoBtn}>
+            {isLoading ? (
+              <>
+                <FontAwesomeIcon icon={faSpinner} spin /> Loading...
+              </>
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faFolderOpen} /> Select Video
+              </>
+            )}
+          </button>
         </div>
 
         {videoPath && (
-          <div className="video-info">
-            <div className="video-details">
-              <span className="video-name">
+          <div className={styles.videoInfo}>
+            <div className={styles.videoDetails}>
+              <div className={styles.videoName}>
                 <FontAwesomeIcon icon={faVideo} /> {getVideoFileName()}
-              </span>
-              <span className="video-time">
+              </div>
+              <div className={styles.videoTime}>
                 {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
+              </div>
             </div>
 
             {(markInTime !== null || markOutTime !== null) && (
-              <div className="mark-info">
-                {markInTime !== null && (
-                  <span className="mark-display">
-                    In: {formatTime(markInTime)}
-                  </span>
-                )}
-                {markOutTime !== null && (
-                  <span className="mark-display">
-                    Out: {formatTime(markOutTime)}
-                  </span>
-                )}
+              <div className={styles.markInfo}>
+                <span>
+                  <FontAwesomeIcon icon={faLocationPin} /> Marks:{" "}
+                  {markInTime !== null && `IN: ${formatTime(markInTime)}`}{" "}
+                  {markOutTime !== null && `OUT: ${formatTime(markOutTime)}`}
+                </span>
                 {markInTime !== null && markOutTime !== null && (
-                  <span className="duration-display">
+                  <span className={styles.durationDisplay}>
                     Duration: {formatTime(markOutTime - markInTime)}
                   </span>
                 )}
@@ -153,10 +142,8 @@ export const App: React.FC = () => {
         )}
       </header>
 
-      {/* Main Content */}
-      <div className="main-content">
-        {/* Video Section */}
-        <div className="video-section">
+      <main className={styles.mainContent}>
+        <div className={styles.videoSection}>
           <VideoPlayer
             videoPath={videoPath}
             onTimeUpdate={setCurrentTime}
@@ -169,15 +156,8 @@ export const App: React.FC = () => {
           />
         </div>
 
-        {/* Controls Section */}
-        <div className="controls-section">
-          {/* Category Management */}
-          <div className="control-panel">
-            <CategoryManager onCategoriesChange={handleCategoriesChange} />
-          </div>
-
-          {/* Clip Creation */}
-          <div className="control-panel">
+        <div className={styles.controlsSection}>
+          <div className={styles.controlPanel}>
             <ClipCreator
               videoPath={videoPath}
               markInTime={markInTime}
@@ -186,18 +166,19 @@ export const App: React.FC = () => {
               onClearMarks={handleClearMarks}
             />
           </div>
+          <div className={styles.controlPanel}>
+            <CategoryManager onCategoriesChange={handleCategoriesChange} />
+          </div>
+          <div className={styles.controlPanel}>
+            <ClipLibrary onRefresh={refreshTrigger} />
+          </div>
         </div>
-      </div>
-
-      {/* Clip Library */}
-      <div className="library-section">
-        <ClipLibrary onRefresh={refreshTrigger} />
-      </div>
+      </main>
 
       {/* Instructions Overlay */}
       {!videoPath && (
-        <div className="instructions-overlay">
-          <div className="instructions-content">
+        <div className={styles.instructionsOverlay}>
+          <div className={styles.instructionsContent}>
             <h2>
               <FontAwesomeIcon icon={faFilm} /> Welcome to Basketball Clip
               Cutter
@@ -207,10 +188,10 @@ export const App: React.FC = () => {
               scouting
             </p>
 
-            <div className="workflow-steps">
-              <div className="step">
-                <div className="step-number">1</div>
-                <div className="step-content">
+            <div className={styles.workflowSteps}>
+              <div className={styles.step}>
+                <div className={styles.stepNumber}>1</div>
+                <div className={styles.stepContent}>
                   <h3>
                     <FontAwesomeIcon icon={faVideo} /> Load Video
                   </h3>
@@ -218,9 +199,9 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="step">
-                <div className="step-number">2</div>
-                <div className="step-content">
+              <div className={styles.step}>
+                <div className={styles.stepNumber}>2</div>
+                <div className={styles.stepContent}>
                   <h3>
                     <FontAwesomeIcon icon={faScissors} /> Mark Clips
                   </h3>
@@ -231,9 +212,9 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="step">
-                <div className="step-number">3</div>
-                <div className="step-content">
+              <div className={styles.step}>
+                <div className={styles.stepNumber}>3</div>
+                <div className={styles.stepContent}>
                   <h3>
                     <FontAwesomeIcon icon={faTags} /> Categorize
                   </h3>
@@ -244,9 +225,9 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="step">
-                <div className="step-number">4</div>
-                <div className="step-content">
+              <div className={styles.step}>
+                <div className={styles.stepNumber}>4</div>
+                <div className={styles.stepContent}>
                   <h3>
                     <FontAwesomeIcon icon={faShare} /> Share
                   </h3>
@@ -255,7 +236,10 @@ export const App: React.FC = () => {
               </div>
             </div>
 
-            <button onClick={handleSelectVideo} className="get-started-btn">
+            <button
+              onClick={handleSelectVideo}
+              className={styles.getStartedBtn}
+            >
               <FontAwesomeIcon icon={faRocket} /> Get Started - Select Video
             </button>
           </div>

@@ -11,6 +11,7 @@ import {
   faFilm,
   faKeyboard,
 } from "@fortawesome/free-solid-svg-icons";
+import styles from "../styles/VideoPlayer.module.css";
 
 interface VideoPlayerProps {
   videoPath: string | null;
@@ -145,8 +146,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   if (!videoPath) {
     return (
-      <div className="video-placeholder">
-        <div className="placeholder-content">
+      <div className={styles.videoPlaceholder}>
+        <div className={styles.placeholderContent}>
           <h3>
             <FontAwesomeIcon icon={faFilm} /> Load a Video to Start Cutting
             Clips
@@ -154,7 +155,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           <p>
             Select a basketball game video to begin creating clips for your team
           </p>
-          <div className="placeholder-tips">
+          <div className={styles.placeholderTips}>
             <h4>
               <FontAwesomeIcon icon={faKeyboard} /> Keyboard Shortcuts:
             </h4>
@@ -182,9 +183,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }
 
   return (
-    <div className="video-player">
-      {/* Video Element */}
-      <div className="video-container">
+    <div className={styles.videoPlayer}>
+      <div className={styles.videoContainer}>
         <video
           ref={videoRef}
           src={`file://${videoPath}`}
@@ -192,15 +192,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onLoadedMetadata={handleLoadedMetadata}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
-          className="video-element"
+          className={styles.videoElement}
         />
 
-        {/* Mark Indicators Overlay */}
         {(markInTime !== null || markOutTime !== null) && (
-          <div className="marks-overlay">
+          <div className={styles.marksOverlay}>
             {markInTime !== null && (
               <div
-                className="mark-indicator mark-in"
+                className={`${styles.markIndicator} ${styles.markIn}`}
                 style={{ left: `${(markInTime / duration) * 100}%` }}
                 onClick={() => jumpToMark(markInTime)}
                 title={`Mark In: ${formatTime(markInTime)}`}
@@ -210,7 +209,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             )}
             {markOutTime !== null && (
               <div
-                className="mark-indicator mark-out"
+                className={`${styles.markIndicator} ${styles.markOut}`}
                 style={{ left: `${(markOutTime / duration) * 100}%` }}
                 onClick={() => jumpToMark(markOutTime)}
                 title={`Mark Out: ${formatTime(markOutTime)}`}
@@ -220,7 +219,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             )}
             {markInTime !== null && markOutTime !== null && (
               <div
-                className="marked-region"
+                className={styles.markedRegion}
                 style={{
                   left: `${(markInTime / duration) * 100}%`,
                   width: `${((markOutTime - markInTime) / duration) * 100}%`,
@@ -231,18 +230,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         )}
       </div>
 
-      {/* Mark Controls - Prominent */}
-      <div className="mark-controls">
+      <div className={styles.markControls}>
         <button
           onClick={onMarkIn}
-          className="mark-btn mark-in-btn"
+          className={`${styles.markBtn} ${styles.markInBtn}`}
           disabled={!videoPath}
         >
           <FontAwesomeIcon icon={faLocationPin} /> Mark In (I)
         </button>
 
-        <div className="mark-info">
-          <div className="mark-times">
+        <div className={styles.markInfo}>
+          <div className={styles.markTimes}>
             <span>
               In: {markInTime !== null ? formatTime(markInTime) : "--:--"}
             </span>
@@ -255,7 +253,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
         <button
           onClick={onMarkOut}
-          className="mark-btn mark-out-btn"
+          className={`${styles.markBtn} ${styles.markOutBtn}`}
           disabled={!videoPath}
         >
           <FontAwesomeIcon icon={faLocationPin} /> Mark Out (O)
@@ -263,33 +261,32 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
         <button
           onClick={onClearMarks}
-          className="clear-marks-btn"
+          className={styles.clearMarksBtn}
           disabled={markInTime === null && markOutTime === null}
         >
           <FontAwesomeIcon icon={faTrash} /> Clear (C)
         </button>
       </div>
 
-      {/* Video Controls */}
-      <div className="video-controls">
-        <div className="controls-row">
-          <button onClick={togglePlay} className="play-btn">
+      <div className={styles.controls}>
+        <div className={styles.controlsRow}>
+          <button onClick={togglePlay} className={styles.playButton}>
             <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
           </button>
 
-          <button onClick={() => skipTime(-5)} className="skip-btn">
+          <button onClick={() => skipTime(-5)} className={styles.skipButton}>
             <FontAwesomeIcon icon={faBackwardStep} /> 5s
           </button>
 
-          <button onClick={() => skipTime(5)} className="skip-btn">
+          <button onClick={() => skipTime(5)} className={styles.skipButton}>
             5s <FontAwesomeIcon icon={faForwardStep} />
           </button>
 
-          <div className="time-display">
+          <div className={styles.timeDisplay}>
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
 
-          <div className="volume-control">
+          <div className={styles.volumeControl}>
             <span>
               <FontAwesomeIcon icon={faVolumeHigh} />
             </span>
@@ -306,18 +303,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   videoRef.current.volume = newVolume;
                 }
               }}
-              className="volume-slider"
+              className={styles.volumeSlider}
             />
           </div>
         </div>
 
-        {/* Progress Bar with Marks */}
-        <div className="progress-container">
-          <div className="progress-track">
-            {/* Marked region background */}
+        <div className={styles.progressContainer}>
+          <div className={styles.progressTrack}>
             {markInTime !== null && markOutTime !== null && (
               <div
-                className="marked-region-track"
+                className={styles.markedRegionTrack}
                 style={{
                   left: `${(markInTime / duration) * 100}%`,
                   width: `${((markOutTime - markInTime) / duration) * 100}%`,
@@ -325,26 +320,24 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               />
             )}
 
-            {/* Progress slider */}
             <input
               type="range"
               min="0"
               max={duration}
               value={currentTime}
               onChange={handleSeek}
-              className="progress-slider"
+              className={styles.progressSlider}
             />
 
-            {/* Mark indicators */}
             {markInTime !== null && (
               <div
-                className="mark-tick mark-in-tick"
+                className={`${styles.markTick} ${styles.markInTick}`}
                 style={{ left: `${(markInTime / duration) * 100}%` }}
               />
             )}
             {markOutTime !== null && (
               <div
-                className="mark-tick mark-out-tick"
+                className={`${styles.markTick} ${styles.markOutTick}`}
                 style={{ left: `${(markOutTime / duration) * 100}%` }}
               />
             )}

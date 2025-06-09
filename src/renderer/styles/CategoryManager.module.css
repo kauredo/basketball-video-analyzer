@@ -1,0 +1,177 @@
+@import "./variables.css";
+
+.categoryManager {
+  padding: var(--spacing-lg);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.categoryHeader h3 {
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.editToggleBtn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.editToggleBtn:hover {
+  background: var(--bg-quaternary);
+}
+
+.categoryList {
+  margin-bottom: var(--spacing-lg);
+}
+
+.categoryItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+}
+
+.categoryItem:hover {
+  background: var(--bg-quaternary);
+}
+
+.categoryColorIndicator {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-round);
+  flex-shrink: 0;
+}
+
+.categoryInfo {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.categoryName {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.categoryDescription {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-xs);
+}
+
+.categoryActions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.editBtn,
+.deleteBtn {
+  background: none;
+  border: 1px solid var(--border-color-light);
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  transition: all var(--transition-fast);
+}
+
+.editBtn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-primary);
+}
+
+.deleteBtn:hover {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--text-primary);
+}
+
+.categoryEditForm {
+  flex: 1;
+}
+
+.categoryNameInput,
+.categoryDescriptionInput {
+  width: 100%;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+.categoryDescriptionInput {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.colorPicker {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.colorOption {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-round);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.colorOption.selected {
+  border-color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.editActions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.saveBtn {
+  background: var(--color-primary);
+  color: var(--text-primary);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.cancelBtn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}

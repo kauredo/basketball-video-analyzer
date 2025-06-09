@@ -8,6 +8,7 @@ import {
   faCheck,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import styles from "../styles/ClipCreator.module.css";
 
 interface Category {
   id: number;
@@ -153,18 +154,18 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     selectedCategories.length > 0;
 
   return (
-    <div className="clip-creator">
-      <div className="clip-creator-header">
+    <div className={styles.clipCreator}>
+      <div className={styles.clipCreatorHeader}>
         <h3>
           <FontAwesomeIcon icon={faScissors} /> Create Clip
         </h3>
         {markInTime !== null && markOutTime !== null && (
-          <div className="clip-duration">Duration: {getDuration()}</div>
+          <div className={styles.clipDuration}>Duration: {getDuration()}</div>
         )}
       </div>
 
       {!canCreateClip && (
-        <div className="clip-creator-instructions">
+        <div className={styles.clipCreatorInstructions}>
           {!videoPath && (
             <p>
               <FontAwesomeIcon icon={faFilm} /> Load a video file first
@@ -186,15 +187,15 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       )}
 
       {/* Category Selection */}
-      <div className="category-selection">
+      <div className={styles.categorySelection}>
         <h4>Categories ({selectedCategories.length} selected)</h4>
-        <div className="category-grid">
+        <div className={styles.categoryGrid}>
           {categories.map(category => (
             <button
               key={category.id}
               onClick={() => handleCategoryToggle(category.id)}
-              className={`category-btn ${
-                selectedCategories.includes(category.id) ? "selected" : ""
+              className={`${
+                selectedCategories.includes(category.id) ? styles.selected : ""
               }`}
               style={{
                 borderColor: category.color,
@@ -206,9 +207,9 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                   : category.color,
               }}
             >
-              <span className="category-name">{category.name}</span>
+              <span className={styles.categoryName}>{category.name}</span>
               {selectedCategories.includes(category.id) && (
-                <span className="selected-indicator">✓</span>
+                <span className={styles.selectedIndicator}>✓</span>
               )}
             </button>
           ))}
@@ -216,25 +217,25 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       </div>
 
       {/* Clip Details */}
-      <div className="clip-details">
-        <div className="form-group">
+      <div className={styles.clipDetails}>
+        <div className={styles.formGroup}>
           <label>Clip Title (optional)</label>
           <input
             type="text"
             value={clipTitle}
             onChange={e => setClipTitle(e.target.value)}
             placeholder={generateClipTitle()}
-            className="clip-title-input"
+            className={styles.clipTitleInput}
           />
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label>Notes (optional)</label>
           <textarea
             value={clipNotes}
             onChange={e => setClipNotes(e.target.value)}
             placeholder="Add notes about this play..."
-            className="clip-notes-input"
+            className={styles.clipNotesInput}
             rows={3}
           />
         </div>
@@ -242,22 +243,25 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
       {/* Progress Bar */}
       {isCreating && (
-        <div className="creation-progress">
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${progress}%` }} />
+        <div className={styles.creationProgress}>
+          <div className={styles.progressBar}>
+            <div
+              className={styles.progressFill}
+              style={{ width: `${progress}%` }}
+            />
           </div>
-          <div className="progress-text">
+          <div className={styles.progressText}>
             Creating clip... {Math.round(progress)}%
           </div>
         </div>
       )}
 
       {/* Action Buttons */}
-      <div className="clip-creation-actions">
+      <div className={styles.clipCreationActions}>
         <button
           onClick={handleCreateClip}
           disabled={!canCreateClip || isCreating}
-          className="create-clip-btn"
+          className={styles.createClipBtn}
         >
           {isCreating ? (
             <>
@@ -274,7 +278,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           <button
             onClick={onClearMarks}
             disabled={isCreating}
-            className="clear-marks-btn"
+            className={styles.clearMarksBtn}
           >
             <FontAwesomeIcon icon={faTrash} /> Clear Marks
           </button>
@@ -282,18 +286,18 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       </div>
 
       {/* Quick Category Actions */}
-      <div className="quick-actions">
+      <div className={styles.quickActions}>
         <button
           onClick={() => setSelectedCategories(categories.map(c => c.id))}
           disabled={isCreating}
-          className="select-all-btn"
+          className={styles.selectAllBtn}
         >
           <FontAwesomeIcon icon={faCheck} /> Select All
         </button>
         <button
           onClick={() => setSelectedCategories([])}
           disabled={isCreating}
-          className="clear-selection-btn"
+          className={styles.clearSelectionBtn}
         >
           <FontAwesomeIcon icon={faTrash} /> Clear Selection
         </button>

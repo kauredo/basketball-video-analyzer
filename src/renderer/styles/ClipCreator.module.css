@@ -1,0 +1,156 @@
+@import "./variables.css";
+
+.clipCreator {
+  padding: var(--spacing-lg);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.clipCreatorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.clipDetails {
+  margin-bottom: var(--spacing-lg);
+}
+
+.formGroup {
+  margin-bottom: var(--spacing-md);
+}
+
+.formGroup label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.clipTitleInput,
+.clipNotesInput {
+  width: 100%;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.clipNotesInput {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.categorySelect {
+  width: 100%;
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.categoryOption {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: all var(--transition-fast);
+}
+
+.categoryOption:hover {
+  background: var(--bg-quaternary);
+}
+
+.categoryOption.selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.colorDot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-round);
+}
+
+.creationProgress {
+  margin-bottom: var(--spacing-md);
+}
+
+.progressBar {
+  background: var(--bg-tertiary);
+  height: 8px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--spacing-sm);
+}
+
+.progressFill {
+  background: var(--color-primary);
+  height: 100%;
+  transition: width var(--transition-normal) ease;
+}
+
+.progressText {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.clipCreationActions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.createClipBtn {
+  flex: 1;
+  background: var(--color-primary);
+  color: var(--text-primary);
+  border: none;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--font-size-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  transition: all var(--transition-fast);
+}
+
+.createClipBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.createClipBtn:disabled {
+  background: var(--bg-tertiary);
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  flex: 1;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  transition: all var(--transition-fast);
+}
+
+.cancelBtn:hover {
+  background: var(--bg-quaternary);
+}

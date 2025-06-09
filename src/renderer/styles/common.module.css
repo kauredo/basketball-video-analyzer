@@ -1,0 +1,140 @@
+@import "./variables.css";
+
+/* Button Styles */
+.button {
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.buttonPrimary {
+  composes: button;
+  background: var(--color-primary);
+  color: var(--text-primary);
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.buttonDanger {
+  composes: button;
+  background: var(--color-danger);
+  color: var(--text-primary);
+}
+
+.buttonDanger:hover:not(:disabled) {
+  background: var(--color-danger-dark);
+}
+
+.buttonSecondary {
+  composes: button;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.buttonSecondary:hover:not(:disabled) {
+  background: var(--bg-quaternary);
+}
+
+.buttonDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Form Styles */
+.input {
+  width: 100%;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Layout Utilities */
+.flexRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.spaceBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Text Utilities */
+.heading {
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.text {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.textSmall {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* Card Styles */
+.card {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+}
+
+/* Progress Bar */
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width var(--transition-normal) ease;
+}
+
+/* Icon Utilities */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.iconSmall {
+  composes: icon;
+  width: 16px;
+  height: 16px;
+}

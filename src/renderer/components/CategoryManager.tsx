@@ -9,6 +9,7 @@ import {
   faXmark,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
+import styles from "../styles/CategoryManager.module.css";
 
 interface Category {
   id: number;
@@ -122,14 +123,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
   ];
 
   return (
-    <div className="category-manager">
-      <div className="category-header">
+    <div className={styles.categoryManager}>
+      <div className={styles.categoryHeader}>
         <h3>
           <FontAwesomeIcon icon={faFolderTree} /> Categories
         </h3>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="edit-toggle-btn"
+          className={styles.editToggleBtn}
         >
           {isEditing ? (
             <>
@@ -144,16 +145,16 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       </div>
 
       {/* Category List */}
-      <div className="category-list">
+      <div className={styles.categoryList}>
         {categories.map(category => (
-          <div key={category.id} className="category-item">
+          <div key={category.id} className={styles.categoryItem}>
             <div
-              className="category-color-indicator"
+              className={styles.categoryColorIndicator}
               style={{ backgroundColor: category.color }}
             />
 
             {editingCategory?.id === category.id ? (
-              <div className="category-edit-form">
+              <div className={styles.categoryEditForm}>
                 <input
                   type="text"
                   value={editingCategory.name}
@@ -163,16 +164,16 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                       name: e.target.value,
                     })
                   }
-                  className="category-name-input"
+                  className={styles.categoryNameInput}
                   placeholder="Category name"
                 />
 
-                <div className="color-picker">
+                <div className={styles.colorPicker}>
                   {colorPresets.map(color => (
                     <button
                       key={color}
-                      className={`color-option ${
-                        editingCategory.color === color ? "selected" : ""
+                      className={`${styles.colorOption} ${
+                        editingCategory.color === color ? styles.selected : ""
                       }`}
                       style={{ backgroundColor: color }}
                       onClick={() =>
@@ -194,42 +195,45 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                       description: e.target.value,
                     })
                   }
-                  className="category-description-input"
+                  className={styles.categoryDescriptionInput}
                   placeholder="Description (optional)"
                 />
 
-                <div className="edit-actions">
-                  <button onClick={handleUpdateCategory} className="save-btn">
+                <div className={styles.editActions}>
+                  <button
+                    onClick={handleUpdateCategory}
+                    className={styles.saveBtn}
+                  >
                     <FontAwesomeIcon icon={faSave} /> Save
                   </button>
                   <button
                     onClick={() => setEditingCategory(null)}
-                    className="cancel-btn"
+                    className={styles.cancelBtn}
                   >
                     <FontAwesomeIcon icon={faXmark} /> Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="category-info">
-                <div className="category-name">{category.name}</div>
+              <div className={styles.categoryInfo}>
+                <div className={styles.categoryName}>{category.name}</div>
                 {category.description && (
-                  <div className="category-description">
+                  <div className={styles.categoryDescription}>
                     {category.description}
                   </div>
                 )}
 
                 {isEditing && (
-                  <div className="category-actions">
+                  <div className={styles.categoryActions}>
                     <button
                       onClick={() => setEditingCategory(category)}
-                      className="edit-btn"
+                      className={styles.editBtn}
                     >
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
                     <button
                       onClick={() => handleDeleteCategory(category.id)}
-                      className="delete-btn"
+                      className={styles.deleteBtn}
                     >
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
@@ -243,7 +247,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
       {/* Add New Category */}
       {isEditing && (
-        <div className="add-category-form">
+        <div className={styles.addCategoryForm}>
           <h4>
             <FontAwesomeIcon icon={faPlus} /> Add New Category
           </h4>
@@ -255,16 +259,16 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               setNewCategory({ ...newCategory, name: e.target.value })
             }
             placeholder="Category name"
-            className="category-name-input"
+            className={styles.categoryNameInput}
           />
 
-          <div className="color-picker">
+          <div className={styles.colorPicker}>
             <label>Color:</label>
             {colorPresets.map(color => (
               <button
                 key={color}
-                className={`color-option ${
-                  newCategory.color === color ? "selected" : ""
+                className={`${styles.colorOption} ${
+                  newCategory.color === color ? styles.selected : ""
                 }`}
                 style={{ backgroundColor: color }}
                 onClick={() => setNewCategory({ ...newCategory, color })}
@@ -279,13 +283,13 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               setNewCategory({ ...newCategory, description: e.target.value })
             }
             placeholder="Description (optional)"
-            className="category-description-input"
+            className={styles.categoryDescriptionInput}
           />
 
           <button
             onClick={handleCreateCategory}
             disabled={!newCategory.name.trim()}
-            className="create-category-btn"
+            className={styles.createCategoryBtn}
           >
             <FontAwesomeIcon icon={faPlus} /> Create Category
           </button>

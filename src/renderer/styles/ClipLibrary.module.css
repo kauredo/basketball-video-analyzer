@@ -1,0 +1,176 @@
+@import "./variables.css";
+
+.clipLibrary {
+  padding: var(--spacing-lg);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.clipLibraryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.clipLibraryHeader h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+}
+
+.clipFilters {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+}
+
+.searchInput {
+  width: 100%;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.categoryFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.categoryFilter {
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-fast);
+}
+
+.categoryFilter:hover {
+  background: var(--bg-quaternary);
+}
+
+.categoryFilter.selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.colorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-round);
+}
+
+.clipGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.clipCard {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.clipCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.clipThumbnail {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 aspect ratio */
+  background: var(--bg-quaternary);
+}
+
+.clipThumbnail img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.clipDuration {
+  position: absolute;
+  bottom: var(--spacing-xs);
+  right: var(--spacing-xs);
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--text-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+}
+
+.clipInfo {
+  padding: var(--spacing-md);
+}
+
+.clipTitle {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+}
+
+.clipCategory {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.clipNotes {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+.clipActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.actionButton {
+  background: var(--bg-quaternary);
+  border: none;
+  color: var(--text-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  transition: all var(--transition-fast);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.actionButton:hover {
+  background: var(--bg-quaternary);
+}
+
+.actionButton.delete:hover {
+  background: var(--color-danger);
+}
