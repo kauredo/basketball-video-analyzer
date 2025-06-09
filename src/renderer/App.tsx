@@ -253,7 +253,9 @@ export const App: React.FC = () => {
 
             <div className={styles.workflowSteps}>
               <div className={styles.step}>
-                <div className={styles.stepNumber}>1</div>
+                <div className={styles.stepNumber}>
+                  <p>1</p>
+                </div>
                 <div className={styles.stepContent}>
                   <h3>
                     <FontAwesomeIcon icon={faVideo} /> Load Video
@@ -263,7 +265,9 @@ export const App: React.FC = () => {
               </div>
 
               <div className={styles.step}>
-                <div className={styles.stepNumber}>2</div>
+                <div className={styles.stepNumber}>
+                  <p>2</p>
+                </div>
                 <div className={styles.stepContent}>
                   <h3>
                     <FontAwesomeIcon icon={faScissors} /> Mark Clips
@@ -276,7 +280,9 @@ export const App: React.FC = () => {
               </div>
 
               <div className={styles.step}>
-                <div className={styles.stepNumber}>3</div>
+                <div className={styles.stepNumber}>
+                  <p>3</p>
+                </div>
                 <div className={styles.stepContent}>
                   <h3>
                     <FontAwesomeIcon icon={faTags} /> Categorize
@@ -289,7 +295,9 @@ export const App: React.FC = () => {
               </div>
 
               <div className={styles.step}>
-                <div className={styles.stepNumber}>4</div>
+                <div className={styles.stepNumber}>
+                  <p>4</p>
+                </div>
                 <div className={styles.stepContent}>
                   <h3>
                     <FontAwesomeIcon icon={faShare} /> Share

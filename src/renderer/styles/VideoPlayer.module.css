@@ -50,7 +50,7 @@
 .progressTrack {
   height: 8px;
   background: var(--bg-tertiary);
-  border-radius: var(--radius-round);
+  border-radius: 4px;
   position: relative;
   cursor: pointer;
   transition: height var(--transition-fast);
@@ -58,6 +58,7 @@
 
 .progressTrack:hover {
   height: 12px;
+  border-radius: 6px;
 }
 
 .progressFill {
@@ -66,8 +67,27 @@
   left: 0;
   height: 100%;
   background: var(--color-primary);
-  border-radius: var(--radius-round);
+  border-radius: inherit;
   pointer-events: none;
+}
+
+.markPoint {
+  position: absolute;
+  width: 4px;
+  height: 16px; /* Taller than the progress bar */
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 2;
+  border-radius: 2px;
+}
+
+.markInPoint {
+  background: var(--color-success);
+}
+
+.markOutPoint {
+  background: var(--color-danger);
 }
 
 .markedRegion {
