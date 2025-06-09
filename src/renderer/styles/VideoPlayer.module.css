@@ -26,6 +26,19 @@
   object-fit: contain;
 }
 
+/* Hide default HTML5 video controls */
+.videoElement::-webkit-media-controls {
+  display: none !important;
+}
+
+.videoElement::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+.videoElement::-webkit-media-controls-panel {
+  display: none !important;
+}
+
 .videoControls {
   background: rgba(0, 0, 0, 0.85);
   padding: var(--spacing-md);
@@ -50,15 +63,15 @@
 .progressTrack {
   height: 8px;
   background: var(--bg-tertiary);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   position: relative;
   cursor: pointer;
-  transition: height var(--transition-fast);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm) inset;
 }
 
 .progressTrack:hover {
   height: 12px;
-  border-radius: 6px;
 }
 
 .progressFill {
@@ -69,25 +82,6 @@
   background: var(--color-primary);
   border-radius: inherit;
   pointer-events: none;
-}
-
-.markPoint {
-  position: absolute;
-  width: 4px;
-  height: 16px; /* Taller than the progress bar */
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  z-index: 2;
-  border-radius: 2px;
-}
-
-.markInPoint {
-  background: var(--color-success);
-}
-
-.markOutPoint {
-  background: var(--color-danger);
 }
 
 .markedRegion {
@@ -136,7 +130,8 @@
 }
 
 .playButton,
-.skipButton {
+.skipButton,
+.frameButton {
   background: transparent;
   border: none;
   color: var(--text-primary);
@@ -146,12 +141,20 @@
   transition: all var(--transition-fast);
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  justify-content: center;
 }
 
 .playButton:hover,
-.skipButton:hover {
-  background: var(--bg-tertiary);
+.skipButton:hover,
+.frameButton:hover {
+  background: var(--bg-hover);
+  transform: scale(1.1);
+}
+
+.playButton:active,
+.skipButton:active,
+.frameButton:active {
+  transform: scale(0.95);
 }
 
 .markControls {
@@ -174,6 +177,7 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-sm);
 }
 
 .markInBtn {
@@ -189,12 +193,20 @@
 }
 
 .markBtn:hover:not(:disabled) {
-  filter: brightness(1.2);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
+  filter: brightness(1.1);
+}
+
+.markBtn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 .markBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .markInfo {
@@ -226,6 +238,7 @@
   background: var(--bg-tertiary);
   -webkit-appearance: none;
   appearance: none;
+  box-shadow: var(--shadow-sm) inset;
 }
 
 .volumeSlider::-webkit-slider-thumb {
@@ -237,10 +250,12 @@
   background: var(--text-primary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 .volumeSlider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
+  box-shadow: var(--shadow-md);
 }
 
 .videoPlaceholder {
@@ -277,19 +292,4 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
-}
-
-.frameButton {
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  padding: var(--spacing-sm);
-  border-radius: var(--radius-round);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  font-size: 0.8em;
-}
-
-.frameButton:hover {
-  background: var(--bg-tertiary);
 }

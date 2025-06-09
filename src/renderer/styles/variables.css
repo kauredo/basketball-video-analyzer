@@ -2,24 +2,33 @@
   /* Colors */
   --color-primary: #4caf50;
   --color-primary-dark: #45a049;
+  --color-primary-light: #66bb6a;
   --color-danger: #f44336;
   --color-danger-dark: #d32f2f;
+  --color-danger-light: #ef5350;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-info: #2196f3;
 
   /* Background Colors */
   --bg-main: #1a1a1a;
   --bg-secondary: #2a2a2a;
   --bg-tertiary: #333;
   --bg-quaternary: #444;
+  --bg-overlay: rgba(0, 0, 0, 0.75);
+  --bg-hover: rgba(255, 255, 255, 0.05);
 
   /* Border Colors */
   --border-color: #444;
   --border-color-light: #555;
+  --border-color-hover: #666;
 
   /* Text Colors */
   --text-primary: #ffffff;
   --text-secondary: #ccc;
   --text-tertiary: #aaa;
   --text-muted: #666;
+  --text-contrast: #000;
 
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -44,6 +53,18 @@
   /* Transitions */
   --transition-fast: 0.2s;
   --transition-normal: 0.3s;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.4);
+
+  /* Z-indices */
+  --z-modal: 1000;
+  --z-overlay: 999;
+  --z-dropdown: 100;
+  --z-header: 50;
 
   /* Component Specific */
   --header-height: 60px;
