@@ -10,12 +10,11 @@ import {
   faShare,
   faTags,
   faScissors,
-  faLocationPin,
   faChevronLeft,
   faChevronRight,
+  faCog,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { ResizableBox } from "react-resizable";
-import { Resizable } from "re-resizable";
 import styles from "./styles/App.module.css";
 import { VideoPlayer } from "./components/VideoPlayer";
 import { CategoryManager } from "./components/CategoryManager";
@@ -30,10 +29,9 @@ export const App: React.FC = () => {
   const [markOutTime, setMarkOutTime] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [controlsWidth, setControlsWidth] = useState(400);
-  const [isControlsCollapsed, setIsControlsCollapsed] = useState(false);
-  const [clipCreatorHeight, setClipCreatorHeight] = useState(300);
-  const [categoryManagerHeight, setCategoryManagerHeight] = useState(300);
+  const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(false);
+  const [showClipCreator, setShowClipCreator] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleSelectVideo = async () => {
     try {
@@ -69,17 +67,22 @@ export const App: React.FC = () => {
     if (markInTime !== null && markInTime >= currentTime) {
       setMarkInTime(null);
     }
+    // Show clip creator modal when user marks out a clip
+    setShowClipCreator(true);
   }, [currentTime, markInTime]);
 
   const handleClearMarks = useCallback(() => {
     setMarkInTime(null);
     setMarkOutTime(null);
+    setShowClipCreator(false);
   }, []);
 
   const handleClipCreated = useCallback(() => {
     // Refresh the clip library
     setRefreshTrigger(prev => prev + 1);
-  }, []);
+    setShowClipCreator(false);
+    handleClearMarks();
+  }, [handleClearMarks]);
 
   const handleCategoriesChange = useCallback(() => {
     // Trigger refresh for any components that depend on categories
@@ -97,64 +100,27 @@ export const App: React.FC = () => {
     return videoPath.split("/").pop() || videoPath.split("\\").pop() || "";
   };
 
-  const handleControlsResize = (
-    e: any,
-    { size }: { size: { width: number } }
-  ) => {
-    setControlsWidth(size.width);
-  };
-
   return (
     <div className={styles.app}>
       <header className={styles.appHeader}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerLeft}>
-            <h1>
-              <FontAwesomeIcon icon={faBasketball} /> Basketball Video Analyzer
-            </h1>
-            <p>Cut and organize your basketball game clips</p>
-          </div>
-
-          <button onClick={handleSelectVideo} className={styles.selectVideoBtn}>
-            {isLoading ? (
-              <>
-                <FontAwesomeIcon icon={faSpinner} spin /> Loading...
-              </>
-            ) : (
-              <>
-                <FontAwesomeIcon icon={faFolderOpen} /> Select Video
-              </>
-            )}
+        <h1>
+          <FontAwesomeIcon icon={faBasketball} /> Basketball Clip Cutter
+        </h1>
+        <div className={styles.headerActions}>
+          <button
+            className={styles.btn}
+            onClick={() => setIsSidePanelCollapsed(!isSidePanelCollapsed)}
+          >
+            <FontAwesomeIcon icon={faFilm} />{" "}
+            {isSidePanelCollapsed ? "Show Gallery" : "Hide Gallery"}
+          </button>
+          <button
+            className={styles.settingsButton}
+            onClick={() => setShowSettings(true)}
+          >
+            <FontAwesomeIcon icon={faCog} /> Settings
           </button>
         </div>
-
-        {videoPath && (
-          <div className={styles.videoInfo}>
-            <div className={styles.videoDetails}>
-              <div className={styles.videoName}>
-                <FontAwesomeIcon icon={faVideo} /> {getVideoFileName()}
-              </div>
-              <div className={styles.videoTime}>
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </div>
-            </div>
-
-            {(markInTime !== null || markOutTime !== null) && (
-              <div className={styles.markInfo}>
-                <span>
-                  <FontAwesomeIcon icon={faLocationPin} /> Marks:{" "}
-                  {markInTime !== null && `IN: ${formatTime(markInTime)}`}{" "}
-                  {markOutTime !== null && `OUT: ${formatTime(markOutTime)}`}
-                </span>
-                {markInTime !== null && markOutTime !== null && (
-                  <span className={styles.durationDisplay}>
-                    Duration: {formatTime(markOutTime - markInTime)}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        )}
       </header>
 
       <main className={styles.mainContent}>
@@ -171,72 +137,68 @@ export const App: React.FC = () => {
           />
         </div>
 
-        <ResizableBox
-          width={isControlsCollapsed ? 40 : controlsWidth}
-          height={Infinity}
-          minConstraints={[40, Infinity]}
-          maxConstraints={[800, Infinity]}
-          axis="x"
-          resizeHandles={["w"]}
-          onResize={handleControlsResize}
-          className={`${styles.controlsSection} ${
-            isControlsCollapsed ? styles.controlsCollapsed : ""
+        <div
+          className={`${styles.sidePanel} ${
+            isSidePanelCollapsed ? styles.sidePanelCollapsed : ""
           }`}
         >
-          <button
-            className={styles.collapseButtonBase}
-            onClick={() => setIsControlsCollapsed(!isControlsCollapsed)}
-          >
-            <FontAwesomeIcon
-              icon={isControlsCollapsed ? faChevronRight : faChevronLeft}
-            />
-          </button>
+          <div className={styles.clipLibraryPanel}>
+            <ClipLibrary onRefresh={refreshTrigger} />
+          </div>
+        </div>
+      </main>
 
-          <div className={styles.controlPanels}>
-            <Resizable
-              size={{ width: "100%", height: clipCreatorHeight }}
-              minHeight={200}
-              maxHeight={800}
-              enable={{ bottom: true }}
-              onResizeStop={(e, direction, ref, d) => {
-                setClipCreatorHeight(clipCreatorHeight + d.height);
-              }}
-              className={styles.controlPanelResizable}
-            >
-              <div className={styles.controlPanel}>
-                <ClipCreator
-                  videoPath={videoPath}
-                  markInTime={markInTime}
-                  markOutTime={markOutTime}
-                  onClipCreated={handleClipCreated}
-                  onClearMarks={handleClearMarks}
-                />
-              </div>
-            </Resizable>
-
-            <Resizable
-              size={{ width: "100%", height: categoryManagerHeight }}
-              minHeight={200}
-              maxHeight={800}
-              enable={{ bottom: true }}
-              onResizeStop={(e, direction, ref, d) => {
-                setCategoryManagerHeight(categoryManagerHeight + d.height);
-              }}
-              className={styles.controlPanelResizable}
-            >
-              <div className={styles.controlPanel}>
-                <CategoryManager onCategoriesChange={handleCategoriesChange} />
-              </div>
-            </Resizable>
-
-            <div
-              className={`${styles.controlPanel} ${styles.clipLibraryPanel}`}
-            >
-              <ClipLibrary onRefresh={refreshTrigger} />
+      {/* Clip Creator Modal */}
+      {showClipCreator && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2>
+                <FontAwesomeIcon icon={faScissors} /> Create Clip
+              </h2>
+              <button
+                className={styles.modalClose}
+                onClick={() => setShowClipCreator(false)}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <ClipCreator
+                videoPath={videoPath}
+                markInTime={markInTime}
+                markOutTime={markOutTime}
+                onClipCreated={handleClipCreated}
+                onClearMarks={handleClearMarks}
+              />
             </div>
           </div>
-        </ResizableBox>
-      </main>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2>
+                <FontAwesomeIcon icon={faCog} /> Settings
+              </h2>
+              <button
+                className={styles.modalClose}
+                onClick={() => setShowSettings(false)}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <CategoryManager
+                onCategoriesChange={() => setRefreshTrigger(prev => prev + 1)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Instructions Overlay */}
       {!videoPath && (

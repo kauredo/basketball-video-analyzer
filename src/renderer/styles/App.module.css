@@ -23,43 +23,21 @@
   position: relative;
 }
 
-.controlsSection {
-  position: relative;
+.sidePanel {
   background: var(--bg-secondary);
   border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   height: 100%;
   transition: width var(--transition-fast);
-  margin-right: var(--spacing-sm);
+  position: relative;
+  width: 320px;
 }
 
-.controlsCollapsed {
+.sidePanelCollapsed {
+  width: 0 !important;
   overflow: hidden;
   margin-right: 0;
-}
-
-.controlPanels {
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding-right: var(--spacing-xs);
-}
-
-.controlPanel {
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background: var(--bg-secondary);
-  padding: var(--spacing-md);
-}
-
-.clipLibraryPanel {
-  flex: 1;
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
 }
 
 .collapseButtonLeft {
@@ -86,61 +64,109 @@
   background: var(--bg-quaternary);
 }
 
-/* Scrollbar styles */
-:global(::-webkit-scrollbar) {
-  width: 8px;
+.clipLibraryPanel {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-secondary);
+  padding: var(--spacing-md);
 }
 
-:global(::-webkit-scrollbar-track) {
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.modalClose:hover {
   background: var(--bg-tertiary);
-  border-radius: var(--radius-sm);
+  color: var(--text-primary);
 }
 
-:global(::-webkit-scrollbar-thumb) {
-  background: var(--bg-quaternary);
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+.modalBody {
+  padding: var(--spacing-lg);
 }
 
-:global(::-webkit-scrollbar-thumb:hover) {
-  background: var(--bg-quaternary-dark);
-}
-
+/* Header with Settings Button */
 .appHeader {
   background: var(--bg-secondary);
   padding: var(--spacing-md);
   border-bottom: 1px solid var(--border-color);
-}
-
-.headerContent {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-lg);
-  max-width: var(--max-width);
-  margin: 0 auto;
 }
 
-.headerLeft {
-  flex: 1;
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
-.headerLeft h1 {
-  font-size: var(--font-size-xl);
-  margin: 0;
+.settingsButton {
+  background: var(--bg-tertiary);
+  border: none;
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  color: var(--text-primary);
+  transition: all var(--transition-fast);
 }
 
-.headerLeft p {
-  margin: var(--spacing-xs) 0 0 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
+.settingsButton:hover {
+  background: var(--bg-quaternary);
 }
 
-/* Common button styles that will be extended */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -233,7 +259,6 @@
   background: var(--color-primary-hover);
 }
 
-/* Empty state improvements */
 .instructionsOverlay {
   position: fixed;
   top: 0;

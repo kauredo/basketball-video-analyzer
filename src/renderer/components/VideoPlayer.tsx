@@ -10,6 +10,8 @@ import {
   faTrash,
   faFilm,
   faKeyboard,
+  faAnglesLeft,
+  faAnglesRight,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/VideoPlayer.module.css";
 
@@ -60,6 +62,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           break;
         case "KeyO":
           e.preventDefault();
+          if (videoRef.current && isPlaying) {
+            videoRef.current.pause();
+            setIsPlaying(false);
+          }
           onMarkOut();
           break;
         case "KeyC":
@@ -68,18 +74,49 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           break;
         case "ArrowLeft":
           e.preventDefault();
-          skipTime(-5);
+          if (e.shiftKey) {
+            // Frame by frame backward
+            stepFrame(-1);
+          } else {
+            skipTime(-5);
+          }
           break;
         case "ArrowRight":
           e.preventDefault();
-          skipTime(5);
+          if (e.shiftKey) {
+            // Frame by frame forward
+            stepFrame(1);
+          } else {
+            skipTime(5);
+          }
           break;
       }
     };
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [onMarkIn, onMarkOut, onClearMarks]);
+  }, [onMarkIn, onMarkOut, onClearMarks, isPlaying]);
+
+  // Calculate frame duration (assuming 30fps)
+  const frameDuration = 1 / 30;
+
+  const stepFrame = (direction: number) => {
+    if (videoRef.current) {
+      // Pause the video if it's playing
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+
+      // Move one frame forward or backward
+      const newTime = Math.max(
+        0,
+        Math.min(duration, currentTime + direction * frameDuration)
+      );
+      videoRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
@@ -175,6 +212,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <li>
                 <kbd>←</kbd> / <kbd>→</kbd> - Skip 5 seconds
               </li>
+              <li>
+                <kbd>Shift</kbd> + <kbd>←</kbd> / <kbd>→</kbd> - Previous/Next
+                Frame
+              </li>
             </ul>
           </div>
         </div>
@@ -261,6 +302,22 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 className={styles.skipButton}
               >
                 <FontAwesomeIcon icon={faBackwardStep} /> 5s
+              </button>
+
+              <button
+                onClick={() => stepFrame(-1)}
+                className={styles.frameButton}
+                title="Previous frame (Shift + ←)"
+              >
+                <FontAwesomeIcon icon={faAnglesLeft} />
+              </button>
+
+              <button
+                onClick={() => stepFrame(1)}
+                className={styles.frameButton}
+                title="Next frame (Shift + →)"
+              >
+                <FontAwesomeIcon icon={faAnglesRight} />
               </button>
 
               <button onClick={() => skipTime(5)} className={styles.skipButton}>

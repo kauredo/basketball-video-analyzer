@@ -278,3 +278,18 @@
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
 }
+
+.frameButton {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-round);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.8em;
+}
+
+.frameButton:hover {
+  background: var(--bg-tertiary);
+}

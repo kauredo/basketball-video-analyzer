@@ -4,13 +4,15 @@
   padding: var(--spacing-lg);
   height: 100%;
   overflow-y: auto;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .clipCreatorHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
 }
 
 .clipDetails {
@@ -152,5 +154,79 @@
 }
 
 .cancelBtn:hover {
+  background: var(--bg-quaternary);
+}
+
+.clipDuration {
+  font-family: monospace;
+  color: var(--text-secondary);
+}
+
+.clipCreatorInstructions {
+  background: var(--bg-tertiary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.clipCreatorInstructions p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+}
+
+.categorySelection {
+  margin-bottom: var(--spacing-lg);
+}
+
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.categoryActions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.selectAllBtn,
+.clearSelectionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.selectAllBtn {
+  background: var(--color-primary);
+  color: white;
+}
+
+.selectAllBtn:hover {
+  background: var(--color-primary-hover);
+}
+
+.clearSelectionBtn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.clearSelectionBtn:hover {
   background: var(--bg-quaternary);
 }

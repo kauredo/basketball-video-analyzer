@@ -155,6 +155,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   return (
     <div className={styles.clipCreator}>
+      {/* Clip Creator Header */}
       <div className={styles.clipCreatorHeader}>
         <h3>
           <FontAwesomeIcon icon={faScissors} /> Create Clip
@@ -164,31 +165,27 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         )}
       </div>
 
-      {!canCreateClip && (
-        <div className={styles.clipCreatorInstructions}>
-          {!videoPath && (
-            <p>
-              <FontAwesomeIcon icon={faFilm} /> Load a video file first
-            </p>
-          )}
-          {videoPath && (markInTime === null || markOutTime === null) && (
-            <p>
-              <FontAwesomeIcon icon={faLocationPin} /> Mark in and out points on
-              the video
-            </p>
-          )}
-          {videoPath &&
-            markInTime !== null &&
-            markOutTime !== null &&
-            selectedCategories.length === 0 && (
-              <p>🏷️ Select categories for this clip</p>
-            )}
-        </div>
-      )}
-
       {/* Category Selection */}
       <div className={styles.categorySelection}>
-        <h4>Categories ({selectedCategories.length} selected)</h4>
+        <div className={styles.categoryHeader}>
+          <h4>Categories ({selectedCategories.length} selected)</h4>
+          <div className={styles.categoryActions}>
+            <button
+              onClick={() => setSelectedCategories(categories.map(c => c.id))}
+              disabled={isCreating}
+              className={styles.selectAllBtn}
+            >
+              <FontAwesomeIcon icon={faCheck} /> Select All
+            </button>
+            <button
+              onClick={() => setSelectedCategories([])}
+              disabled={isCreating}
+              className={styles.clearSelectionBtn}
+            >
+              <FontAwesomeIcon icon={faTrash} /> Clear
+            </button>
+          </div>
+        </div>
         <div className={styles.categoryGrid}>
           {categories.map(category => (
             <button
@@ -256,7 +253,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         </div>
       )}
 
-      {/* Action Buttons */}
+      {/* Create Clip Button */}
       <div className={styles.clipCreationActions}>
         <button
           onClick={handleCreateClip}
@@ -272,34 +269,6 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
               <FontAwesomeIcon icon={faFilm} /> Create Clip
             </>
           )}
-        </button>
-
-        {(markInTime !== null || markOutTime !== null) && (
-          <button
-            onClick={onClearMarks}
-            disabled={isCreating}
-            className={styles.clearMarksBtn}
-          >
-            <FontAwesomeIcon icon={faTrash} /> Clear Marks
-          </button>
-        )}
-      </div>
-
-      {/* Quick Category Actions */}
-      <div className={styles.quickActions}>
-        <button
-          onClick={() => setSelectedCategories(categories.map(c => c.id))}
-          disabled={isCreating}
-          className={styles.selectAllBtn}
-        >
-          <FontAwesomeIcon icon={faCheck} /> Select All
-        </button>
-        <button
-          onClick={() => setSelectedCategories([])}
-          disabled={isCreating}
-          className={styles.clearSelectionBtn}
-        >
-          <FontAwesomeIcon icon={faTrash} /> Clear Selection
         </button>
       </div>
     </div>
