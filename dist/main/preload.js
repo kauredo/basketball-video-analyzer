@@ -28,6 +28,7 @@ const electronAPI = {
     removeAllListeners: channel => {
         electron_1.ipcRenderer.removeAllListeners(channel);
     },
+    resetDatabase: () => electron_1.ipcRenderer.invoke("reset-database"),
 };
 electron_1.contextBridge.exposeInMainWorld("electronAPI", electronAPI);
 //# sourceMappingURL=preload.js.map

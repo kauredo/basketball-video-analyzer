@@ -24,6 +24,7 @@ interface Clip {
   id: number;
   video_path: string;
   output_path: string;
+  thumbnail_path?: string;
   start_time: number;
   end_time: number;
   duration: number;
@@ -331,13 +332,21 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
 
             return (
               <div key={clip.id} className={styles.clipCard}>
-                {/* Clip Thumbnail Placeholder */}
+                {/* Clip Thumbnail */}
                 <div className={styles.clipThumbnail}>
-                  <div className={styles.thumbnailPlaceholder}>
-                    <span className={styles.playIcon}>▶️</span>
-                    <div className={styles.clipDuration}>
-                      {formatTime(clip.duration)}
+                  {clip.thumbnail_path ? (
+                    <img
+                      src={`file://${clip.thumbnail_path}`}
+                      alt={clip.title}
+                      className={styles.thumbnailImage}
+                    />
+                  ) : (
+                    <div className={styles.thumbnailPlaceholder}>
+                      <span className={styles.playIcon}>▶️</span>
                     </div>
+                  )}
+                  <div className={styles.clipDuration}>
+                    {formatTime(clip.duration)}
                   </div>
                 </div>
 

@@ -9,6 +9,7 @@ export interface Clip {
     id?: number;
     video_path: string;
     output_path: string;
+    thumbnail_path?: string;
     start_time: number;
     end_time: number;
     duration: number;
@@ -27,3 +28,4 @@ export declare const createClip: (clip: Omit<Clip, "id" | "created_at">) => Clip
 export declare const updateClip: (id: number, updates: Partial<Clip>) => void;
 export declare const deleteClip: (id: number) => void;
 export declare const getClipsByCategory: (categoryId: number) => Clip[];
+export declare const resetDatabase: () => void;

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getClipsByCategory = exports.deleteClip = exports.updateClip = exports.createClip = exports.getClips = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.setupDatabase = void 0;
+exports.resetDatabase = exports.getClipsByCategory = exports.deleteClip = exports.updateClip = exports.createClip = exports.getClips = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategories = exports.setupDatabase = void 0;
 const better_sqlite3_1 = __importDefault(require("better-sqlite3"));
 const path_1 = __importDefault(require("path"));
 const electron_1 = require("electron");
@@ -40,6 +40,7 @@ const createTables = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       video_path TEXT NOT NULL,
       output_path TEXT NOT NULL,
+      thumbnail_path TEXT,
       start_time REAL NOT NULL,
       end_time REAL NOT NULL,
       duration REAL NOT NULL,
@@ -206,10 +207,10 @@ exports.getClips = getClips;
 const createClip = (clip) => {
     try {
         const stmt = db.prepare(`
-      INSERT INTO clips (video_path, output_path, start_time, end_time, duration, title, categories, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-        const result = stmt.run(clip.video_path, clip.output_path, clip.start_time, clip.end_time, clip.duration, clip.title, clip.categories, clip.notes || null);
+        const result = stmt.run(clip.video_path, clip.output_path, clip.thumbnail_path, clip.start_time, clip.end_time, clip.duration, clip.title, clip.categories, clip.notes || null);
         return {
             id: result.lastInsertRowid,
             ...clip,
@@ -262,4 +263,21 @@ const getClipsByCategory = (categoryId) => {
     }
 };
 exports.getClipsByCategory = getClipsByCategory;
+const resetDatabase = () => {
+    try {
+        // Drop existing tables
+        db.exec(`
+      DROP TABLE IF EXISTS clips;
+      DROP TABLE IF EXISTS categories;
+    `);
+        // Recreate tables and insert default data
+        createTables();
+        insertDefaultCategories();
+        console.log("Database reset complete");
+    }
+    catch (error) {
+        console.error("Error resetting database:", error);
+    }
+};
+exports.resetDatabase = resetDatabase;
 //# sourceMappingURL=database.js.map

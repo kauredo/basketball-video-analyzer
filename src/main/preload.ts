@@ -31,6 +31,7 @@ export interface ElectronAPI {
   onClipProgress: (callback: (data: any) => void) => void;
   onClipCreated: (callback: (clip: any) => void) => void;
   removeAllListeners: (channel: string) => void;
+  resetDatabase: () => Promise<boolean>;
 }
 
 const electronAPI: ElectronAPI = {
@@ -66,6 +67,7 @@ const electronAPI: ElectronAPI = {
   removeAllListeners: channel => {
     ipcRenderer.removeAllListeners(channel);
   },
+  resetDatabase: () => ipcRenderer.invoke("reset-database"),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

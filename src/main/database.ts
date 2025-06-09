@@ -16,6 +16,7 @@ export interface Clip {
   id?: number;
   video_path: string;
   output_path: string;
+  thumbnail_path?: string;
   start_time: number;
   end_time: number;
   duration: number;
@@ -59,6 +60,7 @@ const createTables = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       video_path TEXT NOT NULL,
       output_path TEXT NOT NULL,
+      thumbnail_path TEXT,
       start_time REAL NOT NULL,
       end_time REAL NOT NULL,
       duration REAL NOT NULL,
@@ -241,13 +243,14 @@ export const getClips = (videoPath?: string): Clip[] => {
 export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO clips (video_path, output_path, start_time, end_time, duration, title, categories, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       clip.video_path,
       clip.output_path,
+      clip.thumbnail_path,
       clip.start_time,
       clip.end_time,
       clip.duration,
@@ -305,5 +308,22 @@ export const getClipsByCategory = (categoryId: number): Clip[] => {
   } catch (error) {
     console.error("Error getting clips by category:", error);
     return [];
+  }
+};
+
+export const resetDatabase = () => {
+  try {
+    // Drop existing tables
+    db.exec(`
+      DROP TABLE IF EXISTS clips;
+      DROP TABLE IF EXISTS categories;
+    `);
+
+    // Recreate tables and insert default data
+    createTables();
+    insertDefaultCategories();
+    console.log("Database reset complete");
+  } catch (error) {
+    console.error("Error resetting database:", error);
   }
 };

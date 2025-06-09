@@ -88,52 +88,66 @@ electron_1.ipcMain.handle("cut-video-clip", async (_event, params) => {
             const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
             const clipId = (0, uuid_1.v4)().slice(0, 8);
             const outputFileName = `${title.replace(/[^a-zA-Z0-9]/g, "_")}_${timestamp}_${clipId}.mp4`;
+            const thumbnailFileName = `${title.replace(/[^a-zA-Z0-9]/g, "_")}_${timestamp}_${clipId}_thumb.jpg`;
             const outputPath = path_1.default.join(clipsDir, outputFileName);
+            const thumbnailPath = path_1.default.join(clipsDir, thumbnailFileName);
             const duration = endTime - startTime;
-            // Cut video using FFmpeg
+            // First, generate the thumbnail
             (0, fluent_ffmpeg_1.default)(inputPath)
                 .setStartTime(startTime)
-                .setDuration(duration)
-                .output(outputPath)
-                .videoCodec("libx264")
-                .audioCodec("aac")
+                .frames(1)
+                .output(thumbnailPath)
                 .on("end", () => {
-                try {
-                    // Save clip to database
-                    const clipData = {
-                        video_path: inputPath,
-                        output_path: outputPath,
-                        start_time: startTime,
-                        end_time: endTime,
-                        duration: duration,
-                        title: title,
-                        categories: JSON.stringify(categories),
-                        notes: notes,
-                    };
-                    const savedClip = (0, database_1.createClip)(clipData);
-                    // Send progress update
-                    mainWindow.webContents.send("clip-created", savedClip);
-                    resolve({
-                        success: true,
-                        clip: savedClip,
-                        outputPath: outputPath,
+                // After thumbnail is created, create the clip
+                (0, fluent_ffmpeg_1.default)(inputPath)
+                    .setStartTime(startTime)
+                    .setDuration(duration)
+                    .output(outputPath)
+                    .videoCodec("libx264")
+                    .audioCodec("aac")
+                    .on("end", () => {
+                    try {
+                        // Save clip to database with thumbnail path
+                        const clipData = {
+                            video_path: inputPath,
+                            output_path: outputPath,
+                            thumbnail_path: thumbnailPath,
+                            start_time: startTime,
+                            end_time: endTime,
+                            duration: duration,
+                            title: title,
+                            categories: JSON.stringify(categories),
+                            notes: notes,
+                        };
+                        const savedClip = (0, database_1.createClip)(clipData);
+                        mainWindow.webContents.send("clip-created", savedClip);
+                        resolve({
+                            success: true,
+                            clip: savedClip,
+                            outputPath: outputPath,
+                            thumbnailPath: thumbnailPath,
+                        });
+                    }
+                    catch (dbError) {
+                        console.error("Database error:", dbError);
+                        reject(dbError);
+                    }
+                })
+                    .on("error", error => {
+                    console.error("FFmpeg error:", error);
+                    reject(error);
+                })
+                    .on("progress", progress => {
+                    mainWindow.webContents.send("clip-progress", {
+                        percent: progress.percent || 0,
+                        timemark: progress.timemark,
                     });
-                }
-                catch (dbError) {
-                    console.error("Database error:", dbError);
-                    reject(dbError);
-                }
+                })
+                    .run();
             })
                 .on("error", error => {
-                console.error("FFmpeg error:", error);
+                console.error("Thumbnail creation error:", error);
                 reject(error);
-            })
-                .on("progress", progress => {
-                // Send progress updates to renderer
-                mainWindow.webContents.send("clip-progress", {
-                    percent: progress.percent || 0,
-                    timemark: progress.timemark,
-                });
             })
                 .run();
         }
@@ -264,8 +278,15 @@ electron_1.ipcMain.handle("delete-clip", async (_event, id) => {
         // Get clip info to delete file
         const clips = (0, database_1.getClips)();
         const clip = clips.find(c => c.id === id);
-        if (clip && fs_1.default.existsSync(clip.output_path)) {
-            fs_1.default.unlinkSync(clip.output_path);
+        if (clip) {
+            // Delete video file
+            if (fs_1.default.existsSync(clip.output_path)) {
+                fs_1.default.unlinkSync(clip.output_path);
+            }
+            // Delete thumbnail if it exists
+            if (clip.thumbnail_path && fs_1.default.existsSync(clip.thumbnail_path)) {
+                fs_1.default.unlinkSync(clip.thumbnail_path);
+            }
         }
         (0, database_1.deleteClip)(id);
         return true;
@@ -292,6 +313,22 @@ electron_1.ipcMain.handle("get-clips-by-category", async (_event, categoryId) =>
     catch (error) {
         console.error("Error getting clips by category:", error);
         return [];
+    }
+});
+electron_1.ipcMain.handle("reset-database", async () => {
+    try {
+        // Delete all clip files
+        const clipsDir = path_1.default.join(electron_1.app.getPath("userData"), "clips");
+        if (fs_1.default.existsSync(clipsDir)) {
+            fs_1.default.rmSync(clipsDir, { recursive: true, force: true });
+        }
+        // Reset database
+        (0, database_1.resetDatabase)();
+        return true;
+    }
+    catch (error) {
+        console.error("Error resetting application:", error);
+        return false;
     }
 });
 //# sourceMappingURL=main.js.map

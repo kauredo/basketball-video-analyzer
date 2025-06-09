@@ -14,6 +14,7 @@ import {
   faChevronRight,
   faCog,
   faTimes,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./styles/App.module.css";
 import { VideoPlayer } from "./components/VideoPlayer";
@@ -83,6 +84,24 @@ export const App: React.FC = () => {
     setShowClipCreator(false);
     handleClearMarks();
   }, [handleClearMarks]);
+
+  const handleResetDatabase = async () => {
+    if (
+      window.confirm(
+        "Are you sure? This will delete all clips and reset categories to default. This action cannot be undone."
+      )
+    ) {
+      try {
+        await window.electronAPI.resetDatabase();
+        setRefreshTrigger(prev => prev + 1);
+        setShowSettings(false);
+        alert("Database reset successfully");
+      } catch (error) {
+        console.error("Error resetting database:", error);
+        alert("Error resetting database");
+      }
+    }
+  };
 
   const handleCategoriesChange = useCallback(() => {
     // Trigger refresh for any components that depend on categories
@@ -195,6 +214,16 @@ export const App: React.FC = () => {
               <CategoryManager
                 onCategoriesChange={() => setRefreshTrigger(prev => prev + 1)}
               />
+
+              <div className={styles.dangerZone}>
+                <h3>Danger Zone</h3>
+                <button
+                  className={styles.resetButton}
+                  onClick={handleResetDatabase}
+                >
+                  <FontAwesomeIcon icon={faTrash} /> Reset Database
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -17,6 +17,7 @@ import {
   getClipsByCategory,
   Category,
   Clip,
+  resetDatabase,
 } from "./database";
 
 // Set FFmpeg path
@@ -126,56 +127,70 @@ ipcMain.handle(
           /[^a-zA-Z0-9]/g,
           "_"
         )}_${timestamp}_${clipId}.mp4`;
+        const thumbnailFileName = `${title.replace(
+          /[^a-zA-Z0-9]/g,
+          "_"
+        )}_${timestamp}_${clipId}_thumb.jpg`;
         const outputPath = path.join(clipsDir, outputFileName);
-
+        const thumbnailPath = path.join(clipsDir, thumbnailFileName);
         const duration = endTime - startTime;
 
-        // Cut video using FFmpeg
+        // First, generate the thumbnail
         ffmpeg(inputPath)
           .setStartTime(startTime)
-          .setDuration(duration)
-          .output(outputPath)
-          .videoCodec("libx264")
-          .audioCodec("aac")
+          .frames(1)
+          .output(thumbnailPath)
           .on("end", () => {
-            try {
-              // Save clip to database
-              const clipData = {
-                video_path: inputPath,
-                output_path: outputPath,
-                start_time: startTime,
-                end_time: endTime,
-                duration: duration,
-                title: title,
-                categories: JSON.stringify(categories),
-                notes: notes,
-              };
+            // After thumbnail is created, create the clip
+            ffmpeg(inputPath)
+              .setStartTime(startTime)
+              .setDuration(duration)
+              .output(outputPath)
+              .videoCodec("libx264")
+              .audioCodec("aac")
+              .on("end", () => {
+                try {
+                  // Save clip to database with thumbnail path
+                  const clipData = {
+                    video_path: inputPath,
+                    output_path: outputPath,
+                    thumbnail_path: thumbnailPath,
+                    start_time: startTime,
+                    end_time: endTime,
+                    duration: duration,
+                    title: title,
+                    categories: JSON.stringify(categories),
+                    notes: notes,
+                  };
 
-              const savedClip = createClip(clipData);
-
-              // Send progress update
-              mainWindow.webContents.send("clip-created", savedClip);
-
-              resolve({
-                success: true,
-                clip: savedClip,
-                outputPath: outputPath,
-              });
-            } catch (dbError) {
-              console.error("Database error:", dbError);
-              reject(dbError);
-            }
+                  const savedClip = createClip(clipData);
+                  mainWindow.webContents.send("clip-created", savedClip);
+                  resolve({
+                    success: true,
+                    clip: savedClip,
+                    outputPath: outputPath,
+                    thumbnailPath: thumbnailPath,
+                  });
+                } catch (dbError) {
+                  console.error("Database error:", dbError);
+                  reject(dbError);
+                }
+              })
+              .on("error", error => {
+                console.error("FFmpeg error:", error);
+                reject(error);
+              })
+              .on("progress", progress => {
+                mainWindow.webContents.send("clip-progress", {
+                  percent: progress.percent || 0,
+                  timemark: progress.timemark,
+                });
+              })
+              .run();
           })
           .on("error", error => {
-            console.error("FFmpeg error:", error);
+            console.error("Thumbnail creation error:", error);
             reject(error);
-          })
-          .on("progress", progress => {
-            // Send progress updates to renderer
-            mainWindow.webContents.send("clip-progress", {
-              percent: progress.percent || 0,
-              timemark: progress.timemark,
-            });
           })
           .run();
       } catch (error) {
@@ -325,8 +340,15 @@ ipcMain.handle("delete-clip", async (_event, id: number) => {
     const clips = getClips();
     const clip = clips.find(c => c.id === id);
 
-    if (clip && fs.existsSync(clip.output_path)) {
-      fs.unlinkSync(clip.output_path);
+    if (clip) {
+      // Delete video file
+      if (fs.existsSync(clip.output_path)) {
+        fs.unlinkSync(clip.output_path);
+      }
+      // Delete thumbnail if it exists
+      if (clip.thumbnail_path && fs.existsSync(clip.thumbnail_path)) {
+        fs.unlinkSync(clip.thumbnail_path);
+      }
     }
 
     deleteClip(id);
@@ -353,5 +375,22 @@ ipcMain.handle("get-clips-by-category", async (_event, categoryId: number) => {
   } catch (error) {
     console.error("Error getting clips by category:", error);
     return [];
+  }
+});
+
+ipcMain.handle("reset-database", async () => {
+  try {
+    // Delete all clip files
+    const clipsDir = path.join(app.getPath("userData"), "clips");
+    if (fs.existsSync(clipsDir)) {
+      fs.rmSync(clipsDir, { recursive: true, force: true });
+    }
+
+    // Reset database
+    resetDatabase();
+    return true;
+  } catch (error) {
+    console.error("Error resetting application:", error);
+    return false;
   }
 });

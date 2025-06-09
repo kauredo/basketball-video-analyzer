@@ -29,6 +29,7 @@ export interface ElectronAPI {
   onClipProgress: (callback: (data: any) => void) => void;
   onClipCreated: (callback: (clip: any) => void) => void;
   removeAllListeners: (channel: string) => void;
+  resetDatabase: () => Promise<boolean>;
 }
 
 declare global {
