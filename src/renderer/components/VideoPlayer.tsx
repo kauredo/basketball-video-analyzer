@@ -184,7 +184,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   return (
     <div className={styles.videoPlayer}>
-      <div className={styles.videoContainer}>
+      <div
+        className={styles.videoContainer}
+        onMouseMove={() => {
+          if (videoRef.current) {
+            videoRef.current.style.cursor = "default";
+            setTimeout(() => {
+              if (videoRef.current && !videoRef.current.paused) {
+                videoRef.current.style.cursor = "none";
+              }
+            }, 2000);
+          }
+        }}
+      >
         <video
           ref={videoRef}
           src={`file://${videoPath}`}
@@ -193,154 +205,132 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           className={styles.videoElement}
+          onClick={togglePlay}
         />
-
-        {(markInTime !== null || markOutTime !== null) && (
-          <div className={styles.marksOverlay}>
-            {markInTime !== null && (
+        <div className={styles.videoControls}>
+          <div className={styles.progressContainer}>
+            <div className={styles.progressTrack}>
               <div
-                className={`${styles.markIndicator} ${styles.markIn}`}
-                style={{ left: `${(markInTime / duration) * 100}%` }}
-                onClick={() => jumpToMark(markInTime)}
-                title={`Mark In: ${formatTime(markInTime)}`}
+                className={styles.progressFill}
+                style={{ width: `${(currentTime / duration) * 100}%` }}
+              />
+              {markInTime !== null && markOutTime !== null && (
+                <div
+                  className={styles.markedRegion}
+                  style={{
+                    left: `${(markInTime / duration) * 100}%`,
+                    width: `${((markOutTime - markInTime) / duration) * 100}%`,
+                  }}
+                />
+              )}
+              <input
+                type="range"
+                min="0"
+                max={duration}
+                value={currentTime}
+                onChange={handleSeek}
+                className={styles.progressSlider}
+              />
+              {markInTime !== null && (
+                <div
+                  className={`${styles.markIndicator} ${styles.markIn}`}
+                  style={{ left: `${(markInTime / duration) * 100}%` }}
+                  onClick={() => jumpToMark(markInTime)}
+                  title={`Mark In: ${formatTime(markInTime)}`}
+                />
+              )}
+              {markOutTime !== null && (
+                <div
+                  className={`${styles.markIndicator} ${styles.markOut}`}
+                  style={{ left: `${(markOutTime / duration) * 100}%` }}
+                  onClick={() => jumpToMark(markOutTime)}
+                  title={`Mark Out: ${formatTime(markOutTime)}`}
+                />
+              )}
+            </div>
+          </div>
+
+          <div className={styles.controlsSection}>
+            <div className={styles.controlsRow}>
+              <button onClick={togglePlay} className={styles.playButton}>
+                <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
+              </button>
+
+              <button
+                onClick={() => skipTime(-5)}
+                className={styles.skipButton}
               >
-                IN
+                <FontAwesomeIcon icon={faBackwardStep} /> 5s
+              </button>
+
+              <button onClick={() => skipTime(5)} className={styles.skipButton}>
+                5s <FontAwesomeIcon icon={faForwardStep} />
+              </button>
+
+              <div className={styles.timeDisplay}>
+                {formatTime(currentTime)} / {formatTime(duration)}
               </div>
-            )}
-            {markOutTime !== null && (
-              <div
-                className={`${styles.markIndicator} ${styles.markOut}`}
-                style={{ left: `${(markOutTime / duration) * 100}%` }}
-                onClick={() => jumpToMark(markOutTime)}
-                title={`Mark Out: ${formatTime(markOutTime)}`}
+
+              <div className={styles.volumeControl}>
+                <span>
+                  <FontAwesomeIcon icon={faVolumeHigh} />
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={volume}
+                  onChange={e => {
+                    const newVolume = parseFloat(e.target.value);
+                    setVolume(newVolume);
+                    if (videoRef.current) {
+                      videoRef.current.volume = newVolume;
+                    }
+                  }}
+                  className={styles.volumeSlider}
+                />
+              </div>
+            </div>
+
+            <div className={styles.markControls}>
+              <button
+                onClick={onMarkIn}
+                className={`${styles.markBtn} ${styles.markInBtn}`}
+                disabled={!videoPath}
               >
-                OUT
+                <FontAwesomeIcon icon={faLocationPin} /> Mark In (I)
+              </button>
+
+              <div className={styles.markInfo}>
+                <div className={styles.markTimes}>
+                  <span>
+                    In: {markInTime !== null ? formatTime(markInTime) : "--:--"}
+                  </span>
+                  <span>
+                    Out:{" "}
+                    {markOutTime !== null ? formatTime(markOutTime) : "--:--"}
+                  </span>
+                  <span>Duration: {getMarkedDuration()}</span>
+                </div>
               </div>
-            )}
-            {markInTime !== null && markOutTime !== null && (
-              <div
-                className={styles.markedRegion}
-                style={{
-                  left: `${(markInTime / duration) * 100}%`,
-                  width: `${((markOutTime - markInTime) / duration) * 100}%`,
-                }}
-              />
-            )}
-          </div>
-        )}
-      </div>
 
-      <div className={styles.markControls}>
-        <button
-          onClick={onMarkIn}
-          className={`${styles.markBtn} ${styles.markInBtn}`}
-          disabled={!videoPath}
-        >
-          <FontAwesomeIcon icon={faLocationPin} /> Mark In (I)
-        </button>
+              <button
+                onClick={onMarkOut}
+                className={`${styles.markBtn} ${styles.markOutBtn}`}
+                disabled={!videoPath}
+              >
+                <FontAwesomeIcon icon={faLocationPin} /> Mark Out (O)
+              </button>
 
-        <div className={styles.markInfo}>
-          <div className={styles.markTimes}>
-            <span>
-              In: {markInTime !== null ? formatTime(markInTime) : "--:--"}
-            </span>
-            <span>
-              Out: {markOutTime !== null ? formatTime(markOutTime) : "--:--"}
-            </span>
-            <span>Duration: {getMarkedDuration()}</span>
-          </div>
-        </div>
-
-        <button
-          onClick={onMarkOut}
-          className={`${styles.markBtn} ${styles.markOutBtn}`}
-          disabled={!videoPath}
-        >
-          <FontAwesomeIcon icon={faLocationPin} /> Mark Out (O)
-        </button>
-
-        <button
-          onClick={onClearMarks}
-          className={styles.clearMarksBtn}
-          disabled={markInTime === null && markOutTime === null}
-        >
-          <FontAwesomeIcon icon={faTrash} /> Clear (C)
-        </button>
-      </div>
-
-      <div className={styles.controls}>
-        <div className={styles.controlsRow}>
-          <button onClick={togglePlay} className={styles.playButton}>
-            <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
-          </button>
-
-          <button onClick={() => skipTime(-5)} className={styles.skipButton}>
-            <FontAwesomeIcon icon={faBackwardStep} /> 5s
-          </button>
-
-          <button onClick={() => skipTime(5)} className={styles.skipButton}>
-            5s <FontAwesomeIcon icon={faForwardStep} />
-          </button>
-
-          <div className={styles.timeDisplay}>
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </div>
-
-          <div className={styles.volumeControl}>
-            <span>
-              <FontAwesomeIcon icon={faVolumeHigh} />
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={volume}
-              onChange={e => {
-                const newVolume = parseFloat(e.target.value);
-                setVolume(newVolume);
-                if (videoRef.current) {
-                  videoRef.current.volume = newVolume;
-                }
-              }}
-              className={styles.volumeSlider}
-            />
-          </div>
-        </div>
-
-        <div className={styles.progressContainer}>
-          <div className={styles.progressTrack}>
-            {markInTime !== null && markOutTime !== null && (
-              <div
-                className={styles.markedRegionTrack}
-                style={{
-                  left: `${(markInTime / duration) * 100}%`,
-                  width: `${((markOutTime - markInTime) / duration) * 100}%`,
-                }}
-              />
-            )}
-
-            <input
-              type="range"
-              min="0"
-              max={duration}
-              value={currentTime}
-              onChange={handleSeek}
-              className={styles.progressSlider}
-            />
-
-            {markInTime !== null && (
-              <div
-                className={`${styles.markTick} ${styles.markInTick}`}
-                style={{ left: `${(markInTime / duration) * 100}%` }}
-              />
-            )}
-            {markOutTime !== null && (
-              <div
-                className={`${styles.markTick} ${styles.markOutTick}`}
-                style={{ left: `${(markOutTime / duration) * 100}%` }}
-              />
-            )}
+              <button
+                onClick={onClearMarks}
+                className={styles.clearMarksBtn}
+                disabled={markInTime === null && markOutTime === null}
+              >
+                <FontAwesomeIcon icon={faTrash} /> Clear (C)
+              </button>
+            </div>
           </div>
         </div>
       </div>

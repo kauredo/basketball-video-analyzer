@@ -1,12 +1,11 @@
-/* Import variables */
 @import "./variables.css";
 
-/* Video Player Styles */
 .videoPlayer {
   flex: 1;
   display: flex;
   flex-direction: column;
   background: var(--bg-main);
+  position: relative;
 }
 
 .videoContainer {
@@ -15,23 +14,222 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: black;
+  overflow: hidden;
 }
 
 .videoElement {
   max-width: 100%;
   max-height: 100%;
   width: auto;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
 }
 
-/* Video Placeholder */
+.videoControls {
+  background: rgba(0, 0, 0, 0.85);
+  padding: var(--spacing-md);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+}
+
+.controlsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.progressContainer {
+  margin-bottom: var(--spacing-md);
+}
+
+.progressTrack {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-round);
+  position: relative;
+  cursor: pointer;
+  transition: height var(--transition-fast);
+}
+
+.progressTrack:hover {
+  height: 12px;
+}
+
+.progressFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-round);
+  pointer-events: none;
+}
+
+.markedRegion {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+}
+
+.progressSlider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.markIndicator {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: calc(100% + 8px);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.markIn {
+  background: var(--color-success);
+}
+
+.markOut {
+  background: var(--color-danger);
+}
+
+.markIndicator:hover {
+  transform: scaleX(2);
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.playButton,
+.skipButton {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-round);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.playButton:hover,
+.skipButton:hover {
+  background: var(--bg-tertiary);
+}
+
+.markControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  justify-content: space-between;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.markBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: var(--font-size-sm);
+}
+
+.markInBtn {
+  background: var(--color-success);
+}
+
+.markOutBtn {
+  background: var(--color-danger);
+}
+
+.clearMarksBtn {
+  background: var(--bg-tertiary);
+}
+
+.markBtn:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+
+.markBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.markInfo {
+  text-align: center;
+  font-family: monospace;
+}
+
+.markTimes {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+.timeDisplay {
+  font-family: monospace;
+  color: var(--text-primary);
+}
+
+.volumeControl {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+}
+
+.volumeSlider {
+  width: 80px;
+  height: 4px;
+  border-radius: var(--radius-round);
+  background: var(--bg-tertiary);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-round);
+  background: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.volumeSlider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
 .videoPlaceholder {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-main);
-  color: var(--text-muted);
+  background: var(--bg-secondary);
+  padding: var(--spacing-xl);
 }
 
 .placeholderContent {
@@ -39,190 +237,24 @@
   max-width: 400px;
 }
 
-.placeholderContent h3 {
-  margin-bottom: var(--spacing-md);
-  color: var(--text-secondary);
-}
-
 .placeholderTips {
-  margin-top: var(--spacing-xl);
+  margin-top: var(--spacing-lg);
   text-align: left;
-}
-
-.placeholderTips h4 {
-  margin-bottom: var(--spacing-md);
-  color: var(--text-tertiary);
 }
 
 .placeholderTips ul {
   list-style: none;
+  padding: 0;
+  margin: var(--spacing-md) 0 0 0;
 }
 
 .placeholderTips li {
-  margin: var(--spacing-sm) 0;
-  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
 }
 
-/* Controls */
-.controls {
-  background: var(--bg-main);
-  padding: var(--spacing-md);
-  border-top: 1px solid var(--border-color);
-}
-
-.controlsRow {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-}
-
-/* Mark Controls */
-.markControls {
-  background: var(--bg-secondary);
-  padding: var(--spacing-md);
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: center;
-  border-top: 1px solid var(--border-color);
-}
-
-.markBtn {
+.placeholderTips kbd {
   background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all var(--transition-fast);
-  font-size: var(--font-size-sm);
-}
-
-.markInBtn {
-  background: var(--color-primary);
-}
-
-.markOutBtn {
-  background: var(--color-danger);
-}
-
-.markInBtn:hover:not(:disabled) {
-  background: var(--color-primary-dark);
-}
-
-.markOutBtn:hover:not(:disabled) {
-  background: var(--color-danger-dark);
-}
-
-.markBtn:disabled {
-  background: var(--bg-tertiary);
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.clearMarksBtn {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.clearMarksBtn:hover:not(:disabled) {
-  background: var(--bg-quaternary);
-}
-
-/* Mark Indicators */
-.marksOverlay {
-  position: absolute;
-  bottom: var(--video-controls-height);
-  left: 0;
-  right: 0;
-  height: 40px;
-  pointer-events: none;
-}
-
-.markIndicator {
-  position: absolute;
-  bottom: 0;
-  width: 60px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-xs);
-  font-weight: bold;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  cursor: pointer;
-  pointer-events: all;
-  transform: translateX(-50%);
-}
-
-.markIn {
-  background: var(--color-primary);
-  color: var(--text-primary);
-}
-
-.markOut {
-  background: var(--color-danger);
-  color: var(--text-primary);
-}
-
-/* Progress Bar */
-.progressContainer {
-  position: relative;
-}
-
-.progressTrack {
-  position: relative;
-  height: 6px;
-  background: var(--bg-tertiary);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.markedRegionTrack {
-  position: absolute;
-  height: 100%;
-  background: color-mix(in srgb, var(--color-primary) 30%, transparent);
-}
-
-.progressSlider {
-  width: 100%;
-  height: 6px;
-  background: transparent;
-  outline: none;
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
-}
-
-.progressSlider::-webkit-slider-thumb {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  background: var(--color-primary);
-  border-radius: var(--radius-round);
-  cursor: pointer;
-}
-
-/* Volume Control */
-.volumeControl {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.volumeSlider {
-  width: 80px;
-  cursor: pointer;
-}
-
-/* Time Display */
-.timeDisplay {
-  color: var(--text-secondary);
-  font-family: monospace;
+  font-size: var(--font-size-sm);
 }

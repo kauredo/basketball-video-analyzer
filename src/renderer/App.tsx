@@ -11,12 +11,16 @@ import {
   faTags,
   faScissors,
   faLocationPin,
+  faChevronLeft,
+  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { ResizableBox } from "react-resizable";
+import { Resizable } from "re-resizable";
+import styles from "./styles/App.module.css";
 import { VideoPlayer } from "./components/VideoPlayer";
 import { CategoryManager } from "./components/CategoryManager";
 import { ClipCreator } from "./components/ClipCreator";
 import { ClipLibrary } from "./components/ClipLibrary";
-import styles from "./styles/App.module.css";
 
 export const App: React.FC = () => {
   const [videoPath, setVideoPath] = useState<string | null>(null);
@@ -26,6 +30,10 @@ export const App: React.FC = () => {
   const [markOutTime, setMarkOutTime] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [controlsWidth, setControlsWidth] = useState(400);
+  const [isControlsCollapsed, setIsControlsCollapsed] = useState(false);
+  const [clipCreatorHeight, setClipCreatorHeight] = useState(300);
+  const [categoryManagerHeight, setCategoryManagerHeight] = useState(300);
 
   const handleSelectVideo = async () => {
     try {
@@ -87,6 +95,13 @@ export const App: React.FC = () => {
   const getVideoFileName = (): string => {
     if (!videoPath) return "";
     return videoPath.split("/").pop() || videoPath.split("\\").pop() || "";
+  };
+
+  const handleControlsResize = (
+    e: any,
+    { size }: { size: { width: number } }
+  ) => {
+    setControlsWidth(size.width);
   };
 
   return (
@@ -156,23 +171,71 @@ export const App: React.FC = () => {
           />
         </div>
 
-        <div className={styles.controlsSection}>
-          <div className={styles.controlPanel}>
-            <ClipCreator
-              videoPath={videoPath}
-              markInTime={markInTime}
-              markOutTime={markOutTime}
-              onClipCreated={handleClipCreated}
-              onClearMarks={handleClearMarks}
+        <ResizableBox
+          width={isControlsCollapsed ? 40 : controlsWidth}
+          height={Infinity}
+          minConstraints={[40, Infinity]}
+          maxConstraints={[800, Infinity]}
+          axis="x"
+          resizeHandles={["w"]}
+          onResize={handleControlsResize}
+          className={`${styles.controlsSection} ${
+            isControlsCollapsed ? styles.controlsCollapsed : ""
+          }`}
+        >
+          <button
+            className={styles.collapseButtonBase}
+            onClick={() => setIsControlsCollapsed(!isControlsCollapsed)}
+          >
+            <FontAwesomeIcon
+              icon={isControlsCollapsed ? faChevronRight : faChevronLeft}
             />
+          </button>
+
+          <div className={styles.controlPanels}>
+            <Resizable
+              size={{ width: "100%", height: clipCreatorHeight }}
+              minHeight={200}
+              maxHeight={800}
+              enable={{ bottom: true }}
+              onResizeStop={(e, direction, ref, d) => {
+                setClipCreatorHeight(clipCreatorHeight + d.height);
+              }}
+              className={styles.controlPanelResizable}
+            >
+              <div className={styles.controlPanel}>
+                <ClipCreator
+                  videoPath={videoPath}
+                  markInTime={markInTime}
+                  markOutTime={markOutTime}
+                  onClipCreated={handleClipCreated}
+                  onClearMarks={handleClearMarks}
+                />
+              </div>
+            </Resizable>
+
+            <Resizable
+              size={{ width: "100%", height: categoryManagerHeight }}
+              minHeight={200}
+              maxHeight={800}
+              enable={{ bottom: true }}
+              onResizeStop={(e, direction, ref, d) => {
+                setCategoryManagerHeight(categoryManagerHeight + d.height);
+              }}
+              className={styles.controlPanelResizable}
+            >
+              <div className={styles.controlPanel}>
+                <CategoryManager onCategoriesChange={handleCategoriesChange} />
+              </div>
+            </Resizable>
+
+            <div
+              className={`${styles.controlPanel} ${styles.clipLibraryPanel}`}
+            >
+              <ClipLibrary onRefresh={refreshTrigger} />
+            </div>
           </div>
-          <div className={styles.controlPanel}>
-            <CategoryManager onCategoriesChange={handleCategoriesChange} />
-          </div>
-          <div className={styles.controlPanel}>
-            <ClipLibrary onRefresh={refreshTrigger} />
-          </div>
-        </div>
+        </ResizableBox>
       </main>
 
       {/* Instructions Overlay */}
