@@ -1,0 +1,61 @@
+{
+  "name": "basketball-clip-cutter",
+  "version": "1.0.0",
+  "description": "Desktop app for cutting and categorizing basketball video clips for team scouting",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "tsc",
+    "build:renderer": "webpack --mode=production",
+    "dev": "concurrently \"npm run build:main\" \"npm run dev:renderer\" \"wait-on dist/main/main.js && electron-forge start\"",
+    "dev:renderer": "webpack --mode=development --watch",
+    "package": "npm run build && electron-forge package",
+    "make": "npm run build && electron-forge make"
+  },
+  "keywords": [
+    "basketball",
+    "video",
+    "clips",
+    "scouting",
+    "electron"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.2.0",
+    "@electron-forge/maker-deb": "^7.2.0",
+    "@electron-forge/maker-rpm": "^7.2.0",
+    "@electron-forge/maker-squirrel": "^7.2.0",
+    "@electron-forge/maker-zip": "^7.2.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.2.0",
+    "@electron-forge/plugin-fuses": "^7.2.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/fluent-ffmpeg": "^2.1.24",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/uuid": "^10.0.0",
+    "concurrently": "^8.2.0",
+    "css-loader": "^6.8.0",
+    "electron": "^28.0.0",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.0",
+    "ts-loader": "^9.4.0",
+    "typescript": "^5.0.0",
+    "wait-on": "^7.0.0",
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.0"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "better-sqlite3": "^9.2.2",
+    "ffmpeg-static": "^5.2.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.0"
+  }
+}

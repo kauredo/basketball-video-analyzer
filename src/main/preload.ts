@@ -1,0 +1,77 @@
+import { contextBridge, ipcRenderer } from "electron";
+
+export interface ElectronAPI {
+  // Video operations
+  selectVideoFile: () => Promise<string | null>;
+  cutVideoClip: (params: {
+    inputPath: string;
+    startTime: number;
+    endTime: number;
+    title: string;
+    categories: number[];
+    notes?: string;
+  }) => Promise<any>;
+  openClipFolder: () => Promise<void>;
+  playClip: (clipPath: string) => Promise<void>;
+  exportClipsByCategory: (categoryIds: number[]) => Promise<any>;
+
+  // Category operations
+  getCategories: () => Promise<any[]>;
+  createCategory: (category: any) => Promise<any>;
+  updateCategory: (id: number, updates: any) => Promise<boolean>;
+  deleteCategory: (id: number) => Promise<boolean>;
+
+  // Clip operations
+  getClips: (videoPath?: string) => Promise<any[]>;
+  updateClip: (id: number, updates: any) => Promise<boolean>;
+  deleteClip: (id: number) => Promise<boolean>;
+  getClipsByCategory: (categoryId: number) => Promise<any[]>;
+
+  // Event listeners
+  onClipProgress: (callback: (data: any) => void) => void;
+  onClipCreated: (callback: (clip: any) => void) => void;
+  removeAllListeners: (channel: string) => void;
+}
+
+const electronAPI: ElectronAPI = {
+  // Video operations
+  selectVideoFile: () => ipcRenderer.invoke("select-video-file"),
+  cutVideoClip: params => ipcRenderer.invoke("cut-video-clip", params),
+  openClipFolder: () => ipcRenderer.invoke("open-clip-folder"),
+  playClip: clipPath => ipcRenderer.invoke("play-clip", clipPath),
+  exportClipsByCategory: categoryIds =>
+    ipcRenderer.invoke("export-clips-by-category", categoryIds),
+
+  // Category operations
+  getCategories: () => ipcRenderer.invoke("get-categories"),
+  createCategory: category => ipcRenderer.invoke("create-category", category),
+  updateCategory: (id, updates) =>
+    ipcRenderer.invoke("update-category", id, updates),
+  deleteCategory: id => ipcRenderer.invoke("delete-category", id),
+
+  // Clip operations
+  getClips: videoPath => ipcRenderer.invoke("get-clips", videoPath),
+  updateClip: (id, updates) => ipcRenderer.invoke("update-clip", id, updates),
+  deleteClip: id => ipcRenderer.invoke("delete-clip", id),
+  getClipsByCategory: categoryId =>
+    ipcRenderer.invoke("get-clips-by-category", categoryId),
+
+  // Event listeners
+  onClipProgress: callback => {
+    ipcRenderer.on("clip-progress", (_event, data) => callback(data));
+  },
+  onClipCreated: callback => {
+    ipcRenderer.on("clip-created", (_event, clip) => callback(clip));
+  },
+  removeAllListeners: channel => {
+    ipcRenderer.removeAllListeners(channel);
+  },
+};
+
+contextBridge.exposeInMainWorld("electronAPI", electronAPI);
+
+declare global {
+  interface Window {
+    electronAPI: ElectronAPI;
+  }
+}
