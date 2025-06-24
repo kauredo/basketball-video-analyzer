@@ -31,7 +31,7 @@
   height: 100%;
   transition: width var(--transition-fast);
   position: relative;
-  width: 320px;
+  width: var(--sidebar-width);
 }
 
 .sidePanelCollapsed {
@@ -45,7 +45,7 @@
   left: -24px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 1000;
+  z-index: var(--z-dropdown);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
@@ -57,11 +57,12 @@
   cursor: pointer;
   border-radius: var(--radius-md) 0 0 var(--radius-md);
   transition: all var(--transition-fast);
-  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .collapseButtonLeft:hover {
   background: var(--bg-quaternary);
+  box-shadow: var(--shadow-md);
 }
 
 .clipLibraryPanel {
@@ -92,11 +93,12 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 90%;
-  max-width: 800px;
+  max-width: var(--container-max-width);
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
   animation: modalFadeIn var(--transition-normal) ease;
+  border: 1px solid var(--border-color);
 }
 
 @keyframes modalFadeIn {
@@ -114,7 +116,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-tertiary);
 }
@@ -123,14 +125,17 @@
   margin: 0;
   font-size: var(--font-size-lg);
   color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
 }
 
 .modalClose {
+  height: var(--button-height);
+  width: var(--button-height);
   background: none;
-  border: none;
+  border: 1px solid var(--border-color);
   color: var(--text-secondary);
   cursor: pointer;
   padding: var(--spacing-sm);
@@ -144,6 +149,7 @@
 .modalClose:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+  border-color: var(--border-color-hover);
 }
 
 .modalBody {
@@ -158,52 +164,58 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: var(--header-height);
 }
 
 .headerActions {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  flex-wrap: wrap;
 }
 
 .settingsButton {
+  height: var(--button-height);
   background: var(--bg-tertiary);
-  border: none;
+  border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 0 var(--spacing-md);
   border-radius: var(--radius-md);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
 }
 
 .settingsButton:hover {
   background: var(--bg-quaternary);
+  border-color: var(--border-color-hover);
+  transform: translateY(-1px);
 }
 
 .btn {
+  height: var(--button-height);
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: 0 var(--spacing-md);
   border-radius: var(--radius-md);
   border: none;
-  font-size: var(--font-size-base);
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
   background: var(--bg-tertiary);
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
   background: var(--bg-quaternary);
-}
-
-.btn:active {
-  transform: translateY(1px);
+  transform: translateY(-1px);
 }
 
 .btn:disabled {
@@ -211,68 +223,40 @@
   cursor: not-allowed;
 }
 
-.btnPrimary {
+.selectVideoBtn,
+.getStartedBtn {
+  height: var(--button-height);
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  border: none;
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  background: var(--color-primary);
-  color: white;
-}
-
-.btnPrimary:hover {
-  background: var(--color-primary-hover);
-}
-
-.btnPrimary:active {
-  transform: translateY(1px);
+  white-space: nowrap;
 }
 
 .selectVideoBtn {
   background: var(--color-primary);
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
-  border: none;
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  color: var(--text-primary);
 }
 
 .selectVideoBtn:hover {
-  background: var(--color-primary-hover);
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 .getStartedBtn {
-  background: var(--color-primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-md);
-  border: none;
-  font-size: var(--font-size-lg);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  width: 100%;
-  justify-content: center;
-  margin-top: var(--spacing-xl);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .getStartedBtn:hover {
-  background: var(--color-primary-hover);
+  background: var(--bg-quaternary);
+  transform: translateY(-1px);
 }
 
 .instructionsOverlay {
@@ -281,107 +265,98 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--bg-main);
+  background: var(--bg-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl);
-  z-index: 100;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(4px);
+  padding: var(--spacing-md);
 }
 
 .instructionsContent {
-  max-width: 800px;
   background: var(--bg-secondary);
-  padding: var(--spacing-xl);
   border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
 }
 
 .instructionsContent h2 {
+  color: var(--text-primary);
   font-size: var(--font-size-xl);
   margin: 0 0 var(--spacing-lg);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
 }
 
 .workflowSteps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
-  margin: var(--spacing-xl) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .step {
   display: flex;
   gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
+  align-items: flex-start;
 }
 
 .stepNumber {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--color-primary);
-  color: white;
-  font-weight: bold;
-}
-
-.stepNumber p {
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-round);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-round);
-  width: 32px;
+  flex-shrink: 0;
 }
 
 .stepContent h3 {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-lg);
   color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
+  font-size: var(--font-size-lg);
+  margin: 0 0 var(--spacing-xs);
+  font-weight: var(--font-weight-medium);
 }
 
 .stepContent p {
-  margin: 0;
   color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
 }
 
 .dangerZone {
   margin-top: var(--spacing-xl);
-  padding-top: var(--spacing-lg);
-  border-top: 1px solid var(--border-color);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
 }
 
 .dangerZone h3 {
   color: var(--color-danger);
-  margin-bottom: var(--spacing-md);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
+  margin: 0 0 var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .resetButton {
   background: var(--color-danger);
-  color: white;
+  color: var(--text-primary);
   border: none;
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: var(--font-size-base);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
   transition: all var(--transition-fast);
 }
 
 .resetButton:hover {
   background: var(--color-danger-dark);
-}
-
-.resetButton:active {
-  transform: translateY(1px);
+  transform: translateY(-1px);
 }

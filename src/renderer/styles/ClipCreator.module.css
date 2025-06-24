@@ -1,11 +1,11 @@
 @import "./variables.css";
 
 .clipCreator {
-  padding: var(--spacing-lg);
   height: 100%;
   overflow-y: auto;
-  max-width: 100%;
+  max-width: var(--container-max-width);
   margin: 0 auto;
+  padding: var(--spacing-lg);
 }
 
 .clipCreatorHeader {
@@ -13,6 +13,18 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.clipCreatorHeader h3 {
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .clipDetails {
@@ -21,82 +33,112 @@
 
 .formGroup {
   margin-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
 }
 
 .formGroup label {
-  display: block;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
 }
 
-.clipTitleInput,
-.clipNotesInput {
+.clipTitleInput {
   width: 100%;
+  height: var(--input-height);
   background: var(--bg-quaternary);
   border: 1px solid var(--border-color-light);
   color: var(--text-primary);
-  padding: var(--spacing-sm);
+  padding: 0 var(--spacing-md);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
 }
 
 .clipNotesInput {
+  width: 100%;
+  min-height: 80px;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
   resize: vertical;
-  min-height: 60px;
+  line-height: var(--line-height-relaxed);
+}
+
+.clipTitleInput:hover,
+.clipNotesInput:hover {
+  border-color: var(--border-color-hover);
+}
+
+.clipTitleInput:focus,
+.clipNotesInput:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .categorySelect {
-  width: 100%;
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
 .categoryOption {
+  height: var(--button-height);
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-color-light);
+  border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 0 var(--spacing-md);
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: var(--font-size-sm);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .categoryOption:hover {
   background: var(--bg-quaternary);
+  transform: translateY(-1px);
 }
 
 .categoryOption.selected {
   background: var(--color-primary);
   border-color: var(--color-primary);
+  color: var(--text-primary);
 }
 
 .colorDot {
   width: 12px;
   height: 12px;
   border-radius: var(--radius-round);
+  flex-shrink: 0;
 }
 
 .creationProgress {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
 }
 
 .progressBar {
-  background: var(--bg-tertiary);
+  width: 100%;
   height: 8px;
+  background: var(--bg-tertiary);
   border-radius: var(--radius-md);
   overflow: hidden;
+  box-shadow: var(--shadow-sm) inset;
   margin-bottom: var(--spacing-sm);
 }
 
 .progressFill {
-  background: var(--color-primary);
   height: 100%;
+  background: var(--color-primary);
   transition: width var(--transition-normal) ease;
 }
 
@@ -111,55 +153,55 @@
   gap: var(--spacing-md);
 }
 
-.createClipBtn {
+.createClipBtn,
+.cancelBtn {
   flex: 1;
-  background: var(--color-primary);
-  color: var(--text-primary);
+  height: var(--button-height);
   border: none;
-  padding: var(--spacing-md);
+  padding: 0 var(--spacing-md);
   border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: 600;
-  font-size: var(--font-size-md);
-  display: flex;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.createClipBtn {
+  background: var(--color-primary);
+  color: var(--text-primary);
 }
 
 .createClipBtn:hover:not(:disabled) {
   background: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 .createClipBtn:disabled {
   background: var(--bg-tertiary);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .cancelBtn {
-  flex: 1;
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  border: none;
-  padding: var(--spacing-md);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: var(--font-size-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  transition: all var(--transition-fast);
 }
 
 .cancelBtn:hover {
   background: var(--bg-quaternary);
+  transform: translateY(-1px);
 }
 
 .clipDuration {
   font-family: monospace;
   color: var(--text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .clipCreatorInstructions {
@@ -167,6 +209,7 @@
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--border-color);
 }
 
 .clipCreatorInstructions p {
@@ -175,6 +218,8 @@
   align-items: center;
   gap: var(--spacing-sm);
   color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
 }
 
 .categorySelection {
@@ -186,6 +231,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
 }
 
 .categoryActions {
@@ -201,25 +248,28 @@
 
 .selectAllBtn,
 .clearSelectionBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  height: var(--button-height);
+  padding: 0 var(--spacing-md);
   border-radius: var(--radius-md);
   border: none;
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  white-space: nowrap;
 }
 
 .selectAllBtn {
   background: var(--color-primary);
-  color: white;
+  color: var(--text-primary);
 }
 
 .selectAllBtn:hover {
-  background: var(--color-primary-hover);
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 .clearSelectionBtn {
@@ -229,4 +279,5 @@
 
 .clearSelectionBtn:hover {
   background: var(--bg-quaternary);
+  transform: translateY(-1px);
 }
