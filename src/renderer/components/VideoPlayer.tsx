@@ -301,7 +301,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 onClick={() => skipTime(-5)}
                 className={styles.skipButton}
               >
-                <FontAwesomeIcon icon={faBackwardStep} /> 5s
+                <FontAwesomeIcon icon={faBackwardStep} />
+                <span className={styles.skipText}>5s</span>
               </button>
 
               <button
@@ -321,7 +322,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </button>
 
               <button onClick={() => skipTime(5)} className={styles.skipButton}>
-                5s <FontAwesomeIcon icon={faForwardStep} />
+                <span className={styles.skipText}>5s</span>
+                <FontAwesomeIcon icon={faForwardStep} />
               </button>
 
               <div className={styles.timeDisplay}>
