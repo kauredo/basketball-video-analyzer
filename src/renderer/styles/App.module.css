@@ -40,8 +40,19 @@
 
 .sidePanelCollapsed {
   width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
   overflow: hidden;
   margin-right: 0;
+  border-left: none;
+}
+
+.sidePanelCollapsed .resizeHandle {
+  display: none;
+}
+
+.sidePanelCollapsed .clipLibraryPanel {
+  display: none;
 }
 
 .collapseButtonLeft {
