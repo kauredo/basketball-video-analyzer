@@ -1,11 +1,13 @@
 @import "./variables.css";
 
 .clipLibrary {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   height: 100%;
   overflow-y: auto;
-  max-width: var(--container-max-width);
-  margin: 0 auto;
+  overflow-x: hidden;
+  max-width: 100%;
+  margin: 0;
+  container-type: inline-size;
 }
 
 .clipLibraryHeader {
@@ -100,8 +102,39 @@
 
 .clipGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
   gap: var(--spacing-md);
+  max-width: 100%;
+}
+
+/* Responsive grid using container queries */
+@container (max-width: 350px) {
+  .clipGrid,
+  .clipsGrid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+}
+
+@container (min-width: 351px) and (max-width: 450px) {
+  .clipGrid,
+  .clipsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@container (min-width: 451px) and (max-width: 550px) {
+  .clipGrid,
+  .clipsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@container (min-width: 551px) {
+  .clipGrid,
+  .clipsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
 }
 
 .clipCard {
@@ -113,6 +146,8 @@
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
 }
 
 .clipCard:hover {
@@ -387,9 +422,10 @@
 /* Clips Grid */
 .clipsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+  max-width: 100%;
 }
 
 /* Empty State */
@@ -542,4 +578,94 @@
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   line-height: var(--line-height-relaxed);
+}
+
+/* Text overflow handling for small cards */
+.clipTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.clipNotes {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+/* Responsive header adjustments */
+@container (max-width: 400px) {
+  .clipLibraryHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .libraryActions {
+    justify-content: stretch;
+  }
+  
+  .folderBtn,
+  .exportBtn {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .clipLibrary {
+    padding: var(--spacing-sm);
+  }
+}
+
+/* Fallback for browsers without container query support */
+@supports not (container-type: inline-size) {
+  /* Mobile fallback */
+  @media (max-width: 400px) {
+    .clipGrid,
+    .clipsGrid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-sm);
+    }
+    
+    .clipLibraryHeader {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .libraryActions {
+      justify-content: stretch;
+    }
+    
+    .folderBtn,
+    .exportBtn {
+      flex: 1;
+      justify-content: center;
+    }
+    
+    .clipLibrary {
+      padding: var(--spacing-sm);
+    }
+  }
+  
+  /* Tablet fallback */
+  @media (min-width: 401px) and (max-width: 600px) {
+    .clipGrid,
+    .clipsGrid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+  }
+  
+  /* Desktop fallback */
+  @media (min-width: 601px) {
+    .clipGrid,
+    .clipsGrid {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+  }
 }

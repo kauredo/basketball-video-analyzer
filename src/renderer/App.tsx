@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBasketball,
@@ -33,6 +33,43 @@ export const App: React.FC = () => {
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [sidePanelWidth, setSidePanelWidth] = useState(360); // Default panel width
+
+  const resizeRef = useRef<HTMLDivElement>(null);
+  const isResizing = useRef(false);
+
+  // Handle panel resizing
+  const startResize = useCallback(
+    (e: React.MouseEvent) => {
+      isResizing.current = true;
+      e.preventDefault();
+
+      const startX = e.pageX;
+      const startWidth = sidePanelWidth;
+
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isResizing.current) return;
+
+        const deltaX = startX - e.pageX; // Inverted for right-to-left resize
+        const newWidth = Math.min(Math.max(280, startWidth + deltaX), 600);
+        setSidePanelWidth(newWidth);
+      };
+
+      const handleMouseUp = () => {
+        isResizing.current = false;
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
+    },
+    [sidePanelWidth]
+  );
 
   const handleSelectVideo = async () => {
     try {
@@ -80,7 +117,7 @@ export const App: React.FC = () => {
 
   const handleClipCreated = useCallback(() => {
     // Refresh the clip library
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
     setShowClipCreator(false);
     handleClearMarks();
   }, [handleClearMarks]);
@@ -93,7 +130,7 @@ export const App: React.FC = () => {
     ) {
       try {
         await window.electronAPI.resetDatabase();
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
         setShowSettings(false);
         alert("Database reset successfully");
       } catch (error) {
@@ -105,7 +142,7 @@ export const App: React.FC = () => {
 
   const handleCategoriesChange = useCallback(() => {
     // Trigger refresh for any components that depend on categories
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   }, []);
 
   const formatTime = (time: number): string => {
@@ -160,7 +197,19 @@ export const App: React.FC = () => {
           className={`${styles.sidePanel} ${
             isSidePanelCollapsed ? styles.sidePanelCollapsed : ""
           }`}
+          style={{ 
+            width: isSidePanelCollapsed ? 0 : `${sidePanelWidth}px`,
+            '--panel-width': `${sidePanelWidth}px`
+          } as React.CSSProperties}
+          ref={resizeRef}
         >
+          {!isSidePanelCollapsed && (
+            <div
+              className={styles.resizeHandle}
+              onMouseDown={startResize}
+              title="Drag to resize panel"
+            />
+          )}
           <div className={styles.clipLibraryPanel}>
             <ClipLibrary onRefresh={refreshTrigger} />
           </div>
@@ -212,7 +261,7 @@ export const App: React.FC = () => {
             </div>
             <div className={styles.modalBody}>
               <CategoryManager
-                onCategoriesChange={() => setRefreshTrigger(prev => prev + 1)}
+                onCategoriesChange={() => setRefreshTrigger((prev) => prev + 1)}
               />
 
               <div className={styles.dangerZone}>

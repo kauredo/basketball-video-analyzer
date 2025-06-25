@@ -32,6 +32,10 @@
   transition: width var(--transition-fast);
   position: relative;
   width: var(--sidebar-width);
+  position: relative;
+  transition: width 0.2s ease;
+  min-width: 280px;
+  max-width: 600px;
 }
 
 .sidePanelCollapsed {
@@ -71,6 +75,80 @@
   overflow-x: hidden;
   background: var(--bg-secondary);
   padding: var(--spacing-md);
+}
+
+/* Resizable Panel Styles */
+.sidePanel {
+  position: relative;
+  transition: width 0.2s ease;
+  min-width: 280px;
+  max-width: 600px;
+}
+
+.resizeHandle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: transparent;
+  cursor: ew-resize;
+  z-index: var(--z-dropdown);
+  opacity: 0;
+  transition: all var(--transition-fast);
+}
+
+.resizeHandle:hover,
+.resizeHandle:active {
+  background: var(--color-primary);
+  opacity: 0.7;
+  width: 6px;
+  left: -1px;
+}
+
+.resizeHandle::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background: transparent;
+}
+
+/* Ensure smooth resizing */
+.sidePanel:has(.resizeHandle:hover) .clipLibraryPanel,
+.sidePanel:has(.resizeHandle:active) .clipLibraryPanel {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .sidePanel {
+    position: fixed;
+    top: var(--header-height);
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 100%;
+    z-index: var(--z-overlay);
+    transform: translateX(100%);
+    transition: transform var(--transition-normal);
+  }
+  
+  .sidePanel:not(.sidePanelCollapsed) {
+    transform: translateX(0);
+  }
+  
+  .resizeHandle {
+    display: none;
+  }
+  
+  .mainContent {
+    overflow: hidden;
+  }
 }
 
 /* Modal Styles */
