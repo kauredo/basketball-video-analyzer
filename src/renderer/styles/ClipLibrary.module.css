@@ -1,13 +1,14 @@
 @import "./variables.css";
 
 .clipLibrary {
-  padding: var(--spacing-md);
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding: 0;
   max-width: 100%;
   margin: 0;
   container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
 .clipLibraryHeader {
@@ -15,6 +16,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-md) 0 var(--spacing-md);
   flex-wrap: wrap;
   gap: var(--spacing-md);
 }
@@ -335,7 +337,7 @@
 
 /* Category Filter */
 .categoryFilter {
-  margin-bottom: var(--spacing-lg);
+  margin: 0 0 var(--spacing-lg) 0;
   padding: var(--spacing-md);
   background: var(--bg-tertiary);
   border-radius: var(--radius-lg);
@@ -390,7 +392,7 @@
 .libraryStats {
   display: flex;
   gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
+  margin: 0 0 var(--spacing-lg) 0;
   padding: var(--spacing-md);
   background: var(--bg-tertiary);
   border-radius: var(--radius-lg);
@@ -425,6 +427,7 @@
   grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+  padding: 0;
   max-width: 100%;
 }
 
@@ -545,6 +548,15 @@
   justify-content: center;
 }
 
+/* Scrollable Content Area */
+.clipLibraryContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding: 0 var(--spacing-md);
+}
+
 .deleteBtn:hover {
   background: var(--color-danger);
   border-color: var(--color-danger);
@@ -555,7 +567,7 @@
 
 /* Export Info */
 .exportInfo {
-  margin-top: var(--spacing-lg);
+  margin: var(--spacing-lg) 0 0 0;
   padding: var(--spacing-md);
   background: var(--bg-tertiary);
   border-radius: var(--radius-lg);
@@ -607,17 +619,17 @@
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .libraryActions {
     justify-content: stretch;
   }
-  
+
   .folderBtn,
   .exportBtn {
     flex: 1;
     justify-content: center;
   }
-  
+
   .clipLibrary {
     padding: var(--spacing-sm);
   }
@@ -632,27 +644,27 @@
       grid-template-columns: 1fr;
       gap: var(--spacing-sm);
     }
-    
+
     .clipLibraryHeader {
       flex-direction: column;
       align-items: stretch;
     }
-    
+
     .libraryActions {
       justify-content: stretch;
     }
-    
+
     .folderBtn,
     .exportBtn {
       flex: 1;
       justify-content: center;
     }
-    
+
     .clipLibrary {
       padding: var(--spacing-sm);
     }
   }
-  
+
   /* Tablet fallback */
   @media (min-width: 401px) and (max-width: 600px) {
     .clipGrid,
@@ -660,7 +672,7 @@
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     }
   }
-  
+
   /* Desktop fallback */
   @media (min-width: 601px) {
     .clipGrid,

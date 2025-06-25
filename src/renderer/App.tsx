@@ -117,7 +117,7 @@ export const App: React.FC = () => {
 
   const handleClipCreated = useCallback(() => {
     // Refresh the clip library
-    setRefreshTrigger((prev) => prev + 1);
+    setRefreshTrigger(prev => prev + 1);
     setShowClipCreator(false);
     handleClearMarks();
   }, [handleClearMarks]);
@@ -130,7 +130,7 @@ export const App: React.FC = () => {
     ) {
       try {
         await window.electronAPI.resetDatabase();
-        setRefreshTrigger((prev) => prev + 1);
+        setRefreshTrigger(prev => prev + 1);
         setShowSettings(false);
         alert("Database reset successfully");
       } catch (error) {
@@ -142,7 +142,7 @@ export const App: React.FC = () => {
 
   const handleCategoriesChange = useCallback(() => {
     // Trigger refresh for any components that depend on categories
-    setRefreshTrigger((prev) => prev + 1);
+    setRefreshTrigger(prev => prev + 1);
   }, []);
 
   const formatTime = (time: number): string => {
@@ -168,7 +168,7 @@ export const App: React.FC = () => {
             onClick={() => setIsSidePanelCollapsed(!isSidePanelCollapsed)}
           >
             <FontAwesomeIcon icon={faFilm} />{" "}
-            {isSidePanelCollapsed ? "Show Gallery" : "Hide Gallery"}
+            {isSidePanelCollapsed ? "Show Side Panel" : "Hide Side Panel"}
           </button>
           <button
             className={styles.settingsButton}
@@ -197,10 +197,12 @@ export const App: React.FC = () => {
           className={`${styles.sidePanel} ${
             isSidePanelCollapsed ? styles.sidePanelCollapsed : ""
           }`}
-          style={{ 
-            width: isSidePanelCollapsed ? 0 : `${sidePanelWidth}px`,
-            '--panel-width': `${sidePanelWidth}px`
-          } as React.CSSProperties}
+          style={
+            {
+              width: isSidePanelCollapsed ? 0 : `${sidePanelWidth}px`,
+              "--panel-width": `${sidePanelWidth}px`,
+            } as React.CSSProperties
+          }
           ref={resizeRef}
         >
           {!isSidePanelCollapsed && (
@@ -261,7 +263,7 @@ export const App: React.FC = () => {
             </div>
             <div className={styles.modalBody}>
               <CategoryManager
-                onCategoriesChange={() => setRefreshTrigger((prev) => prev + 1)}
+                onCategoriesChange={() => setRefreshTrigger(prev => prev + 1)}
               />
 
               <div className={styles.dangerZone}>

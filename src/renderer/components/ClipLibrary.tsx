@@ -216,6 +216,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
 
   return (
     <div className={styles.clipLibrary}>
+      {/* Fixed Header */}
       <div className={styles.clipLibraryHeader}>
         <h3>
           <FontAwesomeIcon icon={faFilm} /> Clip Library
@@ -242,188 +243,197 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
         </div>
       </div>
 
-      {/* Category Filter */}
-      <div className={styles.categoryFilter}>
-        <h4>Filter by Category</h4>
-        <div className={styles.filterButtons}>
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`${styles.filterBtn} ${
-              selectedCategory === null ? styles.active : ""
-            }`}
-          >
-            All ({clips.length})
-          </button>
-          {categories.map(category => {
-            const count = clips.filter(clip => {
-              try {
-                const clipCategories = JSON.parse(clip.categories);
-                return clipCategories.includes(category.id);
-              } catch {
-                return false;
-              }
-            }).length;
+      {/* Scrollable Content */}
+      <div className={styles.clipLibraryContent}>
+        {/* Category Filter */}
+        <div className={styles.categoryFilter}>
+          <h4>Filter by Category</h4>
+          <div className={styles.filterButtons}>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`${styles.filterBtn} ${
+                selectedCategory === null ? styles.active : ""
+              }`}
+            >
+              All ({clips.length})
+            </button>
+            {categories.map(category => {
+              const count = clips.filter(clip => {
+                try {
+                  const clipCategories = JSON.parse(clip.categories);
+                  return clipCategories.includes(category.id);
+                } catch {
+                  return false;
+                }
+              }).length;
 
-            return (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`${styles.filterBtn} ${
-                  selectedCategory === category.id ? styles.active : ""
-                }`}
-                style={{
-                  borderColor: category.color,
-                  backgroundColor:
-                    selectedCategory === category.id
-                      ? category.color
-                      : "transparent",
-                  color:
-                    selectedCategory === category.id ? "#fff" : category.color,
-                }}
-              >
-                {category.name} ({count})
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className={styles.libraryStats}>
-        <div className={styles.statItem}>
-          <span className={styles.statLabel}>Clips:</span>
-          <span className={styles.statValue}>{stats.count}</span>
-        </div>
-        <div className={styles.statItem}>
-          <span className={styles.statLabel}>Total Duration:</span>
-          <span className={styles.statValue}>{stats.totalDuration}</span>
-        </div>
-        <div className={styles.statItem}>
-          <span className={styles.statLabel}>Avg Duration:</span>
-          <span className={styles.statValue}>{stats.avgDuration}</span>
-        </div>
-      </div>
-
-      {/* Clips Grid */}
-      <div className={styles.clipsGrid}>
-        {filteredClips.length === 0 ? (
-          <div className={styles.emptyState}>
-            {selectedCategory === null ? (
-              <div>
-                <h4>
-                  <FontAwesomeIcon icon={faFilm} /> No clips yet
-                </h4>
-                <p>Start cutting clips from your video to build your library</p>
-              </div>
-            ) : (
-              <div>
-                <h4>
-                  <FontAwesomeIcon icon={faFilm} /> No clips in{" "}
-                  {getCategoryName(selectedCategory)}
-                </h4>
-                <p>Create clips with this category to see them here</p>
-              </div>
-            )}
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`${styles.filterBtn} ${
+                    selectedCategory === category.id ? styles.active : ""
+                  }`}
+                  style={{
+                    borderColor: category.color,
+                    backgroundColor:
+                      selectedCategory === category.id
+                        ? category.color
+                        : "transparent",
+                    color:
+                      selectedCategory === category.id
+                        ? "#fff"
+                        : category.color,
+                  }}
+                >
+                  {category.name} ({count})
+                </button>
+              );
+            })}
           </div>
-        ) : (
-          filteredClips.map(clip => {
-            const clipCategories = getClipCategories(clip);
-            const createdDate = new Date(clip.created_at).toLocaleDateString();
+        </div>
 
-            return (
-              <div key={clip.id} className={styles.clipCard}>
-                {/* Clip Thumbnail */}
-                <div className={styles.clipThumbnail}>
-                  {clip.thumbnail_path ? (
-                    <img
-                      src={`file://${clip.thumbnail_path}`}
-                      alt={clip.title}
-                      className={styles.thumbnailImage}
-                    />
-                  ) : (
-                    <div className={styles.thumbnailPlaceholder}>
-                      <span className={styles.playIcon}>▶️</span>
+        {/* Stats */}
+        <div className={styles.libraryStats}>
+          <div className={styles.statItem}>
+            <span className={styles.statLabel}>Clips:</span>
+            <span className={styles.statValue}>{stats.count}</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statLabel}>Total Duration:</span>
+            <span className={styles.statValue}>{stats.totalDuration}</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statLabel}>Avg Duration:</span>
+            <span className={styles.statValue}>{stats.avgDuration}</span>
+          </div>
+        </div>
+
+        {/* Clips Grid */}
+        <div className={styles.clipsGrid}>
+          {filteredClips.length === 0 ? (
+            <div className={styles.emptyState}>
+              {selectedCategory === null ? (
+                <div>
+                  <h4>
+                    <FontAwesomeIcon icon={faFilm} /> No clips yet
+                  </h4>
+                  <p>
+                    Start cutting clips from your video to build your library
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <h4>
+                    <FontAwesomeIcon icon={faFilm} /> No clips in{" "}
+                    {getCategoryName(selectedCategory)}
+                  </h4>
+                  <p>Create clips with this category to see them here</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            filteredClips.map(clip => {
+              const clipCategories = getClipCategories(clip);
+              const createdDate = new Date(
+                clip.created_at
+              ).toLocaleDateString();
+
+              return (
+                <div key={clip.id} className={styles.clipCard}>
+                  {/* Clip Thumbnail */}
+                  <div className={styles.clipThumbnail}>
+                    {clip.thumbnail_path ? (
+                      <img
+                        src={`file://${clip.thumbnail_path}`}
+                        alt={clip.title}
+                        className={styles.thumbnailImage}
+                      />
+                    ) : (
+                      <div className={styles.thumbnailPlaceholder}>
+                        <span className={styles.playIcon}>▶️</span>
+                      </div>
+                    )}
+                    <div className={styles.clipDuration}>
+                      {formatTime(clip.duration)}
                     </div>
-                  )}
-                  <div className={styles.clipDuration}>
-                    {formatTime(clip.duration)}
                   </div>
-                </div>
 
-                {/* Clip Info */}
-                <div className={styles.clipInfo}>
-                  <h4 className={styles.clipTitle}>{clip.title}</h4>
+                  {/* Clip Info */}
+                  <div className={styles.clipInfo}>
+                    <h4 className={styles.clipTitle}>{clip.title}</h4>
 
-                  {/* Categories */}
-                  <div className={styles.clipCategories}>
-                    {clipCategories.map(category => (
-                      <span
-                        key={category.id}
-                        className={styles.categoryTag}
-                        style={{ backgroundColor: category.color }}
-                      >
-                        {category.name}
+                    {/* Categories */}
+                    <div className={styles.clipCategories}>
+                      {clipCategories.map(category => (
+                        <span
+                          key={category.id}
+                          className={styles.categoryTag}
+                          style={{ backgroundColor: category.color }}
+                        >
+                          {category.name}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Notes */}
+                    {clip.notes && (
+                      <div className={styles.clipNotes}>{clip.notes}</div>
+                    )}
+
+                    {/* Metadata */}
+                    <div className={styles.clipMetadata}>
+                      <span>
+                        <FontAwesomeIcon icon={faCalendar} /> {createdDate}
                       </span>
-                    ))}
+                      <span>
+                        <FontAwesomeIcon icon={faClock} />{" "}
+                        {formatTime(clip.start_time)} -{" "}
+                        {formatTime(clip.end_time)}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Notes */}
-                  {clip.notes && (
-                    <div className={styles.clipNotes}>{clip.notes}</div>
-                  )}
+                  {/* Actions */}
+                  <div className={styles.clipActions}>
+                    <button
+                      onClick={() => handlePlayClip(clip.output_path)}
+                      className={styles.playBtn}
+                      title="Play clip"
+                    >
+                      <FontAwesomeIcon icon={faPlay} /> Play
+                    </button>
 
-                  {/* Metadata */}
-                  <div className={styles.clipMetadata}>
-                    <span>
-                      <FontAwesomeIcon icon={faCalendar} /> {createdDate}
-                    </span>
-                    <span>
-                      <FontAwesomeIcon icon={faClock} />{" "}
-                      {formatTime(clip.start_time)} -{" "}
-                      {formatTime(clip.end_time)}
-                    </span>
+                    <button
+                      onClick={() => handleDeleteClip(clip.id)}
+                      className={styles.deleteBtn}
+                      title="Delete clip"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
                   </div>
                 </div>
+              );
+            })
+          )}
+        </div>
 
-                {/* Actions */}
-                <div className={styles.clipActions}>
-                  <button
-                    onClick={() => handlePlayClip(clip.output_path)}
-                    className={styles.playBtn}
-                    title="Play clip"
-                  >
-                    <FontAwesomeIcon icon={faPlay} /> Play
-                  </button>
-
-                  <button
-                    onClick={() => handleDeleteClip(clip.id)}
-                    className={styles.deleteBtn}
-                    title="Delete clip"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-              </div>
-            );
-          })
+        {/* Export Instructions */}
+        {filteredClips.length > 0 && (
+          <div className={styles.exportInfo}>
+            <h4>
+              <FontAwesomeIcon icon={faShare} /> Sharing Clips
+            </h4>
+            <p>
+              {selectedCategory
+                ? `Export all "${getCategoryName(
+                    selectedCategory
+                  )}" clips to share with your team`
+                : "Export clips organized by category for easy team sharing"}
+            </p>
+          </div>
         )}
       </div>
-
-      {/* Export Instructions */}
-      {filteredClips.length > 0 && (
-        <div className={styles.exportInfo}>
-          <h4>
-            <FontAwesomeIcon icon={faShare} /> Sharing Clips
-          </h4>
-          <p>
-            {selectedCategory
-              ? `Export all "${getCategoryName(
-                  selectedCategory
-                )}" clips to share with your team`
-              : "Export clips organized by category for easy team sharing"}
-          </p>
-        </div>
-      )}
     </div>
   );
 };
