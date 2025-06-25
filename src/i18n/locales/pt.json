@@ -1,0 +1,118 @@
+{
+  "app": {
+    "title": "Editor de Vídeos de Basquetebol",
+    "buttons": {
+      "getStarted": "Começar - Selecionar Vídeo",
+      "selectVideo": "Selecionar Vídeo",
+      "settings": "Definições",
+      "showSidePanel": "Mostrar Painel Lateral",
+      "hideSidePanel": "Ocultar Painel Lateral",
+      "markIn": "Marcar Início",
+      "markOut": "Marcar Fim",
+      "clearMarks": "Limpar Marcas",
+      "createClip": "Criar Clip",
+      "resetDatabase": "Repor Base de Dados",
+      "showInstructions": "Mostrar Instruções",
+      "done": "Concluído",
+      "edit": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "welcome": {
+      "title": "Bem-vindo ao Editor de Vídeos de Basquetebol",
+      "subtitle": "Perfeito para criar e organizar clips de basquetebol para análise de equipas",
+      "steps": {
+        "loadVideo": {
+          "title": "Carregar Vídeo",
+          "description": "Selecione o ficheiro de vídeo do jogo de basquetebol"
+        },
+        "markClips": {
+          "title": "Marcar Clips",
+          "description": "Use as teclas I e O para marcar pontos de entrada/saída durante a reprodução"
+        },
+        "categorize": {
+          "title": "Categorizar",
+          "description": "Marque clips com categorias personalizadas (Ressaltos, Ecrãs, Ações de jogador, etc.)"
+        },
+        "share": {
+          "title": "Partilhar",
+          "description": "Exporte clips por categoria para partilhar com a sua equipa"
+        }
+      }
+    },
+    "modals": {
+      "createClip": "Criar Clip",
+      "settings": "Definições"
+    },
+    "settings": {
+      "language": "Idioma",
+      "dangerZone": "Zona de Perigo",
+      "confirmReset": "Tem a certeza? Isto irá eliminar todos os clips e repor as categorias para o padrão. Esta ação não pode ser desfeita.",
+      "resetSuccess": "Base de dados reposta com sucesso",
+      "resetError": "Erro ao repor a base de dados"
+    },
+    "categories": {
+      "title": "Gerir Categorias",
+      "add": "Adicionar Categoria",
+      "placeholder": "Nome da categoria",
+      "descriptionPlaceholder": "Descrição (opcional)",
+      "default": {
+        "offense": "Ataque",
+        "defense": "Defesa",
+        "rebounds": "Ressaltos",
+        "turnovers": "Perdas de Bola",
+        "fastBreak": "Contra-Ataque",
+        "halfCourt": "Meio Campo",
+        "screens": "Ecrãs"
+      }
+    },
+    "clips": {
+      "library": "Biblioteca de Clips",
+      "noClips": "Ainda não foram criados clips",
+      "filterPlaceholder": "Filtrar clips...",
+      "export": "Exportar Clips",
+      "deleteClip": "Eliminar Clip",
+      "confirmDelete": "Tem a certeza que quer eliminar este clip?",
+      "exportSuccess": "Clips exportados com sucesso",
+      "exportError": "Erro ao exportar clips",
+      "noClipsYet": "Ainda não há clips",
+      "noClipsInCategory": "Nenhum clip em",
+      "search": "Pesquisar clips...",
+      "allCategories": "Todas as Categorias",
+      "exportAll": "Exportar Todos",
+      "openFolder": "Abrir Pasta de Clips",
+      "confirmDeleteClip": "Tem a certeza que quer eliminar este clip? O ficheiro de vídeo será eliminado permanentemente.",
+      "noClipsToExport": "Nenhum clip para exportar.",
+      "exportingClips": "A exportar clips...",
+      "filterByCategory": "Filtrar por categoria",
+      "totalClips": "clips",
+      "totalDuration": "Duração total",
+      "avgDuration": "Duração média",
+      "creator": {
+        "title": "Título do Clip",
+        "titlePlaceholder": "Introduza o título do clip (opcional)",
+        "notes": "Notas",
+        "notesPlaceholder": "Adicione notas para este clip (opcional)",
+        "categories": "Categorias",
+        "selectCategories": "Selecione categorias para este clip",
+        "duration": "Duração",
+        "markInOut": "Entrada/Saída",
+        "createClip": "Criar Clip",
+        "cancel": "Cancelar",
+        "creating": "A criar clip...",
+        "errorMarkPoints": "Por favor marque pontos de entrada e saída no vídeo primeiro.",
+        "errorSelectCategory": "Por favor selecione pelo menos uma categoria para este clip.",
+        "errorCreating": "Erro ao criar clip. Por favor tente novamente."
+      }
+    },
+    "video": {
+      "noVideoSelected": "Nenhum vídeo selecionado",
+      "selectVideoPrompt": "Por favor selecione um ficheiro de vídeo para começar",
+      "loadingError": "Erro ao carregar ficheiro de vídeo",
+      "markIn": "Marcar Início",
+      "markOut": "Marcar Fim",
+      "previousFrame": "Frame anterior (Shift + ←)",
+      "nextFrame": "Próximo frame (Shift + →)"
+    }
+  }
+}

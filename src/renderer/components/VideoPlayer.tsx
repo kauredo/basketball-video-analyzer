@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlay,
@@ -36,6 +37,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onMarkOut,
   onClearMarks,
 }) => {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -277,7 +279,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   className={`${styles.markIndicator} ${styles.markIn}`}
                   style={{ left: `${(markInTime / duration) * 100}%` }}
                   onClick={() => jumpToMark(markInTime)}
-                  title={`Mark In: ${formatTime(markInTime)}`}
+                  title={`${t("app.video.markIn")}: ${formatTime(markInTime)}`}
                 />
               )}
               {markOutTime !== null && (
@@ -285,7 +287,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   className={`${styles.markIndicator} ${styles.markOut}`}
                   style={{ left: `${(markOutTime / duration) * 100}%` }}
                   onClick={() => jumpToMark(markOutTime)}
-                  title={`Mark Out: ${formatTime(markOutTime)}`}
+                  title={`${t("app.video.markOut")}: ${formatTime(
+                    markOutTime
+                  )}`}
                 />
               )}
             </div>
@@ -308,7 +312,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <button
                 onClick={() => stepFrame(-1)}
                 className={styles.frameButton}
-                title="Previous frame (Shift + ←)"
+                title={t("app.video.previousFrame")}
               >
                 <FontAwesomeIcon icon={faAnglesLeft} />
               </button>
@@ -316,7 +320,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <button
                 onClick={() => stepFrame(1)}
                 className={styles.frameButton}
-                title="Next frame (Shift + →)"
+                title={t("app.video.nextFrame")}
               >
                 <FontAwesomeIcon icon={faAnglesRight} />
               </button>

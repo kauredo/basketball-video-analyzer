@@ -1,0 +1,118 @@
+{
+  "app": {
+    "title": "Basketball Clip Cutter",
+    "buttons": {
+      "getStarted": "Get Started - Select Video",
+      "selectVideo": "Select Video",
+      "settings": "Settings",
+      "showSidePanel": "Show Side Panel",
+      "hideSidePanel": "Hide Side Panel",
+      "markIn": "Mark In",
+      "markOut": "Mark Out",
+      "clearMarks": "Clear Marks",
+      "createClip": "Create Clip",
+      "resetDatabase": "Reset Database",
+      "showInstructions": "Show Instructions",
+      "done": "Done",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "welcome": {
+      "title": "Welcome to Basketball Clip Cutter",
+      "subtitle": "Perfect for creating and organizing basketball clips for team scouting",
+      "steps": {
+        "loadVideo": {
+          "title": "Load Video",
+          "description": "Select your basketball game video file"
+        },
+        "markClips": {
+          "title": "Mark Clips",
+          "description": "Use I and O keys to mark in/out points during playback"
+        },
+        "categorize": {
+          "title": "Categorize",
+          "description": "Tag clips with custom categories (Rebounds, Screens, Player actions, etc.)"
+        },
+        "share": {
+          "title": "Share",
+          "description": "Export clips by category to share with your team"
+        }
+      }
+    },
+    "modals": {
+      "createClip": "Create Clip",
+      "settings": "Settings"
+    },
+    "settings": {
+      "language": "Language",
+      "dangerZone": "Danger Zone",
+      "confirmReset": "Are you sure? This will delete all clips and reset categories to default. This action cannot be undone.",
+      "resetSuccess": "Database reset successfully",
+      "resetError": "Error resetting database"
+    },
+    "categories": {
+      "title": "Manage Categories",
+      "add": "Add Category",
+      "placeholder": "Category name",
+      "descriptionPlaceholder": "Description (optional)",
+      "default": {
+        "offense": "Offense",
+        "defense": "Defense",
+        "rebounds": "Rebounds",
+        "turnovers": "Turnovers",
+        "fastBreak": "Fast Break",
+        "halfCourt": "Half Court",
+        "screens": "Screens"
+      }
+    },
+    "clips": {
+      "library": "Clip Library",
+      "noClips": "No clips created yet",
+      "filterPlaceholder": "Filter clips...",
+      "export": "Export Clips",
+      "deleteClip": "Delete Clip",
+      "confirmDelete": "Are you sure you want to delete this clip?",
+      "exportSuccess": "Clips exported successfully",
+      "exportError": "Error exporting clips",
+      "noClipsYet": "No clips yet",
+      "noClipsInCategory": "No clips in",
+      "search": "Search clips...",
+      "allCategories": "All Categories",
+      "exportAll": "Export All",
+      "openFolder": "Open Clips Folder",
+      "confirmDeleteClip": "Are you sure you want to delete this clip? The video file will be permanently deleted.",
+      "noClipsToExport": "No clips to export.",
+      "exportingClips": "Exporting clips...",
+      "filterByCategory": "Filter by category",
+      "totalClips": "clips",
+      "totalDuration": "Total duration",
+      "avgDuration": "Avg duration",
+      "creator": {
+        "title": "Clip Title",
+        "titlePlaceholder": "Enter clip title (optional)",
+        "notes": "Notes",
+        "notesPlaceholder": "Add notes for this clip (optional)",
+        "categories": "Categories",
+        "selectCategories": "Select categories for this clip",
+        "duration": "Duration",
+        "markInOut": "Mark In/Out",
+        "createClip": "Create Clip",
+        "cancel": "Cancel",
+        "creating": "Creating clip...",
+        "errorMarkPoints": "Please mark in and out points on the video first.",
+        "errorSelectCategory": "Please select at least one category for this clip.",
+        "errorCreating": "Error creating clip. Please try again."
+      }
+    },
+    "video": {
+      "noVideoSelected": "No video selected",
+      "selectVideoPrompt": "Please select a video file to get started",
+      "loadingError": "Error loading video file",
+      "markIn": "Mark In",
+      "markOut": "Mark Out",
+      "previousFrame": "Previous frame (Shift + ←)",
+      "nextFrame": "Next frame (Shift + →)"
+    }
+  }
+}

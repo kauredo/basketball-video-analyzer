@@ -37,3 +37,9 @@ declare global {
     electronAPI: ElectronAPI;
   }
 }
+
+// JSON module declarations for i18n
+declare module "*.json" {
+  const value: any;
+  export default value;
+}

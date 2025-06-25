@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolderTree,
@@ -25,6 +26,7 @@ interface CategoryManagerProps {
 export const CategoryManager: React.FC<CategoryManagerProps> = ({
   onCategoriesChange,
 }) => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -126,7 +128,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     <div className={styles.categoryManager}>
       <div className={styles.categoryHeader}>
         <h3>
-          <FontAwesomeIcon icon={faFolderTree} /> Categories
+          <FontAwesomeIcon icon={faFolderTree} /> {t("app.categories.title")}
         </h3>
         <button
           onClick={() => setIsEditing(!isEditing)}
@@ -134,11 +136,11 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
         >
           {isEditing ? (
             <>
-              <FontAwesomeIcon icon={faCheck} /> Done
+              <FontAwesomeIcon icon={faCheck} /> {t("app.buttons.done")}
             </>
           ) : (
             <>
-              <FontAwesomeIcon icon={faEdit} /> Edit
+              <FontAwesomeIcon icon={faEdit} /> {t("app.buttons.edit")}
             </>
           )}
         </button>
@@ -165,7 +167,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     })
                   }
                   className={styles.categoryNameInput}
-                  placeholder="Category name"
+                  placeholder={t("app.categories.placeholder")}
                 />
 
                 <div className={styles.colorPicker}>
@@ -196,7 +198,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     })
                   }
                   className={styles.categoryDescriptionInput}
-                  placeholder="Description (optional)"
+                  placeholder={t("app.categories.descriptionPlaceholder")}
                 />
 
                 <div className={styles.editActions}>
@@ -204,13 +206,13 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     onClick={handleUpdateCategory}
                     className={styles.saveBtn}
                   >
-                    <FontAwesomeIcon icon={faSave} /> Save
+                    <FontAwesomeIcon icon={faSave} /> {t("app.buttons.save")}
                   </button>
                   <button
                     onClick={() => setEditingCategory(null)}
                     className={styles.cancelBtn}
                   >
-                    <FontAwesomeIcon icon={faXmark} /> Cancel
+                    <FontAwesomeIcon icon={faXmark} /> {t("app.buttons.cancel")}
                   </button>
                 </div>
               </div>
@@ -258,7 +260,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             onChange={e =>
               setNewCategory({ ...newCategory, name: e.target.value })
             }
-            placeholder="Category name"
+            placeholder={t("app.categories.placeholder")}
             className={styles.categoryNameInput}
           />
 
@@ -282,7 +284,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             onChange={e =>
               setNewCategory({ ...newCategory, description: e.target.value })
             }
-            placeholder="Description (optional)"
+            placeholder={t("app.categories.descriptionPlaceholder")}
             className={styles.categoryDescriptionInput}
           />
 

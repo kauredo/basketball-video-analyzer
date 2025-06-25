@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faScissors,
@@ -32,6 +33,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   onClipCreated,
   onClearMarks,
 }) => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [clipTitle, setClipTitle] = useState("");
@@ -105,12 +107,12 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   const handleCreateClip = async () => {
     if (!videoPath || markInTime === null || markOutTime === null) {
-      alert("Please mark in and out points on the video first.");
+      alert(t("app.clips.creator.errorMarkPoints"));
       return;
     }
 
     if (selectedCategories.length === 0) {
-      alert("Please select at least one category for this clip.");
+      alert(t("app.clips.creator.errorSelectCategory"));
       return;
     }
 
@@ -129,7 +131,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       });
     } catch (error) {
       console.error("Error creating clip:", error);
-      alert("Error creating clip. Please try again.");
+      alert(t("app.clips.creator.errorCreating"));
       setIsCreating(false);
     }
   };
@@ -216,22 +218,22 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       {/* Clip Details */}
       <div className={styles.clipDetails}>
         <div className={styles.formGroup}>
-          <label>Clip Title (optional)</label>
+          <label>{t("app.clips.creator.title")}</label>
           <input
             type="text"
             value={clipTitle}
             onChange={e => setClipTitle(e.target.value)}
-            placeholder={generateClipTitle()}
+            placeholder={t("app.clips.creator.titlePlaceholder")}
             className={styles.clipTitleInput}
           />
         </div>
 
         <div className={styles.formGroup}>
-          <label>Notes (optional)</label>
+          <label>{t("app.clips.creator.notes")}</label>
           <textarea
             value={clipNotes}
             onChange={e => setClipNotes(e.target.value)}
-            placeholder="Add notes about this play..."
+            placeholder={t("app.clips.creator.notesPlaceholder")}
             className={styles.clipNotesInput}
             rows={3}
           />
@@ -248,7 +250,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
             />
           </div>
           <div className={styles.progressText}>
-            Creating clip... {Math.round(progress)}%
+            {t("app.clips.creator.creating")} {Math.round(progress)}%
           </div>
         </div>
       )}
@@ -262,11 +264,13 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         >
           {isCreating ? (
             <>
-              <FontAwesomeIcon icon={faSpinner} spin /> Creating...
+              <FontAwesomeIcon icon={faSpinner} spin />{" "}
+              {t("app.clips.creator.creating")}
             </>
           ) : (
             <>
-              <FontAwesomeIcon icon={faFilm} /> Create Clip
+              <FontAwesomeIcon icon={faFilm} />{" "}
+              {t("app.clips.creator.createClip")}
             </>
           )}
         </button>

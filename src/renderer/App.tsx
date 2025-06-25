@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBasketball,
@@ -15,14 +16,18 @@ import {
   faCog,
   faTimes,
   faTrash,
+  faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./styles/App.module.css";
 import { VideoPlayer } from "./components/VideoPlayer";
 import { CategoryManager } from "./components/CategoryManager";
 import { ClipCreator } from "./components/ClipCreator";
 import { ClipLibrary } from "./components/ClipLibrary";
+import { LanguageSelector } from "./components/LanguageSelector";
+import { InstructionsModal } from "./components/InstructionsModal";
 
 export const App: React.FC = () => {
+  const { t } = useTranslation();
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -33,6 +38,7 @@ export const App: React.FC = () => {
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(360); // Default panel width
 
   const resizeRef = useRef<HTMLDivElement>(null);
@@ -85,7 +91,7 @@ export const App: React.FC = () => {
       }
     } catch (error) {
       console.error("Error selecting video:", error);
-      alert("Error loading video file");
+      alert(t("app.video.loadingError"));
     } finally {
       setIsLoading(false);
     }
@@ -123,19 +129,15 @@ export const App: React.FC = () => {
   }, [handleClearMarks]);
 
   const handleResetDatabase = async () => {
-    if (
-      window.confirm(
-        "Are you sure? This will delete all clips and reset categories to default. This action cannot be undone."
-      )
-    ) {
+    if (window.confirm(t("app.settings.confirmReset"))) {
       try {
         await window.electronAPI.resetDatabase();
         setRefreshTrigger(prev => prev + 1);
         setShowSettings(false);
-        alert("Database reset successfully");
+        alert(t("app.settings.resetSuccess"));
       } catch (error) {
         console.error("Error resetting database:", error);
-        alert("Error resetting database");
+        alert(t("app.settings.resetError"));
       }
     }
   };
@@ -160,7 +162,7 @@ export const App: React.FC = () => {
     <div className={styles.app}>
       <header className={styles.appHeader}>
         <h1>
-          <FontAwesomeIcon icon={faBasketball} /> Basketball Clip Cutter
+          <FontAwesomeIcon icon={faBasketball} /> {t("app.title")}
         </h1>
         <div className={styles.headerActions}>
           <button
@@ -168,13 +170,15 @@ export const App: React.FC = () => {
             onClick={() => setIsSidePanelCollapsed(!isSidePanelCollapsed)}
           >
             <FontAwesomeIcon icon={faFilm} />{" "}
-            {isSidePanelCollapsed ? "Show Side Panel" : "Hide Side Panel"}
+            {isSidePanelCollapsed
+              ? t("app.buttons.showSidePanel")
+              : t("app.buttons.hideSidePanel")}
           </button>
           <button
             className={styles.settingsButton}
             onClick={() => setShowSettings(true)}
           >
-            <FontAwesomeIcon icon={faCog} /> Settings
+            <FontAwesomeIcon icon={faCog} /> {t("app.buttons.settings")}
           </button>
         </div>
       </header>
@@ -224,7 +228,8 @@ export const App: React.FC = () => {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h2>
-                <FontAwesomeIcon icon={faScissors} /> Create Clip
+                <FontAwesomeIcon icon={faScissors} />{" "}
+                {t("app.modals.createClip")}
               </h2>
               <button
                 className={styles.modalClose}
@@ -252,7 +257,7 @@ export const App: React.FC = () => {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h2>
-                <FontAwesomeIcon icon={faCog} /> Settings
+                <FontAwesomeIcon icon={faCog} /> {t("app.modals.settings")}
               </h2>
               <button
                 className={styles.modalClose}
@@ -262,17 +267,31 @@ export const App: React.FC = () => {
               </button>
             </div>
             <div className={styles.modalBody}>
+              <LanguageSelector />
+
+              <button
+                className={styles.instructionsButton}
+                onClick={() => {
+                  setShowInstructions(true);
+                  setShowSettings(false);
+                }}
+              >
+                <FontAwesomeIcon icon={faQuestionCircle} />{" "}
+                {t("app.buttons.showInstructions")}
+              </button>
+
               <CategoryManager
                 onCategoriesChange={() => setRefreshTrigger(prev => prev + 1)}
               />
 
               <div className={styles.dangerZone}>
-                <h3>Danger Zone</h3>
+                <h3>{t("app.settings.dangerZone")}</h3>
                 <button
                   className={styles.resetButton}
                   onClick={handleResetDatabase}
                 >
-                  <FontAwesomeIcon icon={faTrash} /> Reset Database
+                  <FontAwesomeIcon icon={faTrash} />{" "}
+                  {t("app.buttons.resetDatabase")}
                 </button>
               </div>
             </div>
@@ -280,84 +299,13 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Instructions Overlay */}
-      {!videoPath && (
-        <div className={styles.instructionsOverlay}>
-          <div className={styles.instructionsContent}>
-            <h2>
-              <FontAwesomeIcon icon={faFilm} /> Welcome to Basketball Clip
-              Cutter
-            </h2>
-            <p>
-              Perfect for creating and organizing basketball clips for team
-              scouting
-            </p>
-
-            <div className={styles.workflowSteps}>
-              <div className={styles.step}>
-                <div className={styles.stepNumber}>
-                  <p>1</p>
-                </div>
-                <div className={styles.stepContent}>
-                  <h3>
-                    <FontAwesomeIcon icon={faVideo} /> Load Video
-                  </h3>
-                  <p>Select your basketball game video file</p>
-                </div>
-              </div>
-
-              <div className={styles.step}>
-                <div className={styles.stepNumber}>
-                  <p>2</p>
-                </div>
-                <div className={styles.stepContent}>
-                  <h3>
-                    <FontAwesomeIcon icon={faScissors} /> Mark Clips
-                  </h3>
-                  <p>
-                    Use <kbd>I</kbd> and <kbd>O</kbd> keys to mark in/out points
-                    during playback
-                  </p>
-                </div>
-              </div>
-
-              <div className={styles.step}>
-                <div className={styles.stepNumber}>
-                  <p>3</p>
-                </div>
-                <div className={styles.stepContent}>
-                  <h3>
-                    <FontAwesomeIcon icon={faTags} /> Categorize
-                  </h3>
-                  <p>
-                    Tag clips with custom categories (Rebounds, Screens, Player
-                    actions, etc.)
-                  </p>
-                </div>
-              </div>
-
-              <div className={styles.step}>
-                <div className={styles.stepNumber}>
-                  <p>4</p>
-                </div>
-                <div className={styles.stepContent}>
-                  <h3>
-                    <FontAwesomeIcon icon={faShare} /> Share
-                  </h3>
-                  <p>Export clips by category to share with your team</p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={handleSelectVideo}
-              className={styles.getStartedBtn}
-            >
-              <FontAwesomeIcon icon={faRocket} /> Get Started - Select Video
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Instructions Modal */}
+      <InstructionsModal
+        isOpen={!videoPath || showInstructions}
+        onClose={() => setShowInstructions(false)}
+        onSelectVideo={handleSelectVideo}
+        showSelectVideoButton={!videoPath}
+      />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFilm,
@@ -39,6 +40,7 @@ interface ClipLibraryProps {
 }
 
 export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
+  const { t } = useTranslation();
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -116,11 +118,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
   };
 
   const handleDeleteClip = async (clipId: number) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this clip? The video file will be permanently deleted."
-      )
-    ) {
+    if (!confirm(t("app.clips.confirmDeleteClip"))) {
       return;
     }
 
@@ -160,7 +158,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
 
   const handleExportAll = async () => {
     if (clips.length === 0) {
-      alert("No clips to export.");
+      alert(t("app.clips.noClipsToExport"));
       return;
     }
 
@@ -219,11 +217,11 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
       {/* Fixed Header */}
       <div className={styles.clipLibraryHeader}>
         <h3>
-          <FontAwesomeIcon icon={faFilm} /> Clip Library
+          <FontAwesomeIcon icon={faFilm} /> {t("app.clips.library")}
         </h3>
         <div className={styles.libraryActions}>
           <button onClick={openClipFolder} className={styles.folderBtn}>
-            <FontAwesomeIcon icon={faFolder} /> Open Folder
+            <FontAwesomeIcon icon={faFolder} /> {t("app.clips.openFolder")}
           </button>
           <button
             onClick={selectedCategory ? handleExportCategory : handleExportAll}
@@ -232,11 +230,12 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
           >
             {isExporting ? (
               <>
-                <FontAwesomeIcon icon={faSpinner} spin /> Exporting...
+                <FontAwesomeIcon icon={faSpinner} spin />{" "}
+                {t("app.clips.exportingClips")}
               </>
             ) : (
               <>
-                <FontAwesomeIcon icon={faFileExport} /> Export
+                <FontAwesomeIcon icon={faFileExport} /> {t("app.clips.export")}
               </>
             )}
           </button>
@@ -247,7 +246,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
       <div className={styles.clipLibraryContent}>
         {/* Category Filter */}
         <div className={styles.categoryFilter}>
-          <h4>Filter by Category</h4>
+          <h4>{t("app.clips.filterByCategory")}</h4>
           <div className={styles.filterButtons}>
             <button
               onClick={() => setSelectedCategory(null)}
@@ -316,7 +315,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
               {selectedCategory === null ? (
                 <div>
                   <h4>
-                    <FontAwesomeIcon icon={faFilm} /> No clips yet
+                    <FontAwesomeIcon icon={faFilm} />{" "}
+                    {t("app.clips.noClipsYet")}
                   </h4>
                   <p>
                     Start cutting clips from your video to build your library
@@ -325,7 +325,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
               ) : (
                 <div>
                   <h4>
-                    <FontAwesomeIcon icon={faFilm} /> No clips in{" "}
+                    <FontAwesomeIcon icon={faFilm} />{" "}
+                    {t("app.clips.noClipsInCategory")}{" "}
                     {getCategoryName(selectedCategory)}
                   </h4>
                   <p>Create clips with this category to see them here</p>
