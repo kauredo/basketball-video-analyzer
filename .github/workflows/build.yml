@@ -55,7 +55,7 @@ jobs:
           name: basketball-video-analyzer-windows
           path: |
             out/make/**/*.exe
-            out/make/**/*.msi
+            out/make/**/*.nupkg
           retention-days: 30
 
   release:
