@@ -28,6 +28,9 @@ export interface ElectronAPI {
   createCategory: (category: any) => Promise<any>;
   updateCategory: (id: number, updates: any) => Promise<boolean>;
   deleteCategory: (id: number) => Promise<boolean>;
+  savePreset: (presetName: string, categories: any[]) => Promise<boolean>;
+  loadPreset: (presetName: string) => Promise<any[]>;
+  getPresets: () => Promise<string[]>;
 
   // Clip operations
   getClips: (videoPath?: string) => Promise<any[]>;
@@ -67,6 +70,10 @@ const electronAPI: ElectronAPI = {
   updateCategory: (id, updates) =>
     ipcRenderer.invoke("update-category", id, updates),
   deleteCategory: id => ipcRenderer.invoke("delete-category", id),
+  savePreset: (presetName, categories) =>
+    ipcRenderer.invoke("save-preset", presetName, categories),
+  loadPreset: presetName => ipcRenderer.invoke("load-preset", presetName),
+  getPresets: () => ipcRenderer.invoke("get-presets"),
 
   // Clip operations
   getClips: videoPath => ipcRenderer.invoke("get-clips", videoPath),

@@ -58,8 +58,25 @@
     "categories": {
       "title": "Manage Categories",
       "add": "Add Category",
+      "addNew": "Add New Category",
       "placeholder": "Category name",
-      "descriptionPlaceholder": "Description (optional)",
+      "descriptionPlaceholder": "Category description (optional)",
+      "colorLabel": "Color:",
+      "confirmDelete": "Are you sure you want to delete this category? This will not delete existing clips.",
+      "errorCreating": "Error creating category. Name might already exist.",
+      "errorUpdating": "Error updating category. Name might already exist.",
+      "errorDeleting": "Error deleting category.",
+      "presets": {
+        "title": "Presets",
+        "save": "Save as Preset",
+        "load": "Load Preset",
+        "enterName": "Enter preset name",
+        "saveSuccess": "Preset saved successfully!",
+        "loadSuccess": "Preset loaded successfully!",
+        "saveFailed": "Failed to save preset",
+        "loadFailed": "Failed to load preset",
+        "confirmLoad": "Are you sure you want to load the preset \"{presetName}\"? This will replace your current categories."
+      },
       "default": {
         "offense": "Offense",
         "defense": "Defense",

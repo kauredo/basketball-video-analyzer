@@ -21,6 +21,9 @@ import {
   getKeyBindings,
   setKeyBinding,
   KeyBindings,
+  savePreset,
+  loadPreset,
+  getPresets,
 } from "./database";
 
 // Set FFmpeg path
@@ -470,3 +473,19 @@ ipcMain.handle(
     return newBindings;
   }
 );
+
+// Preset operations
+ipcMain.handle(
+  "save-preset",
+  (_event, presetName: string, categories: Category[]) => {
+    return savePreset(presetName, categories);
+  }
+);
+
+ipcMain.handle("load-preset", (_event, presetName: string) => {
+  return loadPreset(presetName);
+});
+
+ipcMain.handle("get-presets", () => {
+  return getPresets();
+});

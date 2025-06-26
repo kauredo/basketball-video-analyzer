@@ -365,3 +365,56 @@ export const resetDatabase = () => {
     console.error("Error resetting database:", error);
   }
 };
+
+// Category preset operations
+export const savePreset = (
+  presetName: string,
+  categories: Category[]
+): void => {
+  db.prepare(
+    `CREATE TABLE IF NOT EXISTS category_presets (
+    name TEXT PRIMARY KEY,
+    categories TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`
+  ).run();
+
+  db.prepare(
+    `INSERT OR REPLACE INTO category_presets (name, categories) VALUES (?, ?)`
+  ).run(presetName, JSON.stringify(categories));
+};
+
+export const loadPreset = (presetName: string): Category[] => {
+  db.prepare(
+    `CREATE TABLE IF NOT EXISTS category_presets (
+    name TEXT PRIMARY KEY,
+    categories TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`
+  ).run();
+
+  const preset = db
+    .prepare(`SELECT categories FROM category_presets WHERE name = ?`)
+    .get(presetName) as { categories: string } | undefined;
+
+  if (!preset) {
+    throw new Error(`Preset ${presetName} not found`);
+  }
+
+  return JSON.parse(preset.categories);
+};
+
+export const getPresets = (): string[] => {
+  db.prepare(
+    `CREATE TABLE IF NOT EXISTS category_presets (
+    name TEXT PRIMARY KEY,
+    categories TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`
+  ).run();
+
+  const presets = db.prepare(`SELECT name FROM category_presets`).all() as {
+    name: string;
+  }[];
+  return presets.map(p => p.name);
+};

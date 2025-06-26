@@ -12,12 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/CategoryManager.module.css";
 
-interface Category {
-  id: number;
-  name: string;
-  color: string;
-  description?: string;
-}
+import { Category } from "../../types/global";
 
 interface CategoryManagerProps {
   onCategoriesChange: () => void;
@@ -30,6 +25,8 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [presets, setPresets] = useState<string[]>([]);
+  const [newPresetName, setNewPresetName] = useState("");
   const [newCategory, setNewCategory] = useState({
     name: "",
     color: "#4CAF50",
@@ -38,6 +35,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
   useEffect(() => {
     loadCategories();
+    loadPresets();
   }, []);
 
   const loadCategories = async () => {
@@ -46,6 +44,15 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       setCategories(cats);
     } catch (error) {
       console.error("Error loading categories:", error);
+    }
+  };
+
+  const loadPresets = async () => {
+    try {
+      const presetList = await window.electronAPI.getPresets();
+      setPresets(presetList);
+    } catch (error) {
+      console.error("Failed to load presets:", error);
     }
   };
 
@@ -64,12 +71,12 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       onCategoriesChange();
     } catch (error) {
       console.error("Error creating category:", error);
-      alert("Error creating category. Name might already exist.");
+      alert(t("app.categories.errorCreating"));
     }
   };
 
   const handleUpdateCategory = async () => {
-    if (!editingCategory) return;
+    if (!editingCategory || editingCategory.id === undefined) return;
 
     try {
       await window.electronAPI.updateCategory(editingCategory.id, {
@@ -83,16 +90,12 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       onCategoriesChange();
     } catch (error) {
       console.error("Error updating category:", error);
-      alert("Error updating category. Name might already exist.");
+      alert(t("app.categories.errorUpdating"));
     }
   };
 
   const handleDeleteCategory = async (id: number) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this category? This will not delete existing clips."
-      )
-    ) {
+    if (!confirm(t("app.categories.confirmDelete"))) {
       return;
     }
 
@@ -102,7 +105,54 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       onCategoriesChange();
     } catch (error) {
       console.error("Error deleting category:", error);
-      alert("Error deleting category.");
+      alert(t("app.categories.errorDeleting"));
+    }
+  };
+
+  const handleSavePreset = async () => {
+    if (!newPresetName.trim()) {
+      alert("Please enter a preset name");
+      return;
+    }
+
+    try {
+      await window.electronAPI.savePreset(newPresetName, categories);
+      setNewPresetName("");
+      loadPresets();
+      alert(t("app.categories.presets.saveSuccess"));
+    } catch (error) {
+      console.error("Failed to save preset:", error);
+      alert(t("app.categories.presets.saveFailed"));
+    }
+  };
+
+  const handleLoadPreset = async (presetName: string) => {
+    if (!confirm(t("app.categories.presets.confirmLoad", { presetName }))) {
+      return;
+    }
+
+    try {
+      const loadedCategories = await window.electronAPI.loadPreset(presetName);
+      // Delete all existing categories first
+      for (const category of categories) {
+        if (category.id) {
+          await window.electronAPI.deleteCategory(category.id);
+        }
+      }
+      // Create new categories from preset
+      for (const category of loadedCategories) {
+        await window.electronAPI.createCategory({
+          name: category.name,
+          color: category.color,
+          description: category.description,
+        });
+      }
+      await loadCategories();
+      onCategoriesChange();
+      alert(t("app.categories.presets.loadSuccess"));
+    } catch (error) {
+      console.error("Failed to load preset:", error);
+      alert(t("app.categories.presets.loadFailed"));
     }
   };
 
@@ -146,6 +196,42 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
         </button>
       </div>
 
+      <div className={styles.presetManager}>
+        <h4>{t("app.categories.presets.title")}</h4>
+        <div className={styles.presetControls}>
+          <input
+            type="text"
+            value={newPresetName}
+            onChange={e => setNewPresetName(e.target.value)}
+            placeholder={t("app.categories.presets.enterName")}
+            className={styles.presetNameInput}
+          />
+          <button
+            onClick={handleSavePreset}
+            disabled={!newPresetName.trim()}
+            className={styles.savePresetBtn}
+          >
+            {t("app.categories.presets.save")}
+          </button>
+        </div>
+        {presets.length > 0 && (
+          <div className={styles.presetList}>
+            <h4>{t("app.categories.presets.load")}</h4>
+            <div className={styles.presetButtons}>
+              {presets.map(preset => (
+                <button
+                  key={preset}
+                  onClick={() => handleLoadPreset(preset)}
+                  className={styles.loadPresetBtn}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Category List */}
       <div className={styles.categoryList}>
         {categories.map(category => (
@@ -155,17 +241,18 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               style={{ backgroundColor: category.color }}
             />
 
-            {editingCategory?.id === category.id ? (
+            {editingCategory?.id === category.id && editingCategory ? (
               <div className={styles.categoryEditForm}>
                 <input
                   type="text"
                   value={editingCategory.name}
-                  onChange={e =>
-                    setEditingCategory({
+                  onChange={e => {
+                    const updatedCategory: Category = {
                       ...editingCategory,
                       name: e.target.value,
-                    })
-                  }
+                    };
+                    setEditingCategory(updatedCategory);
+                  }}
                   className={styles.categoryNameInput}
                   placeholder={t("app.categories.placeholder")}
                 />
@@ -178,12 +265,13 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                         editingCategory.color === color ? styles.selected : ""
                       }`}
                       style={{ backgroundColor: color }}
-                      onClick={() =>
-                        setEditingCategory({
+                      onClick={() => {
+                        const updatedCategory: Category = {
                           ...editingCategory,
                           color,
-                        })
-                      }
+                        };
+                        setEditingCategory(updatedCategory);
+                      }}
                     />
                   ))}
                 </div>
@@ -191,12 +279,13 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                 <input
                   type="text"
                   value={editingCategory.description || ""}
-                  onChange={e =>
-                    setEditingCategory({
+                  onChange={e => {
+                    const updatedCategory: Category = {
                       ...editingCategory,
                       description: e.target.value,
-                    })
-                  }
+                    };
+                    setEditingCategory(updatedCategory);
+                  }}
                   className={styles.categoryDescriptionInput}
                   placeholder={t("app.categories.descriptionPlaceholder")}
                 />
@@ -234,7 +323,9 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
                     <button
-                      onClick={() => handleDeleteCategory(category.id)}
+                      onClick={() =>
+                        category.id && handleDeleteCategory(category.id)
+                      }
                       className={styles.deleteBtn}
                     >
                       <FontAwesomeIcon icon={faTrash} />
@@ -251,7 +342,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       {isEditing && (
         <div className={styles.addCategoryForm}>
           <h4>
-            <FontAwesomeIcon icon={faPlus} /> Add New Category
+            <FontAwesomeIcon icon={faPlus} /> {t("app.categories.addNew")}
           </h4>
 
           <input
@@ -265,7 +356,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           />
 
           <div className={styles.colorPicker}>
-            <label>Color:</label>
+            <label>{t("app.categories.colorLabel")}</label>
             {colorPresets.map(color => (
               <button
                 key={color}
@@ -293,7 +384,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             disabled={!newCategory.name.trim()}
             className={styles.createCategoryBtn}
           >
-            <FontAwesomeIcon icon={faPlus} /> Create Category
+            <FontAwesomeIcon icon={faPlus} /> {t("app.categories.add")}
           </button>
         </div>
       )}

@@ -58,16 +58,24 @@
     "categories": {
       "title": "Gerir Categorias",
       "add": "Adicionar Categoria",
+      "addNew": "Adicionar Nova Categoria",
       "placeholder": "Nome da categoria",
-      "descriptionPlaceholder": "Descrição (opcional)",
-      "default": {
-        "offense": "Ataque",
-        "defense": "Defesa",
-        "rebounds": "Ressaltos",
-        "turnovers": "Perdas de Bola",
-        "fastBreak": "Contra-Ataque",
-        "halfCourt": "Meio Campo",
-        "screens": "Ecrãs"
+      "descriptionPlaceholder": "Descrição da categoria (opcional)",
+      "colorLabel": "Cor:",
+      "confirmDelete": "Tem a certeza que pretende eliminar esta categoria? Isto não irá eliminar os clips existentes.",
+      "errorCreating": "Erro ao criar categoria. O nome pode já existir.",
+      "errorUpdating": "Erro ao atualizar categoria. O nome pode já existir.",
+      "errorDeleting": "Erro ao eliminar categoria.",
+      "presets": {
+        "title": "Predefinições",
+        "save": "Guardar como Predefinição",
+        "load": "Carregar Predefinição",
+        "enterName": "Introduzir nome da predefinição",
+        "saveSuccess": "Predefinição guardada com sucesso!",
+        "loadSuccess": "Predefinição carregada com sucesso!",
+        "saveFailed": "Falha ao guardar predefinição",
+        "loadFailed": "Falha ao carregar predefinição",
+        "confirmLoad": "Tem a certeza que pretende carregar a predefinição \"{presetName}\"? Isto irá substituir as suas categorias atuais."
       }
     },
     "clips": {

@@ -1,3 +1,11 @@
+export interface Category {
+  id?: number;
+  name: string;
+  color: string;
+  description?: string;
+  created_at?: string;
+}
+
 export interface ElectronAPI {
   // Video operations
   selectVideoFile: () => Promise<string | null>;
@@ -22,10 +30,15 @@ export interface ElectronAPI {
   }) => Promise<{ count: number; exportDir: string }>;
 
   // Category operations
-  getCategories: () => Promise<any[]>;
-  createCategory: (category: any) => Promise<any>;
-  updateCategory: (id: number, updates: any) => Promise<boolean>;
+  getCategories: () => Promise<Category[]>;
+  createCategory: (
+    category: Omit<Category, "id" | "created_at">
+  ) => Promise<Category>;
+  updateCategory: (id: number, updates: Partial<Category>) => Promise<boolean>;
   deleteCategory: (id: number) => Promise<boolean>;
+  savePreset: (presetName: string, categories: Category[]) => Promise<boolean>;
+  loadPreset: (presetName: string) => Promise<Category[]>;
+  getPresets: () => Promise<string[]>;
 
   // Clip operations
   getClips: (videoPath?: string) => Promise<any[]>;
