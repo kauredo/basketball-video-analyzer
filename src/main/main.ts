@@ -117,6 +117,9 @@ ipcMain.handle(
         const { inputPath, startTime, endTime, title, categories, notes } =
           params;
 
+        // Normalize input path for Windows
+        const normalizedInputPath = path.normalize(inputPath);
+
         // Create clips directory
         const clipsDir = path.join(app.getPath("userData"), "clips");
         if (!fs.existsSync(clipsDir)) {
@@ -138,24 +141,51 @@ ipcMain.handle(
         const thumbnailPath = path.join(clipsDir, thumbnailFileName);
         const duration = endTime - startTime;
 
+        // Validate that input file exists and is accessible
+        if (!fs.existsSync(normalizedInputPath)) {
+          console.error("Input file does not exist:", normalizedInputPath);
+          reject(new Error("Input file does not exist"));
+          return;
+        }
+
+        // Check if we have write access to the clips directory
+        try {
+          fs.accessSync(clipsDir, fs.constants.W_OK);
+        } catch (error) {
+          console.error("No write access to clips directory:", error);
+          reject(new Error("No write access to clips directory"));
+          return;
+        }
+
         // First, generate the thumbnail
-        ffmpeg(inputPath)
+        console.log("Starting thumbnail creation...");
+        ffmpeg(normalizedInputPath)
           .setStartTime(startTime)
           .frames(1)
           .output(thumbnailPath)
+          .on("start", commandLine => {
+            console.log("Thumbnail FFmpeg command:", commandLine);
+          })
           .on("end", () => {
+            console.log("Thumbnail created successfully");
             // After thumbnail is created, create the clip
-            ffmpeg(inputPath)
+            console.log("Starting clip creation...");
+            ffmpeg(normalizedInputPath)
               .setStartTime(startTime)
               .setDuration(duration)
               .output(outputPath)
               .videoCodec("libx264")
               .audioCodec("aac")
+              .outputOptions(["-movflags", "+faststart"]) // Optimize for web playback
+              .on("start", commandLine => {
+                console.log("Clip FFmpeg command:", commandLine);
+              })
               .on("end", () => {
                 try {
+                  console.log("Clip created successfully");
                   // Save clip to database with thumbnail path
                   const clipData = {
-                    video_path: inputPath,
+                    video_path: normalizedInputPath,
                     output_path: outputPath,
                     thumbnail_path: thumbnailPath,
                     start_time: startTime,
@@ -180,7 +210,7 @@ ipcMain.handle(
                 }
               })
               .on("error", error => {
-                console.error("FFmpeg error:", error);
+                console.error("FFmpeg clip creation error:", error);
                 reject(error);
               })
               .on("progress", progress => {
