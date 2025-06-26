@@ -26,33 +26,13 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: |
-          npm ci
-          # Force install consistent Electron Forge versions
-          npm install --save-dev @electron-forge/maker-dmg@^7.8.1
-
-      - name: Debug Electron Forge config
-        run: |
-          echo "Node version:"
-          node --version
-          echo "NPM version:"
-          npm --version
-          echo "Electron Forge version:"
-          npx electron-forge --version
-          echo "Config check:"
-          node -e "console.log(JSON.stringify(require('./forge.config.js'), null, 2))"
+        run: npm ci
 
       - name: Build for macOS
         if: matrix.os == 'macos-latest'
         run: npm run make -- --platform=darwin
         env:
-          # Disable all code signing and notarization
           CSC_IDENTITY_AUTO_DISCOVERY: false
-          CSC_LINK: ""
-          CSC_KEY_PASSWORD: ""
-          APPLE_ID: ""
-          APPLE_ID_PASSWORD: ""
-          APPLE_TEAM_ID: ""
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
