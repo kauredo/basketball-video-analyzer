@@ -216,7 +216,18 @@ ipcMain.handle("open-clip-folder", async () => {
 
 ipcMain.handle(
   "export-clips-by-category",
-  async (_event, categoryIds: number[]) => {
+  async (
+    _event,
+    params: {
+      categoryIds: number[];
+      clips: Array<{
+        id: number;
+        title: string;
+        output_path: string;
+        categories: string;
+      }>;
+    }
+  ) => {
     try {
       const result = await dialog.showOpenDialog(mainWindow, {
         properties: ["openDirectory"],
@@ -229,10 +240,27 @@ ipcMain.handle(
 
       const exportDir = result.filePaths[0];
       const exportedFiles: string[] = [];
+      const categories = getCategories();
 
-      for (const categoryId of categoryIds) {
-        const clips = getClipsByCategory(categoryId);
-        const categories = getCategories();
+      // Group clips by their categories
+      const clipsByCategory = new Map<number, typeof params.clips>();
+      params.clips.forEach(clip => {
+        try {
+          const clipCategories = JSON.parse(clip.categories);
+          clipCategories.forEach((catId: number) => {
+            if (params.categoryIds.includes(catId)) {
+              const existing = clipsByCategory.get(catId) || [];
+              clipsByCategory.set(catId, [...existing, clip]);
+            }
+          });
+        } catch (error) {
+          console.warn(`Failed to parse categories for clip ${clip.id}`);
+        }
+      });
+
+      // Export clips by category
+      for (const categoryId of params.categoryIds) {
+        const clips = clipsByCategory.get(categoryId) || [];
         const category = categories.find(c => c.id === categoryId);
 
         if (!category || clips.length === 0) continue;

@@ -11,7 +11,15 @@ export interface ElectronAPI {
   }) => Promise<any>;
   openClipFolder: () => Promise<void>;
   playClip: (clipPath: string) => Promise<void>;
-  exportClipsByCategory: (categoryIds: number[]) => Promise<any>;
+  exportClipsByCategory: (params: {
+    categoryIds: number[];
+    clips: Array<{
+      id: number;
+      title: string;
+      output_path: string;
+      categories: string;
+    }>;
+  }) => Promise<{ count: number; exportDir: string }>;
 
   // Category operations
   getCategories: () => Promise<any[]>;

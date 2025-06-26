@@ -13,7 +13,15 @@ export interface ElectronAPI {
   }) => Promise<any>;
   openClipFolder: () => Promise<void>;
   playClip: (clipPath: string) => Promise<void>;
-  exportClipsByCategory: (categoryIds: number[]) => Promise<any>;
+  exportClipsByCategory: (params: {
+    categoryIds: number[];
+    clips: Array<{
+      id: number;
+      title: string;
+      output_path: string;
+      categories: string;
+    }>;
+  }) => Promise<{ count: number; exportDir: string }>;
 
   // Category operations
   getCategories: () => Promise<any[]>;
@@ -40,8 +48,8 @@ const electronAPI: ElectronAPI = {
   cutVideoClip: params => ipcRenderer.invoke("cut-video-clip", params),
   openClipFolder: () => ipcRenderer.invoke("open-clip-folder"),
   playClip: clipPath => ipcRenderer.invoke("play-clip", clipPath),
-  exportClipsByCategory: categoryIds =>
-    ipcRenderer.invoke("export-clips-by-category", categoryIds),
+  exportClipsByCategory: params =>
+    ipcRenderer.invoke("export-clips-by-category", params),
 
   // Category operations
   getCategories: () => ipcRenderer.invoke("get-categories"),

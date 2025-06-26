@@ -139,44 +139,163 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({ onRefresh }) => {
 
     try {
       setIsExporting(true);
-      const result = await window.electronAPI.exportClipsByCategory([
-        selectedCategory,
-      ]);
 
-      if (result) {
+      // Get clips for the selected category
+      const clipsToExport = filteredClips.filter(clip => {
+        try {
+          const clipCategories = JSON.parse(clip.categories);
+          return clipCategories.includes(selectedCategory);
+        } catch {
+          return false;
+        }
+      });
+
+      if (clipsToExport.length === 0) {
+        alert(`No clips found in the selected category to export.`);
+        return;
+      }
+
+      console.log("Attempting to export clips:", {
+        categoryId: selectedCategory,
+        clipsToExport: clipsToExport.map(c => ({
+          id: c.id,
+          title: c.title,
+          path: c.output_path,
+        })),
+      });
+
+      const result = await window.electronAPI.exportClipsByCategory({
+        categoryIds: [selectedCategory],
+        clips: clipsToExport.map(clip => ({
+          id: clip.id,
+          title: clip.title,
+          output_path: clip.output_path,
+          categories: clip.categories,
+        })),
+      });
+
+      if (!result || typeof result.count !== "number") {
+        throw new Error("Invalid export result received");
+      }
+
+      if (result.count === 0) {
+        console.error("Export returned 0 clips. Export result:", result);
         alert(
-          `Successfully exported ${result.count} clips to ${result.exportDir}`
+          `No clips were exported. This could be because:\n\n` +
+            `- The clip files may no longer exist in their original location\n` +
+            `- There might be permission issues\n` +
+            `- The export directory could not be created\n\n` +
+            `Clips that should have been exported:\n${clipsToExport
+              .map(c => `- ${c.title} (${c.output_path})`)
+              .join("\n")}\n\n` +
+            `Please check the console for technical details.`
+        );
+      } else {
+        alert(
+          `Successfully exported ${result.count} clip${
+            result.count !== 1 ? "s" : ""
+          } to ${result.exportDir}`
         );
       }
     } catch (error) {
       console.error("Error exporting clips:", error);
-      alert("Error exporting clips.");
+      alert(
+        `Error exporting clips: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsExporting(false);
     }
   };
 
   const handleExportAll = async () => {
-    if (clips.length === 0) {
+    if (filteredClips.length === 0) {
       alert(t("app.clips.noClipsToExport"));
       return;
     }
 
     try {
       setIsExporting(true);
-      const categoryIds = categories.map(c => c.id);
-      const result = await window.electronAPI.exportClipsByCategory(
-        categoryIds
-      );
 
-      if (result) {
+      // Get all unique category IDs and their clips
+      const categoryClips = new Map<number, Clip[]>();
+
+      filteredClips.forEach(clip => {
+        try {
+          const clipCategories = JSON.parse(clip.categories);
+          clipCategories.forEach((catId: number) => {
+            const existing = categoryClips.get(catId) || [];
+            categoryClips.set(catId, [...existing, clip]);
+          });
+        } catch {
+          console.warn("Failed to parse categories for clip:", clip.id);
+        }
+      });
+
+      const categoryIds = Array.from(categoryClips.keys());
+
+      if (categoryIds.length === 0) {
+        alert("No categories found in the filtered clips.");
+        return;
+      }
+
+      console.log("Attempting to export all clips:", {
+        categories: categoryIds,
+        clipsInfo: Array.from(categoryClips.entries()).map(
+          ([catId, clips]) => ({
+            categoryId: catId,
+            clips: clips.map(c => ({
+              id: c.id,
+              title: c.title,
+              path: c.output_path,
+            })),
+          })
+        ),
+      });
+
+      const result = await window.electronAPI.exportClipsByCategory({
+        categoryIds,
+        clips: filteredClips.map(clip => ({
+          id: clip.id,
+          title: clip.title,
+          output_path: clip.output_path,
+          categories: clip.categories,
+        })),
+      });
+
+      if (!result || typeof result.count !== "number") {
+        throw new Error("Invalid export result received");
+      }
+
+      if (result.count === 0) {
+        console.error("Export returned 0 clips. Export result:", result);
+        const allClips = Array.from(categoryClips.values()).flat();
+
         alert(
-          `Successfully exported ${result.count} clips to ${result.exportDir}`
+          `No clips were exported. This could be because:\n\n` +
+            `- The clip files may no longer exist in their original location\n` +
+            `- There might be permission issues\n` +
+            `- The export directory could not be created\n\n` +
+            `Clips that should have been exported:\n${allClips
+              .map(c => `- ${c.title} (${c.output_path})`)
+              .join("\n")}\n\n` +
+            `Please check the console for technical details.`
+        );
+      } else {
+        alert(
+          `Successfully exported ${result.count} clip${
+            result.count !== 1 ? "s" : ""
+          } to ${result.exportDir}`
         );
       }
     } catch (error) {
       console.error("Error exporting clips:", error);
-      alert("Error exporting clips.");
+      alert(
+        `Error exporting clips: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsExporting(false);
     }
