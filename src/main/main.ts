@@ -79,6 +79,14 @@ app.on("window-all-closed", () => {
   }
 });
 
+// Get clips directory in user's Documents
+const getClipsDirectory = () => {
+  // Use Documents folder instead of AppData
+  const documentsDir = app.getPath("documents");
+  const clipsDir = path.join(documentsDir, "Basketball Clip Cutter", "clips");
+  return clipsDir;
+};
+
 // Video file operations
 ipcMain.handle("select-video-file", async () => {
   try {
@@ -120,28 +128,41 @@ ipcMain.handle(
         const { inputPath, startTime, endTime, title, categories, notes } =
           params;
 
-        // Normalize input path for Windows
-        const normalizedInputPath = path.normalize(inputPath);
+        // Normalize all paths for Windows
+        const normalizedInputPath = path
+          .normalize(inputPath)
+          .replace(/\\/g, "/");
+        const clipsDir = getClipsDirectory();
+        const normalizedClipsDir = path.normalize(clipsDir).replace(/\\/g, "/");
 
-        // Create clips directory
-        const clipsDir = path.join(app.getPath("userData"), "clips");
-        if (!fs.existsSync(clipsDir)) {
-          fs.mkdirSync(clipsDir, { recursive: true });
+        // Ensure clips directory exists
+        if (!fs.existsSync(normalizedClipsDir)) {
+          try {
+            fs.mkdirSync(normalizedClipsDir, { recursive: true });
+          } catch (err) {
+            const error = err as Error;
+            console.error("Error creating clips directory:", error);
+            reject(
+              new Error(
+                `Failed to create clips directory in Documents folder. Error: ${error.message}`
+              )
+            );
+            return;
+          }
         }
 
-        // Generate unique filename
+        // Generate unique filename with Windows-safe characters
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
         const clipId = uuidv4().slice(0, 8);
-        const outputFileName = `${title.replace(
-          /[^a-zA-Z0-9]/g,
-          "_"
-        )}_${timestamp}_${clipId}.mp4`;
-        const thumbnailFileName = `${title.replace(
-          /[^a-zA-Z0-9]/g,
-          "_"
-        )}_${timestamp}_${clipId}_thumb.jpg`;
-        const outputPath = path.join(clipsDir, outputFileName);
-        const thumbnailPath = path.join(clipsDir, thumbnailFileName);
+        const safeTitle = title.replace(/[^a-zA-Z0-9]/g, "_");
+        const outputFileName = `${safeTitle}_${timestamp}_${clipId}.mp4`;
+        const thumbnailFileName = `${safeTitle}_${timestamp}_${clipId}_thumb.jpg`;
+        const outputPath = path
+          .join(normalizedClipsDir, outputFileName)
+          .replace(/\\/g, "/");
+        const thumbnailPath = path
+          .join(normalizedClipsDir, thumbnailFileName)
+          .replace(/\\/g, "/");
         const duration = endTime - startTime;
 
         // Validate that input file exists and is accessible
@@ -153,33 +174,76 @@ ipcMain.handle(
 
         // Check if we have write access to the clips directory
         try {
-          fs.accessSync(clipsDir, fs.constants.W_OK);
+          fs.accessSync(normalizedClipsDir, fs.constants.W_OK);
         } catch (error) {
           console.error("No write access to clips directory:", error);
-          reject(new Error("No write access to clips directory"));
+          reject(
+            new Error(
+              `Cannot write to clips directory at ${normalizedClipsDir}. Please check your Documents folder permissions.`
+            )
+          );
           return;
         }
 
-        // First, generate the thumbnail
+        // Check if there's enough disk space (rough estimate - 2x input file size)
+        try {
+          const inputStats = fs.statSync(normalizedInputPath);
+          const estimatedSize = inputStats.size * 2; // Conservative estimate
+          const { free } =
+            process.platform === "win32"
+              ? require("fs").statfsSync(normalizedClipsDir.split("/")[0] + "/") // Get root drive stats on Windows
+              : require("fs").statfsSync(normalizedClipsDir);
+
+          if (free < estimatedSize) {
+            reject(new Error("Not enough disk space to create the clip"));
+            return;
+          }
+        } catch (error) {
+          console.warn("Could not check disk space:", error);
+          // Continue anyway, FFmpeg will fail if there's not enough space
+        }
+
         console.log("Starting thumbnail creation...");
+        const ffmpegPath = require("ffmpeg-static");
+        console.log("Using FFmpeg from:", ffmpegPath);
+
+        // First, generate the thumbnail
         ffmpeg(normalizedInputPath)
+          .setFfmpegPath(ffmpegPath)
           .setStartTime(startTime)
           .frames(1)
+          .outputOptions(["-y"]) // Overwrite output files
           .output(thumbnailPath)
           .on("start", commandLine => {
             console.log("Thumbnail FFmpeg command:", commandLine);
           })
+          .on("error", error => {
+            console.error("Thumbnail creation error:", error);
+            reject(new Error(`Failed to create thumbnail: ${error.message}`));
+          })
           .on("end", () => {
             console.log("Thumbnail created successfully");
+
             // After thumbnail is created, create the clip
             console.log("Starting clip creation...");
             ffmpeg(normalizedInputPath)
+              .setFfmpegPath(ffmpegPath)
               .setStartTime(startTime)
               .setDuration(duration)
+              .outputOptions([
+                "-y", // Overwrite output files
+                "-movflags",
+                "+faststart", // Optimize for web playback
+                "-c:v",
+                "libx264", // Use H.264 codec
+                "-preset",
+                "medium", // Balance between speed and quality
+                "-c:a",
+                "aac", // Use AAC audio codec
+                "-strict",
+                "experimental", // Required for some Windows configurations
+              ])
               .output(outputPath)
-              .videoCodec("libx264")
-              .audioCodec("aac")
-              .outputOptions(["-movflags", "+faststart"]) // Optimize for web playback
               .on("start", commandLine => {
                 console.log("Clip FFmpeg command:", commandLine);
               })
@@ -224,10 +288,6 @@ ipcMain.handle(
               })
               .run();
           })
-          .on("error", error => {
-            console.error("Thumbnail creation error:", error);
-            reject(error);
-          })
           .run();
       } catch (error) {
         console.error("Error cutting video clip:", error);
@@ -239,11 +299,11 @@ ipcMain.handle(
 
 ipcMain.handle("open-clip-folder", async () => {
   try {
-    const clipsDir = path.join(app.getPath("userData"), "clips");
+    const clipsDir = getClipsDirectory();
     if (fs.existsSync(clipsDir)) {
       shell.showItemInFolder(clipsDir);
     } else {
-      shell.openPath(app.getPath("userData"));
+      shell.openPath(path.dirname(clipsDir)); // Open the parent "Basketball Clip Cutter" folder
     }
   } catch (error) {
     console.error("Error opening clip folder:", error);
