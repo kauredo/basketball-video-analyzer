@@ -4,12 +4,16 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgb(0, 0, 0);
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 2rem;
+  will-change: opacity;
+  transform: translateZ(0);
 }
 
 .modalContent {
