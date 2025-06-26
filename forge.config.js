@@ -7,6 +7,16 @@ module.exports = {
     executableName: "basketball-clip-cutter",
     appBundleId: "com.yourname.basketball-clip-cutter",
     appCategoryType: "public.app-category.sports",
+    name: "Basketball Video Analyzer",
+    icon: "./assets/icon",
+    osxSign: false, // Disable signing for now
+    osxNotarize: false, // Disable notarization
+    extendInfo: {
+      NSCameraUsageDescription: "This app does not use the camera",
+      NSMicrophoneUsageDescription: "This app does not use the microphone",
+      CFBundleDisplayName: "Basketball Video Analyzer", // macOS display name
+      CFBundleName: "Basketball Video Analyzer",
+    },
   },
   rebuildConfig: {},
   makers: [
@@ -21,6 +31,16 @@ module.exports = {
     {
       name: "@electron-forge/maker-zip",
       platforms: ["darwin"],
+    },
+    {
+      name: "@electron-forge/maker-dmg",
+      platforms: ["darwin"],
+      config: {
+        name: "Basketball Clip Cutter",
+        title: "Basketball Clip Cutter ${version}",
+        background: null,
+        format: "UDZO",
+      },
     },
     {
       name: "@electron-forge/maker-deb",
