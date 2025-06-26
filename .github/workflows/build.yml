@@ -32,8 +32,13 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: npm run make -- --platform=darwin
         env:
-          # Skip code signing and notarization
+          # Disable all code signing and notarization
           CSC_IDENTITY_AUTO_DISCOVERY: false
+          CSC_LINK: ""
+          CSC_KEY_PASSWORD: ""
+          APPLE_ID: ""
+          APPLE_ID_PASSWORD: ""
+          APPLE_TEAM_ID: ""
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'

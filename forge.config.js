@@ -1,5 +1,4 @@
-const { FusesPlugin } = require("@electron-forge/plugin-fuses");
-const { FuseV1Options, FuseVersion } = require("@electron/fuses");
+// const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 
 module.exports = {
   packagerConfig: {
@@ -9,12 +8,17 @@ module.exports = {
     appCategoryType: "public.app-category.sports",
     name: "Basketball Video Analyzer",
     icon: "./assets/icon",
-    osxSign: false, // Disable signing for now
-    osxNotarize: false, // Disable notarization
+    // Explicitly disable all signing and notarization
+    osxSign: false,
+    osxNotarize: false,
+    // Additional signing-related options to ensure no signing attempts
+    ...(process.platform === "darwin" && {
+      osxUniversal: undefined, // Don't create universal binaries
+    }),
     extendInfo: {
       NSCameraUsageDescription: "This app does not use the camera",
       NSMicrophoneUsageDescription: "This app does not use the microphone",
-      CFBundleDisplayName: "Basketball Video Analyzer", // macOS display name
+      CFBundleDisplayName: "Basketball Video Analyzer",
       CFBundleName: "Basketball Video Analyzer",
     },
   },
@@ -63,14 +67,18 @@ module.exports = {
       name: "@electron-forge/plugin-auto-unpack-natives",
       config: {},
     },
-    new FusesPlugin({
-      version: FuseVersion.V1,
-      [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
-      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
-    }),
+    // Temporarily disable fuses plugin as it can cause issues with unsigned builds
+    // {
+    //   name: "@electron-forge/plugin-fuses",
+    //   config: {
+    //     version: FuseVersion.V1,
+    //     [FuseV1Options.RunAsNode]: false,
+    //     [FuseV1Options.EnableCookieEncryption]: true,
+    //     [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+    //     [FuseV1Options.EnableNodeCliInspectArguments]: false,
+    //     [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+    //     [FuseV1Options.OnlyLoadAppFromAsar]: true,
+    //   },
+    // },
   ],
 };
