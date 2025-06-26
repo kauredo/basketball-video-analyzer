@@ -25,6 +25,7 @@ import { ClipCreator } from "./components/ClipCreator";
 import { ClipLibrary } from "./components/ClipLibrary";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { InstructionsModal } from "./components/InstructionsModal";
+import { KeyBindingEditor } from "./components/KeyBindingEditor";
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
@@ -268,6 +269,8 @@ export const App: React.FC = () => {
             </div>
             <div className={styles.modalBody}>
               <LanguageSelector />
+
+              <KeyBindingEditor />
 
               <button
                 className={styles.instructionsButton}

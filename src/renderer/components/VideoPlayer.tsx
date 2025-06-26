@@ -43,6 +43,42 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [keyBindings, setKeyBindings] = useState({
+    markInKey: "z",
+    markOutKey: "m",
+  });
+
+  useEffect(() => {
+    const loadKeyBindings = async () => {
+      try {
+        const bindings = await window.electronAPI.getKeyBindings();
+        setKeyBindings(bindings);
+      } catch (error) {
+        console.error("Failed to load key bindings:", error);
+      }
+    };
+
+    const handleKeyBindingsChanged = (newBindings: {
+      markInKey: string;
+      markOutKey: string;
+    }) => {
+      setKeyBindings(newBindings);
+    };
+
+    loadKeyBindings();
+    window.electronAPI.onKeyBindingsChanged(handleKeyBindingsChanged);
+
+    return () => {
+      window.electronAPI.removeAllListeners("keyBindingsChanged");
+    };
+  }, []);
+
+  const pauseVideo = () => {
+    if (videoRef.current && isPlaying) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -53,51 +89,36 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         return;
       }
 
-      switch (e.code) {
-        case "Space":
-          e.preventDefault();
-          togglePlay();
-          break;
-        case "KeyI":
-          e.preventDefault();
-          onMarkIn();
-          break;
-        case "KeyO":
-          e.preventDefault();
-          if (videoRef.current && isPlaying) {
-            videoRef.current.pause();
-            setIsPlaying(false);
-          }
-          onMarkOut();
-          break;
-        case "KeyC":
-          e.preventDefault();
-          onClearMarks();
-          break;
-        case "ArrowLeft":
-          e.preventDefault();
-          if (e.shiftKey) {
-            // Frame by frame backward
-            stepFrame(-1);
-          } else {
-            skipTime(-5);
-          }
-          break;
-        case "ArrowRight":
-          e.preventDefault();
-          if (e.shiftKey) {
-            // Frame by frame forward
-            stepFrame(1);
-          } else {
-            skipTime(5);
-          }
-          break;
+      const key = e.key.toLowerCase();
+
+      if (key === keyBindings.markInKey) {
+        onMarkIn();
+      } else if (key === keyBindings.markOutKey) {
+        pauseVideo();
+        onMarkOut();
+      } else if (key === " ") {
+        e.preventDefault();
+        togglePlay();
+      } else if (key === "escape") {
+        onClearMarks();
+      } else if (key === "arrowright") {
+        if (e.shiftKey) {
+          stepFrame(1);
+        } else {
+          skipTime(5);
+        }
+      } else if (key === "arrowleft") {
+        if (e.shiftKey) {
+          stepFrame(-1);
+        } else {
+          skipTime(-5);
+        }
       }
     };
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [onMarkIn, onMarkOut, onClearMarks, isPlaying]);
+  }, [onMarkIn, onMarkOut, onClearMarks, isPlaying, keyBindings]);
 
   // Calculate frame duration (assuming 30fps)
   const frameDuration = 1 / 30;
@@ -203,20 +224,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <kbd>Space</kbd> - Play/Pause
               </li>
               <li>
-                <kbd>I</kbd> - Mark In Point
+                <kbd>{keyBindings.markInKey.toUpperCase()}</kbd> - Mark In Point
               </li>
               <li>
-                <kbd>O</kbd> - Mark Out Point
+                <kbd>{keyBindings.markOutKey.toUpperCase()}</kbd> - Mark Out
+                Point
               </li>
               <li>
-                <kbd>C</kbd> - Clear Marks
+                <kbd>Escape</kbd> - Clear Marks
               </li>
               <li>
-                <kbd>←</kbd> / <kbd>→</kbd> - Skip 5 seconds
-              </li>
-              <li>
-                <kbd>Shift</kbd> + <kbd>←</kbd> / <kbd>→</kbd> - Previous/Next
-                Frame
+                <kbd>←</kbd> / <kbd>→</kbd> - Previous/Next Frame
               </li>
             </ul>
           </div>
@@ -362,7 +380,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 className={`${styles.markBtn} ${styles.markInBtn}`}
                 disabled={!videoPath}
               >
-                <FontAwesomeIcon icon={faLocationPin} /> Mark In (I)
+                <FontAwesomeIcon icon={faLocationPin} /> Mark In (
+                {keyBindings.markInKey.toUpperCase()})
               </button>
 
               <div className={styles.markInfo}>
@@ -379,11 +398,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </div>
 
               <button
-                onClick={onMarkOut}
+                onClick={() => {
+                  pauseVideo();
+                  onMarkOut();
+                }}
                 className={`${styles.markBtn} ${styles.markOutBtn}`}
                 disabled={!videoPath}
               >
-                <FontAwesomeIcon icon={faLocationPin} /> Mark Out (O)
+                <FontAwesomeIcon icon={faLocationPin} /> Mark Out (
+                {keyBindings.markOutKey.toUpperCase()})
               </button>
 
               <button
@@ -391,7 +414,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 className={styles.clearMarksBtn}
                 disabled={markInTime === null && markOutTime === null}
               >
-                <FontAwesomeIcon icon={faTrash} /> Clear (C)
+                <FontAwesomeIcon icon={faTrash} /> Clear (Esc)
               </button>
             </div>
           </div>

@@ -46,6 +46,10 @@
     },
     "settings": {
       "language": "Language",
+      "keyBindings": "Key Bindings",
+      "markInKey": "Mark In Key",
+      "markOutKey": "Mark Out Key",
+      "keyBindingSaved": "Key binding saved successfully",
       "dangerZone": "Danger Zone",
       "confirmReset": "Are you sure? This will delete all clips and reset categories to default. This action cannot be undone.",
       "resetSuccess": "Database reset successfully",

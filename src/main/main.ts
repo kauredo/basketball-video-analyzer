@@ -18,6 +18,9 @@ import {
   Category,
   Clip,
   resetDatabase,
+  getKeyBindings,
+  setKeyBinding,
+  KeyBindings,
 } from "./database";
 
 // Set FFmpeg path
@@ -422,3 +425,18 @@ ipcMain.handle("reset-database", async () => {
     return false;
   }
 });
+
+// Set up IPC handlers for key bindings
+ipcMain.handle("getKeyBindings", async () => {
+  return getKeyBindings();
+});
+
+ipcMain.handle(
+  "setKeyBinding",
+  async (_, { key, value }: { key: keyof KeyBindings; value: string }) => {
+    await setKeyBinding(key, value);
+    const newBindings = await getKeyBindings();
+    mainWindow.webContents.send("keyBindingsChanged", newBindings);
+    return newBindings;
+  }
+);

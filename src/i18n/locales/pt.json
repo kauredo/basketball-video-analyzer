@@ -46,6 +46,10 @@
     },
     "settings": {
       "language": "Idioma",
+      "keyBindings": "Teclas de Atalho",
+      "markInKey": "Tecla de Marcar Início",
+      "markOutKey": "Tecla de Marcar Fim",
+      "keyBindingSaved": "Tecla de atalho guardada com sucesso",
       "dangerZone": "Zona de Perigo",
       "confirmReset": "Tem a certeza? Isto irá eliminar todos os clips e repor as categorias para o padrão. Esta ação não pode ser desfeita.",
       "resetSuccess": "Base de dados reposta com sucesso",

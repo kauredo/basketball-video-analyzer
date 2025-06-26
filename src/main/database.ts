@@ -26,6 +26,11 @@ export interface Clip {
   created_at?: string;
 }
 
+export interface KeyBindings {
+  markInKey: string;
+  markOutKey: string;
+}
+
 export const setupDatabase = () => {
   try {
     const dbPath = path.join(app.getPath("userData"), "clip-cutter.db");
@@ -40,6 +45,18 @@ export const setupDatabase = () => {
   } catch (error) {
     console.error("Error setting up database:", error);
   }
+};
+
+const setupKeyBindingsTable = () => {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS key_bindings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+    INSERT OR IGNORE INTO key_bindings (key, value) VALUES 
+      ('markInKey', 'z'),
+      ('markOutKey', 'm');
+  `);
 };
 
 const createTables = () => {
@@ -77,6 +94,8 @@ const createTables = () => {
     CREATE INDEX IF NOT EXISTS idx_clips_categories ON clips(categories);
     CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
   `);
+
+  setupKeyBindingsTable();
 };
 
 const insertDefaultCategories = () => {
@@ -309,6 +328,25 @@ export const getClipsByCategory = (categoryId: number): Clip[] => {
     console.error("Error getting clips by category:", error);
     return [];
   }
+};
+
+export const getKeyBindings = (): KeyBindings => {
+  const rows = db.prepare("SELECT key, value FROM key_bindings").all() as {
+    key: string;
+    value: string;
+  }[];
+
+  return rows.reduce(
+    (acc, row) => ({
+      ...acc,
+      [row.key]: row.value,
+    }),
+    { markInKey: "z", markOutKey: "m" } as KeyBindings
+  );
+};
+
+export const setKeyBinding = (key: keyof KeyBindings, value: string): void => {
+  db.prepare("UPDATE key_bindings SET value = ? WHERE key = ?").run(value, key);
 };
 
 export const resetDatabase = () => {

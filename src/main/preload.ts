@@ -38,8 +38,18 @@ export interface ElectronAPI {
   // Event listeners
   onClipProgress: (callback: (data: any) => void) => void;
   onClipCreated: (callback: (clip: any) => void) => void;
+  onKeyBindingsChanged: (
+    callback: (bindings: { markInKey: string; markOutKey: string }) => void
+  ) => void;
   removeAllListeners: (channel: string) => void;
   resetDatabase: () => Promise<boolean>;
+
+  // Settings operations
+  getKeyBindings: () => Promise<{ markInKey: string; markOutKey: string }>;
+  setKeyBinding: (params: {
+    key: "markInKey" | "markOutKey";
+    value: string;
+  }) => Promise<void>;
 }
 
 const electronAPI: ElectronAPI = {
@@ -72,10 +82,19 @@ const electronAPI: ElectronAPI = {
   onClipCreated: callback => {
     ipcRenderer.on("clip-created", (_event, clip) => callback(clip));
   },
+  onKeyBindingsChanged: callback => {
+    ipcRenderer.on("keyBindingsChanged", (_event, bindings) =>
+      callback(bindings)
+    );
+  },
   removeAllListeners: channel => {
     ipcRenderer.removeAllListeners(channel);
   },
   resetDatabase: () => ipcRenderer.invoke("reset-database"),
+
+  // Settings operations
+  getKeyBindings: () => ipcRenderer.invoke("getKeyBindings"),
+  setKeyBinding: params => ipcRenderer.invoke("setKeyBinding", params),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

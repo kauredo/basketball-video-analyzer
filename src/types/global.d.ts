@@ -36,8 +36,18 @@ export interface ElectronAPI {
   // Event listeners
   onClipProgress: (callback: (data: any) => void) => void;
   onClipCreated: (callback: (clip: any) => void) => void;
+  onKeyBindingsChanged: (
+    callback: (bindings: { markInKey: string; markOutKey: string }) => void
+  ) => void;
   removeAllListeners: (channel: string) => void;
   resetDatabase: () => Promise<boolean>;
+
+  // Settings operations
+  getKeyBindings: () => Promise<{ markInKey: string; markOutKey: string }>;
+  setKeyBinding: (
+    key: "markInKey" | "markOutKey",
+    value: string
+  ) => Promise<void>;
 }
 
 declare global {
