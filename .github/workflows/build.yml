@@ -57,9 +57,15 @@ jobs:
       - name: Install dependencies
         env:
           PYTHON:
-            ${{ matrix.os == 'windows-latest' && '$(which python)' || '' }}
+            ${{ matrix.os == 'windows-latest' && github.workspace +
+            '\\python.exe' || '' }}
           GYP_MSVS_VERSION: "2019"
-        run: npm ci
+          npm_config_build_from_source: true
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            where python > ${{ github.workspace }}/python.exe
+          fi
+          npm ci --no-optional
 
       # Rebuild native modules for the target platform
       - name: Rebuild native modules
