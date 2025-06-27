@@ -57,15 +57,13 @@ jobs:
       - name: Install dependencies
         env:
           PYTHON:
-            ${{ matrix.os == 'windows-latest' && format('{0}\python.exe',
+            ${{ matrix.os == 'windows-latest' && format('{0}/python.exe',
             github.workspace) || '' }}
           GYP_MSVS_VERSION: "2019"
           npm_config_build_from_source: true
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            where python > ${{ github.workspace }}/python.exe
-          fi
-          npm ci --no-optional
+          npm install -g @electron-forge/cli
+          npm ci --omit=optional
 
       # Rebuild native modules for the target platform
       - name: Rebuild native modules
@@ -121,9 +119,12 @@ jobs:
         with:
           name: build-logs-${{ matrix.os }}
           path: |
-            npm-debug.log*
-            yarn-debug.log*
-            yarn-error.log*
+            ${{ github.workspace }}/**/*-debug.log
+            ${{ github.workspace }}/**/*-error.log
+            ${{ runner.temp }}/**/*-debug.log
+            ${{ runner.temp }}/**/*-error.log
+            ${{ env.LOCALAPPDATA }}/npm-cache/_logs/*.log
+          if-no-files-found: ignore
 
   release:
     needs: build
