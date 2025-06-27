@@ -9,6 +9,14 @@ module.exports = {
     icon: "./assets/icon",
     osxSign: false,
     osxNotarize: false,
+    // Windows-specific options
+    win32metadata: {
+      CompanyName: "Your Company",
+      FileDescription: "Basketball Video Analyzer",
+      OriginalFilename: "basketball-clip-cutter.exe",
+      ProductName: "Basketball Video Analyzer",
+      InternalName: "basketball-clip-cutter",
+    },
   },
   rebuildConfig: {},
   makers: [
@@ -30,6 +38,12 @@ module.exports = {
       config: {
         name: "basketball_clip_cutter",
         setupExe: "BasketballVideoAnalyzerSetup.exe",
+        setupIcon: "./assets/icon.ico",
+        loadingGif: "./assets/loading.gif",
+        noMsi: true,
+        remoteReleases: "",
+        certificateFile: process.env.WINDOWS_CERTIFICATE_FILE,
+        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
       },
     },
   ],

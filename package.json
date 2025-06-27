@@ -11,7 +11,9 @@
     "dev": "concurrently \"npm run build:main\" \"npm run dev:renderer\" \"wait-on dist/main/main.js && electron-forge start\"",
     "dev:renderer": "webpack --mode=development --watch",
     "package": "npm run build && electron-forge package",
-    "make": "npm run build && electron-forge make"
+    "make": "npm run build && electron-forge make",
+    "postinstall": "electron-builder install-app-deps",
+    "rebuild": "electron-rebuild -f -w better-sqlite3"
   },
   "keywords": [
     "basketball",
@@ -20,6 +22,10 @@
     "scouting",
     "electron"
   ],
+  "build": {
+    "npmRebuild": true,
+    "nodeGypRebuild": false
+  },
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
