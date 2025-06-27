@@ -41,12 +41,12 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: Configure npm for Windows
+      - name: Install Visual Studio Build Tools
         if: matrix.os == 'windows-latest'
-        run: |
-          echo "Setting up Windows build environment..."
-          npm config set node_gyp "$env:APPDATA\npm\node_modules\node-gyp\bin\node-gyp.js"
         shell: powershell
+        run: |
+          echo "Installing Visual Studio Build Tools..."
+          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK" -y
 
       - name: Install Python
         if: matrix.os == 'windows-latest'
@@ -55,11 +55,11 @@ jobs:
           python-version: "3.x"
 
       - name: Install dependencies
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            npm config set python $(which python)
-          fi
-          npm ci
+        env:
+          PYTHON:
+            ${{ matrix.os == 'windows-latest' && '$(which python)' || '' }}
+          GYP_MSVS_VERSION: "2019"
+        run: npm ci
 
       # Rebuild native modules for the target platform
       - name: Rebuild native modules
