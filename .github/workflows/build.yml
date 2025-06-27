@@ -71,11 +71,12 @@ jobs:
       # Rebuild native modules for the target platform
       - name: Rebuild native modules
         run: |
-          electron-rebuild -f -w better-sqlite3 -w lzma-native
+          electron-rebuild -f --which better-sqlite3,lzma-native
         env:
           ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
           ELECTRON_BUILDER_CACHE:
             ${{ github.workspace }}/.cache/electron-builder
+          npm_config_build_from_source: true
 
       # Debug FFmpeg installation
       - name: Debug FFmpeg
