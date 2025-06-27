@@ -49,25 +49,30 @@ jobs:
           choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK" -y
 
       - name: Install Python
-        if: matrix.os == 'windows-latest'
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Setup Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
 
       - name: Install dependencies
         env:
-          PYTHON:
-            ${{ matrix.os == 'windows-latest' && format('{0}/python.exe',
-            github.workspace) || '' }}
+          PYTHON: ${{ github.workspace }}/python.exe
           GYP_MSVS_VERSION: "2019"
           npm_config_build_from_source: true
+          npm_config_python: ${{ github.workspace }}/python.exe
         run: |
+          npm install -g @electron/rebuild
           npm ci --omit=optional
-          npm install -g electron-rebuild
 
       # Rebuild native modules for the target platform
       - name: Rebuild native modules
-        run: npm run rebuild
+        run: |
+          electron-rebuild -f -w better-sqlite3 -w lzma-native
         env:
           ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
           ELECTRON_BUILDER_CACHE:
