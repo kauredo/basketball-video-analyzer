@@ -64,9 +64,14 @@ jobs:
           GYP_MSVS_VERSION: "2019"
           npm_config_build_from_source: true
           npm_config_python: ${{ github.workspace }}/python.exe
+          npm_config_registry: "https://registry.npmjs.org/"
+          ELECTRON_MIRROR: "https://npmmirror.com/mirrors/electron/"
+          ELECTRON_BUILDER_BINARIES_MIRROR: "https://npmmirror.com/mirrors/electron-builder-binaries/"
         run: |
+          npm config list
           npm install -g @electron/rebuild
           npm ci --omit=optional
+          npm install --save-dev @electron-forge/maker-squirrel@7.2.0 @electron-forge/maker-zip@7.2.0 @electron-forge/maker-dmg@7.2.0
 
       # Rebuild native modules for the target platform
       - name: Rebuild native modules
@@ -88,19 +93,17 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           export DEBUG="electron-forge:*"
+          export ELECTRON_FORGE_MAKERS='["@electron-forge/maker-dmg","@electron-forge/maker-zip"]'
           npm run make
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
-          ELECTRON_FORGE_MAKERS:
-            '["@electron-forge/maker-dmg", "@electron-forge/maker-zip"]'
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
         run: |
-          set DEBUG=electron-forge:*
+          set "DEBUG=electron-forge:*"
+          set "ELECTRON_FORGE_MAKERS=[\"@electron-forge/maker-squirrel\"]"
           npm run make
-        env:
-          ELECTRON_FORGE_MAKERS: '["@electron-forge/maker-squirrel"]'
 
       - name: Upload macOS artifacts
         if: matrix.os == 'macos-latest'
