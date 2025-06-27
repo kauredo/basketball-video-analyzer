@@ -57,8 +57,8 @@ jobs:
       - name: Install dependencies
         env:
           PYTHON:
-            ${{ matrix.os == 'windows-latest' && github.workspace +
-            '\\python.exe' || '' }}
+            ${{ matrix.os == 'windows-latest' && format('{0}\python.exe',
+            github.workspace) || '' }}
           GYP_MSVS_VERSION: "2019"
           npm_config_build_from_source: true
         run: |
