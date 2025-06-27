@@ -27,6 +27,30 @@ interface VideoPlayerProps {
   onClearMarks: () => void;
 }
 
+// Helper function to format file paths for video src
+const formatVideoSrc = (path: string): string => {
+  // Check if it's already a file URL
+  if (path.startsWith("file://")) {
+    return path;
+  }
+
+  // For Windows paths (detected by drive letter pattern like C:\ or C:/)
+  if (/^[A-Za-z]:[\\/]/.test(path)) {
+    // Convert backslashes to forward slashes for URL format
+    const normalizedPath = path.replace(/\\/g, "/");
+    // Windows file URLs need three slashes
+    return `file:///${normalizedPath}`;
+  }
+
+  // For Unix-like paths (starting with /)
+  if (path.startsWith("/")) {
+    return `file://${path}`;
+  }
+
+  // Fallback - just prepend file://
+  return `file://${path}`;
+};
+
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   videoPath,
   onTimeUpdate,
@@ -47,6 +71,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     markInKey: "z",
     markOutKey: "m",
   });
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadKeyBindings = async () => {
@@ -154,7 +179,39 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const dur = videoRef.current.duration;
       setDuration(dur);
       onDurationChange(dur);
+      setVideoError(null);
     }
+  };
+
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    const error = video.error;
+
+    console.error("Video error:", error);
+    console.error("Video path:", videoPath);
+    console.error(
+      "Formatted src:",
+      videoPath ? formatVideoSrc(videoPath) : null
+    );
+
+    let errorMessage = "Error loading video file";
+    if (error) {
+      switch (error.code) {
+        case 1:
+          errorMessage = "Video loading aborted";
+          break;
+        case 2:
+          errorMessage = "Network error while loading video";
+          break;
+        case 3:
+          errorMessage = "Video decoding error - format may not be supported";
+          break;
+        case 4:
+          errorMessage = "Video format not supported";
+          break;
+      }
+    }
+    setVideoError(errorMessage);
   };
 
   const togglePlay = () => {
@@ -258,16 +315,32 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           }
         }}
       >
-        <video
-          ref={videoRef}
-          src={`file://${videoPath}`}
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          className={styles.videoElement}
-          onClick={togglePlay}
-        />
+        {videoError ? (
+          <div className={styles.videoPlaceholder}>
+            <div className={styles.placeholderContent}>
+              <h3>
+                <FontAwesomeIcon icon={faFilm} /> {videoError}
+              </h3>
+              <p>Path: {videoPath}</p>
+              <p>
+                Please check if the video file exists and is in a supported
+                format (MP4, MOV, AVI, MKV, WebM)
+              </p>
+            </div>
+          </div>
+        ) : (
+          <video
+            ref={videoRef}
+            src={formatVideoSrc(videoPath)}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onError={handleVideoError}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            className={styles.videoElement}
+            onClick={togglePlay}
+          />
+        )}
         <div className={styles.videoControls}>
           <div className={styles.progressContainer}>
             <div className={styles.progressTrack}>
@@ -378,7 +451,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <button
                 onClick={onMarkIn}
                 className={`${styles.markBtn} ${styles.markInBtn}`}
-                disabled={!videoPath}
+                disabled={!videoPath || !!videoError}
               >
                 <FontAwesomeIcon icon={faLocationPin} /> Mark In (
                 {keyBindings.markInKey.toUpperCase()})
@@ -403,7 +476,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   onMarkOut();
                 }}
                 className={`${styles.markBtn} ${styles.markOutBtn}`}
-                disabled={!videoPath}
+                disabled={!videoPath || !!videoError}
               >
                 <FontAwesomeIcon icon={faLocationPin} /> Mark Out (
                 {keyBindings.markOutKey.toUpperCase()})

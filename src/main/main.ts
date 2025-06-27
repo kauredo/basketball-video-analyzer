@@ -28,7 +28,12 @@ import {
 
 // Set FFmpeg path
 if (ffmpegStatic) {
-  ffmpeg.setFfmpegPath(ffmpegStatic);
+  // Ensure the path is properly formatted for the OS
+  const ffmpegPath = path.normalize(ffmpegStatic);
+  console.log("FFmpeg path:", ffmpegPath);
+  ffmpeg.setFfmpegPath(ffmpegPath);
+} else {
+  console.error("FFmpeg static path not found!");
 }
 
 let mainWindow: BrowserWindow;
@@ -128,12 +133,10 @@ ipcMain.handle(
         const { inputPath, startTime, endTime, title, categories, notes } =
           params;
 
-        // Normalize all paths for Windows
-        const normalizedInputPath = path
-          .normalize(inputPath)
-          .replace(/\\/g, "/");
+        // Use native path separators for file system operations
+        const normalizedInputPath = path.normalize(inputPath);
         const clipsDir = getClipsDirectory();
-        const normalizedClipsDir = path.normalize(clipsDir).replace(/\\/g, "/");
+        const normalizedClipsDir = path.normalize(clipsDir);
 
         // Ensure clips directory exists
         if (!fs.existsSync(normalizedClipsDir)) {
@@ -157,12 +160,8 @@ ipcMain.handle(
         const safeTitle = title.replace(/[^a-zA-Z0-9]/g, "_");
         const outputFileName = `${safeTitle}_${timestamp}_${clipId}.mp4`;
         const thumbnailFileName = `${safeTitle}_${timestamp}_${clipId}_thumb.jpg`;
-        const outputPath = path
-          .join(normalizedClipsDir, outputFileName)
-          .replace(/\\/g, "/");
-        const thumbnailPath = path
-          .join(normalizedClipsDir, thumbnailFileName)
-          .replace(/\\/g, "/");
+        const outputPath = path.join(normalizedClipsDir, outputFileName);
+        const thumbnailPath = path.join(normalizedClipsDir, thumbnailFileName);
         const duration = endTime - startTime;
 
         // Validate that input file exists and is accessible
@@ -189,14 +188,14 @@ ipcMain.handle(
         try {
           const inputStats = fs.statSync(normalizedInputPath);
           const estimatedSize = inputStats.size * 2; // Conservative estimate
-          const { free } =
-            process.platform === "win32"
-              ? require("fs").statfsSync(normalizedClipsDir.split("/")[0] + "/") // Get root drive stats on Windows
-              : require("fs").statfsSync(normalizedClipsDir);
 
-          if (free < estimatedSize) {
-            reject(new Error("Not enough disk space to create the clip"));
-            return;
+          // Skip disk space check on Windows for now as it's complex
+          if (process.platform !== "win32") {
+            const { free } = require("fs").statfsSync(normalizedClipsDir);
+            if (free < estimatedSize) {
+              reject(new Error("Not enough disk space to create the clip"));
+              return;
+            }
           }
         } catch (error) {
           console.warn("Could not check disk space:", error);
@@ -204,12 +203,17 @@ ipcMain.handle(
         }
 
         console.log("Starting thumbnail creation...");
-        const ffmpegPath = require("ffmpeg-static");
+        const ffmpegPath = ffmpegStatic;
         console.log("Using FFmpeg from:", ffmpegPath);
 
         // First, generate the thumbnail
-        ffmpeg(normalizedInputPath)
-          .setFfmpegPath(ffmpegPath)
+        const thumbnailCommand = ffmpeg(normalizedInputPath);
+
+        if (ffmpegPath) {
+          thumbnailCommand.setFfmpegPath(ffmpegPath);
+        }
+
+        thumbnailCommand
           .setStartTime(startTime)
           .frames(1)
           .outputOptions(["-y"]) // Overwrite output files
@@ -226,8 +230,13 @@ ipcMain.handle(
 
             // After thumbnail is created, create the clip
             console.log("Starting clip creation...");
-            ffmpeg(normalizedInputPath)
-              .setFfmpegPath(ffmpegPath)
+            const clipCommand = ffmpeg(normalizedInputPath);
+
+            if (ffmpegPath) {
+              clipCommand.setFfmpegPath(ffmpegPath);
+            }
+
+            clipCommand
               .setStartTime(startTime)
               .setDuration(duration)
               .outputOptions([
@@ -278,7 +287,12 @@ ipcMain.handle(
               })
               .on("error", error => {
                 console.error("FFmpeg clip creation error:", error);
-                reject(error);
+                console.error("Error stack:", error.stack);
+                console.error("Input path:", normalizedInputPath);
+                console.error("Output path:", outputPath);
+                console.error("Start time:", startTime);
+                console.error("Duration:", duration);
+                reject(new Error(`FFmpeg error: ${error.message}`));
               })
               .on("progress", progress => {
                 mainWindow.webContents.send("clip-progress", {
