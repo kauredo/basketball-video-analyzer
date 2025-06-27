@@ -97,18 +97,20 @@ jobs:
       - name: Build for macOS
         if: matrix.os == 'macos-latest'
         run: |
-          export DEBUG="electron-forge:*"
-          export ELECTRON_FORGE_MAKERS='["@electron-forge/maker-dmg","@electron-forge/maker-zip"]'
           npm run make
         env:
+          DEBUG: "electron-forge:*"
+          ELECTRON_FORGE_MAKERS: '["@electron-forge/maker-dmg","@electron-forge/maker-zip"]'
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          set "DEBUG=electron-forge:*"
-          set "ELECTRON_FORGE_MAKERS=[\"@electron-forge/maker-squirrel\"]"
           npm run make
+        env:
+          DEBUG: "electron-forge:*"
+          ELECTRON_FORGE_MAKERS: '["@electron-forge/maker-squirrel"]'
 
       - name: Upload macOS artifacts
         if: matrix.os == 'macos-latest'
