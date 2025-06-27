@@ -37,16 +37,22 @@ jobs:
       # Windows-specific setup
       - name: Windows setup
         if: matrix.os == 'windows-latest'
+        uses: microsoft/setup-msbuild@v1.3
+        with:
+          msbuild-architecture: x64
+
+      - name: Configure npm for Windows
+        if: matrix.os == 'windows-latest'
         run: |
           echo "Setting up Windows build environment..."
-          npm config set msvs_version 2019
+          npm config set node_gyp "$env:APPDATA\npm\node_modules\node-gyp\bin\node-gyp.js"
         shell: powershell
 
       - name: Install Python
         if: matrix.os == 'windows-latest'
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install dependencies
         run: |
