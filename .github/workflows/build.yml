@@ -86,15 +86,21 @@ jobs:
 
       - name: Build for macOS
         if: matrix.os == 'macos-latest'
-        run: npm run make -- --platform=darwin
+        run: |
+          export DEBUG="electron-forge:*"
+          npm run make
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
+          ELECTRON_FORGE_MAKERS:
+            '["@electron-forge/maker-dmg", "@electron-forge/maker-zip"]'
 
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
-        run: npm run make -- --platform=win32
+        run: |
+          set DEBUG=electron-forge:*
+          npm run make
         env:
-          DEBUG: electron-forge:*
+          ELECTRON_FORGE_MAKERS: '["@electron-forge/maker-squirrel"]'
 
       - name: Upload macOS artifacts
         if: matrix.os == 'macos-latest'

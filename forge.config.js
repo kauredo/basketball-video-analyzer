@@ -21,15 +21,23 @@ module.exports = {
   },
   rebuildConfig: {},
   makers: [
-    {
+    process.platform === "win32" && {
       name: "@electron-forge/maker-squirrel",
-      config: {},
+      config: {
+        name: "basketball-clip-cutter",
+      },
     },
-    {
+    process.platform === "darwin" && {
+      name: "@electron-forge/maker-dmg",
+      config: {
+        format: "ULFO",
+      },
+    },
+    process.platform === "darwin" && {
       name: "@electron-forge/maker-zip",
       platforms: ["darwin"],
     },
-    {
+    process.platform === "linux" && {
       name: "@electron-forge/maker-deb",
       config: {
         name: "basketball-clip-cutter",
@@ -37,7 +45,7 @@ module.exports = {
         category: "Video",
       },
     },
-    {
+    process.platform === "linux" && {
       name: "@electron-forge/maker-rpm",
       config: {
         name: "basketball-clip-cutter",
@@ -45,7 +53,7 @@ module.exports = {
         category: "Video",
       },
     },
-  ],
+  ].filter(Boolean),
   plugins: [
     {
       name: "@electron-forge/plugin-auto-unpack-natives",
