@@ -89,6 +89,11 @@ jobs:
           npm list ffmpeg-static
           node -e "console.log('FFmpeg path:', require('ffmpeg-static'))"
 
+      - name: Build TypeScript and Webpack
+        run: |
+          npm run build:main
+          npm run build:renderer
+
       - name: Build for macOS
         if: matrix.os == 'macos-latest'
         run: |
