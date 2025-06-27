@@ -62,8 +62,8 @@ jobs:
           GYP_MSVS_VERSION: "2019"
           npm_config_build_from_source: true
         run: |
-          npm install -g @electron-forge/cli
           npm ci --omit=optional
+          npm install -g electron-rebuild
 
       # Rebuild native modules for the target platform
       - name: Rebuild native modules

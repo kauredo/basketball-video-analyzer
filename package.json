@@ -10,10 +10,10 @@
     "build:renderer": "webpack --mode=production",
     "dev": "concurrently \"npm run build:main\" \"npm run dev:renderer\" \"wait-on dist/main/main.js && electron-forge start\"",
     "dev:renderer": "webpack --mode=development --watch",
-    "package": "npm run build && electron-forge package",
-    "make": "npm run build && electron-forge make",
-    "postinstall": "@electron-forge/cli install-app-deps",
-    "rebuild": "electron-rebuild -f -w better-sqlite3"
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
+    "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f"
   },
   "keywords": [
     "basketball",
@@ -28,15 +28,40 @@
   },
   "author": "Your Name",
   "license": "MIT",
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "basketball_video_analyzer"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-dmg",
+          "config": {}
+        }
+      ]
+    }
+  },
   "devDependencies": {
-    "@electron-forge/cli": "^7.2.0",
-    "@electron-forge/maker-deb": "^7.2.0",
+    "@electron-forge/cli": "^7.8.1",
+    "@electron-forge/maker-deb": "^7.8.1",
     "@electron-forge/maker-dmg": "^7.8.1",
-    "@electron-forge/maker-rpm": "^7.2.0",
+    "@electron-forge/maker-rpm": "^7.8.1",
     "@electron-forge/maker-squirrel": "^7.8.1",
-    "@electron-forge/maker-zip": "^7.2.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.2.0",
-    "@electron-forge/plugin-fuses": "^7.2.0",
+    "@electron-forge/maker-zip": "^7.8.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+    "@electron-forge/plugin-fuses": "^7.8.1",
+    "@electron-forge/publisher-github": "^7.8.1",
+    "@electron/fuses": "^1.8.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/fluent-ffmpeg": "^2.1.24",
     "@types/node": "^20.0.0",
@@ -46,6 +71,7 @@
     "concurrently": "^8.2.0",
     "css-loader": "^6.8.0",
     "electron": "^28.0.0",
+    "electron-rebuild": "^3.2.0",
     "html-webpack-plugin": "^5.5.0",
     "style-loader": "^3.3.0",
     "ts-loader": "^9.4.0",
@@ -60,6 +86,7 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@types/react-resizable": "^3.0.8",
     "better-sqlite3": "^9.2.2",
+    "electron-squirrel-startup": "^1.0.1",
     "ffmpeg-static": "^5.2.0",
     "fluent-ffmpeg": "^2.1.2",
     "i18next": "^25.2.1",
