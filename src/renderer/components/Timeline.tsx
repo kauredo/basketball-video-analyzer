@@ -215,8 +215,6 @@ export const Timeline: React.FC<TimelineProps> = ({
         {/* Left Panel: Clips Table */}
         <div className={styles.clipsPanel}>
           <div className={styles.clipsPanelHeader}>
-            <h4>{t("app.timeline.clipsList")}</h4>
-
             {/* Search and Filter Controls */}
             <div className={styles.controls}>
               <div className={styles.searchBox}>
@@ -275,7 +273,6 @@ export const Timeline: React.FC<TimelineProps> = ({
                     <th>Time</th>
                     <th>Duration</th>
                     <th>Notes</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -338,15 +335,6 @@ export const Timeline: React.FC<TimelineProps> = ({
                                   : clip.notes
                                 : "-"}
                             </span>
-                          </td>
-                          <td className={styles.actionsCell}>
-                            <button
-                              className={styles.playBtn}
-                              onClick={e => handleClipClick(clip, e)}
-                              title={t("app.timeline.playClip")}
-                            >
-                              <FontAwesomeIcon icon={faPlay} />
-                            </button>
                           </td>
                         </tr>,
                       ];
@@ -440,7 +428,6 @@ export const Timeline: React.FC<TimelineProps> = ({
         {/* Right Panel: Visual Timeline */}
         <div className={styles.timelinePanel}>
           <div className={styles.timelinePanelHeader}>
-            <h4>{t("app.timeline.visualTimeline")}</h4>
             <div className={styles.timelineInfo}>
               <span>
                 {t("app.timeline.duration")}: {formatTime(videoDuration)}
