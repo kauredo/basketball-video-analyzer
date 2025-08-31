@@ -180,19 +180,19 @@ export const Timeline: React.FC<TimelineProps> = ({
               >
                 <option value="">{t("app.timeline.allCategories")}</option>
                 {categories
-                  .filter(cat => !cat.parent_id) // Only show parent categories in filter
-                  .map(category => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                {categories
-                  .filter(cat => cat.parent_id) // Then show subcategories
-                  .map(category => (
-                    <option key={category.id} value={category.id}>
-                      └ {category.name}
-                    </option>
-                  ))}
+                  .filter(cat => !cat.parent_id) // Parent categories
+                  .map(parentCategory => [
+                    // Parent category option
+                    <option key={parentCategory.id} value={parentCategory.id}>
+                      {parentCategory.name}
+                    </option>,
+                    // Subcategory options
+                    ...(parentCategory.children || []).map(subcategory => (
+                      <option key={subcategory.id} value={subcategory.id}>
+                        └ {subcategory.name}
+                      </option>
+                    ))
+                  ]).flat()}
               </select>
             </div>
           </div>

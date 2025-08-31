@@ -437,8 +437,10 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                           {category.name} ({count})
                         </button>
                         
-                        {/* Show subcategories only if parent is selected */}
-                        {selectedCategory === category.id && category.children && category.children.length > 0 && (
+                        {/* Show subcategories if parent is selected OR if any subcategory is selected */}
+                        {((selectedCategory === category.id) || 
+                          (category.children && category.children.some(child => child.id === selectedCategory))) && 
+                          category.children && category.children.length > 0 && (
                           <div className={styles.subcategoryButtons}>
                             {category.children.map((subcategory: Category) => {
                               const subCount = clips.filter(clip => {

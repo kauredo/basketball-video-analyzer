@@ -16,6 +16,8 @@ interface Category {
   name: string;
   color: string;
   description?: string;
+  parent_id?: number;
+  children?: Category[];
 }
 
 interface ClipCreatorProps {
@@ -68,7 +70,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   const loadCategories = async () => {
     try {
-      const cats = await window.electronAPI.getCategories();
+      const cats = await window.electronAPI.getCategoriesHierarchical();
       setCategories(cats);
     } catch (error) {
       console.error("Error loading categories:", error);
@@ -93,7 +95,16 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   const generateClipTitle = () => {
     if (selectedCategories.length === 0) return "Untitled Clip";
 
-    const selectedCategoryNames = categories
+    // Get all categories (including children) for proper name lookup
+    const allCategories: Category[] = [];
+    categories.forEach(cat => {
+      allCategories.push(cat);
+      if (cat.children) {
+        allCategories.push(...cat.children);
+      }
+    });
+
+    const selectedCategoryNames = allCategories
       .filter(cat => selectedCategories.includes(cat.id))
       .map(cat => cat.name)
       .join(" + ");
@@ -181,7 +192,17 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           <h4>Categories ({selectedCategories.length} selected)</h4>
           <div className={styles.categoryActions}>
             <button
-              onClick={() => setSelectedCategories(categories.map(c => c.id))}
+              onClick={() => {
+                // Get all category IDs including children
+                const allCategoryIds: number[] = [];
+                categories.forEach(cat => {
+                  allCategoryIds.push(cat.id);
+                  if (cat.children) {
+                    cat.children.forEach(child => allCategoryIds.push(child.id));
+                  }
+                });
+                setSelectedCategories(allCategoryIds);
+              }}
               disabled={isCreating}
               className={styles.selectAllBtn}
             >
@@ -197,29 +218,62 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           </div>
         </div>
         <div className={styles.categoryGrid}>
-          {categories.map(category => (
-            <button
-              key={category.id}
-              onClick={() => handleCategoryToggle(category.id)}
-              className={`${
-                selectedCategories.includes(category.id) ? styles.selected : ""
-              }`}
-              style={{
-                borderColor: category.color,
-                backgroundColor: selectedCategories.includes(category.id)
-                  ? category.color
-                  : "transparent",
-                color: selectedCategories.includes(category.id)
-                  ? "#fff"
-                  : category.color,
-              }}
-            >
-              <span className={styles.categoryName}>{category.name}</span>
-              {selectedCategories.includes(category.id) && (
-                <span className={styles.selectedIndicator}>✓</span>
-              )}
-            </button>
-          ))}
+          {categories
+            .filter(cat => !cat.parent_id) // Only show parent categories
+            .map(parentCategory => (
+              <div key={parentCategory.id} className={styles.categoryGroup}>
+                {/* Parent Category Button */}
+                <button
+                  onClick={() => handleCategoryToggle(parentCategory.id)}
+                  className={`${styles.categoryBtn} ${
+                    selectedCategories.includes(parentCategory.id) ? styles.selected : ""
+                  }`}
+                  style={{
+                    borderColor: parentCategory.color,
+                    backgroundColor: selectedCategories.includes(parentCategory.id)
+                      ? parentCategory.color
+                      : "transparent",
+                    color: selectedCategories.includes(parentCategory.id)
+                      ? "#fff"
+                      : parentCategory.color,
+                  }}
+                >
+                  <span className={styles.categoryName}>{parentCategory.name}</span>
+                  {selectedCategories.includes(parentCategory.id) && (
+                    <span className={styles.selectedIndicator}>✓</span>
+                  )}
+                </button>
+                
+                {/* Subcategory Buttons */}
+                {parentCategory.children && parentCategory.children.length > 0 && (
+                  <div className={styles.subcategoryGrid}>
+                    {parentCategory.children.map((subcategory: Category) => (
+                      <button
+                        key={subcategory.id}
+                        onClick={() => handleCategoryToggle(subcategory.id)}
+                        className={`${styles.categoryBtn} ${styles.subcategoryBtn} ${
+                          selectedCategories.includes(subcategory.id) ? styles.selected : ""
+                        }`}
+                        style={{
+                          borderColor: subcategory.color,
+                          backgroundColor: selectedCategories.includes(subcategory.id)
+                            ? subcategory.color
+                            : "transparent",
+                          color: selectedCategories.includes(subcategory.id)
+                            ? "#fff"
+                            : subcategory.color,
+                        }}
+                      >
+                        <span className={styles.categoryName}>└ {subcategory.name}</span>
+                        {selectedCategories.includes(subcategory.id) && (
+                          <span className={styles.selectedIndicator}>✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
         </div>
       </div>
 
