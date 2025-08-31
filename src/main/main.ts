@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import {
   setupDatabase,
   getCategories,
+  getCategoriesHierarchical,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -425,6 +426,15 @@ ipcMain.handle("get-categories", async () => {
     return getCategories();
   } catch (error) {
     console.error("Error getting categories:", error);
+    return [];
+  }
+});
+
+ipcMain.handle("get-categories-hierarchical", async () => {
+  try {
+    return getCategoriesHierarchical();
+  } catch (error) {
+    console.error("Error getting hierarchical categories:", error);
     return [];
   }
 });

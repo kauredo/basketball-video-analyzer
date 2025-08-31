@@ -9,6 +9,7 @@ export interface Category {
   name: string;
   color: string;
   description?: string;
+  parent_id?: number | null; // For subcategories
   created_at?: string;
 }
 
@@ -176,6 +177,28 @@ const migrateDatabase = () => {
 
       console.log("Database migration completed successfully");
     }
+
+    // Check if we need to add parent_id to categories table for subcategories
+    const categoriesTableInfo = db
+      .prepare("PRAGMA table_info(categories)")
+      .all() as Array<{
+      name: string;
+    }>;
+    const hasParentId = categoriesTableInfo.some(
+      col => col.name === "parent_id"
+    );
+
+    if (!hasParentId) {
+      console.log("Adding subcategories support...");
+
+      // Add parent_id column to categories table
+      db.exec(`
+        ALTER TABLE categories 
+        ADD COLUMN parent_id INTEGER REFERENCES categories(id) ON DELETE CASCADE
+      `);
+
+      console.log("Subcategories support added successfully");
+    }
   } catch (error) {
     console.error("Error during database migration:", error);
     throw error;
@@ -212,10 +235,12 @@ const createTables = () => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
       color TEXT NOT NULL,
       description TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      parent_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(name, parent_id)
     )
   `);
 
@@ -257,7 +282,7 @@ const insertDefaultCategories = () => {
       .get() as { count: number };
 
     if (existingCategories.count === 0) {
-      const defaultCategories = [
+      const parentCategories = [
         {
           name: "Offense",
           color: "#4CAF50",
@@ -269,14 +294,14 @@ const insertDefaultCategories = () => {
           description: "Defensive plays and actions",
         },
         {
-          name: "Rebounds",
-          color: "#FF9800",
-          description: "Offensive and defensive rebounds",
-        },
-        {
           name: "Screens",
           color: "#9C27B0",
           description: "Screen actions and plays",
+        },
+        {
+          name: "Rebounds",
+          color: "#FF9800",
+          description: "Offensive and defensive rebounds",
         },
         {
           name: "Turnovers",
@@ -311,15 +336,20 @@ const insertDefaultCategories = () => {
       ];
 
       const stmt = db.prepare(`
-        INSERT INTO categories (name, color, description)
-        VALUES (?, ?, ?)
+        INSERT INTO categories (name, color, description, parent_id)
+        VALUES (?, ?, ?, ?)
       `);
 
-      defaultCategories.forEach(category => {
-        stmt.run(category.name, category.color, category.description);
+      const parentIds = new Map<string, number>();
+      parentCategories.forEach(category => {
+        const result = stmt.run(
+          category.name,
+          category.color,
+          category.description,
+          null
+        );
+        parentIds.set(category.name, result.lastInsertRowid as number);
       });
-
-      console.log("Default categories inserted");
     }
   } catch (error) {
     console.error("Error inserting default categories:", error);
@@ -400,10 +430,29 @@ export const deleteProject = (id: number): void => {
 // Category operations
 export const getCategories = (): Category[] => {
   try {
-    const stmt = db.prepare("SELECT * FROM categories ORDER BY name ASC");
+    const stmt = db.prepare(
+      "SELECT * FROM categories ORDER BY parent_id ASC, name ASC"
+    );
     return stmt.all() as Category[];
   } catch (error) {
     console.error("Error getting categories:", error);
+    return [];
+  }
+};
+
+export const getCategoriesHierarchical = (): (Category & {
+  children?: Category[];
+})[] => {
+  try {
+    const allCategories = getCategories();
+    const parentCategories = allCategories.filter(cat => !cat.parent_id);
+
+    return parentCategories.map(parent => ({
+      ...parent,
+      children: allCategories.filter(cat => cat.parent_id === parent.id),
+    }));
+  } catch (error) {
+    console.error("Error getting hierarchical categories:", error);
     return [];
   }
 };
@@ -413,14 +462,15 @@ export const createCategory = (
 ): Category => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO categories (name, color, description)
-      VALUES (?, ?, ?)
+      INSERT INTO categories (name, color, description, parent_id)
+      VALUES (?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       category.name,
       category.color,
-      category.description || null
+      category.description || null,
+      category.parent_id || null
     );
 
     return {

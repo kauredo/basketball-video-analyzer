@@ -38,6 +38,7 @@ export interface ElectronAPI {
 
   // Category operations
   getCategories: () => Promise<any[]>;
+  getCategoriesHierarchical: () => Promise<any[]>;
   createCategory: (category: any) => Promise<any>;
   updateCategory: (id: number, updates: any) => Promise<boolean>;
   deleteCategory: (id: number) => Promise<boolean>;
@@ -87,6 +88,8 @@ const electronAPI: ElectronAPI = {
 
   // Category operations
   getCategories: () => ipcRenderer.invoke("get-categories"),
+  getCategoriesHierarchical: () =>
+    ipcRenderer.invoke("get-categories-hierarchical"),
   createCategory: category => ipcRenderer.invoke("create-category", category),
   updateCategory: (id, updates) =>
     ipcRenderer.invoke("update-category", id, updates),

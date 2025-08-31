@@ -101,6 +101,12 @@
   font-size: var(--font-size-md);
 }
 
+.subcategoryIndicator {
+  color: var(--text-tertiary);
+  font-weight: var(--font-weight-normal);
+  margin-right: var(--spacing-xs);
+}
+
 .categoryDescription {
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
@@ -146,12 +152,103 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Improved category editing form */
 .categoryEditForm {
   flex: 1;
+  background: var(--bg-secondary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) 0;
+  box-shadow: var(--shadow-md);
+}
+
+.editFormHeader {
+  margin-bottom: var(--spacing-md);
+}
+
+.editFormHeader h4 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.editFormContent {
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.formGroup label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.editInput {
+  width: 100%;
+  height: var(--input-height);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+}
+
+.editInput:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.editInput:hover {
+  border-color: var(--border-color-hover);
+}
+
+/* Improved subcategory form */
+.addSubcategoryForm {
+  background: var(--bg-secondary);
+  border: 2px solid var(--color-success);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) 0;
+  margin-left: 40px;
+  box-shadow: var(--shadow-md);
+  width: calc(100% - 40px);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.subcategoryFormHeader {
+  display: flex;
+  align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+.subcategoryFormHeader h5 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+.colorIndicator {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-round);
+  border: 2px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .categoryNameInput,
@@ -390,4 +487,214 @@
 
 .loadPresetBtn {
   background: var(--bg-tertiary);
+}
+
+/* Hierarchical category styles */
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.expandButton {
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.expandButton.hasChildren:hover {
+  color: var(--text-primary);
+  background: var(--bg-quaternary);
+  border-radius: var(--radius-sm);
+}
+
+.expandButton.noChildren {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.subcategories {
+  margin-left: 20px;
+  border-left: 1px solid var(--border-color-light);
+  padding-left: var(--spacing-sm);
+}
+
+.addSubBtn {
+  height: 32px;
+  width: 32px;
+  background: var(--color-success);
+  border: 1px solid var(--color-success);
+  color: white;
+  padding: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addSubBtn:hover {
+  background: var(--color-success-dark);
+  border-color: var(--color-success-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.editInput {
+  flex: 1;
+  height: var(--input-height);
+  padding: 0 var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  margin-right: var(--spacing-sm);
+}
+
+.editActions {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+/* Subcategory form styles */
+.addSubcategoryForm {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin: var(--spacing-sm) 0;
+  margin-left: 40px;
+}
+
+.subcategoryNameInput,
+.subcategoryDescriptionInput {
+  width: 100%;
+  max-width: 100%;
+  height: var(--input-height);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.subcategoryDescriptionInput {
+  height: 60px;
+  resize: vertical;
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.subcategoryNameInput:hover,
+.subcategoryDescriptionInput:hover {
+  border-color: var(--border-color-hover);
+}
+
+.subcategoryNameInput:focus,
+.subcategoryDescriptionInput:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.subcategoryActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.createSubcategoryBtn {
+  height: var(--button-height);
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: var(--color-primary);
+  color: white;
+  border: 1px solid var(--color-primary);
+}
+
+.createSubcategoryBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.createSubcategoryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.editActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.saveBtn {
+  height: var(--button-height);
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: var(--color-primary);
+  color: white;
+  border: 1px solid var(--color-primary);
+}
+
+.saveBtn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.cancelBtn {
+  height: var(--button-height);
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.cancelBtn:hover {
+  background: var(--bg-quaternary);
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }

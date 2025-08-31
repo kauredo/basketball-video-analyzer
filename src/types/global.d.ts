@@ -4,6 +4,8 @@ export interface Category {
   color: string;
   description?: string;
   created_at?: string;
+  parent_id?: number;
+  children?: Category[];
 }
 
 export interface ElectronAPI {
@@ -31,6 +33,7 @@ export interface ElectronAPI {
 
   // Category operations
   getCategories: () => Promise<Category[]>;
+  getCategoriesHierarchical: () => Promise<Category[]>;
   createCategory: (
     category: Omit<Category, "id" | "created_at">
   ) => Promise<Category>;

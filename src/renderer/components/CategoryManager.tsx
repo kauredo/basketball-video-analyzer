@@ -23,11 +23,22 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 }) => {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(
+    new Set()
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [presets, setPresets] = useState<string[]>([]);
   const [newPresetName, setNewPresetName] = useState("");
   const [newCategory, setNewCategory] = useState({
+    name: "",
+    color: "#4CAF50",
+    description: "",
+  });
+  const [addingSubcategoryTo, setAddingSubcategoryTo] = useState<number | null>(
+    null
+  );
+  const [newSubcategory, setNewSubcategory] = useState({
     name: "",
     color: "#4CAF50",
     description: "",
@@ -40,8 +51,17 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
   const loadCategories = async () => {
     try {
-      const cats = await window.electronAPI.getCategories();
+      const cats = await window.electronAPI.getCategoriesHierarchical();
       setCategories(cats);
+
+      // Auto-expand categories that have children
+      const expandedIds = new Set<number>();
+      cats.forEach(category => {
+        if (category.children && category.children.length > 0) {
+          expandedIds.add(category.id!);
+        }
+      });
+      setExpandedCategories(expandedIds);
     } catch (error) {
       console.error("Error loading categories:", error);
     }
@@ -71,6 +91,32 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       onCategoriesChange();
     } catch (error) {
       console.error("Error creating category:", error);
+      alert(t("app.categories.errorCreating"));
+    }
+  };
+
+  const handleCreateSubcategory = async (
+    parentId: number,
+    parentColor: string
+  ) => {
+    if (!newSubcategory.name.trim()) return;
+
+    try {
+      await window.electronAPI.createCategory({
+        name: newSubcategory.name.trim(),
+        color: parentColor, // Inherit parent color
+        description: newSubcategory.description.trim() || undefined,
+        parent_id: parentId,
+      });
+
+      setNewSubcategory({ name: "", color: "#4CAF50", description: "" });
+      setAddingSubcategoryTo(null);
+      // Expand the parent category to show the new subcategory
+      setExpandedCategories(prev => new Set([...prev, parentId]));
+      await loadCategories();
+      onCategoriesChange();
+    } catch (error) {
+      console.error("Error creating subcategory:", error);
       alert(t("app.categories.errorCreating"));
     }
   };
@@ -156,6 +202,244 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     }
   };
 
+  const toggleExpanded = (categoryId: number) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  const renderCategory = (category: Category, level: number = 0) => {
+    const hasChildren = category.children && category.children.length > 0;
+    const isExpanded = expandedCategories.has(category.id!);
+
+    return (
+      <div
+        key={category.id}
+        className={styles.categoryItem}
+        style={{ marginLeft: `${level * 20}px` }}
+      >
+        <div className={styles.categoryHeader}>
+          <div
+            className={styles.categoryColorIndicator}
+            style={{ backgroundColor: category.color }}
+          />
+
+          {/* Show expand button for parent categories or if has children */}
+          {(hasChildren || level === 0) && (
+            <button
+              onClick={() => hasChildren && toggleExpanded(category.id!)}
+              className={`${styles.expandButton} ${
+                hasChildren ? styles.hasChildren : styles.noChildren
+              }`}
+              disabled={!hasChildren}
+            >
+              {hasChildren ? (isExpanded ? "▼" : "▶") : "○"}
+            </button>
+          )}
+
+          {editingCategory?.id === category.id && editingCategory ? (
+            <div className={styles.categoryEditForm}>
+              <div className={styles.editFormHeader}>
+                <h4>Edit Category</h4>
+              </div>
+
+              <div className={styles.editFormContent}>
+                <div className={styles.formGroup}>
+                  <label>Category Name</label>
+                  <input
+                    type="text"
+                    value={editingCategory.name}
+                    onChange={e => {
+                      const updatedCategory: Category = {
+                        ...editingCategory,
+                        name: e.target.value,
+                      };
+                      setEditingCategory(updatedCategory);
+                    }}
+                    className={styles.editInput}
+                    placeholder="Enter category name..."
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Color</label>
+                  <div className={styles.colorPicker}>
+                    {colorPresets.map(color => (
+                      <button
+                        key={color}
+                        className={`${styles.colorOption} ${
+                          editingCategory.color === color ? styles.selected : ""
+                        }`}
+                        style={{ backgroundColor: color }}
+                        onClick={() => {
+                          const updatedCategory: Category = {
+                            ...editingCategory,
+                            color,
+                          };
+                          setEditingCategory(updatedCategory);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Description (optional)</label>
+                  <input
+                    type="text"
+                    value={editingCategory.description || ""}
+                    onChange={e => {
+                      const updatedCategory: Category = {
+                        ...editingCategory,
+                        description: e.target.value,
+                      };
+                      setEditingCategory(updatedCategory);
+                    }}
+                    placeholder="Add a description..."
+                    className={styles.editInput}
+                  />
+                </div>
+
+                <div className={styles.editActions}>
+                  <button
+                    onClick={handleUpdateCategory}
+                    className={styles.saveBtn}
+                  >
+                    <FontAwesomeIcon icon={faCheck} /> Save Changes
+                  </button>
+                  <button
+                    onClick={() => setEditingCategory(null)}
+                    className={styles.cancelBtn}
+                  >
+                    <FontAwesomeIcon icon={faXmark} /> Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.categoryInfo}>
+              <div className={styles.categoryName}>
+                {level > 0 && (
+                  <span className={styles.subcategoryIndicator}>↳ </span>
+                )}
+                {category.name}
+              </div>
+              {category.description && (
+                <div className={styles.categoryDescription}>
+                  {category.description}
+                </div>
+              )}
+
+              {isEditing && (
+                <div className={styles.categoryActions}>
+                  <button
+                    onClick={() => setEditingCategory(category)}
+                    className={styles.editBtn}
+                  >
+                    <FontAwesomeIcon icon={faEdit} />
+                  </button>
+                  <button
+                    onClick={() =>
+                      category.id && handleDeleteCategory(category.id)
+                    }
+                    className={styles.deleteBtn}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                  {level === 0 && (
+                    <button
+                      onClick={() => setAddingSubcategoryTo(category.id!)}
+                      className={styles.addSubBtn}
+                      title="Add subcategory"
+                    >
+                      <FontAwesomeIcon icon={faPlus} />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Add Subcategory Form */}
+        {addingSubcategoryTo === category.id && (
+          <div className={styles.addSubcategoryForm}>
+            <div className={styles.subcategoryFormHeader}>
+              <div
+                className={styles.colorIndicator}
+                style={{ backgroundColor: category.color }}
+              ></div>
+              <h5>Add Subcategory to "{category.name}"</h5>
+            </div>
+
+            <div className={styles.formGroup}>
+              <input
+                type="text"
+                value={newSubcategory.name}
+                onChange={e =>
+                  setNewSubcategory({ ...newSubcategory, name: e.target.value })
+                }
+                placeholder="Enter subcategory name (e.g., Top, Side, 60°)..."
+                className={styles.subcategoryNameInput}
+                autoFocus
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <input
+                type="text"
+                value={newSubcategory.description}
+                onChange={e =>
+                  setNewSubcategory({
+                    ...newSubcategory,
+                    description: e.target.value,
+                  })
+                }
+                placeholder="Description (optional)..."
+                className={styles.subcategoryDescriptionInput}
+              />
+            </div>
+
+            <div className={styles.subcategoryActions}>
+              <button
+                onClick={() =>
+                  handleCreateSubcategory(category.id!, category.color)
+                }
+                disabled={!newSubcategory.name.trim()}
+                className={styles.createSubcategoryBtn}
+              >
+                <FontAwesomeIcon icon={faCheck} /> Add Subcategory
+              </button>
+              <button
+                onClick={() => {
+                  setAddingSubcategoryTo(null);
+                  setNewSubcategory({
+                    name: "",
+                    color: "#4CAF50",
+                    description: "",
+                  });
+                }}
+                className={styles.cancelBtn}
+              >
+                <FontAwesomeIcon icon={faXmark} /> Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {hasChildren && isExpanded && (
+          <div className={styles.subcategories}>
+            {category.children!.map(child => renderCategory(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const colorPresets = [
     "#4CAF50",
     "#2196F3",
@@ -234,108 +518,29 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
       {/* Category List */}
       <div className={styles.categoryList}>
-        {categories.map(category => (
-          <div key={category.id} className={styles.categoryItem}>
-            <div
-              className={styles.categoryColorIndicator}
-              style={{ backgroundColor: category.color }}
-            />
-
-            {editingCategory?.id === category.id && editingCategory ? (
-              <div className={styles.categoryEditForm}>
-                <input
-                  type="text"
-                  value={editingCategory.name}
-                  onChange={e => {
-                    const updatedCategory: Category = {
-                      ...editingCategory,
-                      name: e.target.value,
-                    };
-                    setEditingCategory(updatedCategory);
-                  }}
-                  className={styles.categoryNameInput}
-                  placeholder={t("app.categories.placeholder")}
-                />
-
-                <div className={styles.colorPicker}>
-                  {colorPresets.map(color => (
-                    <button
-                      key={color}
-                      className={`${styles.colorOption} ${
-                        editingCategory.color === color ? styles.selected : ""
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => {
-                        const updatedCategory: Category = {
-                          ...editingCategory,
-                          color,
-                        };
-                        setEditingCategory(updatedCategory);
-                      }}
-                    />
-                  ))}
-                </div>
-
-                <input
-                  type="text"
-                  value={editingCategory.description || ""}
-                  onChange={e => {
-                    const updatedCategory: Category = {
-                      ...editingCategory,
-                      description: e.target.value,
-                    };
-                    setEditingCategory(updatedCategory);
-                  }}
-                  className={styles.categoryDescriptionInput}
-                  placeholder={t("app.categories.descriptionPlaceholder")}
-                />
-
-                <div className={styles.editActions}>
-                  <button
-                    onClick={handleUpdateCategory}
-                    className={styles.saveBtn}
-                  >
-                    <FontAwesomeIcon icon={faSave} /> {t("app.buttons.save")}
-                  </button>
-                  <button
-                    onClick={() => setEditingCategory(null)}
-                    className={styles.cancelBtn}
-                  >
-                    <FontAwesomeIcon icon={faXmark} /> {t("app.buttons.cancel")}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className={styles.categoryInfo}>
-                <div className={styles.categoryName}>{category.name}</div>
-                {category.description && (
-                  <div className={styles.categoryDescription}>
-                    {category.description}
-                  </div>
-                )}
-
-                {isEditing && (
-                  <div className={styles.categoryActions}>
-                    <button
-                      onClick={() => setEditingCategory(category)}
-                      className={styles.editBtn}
-                    >
-                      <FontAwesomeIcon icon={faEdit} />
-                    </button>
-                    <button
-                      onClick={() =>
-                        category.id && handleDeleteCategory(category.id)
-                      }
-                      className={styles.deleteBtn}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+        {/* Debug Info */}
+        <div
+          style={{
+            padding: "10px",
+            background: "#f0f0f0",
+            margin: "10px 0",
+            borderRadius: "5px",
+          }}
+        >
+          <strong>Debug Info:</strong>
+          <div>Total categories loaded: {categories.length}</div>
+          <div>
+            Categories with children:{" "}
+            {categories.filter(c => c.children && c.children.length > 0).length}
           </div>
-        ))}
+          <div>
+            Expanded categories: {Array.from(expandedCategories).join(", ")}
+          </div>
+        </div>
+
+        {categories
+          .filter(category => !category.parent_id) // Only show top-level categories
+          .map(category => renderCategory(category))}
       </div>
 
       {/* Add New Category */}
