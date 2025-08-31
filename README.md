@@ -1,45 +1,72 @@
-# 🏀 Basketball Clip Cutter
+# 🏀 Basketball Video Analyzer
 
-A desktop application designed specifically for basketball coaches and analysts to cut, categorize, and share video clips for team scouting and analysis.
+A desktop application designed specifically for basketball coaches and analysts to cut, categorize, and organize video clips across multiple projects with reusable preset templates.
 
 ![App Screenshot](screenshot.png)
 
 ## 🎯 Purpose
 
-This app solves the common problem of **creating shareable video clips for team scouting**. Instead of sending entire game videos, coaches can:
+This app solves the common problem of **creating organized video libraries for team analysis** across multiple games, opponents, and seasons. Instead of recreating category systems for every video, coaches can:
 
-- Cut specific plays (rebounds, screens, defensive actions, etc.)
-- Categorize clips by player, play type, or situation
-- Export organized folders of clips to share with the team
-- Build a searchable library of plays for analysis
+- Create project-specific clip libraries with consistent organization
+- Build hierarchical category systems (parent categories with subcategories)
+- Save category structures as reusable presets across projects
+- Cut specific plays and automatically organize them in project folders
+- Export organized clip libraries to share with teams, players, or staff
+- Maintain consistent video analysis workflows throughout the season
 
-Perfect for sharing "all Player #9 screens" or "defensive rebounds in the 4th quarter" with your team.
+Perfect for building "Opponent Scouting" projects with reusable category presets, or creating "Player Development" libraries that maintain the same organizational structure across multiple sessions.
 
 ## ✨ Key Features
 
-### 🎬 Video Cutting
+### 🎬 Advanced Video Cutting
 
 - **Simple Mark & Cut**: Use `I` and `O` keys to mark in/out points during video playback
 - **Real Video Files**: Creates actual MP4 clips using FFmpeg (not just timestamps)
-- **Precise Control**: Frame-by-frame navigation and keyboard shortcuts
+- **Precise Control**: Frame-by-frame navigation and comprehensive keyboard shortcuts
 
-### 🏷️ Smart Categorization
+### 📁 Project-Based Organization
 
-- **Custom Categories**: Create your own categories (Rebounds, Screens, Player actions, etc.)
-- **Multi-tagging**: Each clip can have multiple categories (e.g., "Offense" + "Player 5" + "Screen")
-- **Visual Organization**: Color-coded categories for easy identification
+- **Multiple Projects**: Create separate projects for different games, opponents, or analysis types
+- **Project Isolation**: Each project maintains its own categories and clips
+- **Project Switching**: Seamlessly switch between projects while preserving all data
+- **Organized Storage**: Clips are automatically organized by project in your file system
 
-### 📚 Clip Library
+### 🏷️ Hierarchical Category System
 
-- **Visual Browser**: Thumbnail view of all your clips
-- **Smart Filtering**: Filter by category to find specific plays
-- **Quick Stats**: See clip counts and total duration by category
+- **Parent-Child Categories**: Create main categories with detailed subcategories (e.g., "Offense" → "Pick & Roll" → "Ball Screen High")
+- **Unlimited Depth**: Build category hierarchies as deep as needed for your analysis
+- **Multi-tagging**: Each clip can have multiple categories from different hierarchy branches
+- **Visual Organization**: Color-coded categories with clear parent-child relationships
 
-### 📤 Team Sharing
+### 🎯 Preset Template System
 
-- **Batch Export**: Export all clips in selected categories
-- **Organized Folders**: Creates folders by category for easy team sharing
-- **Multiple Formats**: Exports to any directory for cloud sharing or USB distribution
+- **Save Category Structures**: Save your complete category hierarchy as reusable presets
+- **Load Across Projects**: Apply saved presets to new projects for consistent organization
+- **Preset Management**: Save, load, and delete presets with user-friendly confirmation dialogs
+- **Subcategory Preservation**: Presets maintain complete hierarchical structures including all subcategories
+- **Template Library**: Build a library of preset templates for different analysis types (scouting, player development, etc.)
+
+### 📚 Enhanced Clip Library
+
+- **Project-Specific Libraries**: Each project maintains its own complete clip collection
+- **Visual Browser**: Thumbnail view of all clips with project context
+- **Hierarchical Filtering**: Filter by parent categories or drill down to specific subcategories
+- **Category Statistics**: See clip counts and total duration by category and subcategory
+- **Cross-Project Overview**: Easily switch between project libraries
+
+### 📤 Flexible Export System
+
+- **Project-Based Export**: Export entire project libraries or selected categories
+- **Batch Export**: Export all clips in selected categories while maintaining folder structure
+- **Organized Folders**: Creates hierarchical folders by category for intuitive team sharing
+- **Multiple Formats**: Exports to any directory for cloud sharing, USB distribution, or team platforms
+
+### 🌐 Multi-Language Support
+
+- **English and Portuguese**: Full interface translation support
+- **Dynamic Language Switching**: Change languages without restarting the application
+- **Localized Dialogs**: All confirmation dialogs and messages respect language selection
 
 ## 🚀 Getting Started
 
@@ -88,21 +115,36 @@ npm start
 
 ## 📖 How to Use
 
-### 1. Load Your Game Video
+### 1. Create or Select a Project
+
+- Start by creating a new project or selecting an existing one from the project dropdown
+- Each project maintains its own categories, clips, and organization
+- Projects are perfect for organizing different games, opponents, or analysis types
+
+### 2. Build Your Category System
+
+#### Create Hierarchical Categories:
+
+- Click **"Edit Categories"** to open the category management panel
+- Add parent categories like `Offense`, `Defense`, `Special Situations`
+- Add subcategories under parents: `Offense` → `Pick & Roll` → `Ball Screen High`
+- Create unlimited category depth for detailed organization
+- Choose colors for visual identification
+
+#### Use Category Presets:
+
+- **Save Presets**: After building your category structure, save it as a preset template
+- **Load Presets**: Apply saved presets to new projects for consistent organization
+- **Manage Presets**: Delete outdated presets to keep your template library organized
+- **Perfect for**: Creating standardized category systems for scouting reports, player development sessions, or season-long analysis
+
+### 3. Load Your Game Video
 
 - Click **"Select Video"** and choose your basketball game file
 - Supports: MP4, MOV, AVI, MKV, WebM formats
+- Video loads within your current project context
 
-### 2. Create Custom Categories
-
-- Click **"Edit"** in the Categories panel
-- Add categories like:
-  - `Rebounds`, `Screens`, `Fast Breaks`
-  - `Player 1`, `Player 2`, etc.
-  - `Defensive Plays`, `Turnovers`
-- Choose colors for visual organization
-
-### 3. Cut Video Clips
+### 4. Cut Video Clips
 
 #### Using Keyboard Shortcuts (Recommended):
 
@@ -117,41 +159,62 @@ npm start
 - Click **"Mark In"** and **"Mark Out"** buttons
 - Visual indicators show marked regions on video
 
-### 4. Categorize Your Clip
+### 5. Categorize Your Clip
 
-- Select one or multiple categories for each clip
-- Add notes if needed (e.g., "Great defensive rotation")
-- Enter custom title or use auto-generated name
+- Select categories from your hierarchical structure (can select from multiple branches)
+- Add detailed notes if needed (e.g., "Great defensive rotation - note help timing")
+- Enter custom title or use auto-generated name with category context
 
-### 5. Create the Clip
+### 6. Create the Clip
 
 - Click **"Create Clip"**
-- App uses FFmpeg to cut actual video file
+- App uses FFmpeg to cut actual video file with project organization
 - Progress bar shows cutting status
+- Clips are automatically saved in project-specific folders
 
-### 6. Organize & Share
+### 7. Manage Your Project Library
 
-- View all clips in the **Clip Library**
-- Filter by category to find specific plays
-- Click **"Export"** to create folders by category
-- Share folders with team via cloud storage or USB
+- View all clips in the **Clip Library** filtered by current project
+- Use hierarchical filtering to drill down to specific subcategories
+- Switch between projects to access different clip libraries
+- Review category statistics to understand your analysis coverage
 
-## 🎯 Typical Workflow
+### 8. Export and Share
 
-### For Game Analysis:
+- Click **"Export"** to create organized folders by category hierarchy
+- Maintain folder structure that matches your category organization
+- Export specific categories or entire project libraries
+- Share organized folders with team via cloud storage, USB, or team platforms
 
-1. **Load game video**
-2. **Create categories**: `Good Screens`, `Defensive Breakdowns`, `Player X Highlights`
-3. **Watch video** and mark interesting plays with `I`/`O` keys
-4. **Tag each clip** with relevant categories
-5. **Export by category** and share with team
+## 🎯 Typical Workflows
 
-### For Player Development:
+### Opponent Scouting Workflow
 
-1. **Create player-specific categories**: `Player 1 Offense`, `Player 1 Defense`
-2. **Cut clips** showing player's actions
-3. **Add notes** about what to improve
-4. **Export player folder** for individual review
+1. **Create Project**: "vs Team ABC - 2024 Conference Game"
+2. **Load Preset**: Apply your standard "Opponent Scouting" category preset
+3. **Video Analysis**: Load opponent game footage and cut relevant plays
+4. **Categorize**: Organize clips by "Offense Schemes", "Defensive Sets", "Transition", etc.
+5. **Export**: Create organized folders for coaching staff review
+6. **Reuse**: Save any new categories back to your scouting preset for future games
+
+### Player Development Workflow
+
+1. **Create Project**: "Player 5 - Post Development Session 3"
+2. **Load Preset**: Apply "Player Development" preset with skill-based categories
+3. **Session Recording**: Cut clips from practice or game footage
+4. **Hierarchical Organization**: "Post Moves" → "Drop Steps" → "Strong Hand" vs "Weak Hand"
+5. **Individual Review**: Export player-specific folders for one-on-one sessions
+6. **Progress Tracking**: Compare with previous project libraries to track improvement
+
+### Team Preparation Workflow
+
+1. **Create Project**: "Season 2024 - Offensive System Implementation"
+2. **Custom Categories**: Build detailed hierarchy: "Offensive Sets" → "Horns" → "High Ball Screen" → "Show Coverage"
+3. **Multi-Game Analysis**: Cut clips from multiple games showing execution evolution
+4. **Save as Preset**: Save category structure as "Offensive System Analysis" for future use
+5. **Team Distribution**: Export hierarchical folders for position coaches and individual player review
+
+---
 
 ### For Opponent Scouting:
 
@@ -172,21 +235,40 @@ npm start
 
 ## 📁 File Organization
 
-The app automatically organizes your files:
+The app automatically organizes your files with project-based structure:
 
 ```
 📁 App Data Folder/
-├── 📁 clips/                    # All created video clips
-│   ├── 🎬 Rebound_Game1_001.mp4
-│   ├── 🎬 Screen_Game1_002.mp4
+├── 📁 clips/                           # All created video clips organized by project
+│   ├── 📁 Project_1_vs_Team_ABC/       # Individual project folders
+│   │   ├── 🎬 Offense_PickRoll_001.mp4
+│   │   ├── 🎬 Defense_Rotation_002.mp4
+│   │   └── ...
+│   ├── � Project_2_Player_Development/
+│   │   ├── 🎬 Player5_PostMoves_001.mp4
+│   │   └── ...
 │   └── ...
-└── 📄 clip-cutter.db           # Clip metadata and categories
+├── 📄 basketball-analyzer.db           # Database with projects, categories, presets, and clip metadata
+└── 📁 presets/                         # Saved category preset templates
+    ├── 📄 opponent_scouting.json
+    ├── 📄 player_development.json
+    └── ...
 ```
 
-**Export folders** (when sharing):
+**Export folders** maintain hierarchical structure:
 
 ```
 📁 Exported Clips/
+├── 📁 Offense/                         # Parent category folder
+│   ├── 📁 Pick & Roll/                 # Subcategory folder
+│   │   ├── 📁 Ball Screen High/        # Sub-subcategory folder
+│   │   │   ├── 🎬 clip_001.mp4
+│   │   │   └── 🎬 clip_002.mp4
+│   │   └── 📁 Ball Screen Low/
+│   └── 📁 Post Ups/
+├── 📁 Defense/
+│   ├── 📁 Help Defense/
+│   └── 📁 Transition Defense/
 ├── 📁 Rebounds/
 │   ├── 🎬 Rebound_Game1_001.mp4
 │   └── 🎬 Rebound_Game2_003.mp4
@@ -203,20 +285,33 @@ The app automatically organizes your files:
 ### Built With:
 
 - **Electron** - Desktop app framework
-- **React + TypeScript** - User interface
-- **FFmpeg** - Video processing
-- **SQLite** - Local database for clip metadata
+- **React + TypeScript** - User interface with hierarchical component architecture
+- **FFmpeg** - Video processing and clip creation
+- **SQLite** - Local database for projects, hierarchical categories, presets, and clip metadata
+- **better-sqlite3** - High-performance synchronous SQLite bindings
+- **i18next** - Internationalization framework with dynamic language switching
+
+### Database Architecture:
+
+- **Project Isolation**: Each project maintains separate category and clip collections
+- **Hierarchical Categories**: Parent-child relationships with unlimited nesting depth
+- **Constraint Management**: UNIQUE constraints per project prevent category conflicts
+- **Preset Storage**: Category structures serialized and saved as reusable templates
+- **Migration System**: Automatic database schema updates for new features
 
 ### Performance:
 
 - Clips are processed locally (no cloud uploads)
 - Original video files remain untouched
 - Fast clip creation (typically 10-30 seconds per clip)
+- Efficient project switching with lazy loading
+- Hierarchical category queries optimized for deep structures
 
 ### File Formats:
 
 - **Input**: MP4, MOV, AVI, MKV, WebM
 - **Output**: MP4 (H.264 codec for maximum compatibility)
+- **Presets**: JSON format for cross-platform compatibility
 
 ## 🚨 Troubleshooting
 
@@ -226,56 +321,81 @@ The app automatically organizes your files:
 - **File path**: Avoid special characters in filename/path
 - **Codec**: Some unusual codecs may not be supported
 
+### Project and Category Issues
+
+- **Missing categories**: Ensure you're in the correct project - categories are project-specific
+- **Preset loading fails**: Check that preset files haven't been corrupted or manually edited
+- **Database errors**: App automatically handles migrations - restart if issues persist
+
 ### Clip Creation Fails
 
 - **Disk space**: Ensure enough free space for output clips
 - **Permissions**: Check write permissions to app data folder
 - **FFmpeg**: App includes FFmpeg automatically, no manual install needed
+- **Project folders**: App automatically creates project-specific clip directories
 
 ### Performance Issues
 
 - **Large videos**: 4K+ videos may process slowly
 - **Old hardware**: Consider lower resolution videos for better performance
 - **Multiple clips**: Process clips one at a time for best results
+- **Large projects**: Consider archiving old projects to maintain performance
 
 ### Can't Find Clips
 
 - Click **"Open Folder"** to see where clips are stored
 - Check app data folder: `~/AppData/basketball-clip-cutter/clips/` (Windows)
 
-## 🎬 Use Cases
+## 🎬 Advanced Use Cases
 
-### 🏆 Team Scouting
+### 🏆 Comprehensive Team Scouting
 
-_"Send me all the opponent's screen plays"_
+_"I need a complete opponent analysis system that I can reuse for every game"_
 
-- Cut opponent clips during film study
-- Categorize by play type and personnel
-- Export and share with team before game
+- Create "vs [Opponent Name]" projects with standardized scouting categories
+- Use preset templates: "Offensive Sets", "Defensive Schemes", "Special Situations", "Personnel Packages"
+- Build detailed subcategories: "Offense" → "Pick & Roll" → "Coverage vs Show" → "Player Reactions"
+- Export hierarchical folders that match your coaching staff's analysis workflow
+- Save time by loading your "Opponent Scouting" preset for every new opponent project
 
-### 🎯 Player Development
+### 🎯 Systematic Player Development
 
-_"Here are all your defensive plays from last game"_
+_"Track individual player progress across multiple sessions with consistent organization"_
 
-- Create player-specific categories
-- Cut clips showing successes and areas for improvement
-- Share individual folders with players
+- Create player-specific projects: "Player 5 - Post Development Series"
+- Load "Player Development" preset with skill-based hierarchical categories
+- Track progress: "Post Moves" → "Drop Steps" → "Footwork" → "Strong Hand vs Weak Hand"
+- Compare clips across multiple development sessions within the same project
+- Export individualized folders for one-on-one player review sessions
 
-### 📊 Season Analysis
+### 📊 Advanced Season Analysis
 
-_"Let's review our rebounding throughout the season"_
+_"Build a comprehensive database of our team's execution across an entire season"_
 
-- Build clip library across multiple games
-- Filter by category to see trends
-- Create season highlight reels
+- Create season-long projects: "2024 Season - Offensive System Evolution"
+- Use consistent category presets to maintain organizational standards
+- Track improvement: Compare early season vs late season execution of same concepts
+- Build searchable libraries: Find all "Transition Defense" clips from conference games
+- Export compilation videos showing team growth and areas needing attention
 
-### 🎓 Teaching Tool
+### 🎓 Comprehensive Teaching Library
 
-_"Here's how we want to run this screen"_
+_"Create reusable instructional content with consistent organization"_
 
-- Cut example plays showing proper execution
-- Categorize by fundamental skill
-- Share with younger players or new team members
+- Build "Teaching Concepts" projects with preset category structures
+- Develop hierarchical organization: "Fundamentals" → "Shooting" → "Form" → "Follow Through"
+- Save teaching presets: "Youth Fundamentals", "Advanced Concepts", "Position Specific"
+- Export organized instructional folders that can be reused with different teams
+- Maintain consistency in teaching approaches across multiple seasons
+
+### 🔄 Cross-Season Consistency
+
+_"Maintain the same organizational system across multiple years"_
+
+- Save category structures as reusable presets once, apply everywhere
+- Create standardized workflows: Same categories for every opponent, every player development session
+- Build institutional knowledge: New coaches can load existing preset templates
+- Maintain continuity: Transfer successful organizational systems between seasons
 
 ## 🤝 Contributing
 
@@ -293,4 +413,4 @@ MIT License - Feel free to modify for your team's specific needs.
 
 **Built for coaches, by coaches** 🏀
 
-_Making team film study efficient and effective._
+_Making systematic basketball analysis efficient, organized, and repeatable._
