@@ -72,12 +72,16 @@
         "title": "Presets",
         "save": "Save as Preset",
         "load": "Load Preset",
+        "delete": "Delete Preset",
         "enterName": "Enter preset name",
         "saveSuccess": "Preset saved successfully!",
         "loadSuccess": "Preset loaded successfully!",
+        "deleteSuccess": "Preset deleted successfully!",
         "saveFailed": "Failed to save preset",
         "loadFailed": "Failed to load preset",
-        "confirmLoad": "Are you sure you want to load the preset \"{presetName}\"? This will replace your current categories."
+        "deleteFailed": "Failed to delete preset",
+        "confirmLoad": "Are you sure you want to load the preset \"{presetName}\"? This will replace your current categories.",
+        "confirmDelete": "Are you sure you want to delete the preset \"{presetName}\"? This action cannot be undone."
       },
       "default": {
         "offense": "Offense",

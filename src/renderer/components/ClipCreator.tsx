@@ -70,7 +70,10 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   const loadCategories = async () => {
     try {
-      const cats = await window.electronAPI.getCategoriesHierarchical();
+      if (!currentProject) return;
+      const cats = await window.electronAPI.getCategoriesHierarchical(
+        currentProject.id
+      );
       setCategories(cats);
     } catch (error) {
       console.error("Error loading categories:", error);

@@ -37,14 +37,16 @@ export interface ElectronAPI {
   deleteProject: (id: number) => Promise<boolean>;
 
   // Category operations
-  getCategories: () => Promise<any[]>;
-  getCategoriesHierarchical: () => Promise<any[]>;
+  getCategories: (projectId: number) => Promise<any[]>;
+  getCategoriesHierarchical: (projectId: number) => Promise<any[]>;
   createCategory: (category: any) => Promise<any>;
+  clearProjectCategories: (projectId: number) => Promise<boolean>;
   updateCategory: (id: number, updates: any) => Promise<boolean>;
   deleteCategory: (id: number) => Promise<boolean>;
   savePreset: (presetName: string, categories: any[]) => Promise<boolean>;
   loadPreset: (presetName: string) => Promise<any[]>;
   getPresets: () => Promise<string[]>;
+  deletePreset: (presetName: string) => Promise<boolean>;
 
   // Clip operations
   getClips: (projectId?: number) => Promise<any[]>;
@@ -87,10 +89,13 @@ const electronAPI: ElectronAPI = {
   deleteProject: id => ipcRenderer.invoke("delete-project", id),
 
   // Category operations
-  getCategories: () => ipcRenderer.invoke("get-categories"),
-  getCategoriesHierarchical: () =>
-    ipcRenderer.invoke("get-categories-hierarchical"),
+  getCategories: (projectId: number) =>
+    ipcRenderer.invoke("get-categories", projectId),
+  getCategoriesHierarchical: (projectId: number) =>
+    ipcRenderer.invoke("get-categories-hierarchical", projectId),
   createCategory: category => ipcRenderer.invoke("create-category", category),
+  clearProjectCategories: projectId =>
+    ipcRenderer.invoke("clear-project-categories", projectId),
   updateCategory: (id, updates) =>
     ipcRenderer.invoke("update-category", id, updates),
   deleteCategory: id => ipcRenderer.invoke("delete-category", id),
@@ -98,6 +103,7 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.invoke("save-preset", presetName, categories),
   loadPreset: presetName => ipcRenderer.invoke("load-preset", presetName),
   getPresets: () => ipcRenderer.invoke("get-presets"),
+  deletePreset: presetName => ipcRenderer.invoke("delete-preset", presetName),
 
   // Clip operations
   getClips: projectId => ipcRenderer.invoke("get-clips", projectId),

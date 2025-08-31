@@ -89,10 +89,8 @@ export const App: React.FC = () => {
       if (currentProject) {
         try {
           const [clipsData, categoriesData] = await Promise.all([
-            currentProject
-              ? window.electronAPI.getClips(currentProject.id)
-              : Promise.resolve([]),
-            window.electronAPI.getCategoriesHierarchical(),
+            window.electronAPI.getClips(currentProject.id),
+            window.electronAPI.getCategoriesHierarchical(currentProject.id),
           ]);
           setClips(clipsData || []);
           setCategories(categoriesData || []);
@@ -491,6 +489,7 @@ export const App: React.FC = () => {
               </button>
 
               <CategoryManager
+                currentProject={currentProject}
                 onCategoriesChange={() => setRefreshTrigger(prev => prev + 1)}
               />
 

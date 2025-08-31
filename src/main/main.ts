@@ -9,6 +9,7 @@ import {
   getCategories,
   getCategoriesHierarchical,
   createCategory,
+  clearProjectCategories,
   updateCategory,
   deleteCategory,
   getClips,
@@ -31,6 +32,7 @@ import {
   savePreset,
   loadPreset,
   getPresets,
+  deletePreset,
 } from "./database";
 
 // Set FFmpeg path
@@ -366,7 +368,20 @@ ipcMain.handle(
 
       const exportDir = result.filePaths[0];
       const exportedFiles: string[] = [];
-      const categories = getCategories();
+
+      // Get project ID from the first clip (all clips should be from same project)
+      const firstClip = params.clips[0];
+      if (!firstClip) {
+        throw new Error("No clips provided for export");
+      }
+
+      // Get the project ID from the clip
+      const clipData = getClips(undefined).find(c => c.id === firstClip.id);
+      if (!clipData) {
+        throw new Error("Could not find clip data to determine project");
+      }
+
+      const categories = getCategories(clipData.project_id);
 
       // Group clips by their categories
       const clipsByCategory = new Map<number, typeof params.clips>();
@@ -421,23 +436,26 @@ ipcMain.handle(
 );
 
 // Category operations
-ipcMain.handle("get-categories", async () => {
+ipcMain.handle("get-categories", async (_event, projectId: number) => {
   try {
-    return getCategories();
+    return getCategories(projectId);
   } catch (error) {
     console.error("Error getting categories:", error);
     return [];
   }
 });
 
-ipcMain.handle("get-categories-hierarchical", async () => {
-  try {
-    return getCategoriesHierarchical();
-  } catch (error) {
-    console.error("Error getting hierarchical categories:", error);
-    return [];
+ipcMain.handle(
+  "get-categories-hierarchical",
+  async (_event, projectId: number) => {
+    try {
+      return getCategoriesHierarchical(projectId);
+    } catch (error) {
+      console.error("Error getting hierarchical categories:", error);
+      return [];
+    }
   }
-});
+);
 
 ipcMain.handle(
   "create-category",
@@ -446,6 +464,19 @@ ipcMain.handle(
       return createCategory(category);
     } catch (error) {
       console.error("Error creating category:", error);
+      throw error;
+    }
+  }
+);
+
+ipcMain.handle(
+  "clear-project-categories",
+  async (_event, projectId: number) => {
+    try {
+      clearProjectCategories(projectId);
+      return true;
+    } catch (error) {
+      console.error("Error clearing project categories:", error);
       throw error;
     }
   }
@@ -644,4 +675,8 @@ ipcMain.handle("load-preset", (_event, presetName: string) => {
 
 ipcMain.handle("get-presets", () => {
   return getPresets();
+});
+
+ipcMain.handle("delete-preset", (_event, presetName: string) => {
+  return deletePreset(presetName);
 });

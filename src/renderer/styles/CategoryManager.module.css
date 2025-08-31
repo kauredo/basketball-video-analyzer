@@ -468,6 +468,19 @@
   gap: var(--spacing-sm);
 }
 
+.presetItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs);
+}
+
+.presetItem:hover {
+  background: var(--bg-quaternary);
+}
+
 .savePresetBtn,
 .loadPresetBtn {
   height: var(--button-height);
@@ -482,6 +495,27 @@
   background: var(--bg-quaternary);
   border: 1px solid var(--border-color-light);
   color: var(--text-secondary);
+}
+
+.deletePresetBtn {
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.deletePresetBtn:hover {
+  background: var(--color-danger);
+  color: white;
+  transform: scale(1.1);
 }
 
 .savePresetBtn:hover,
@@ -501,7 +535,20 @@
 }
 
 .loadPresetBtn {
-  background: var(--bg-tertiary);
+  background: none;
+  border: none;
+  height: auto;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.loadPresetBtn:hover {
+  background: none;
+  color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
+  border: none;
 }
 
 /* Hierarchical category styles */

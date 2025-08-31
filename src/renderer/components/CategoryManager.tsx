@@ -16,10 +16,12 @@ import { Category } from "../../types/global";
 
 interface CategoryManagerProps {
   onCategoriesChange: () => void;
+  currentProject: any | null;
 }
 
 export const CategoryManager: React.FC<CategoryManagerProps> = ({
   onCategoriesChange,
+  currentProject,
 }) => {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -45,13 +47,19 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
   });
 
   useEffect(() => {
-    loadCategories();
+    if (currentProject) {
+      loadCategories();
+    }
     loadPresets();
-  }, []);
+  }, [currentProject]);
 
   const loadCategories = async () => {
     try {
-      const cats = await window.electronAPI.getCategoriesHierarchical();
+      if (!currentProject) return;
+
+      const cats = await window.electronAPI.getCategoriesHierarchical(
+        currentProject.id
+      );
       setCategories(cats);
 
       // Auto-expand categories that have children
@@ -77,13 +85,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
   };
 
   const handleCreateCategory = async () => {
-    if (!newCategory.name.trim()) return;
+    if (!newCategory.name.trim() || !currentProject) return;
 
     try {
       await window.electronAPI.createCategory({
         name: newCategory.name.trim(),
         color: newCategory.color,
         description: newCategory.description.trim() || undefined,
+        project_id: currentProject.id,
       });
 
       setNewCategory({ name: "", color: "#4CAF50", description: "" });
@@ -99,7 +108,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     parentId: number,
     parentColor: string
   ) => {
-    if (!newSubcategory.name.trim()) return;
+    if (!newSubcategory.name.trim() || !currentProject) return;
 
     try {
       await window.electronAPI.createCategory({
@@ -107,6 +116,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
         color: parentColor, // Inherit parent color
         description: newSubcategory.description.trim() || undefined,
         parent_id: parentId,
+        project_id: currentProject.id,
       });
 
       setNewSubcategory({ name: "", color: "#4CAF50", description: "" });
@@ -162,7 +172,22 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     }
 
     try {
-      await window.electronAPI.savePreset(newPresetName, categories);
+      // Flatten the hierarchical categories structure into a flat array
+      const flatCategories: Category[] = [];
+
+      categories.forEach(parentCategory => {
+        // Add the parent category
+        flatCategories.push(parentCategory);
+
+        // Add all children if they exist
+        if (parentCategory.children && parentCategory.children.length > 0) {
+          parentCategory.children.forEach(child => {
+            flatCategories.push(child);
+          });
+        }
+      });
+
+      await window.electronAPI.savePreset(newPresetName, flatCategories);
       setNewPresetName("");
       loadPresets();
       alert(t("app.categories.presets.saveSuccess"));
@@ -177,28 +202,142 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       return;
     }
 
+    if (!currentProject) {
+      alert("No project selected");
+      return;
+    }
+
     try {
       const loadedCategories = await window.electronAPI.loadPreset(presetName);
-      // Delete all existing categories first
-      for (const category of categories) {
-        if (category.id) {
-          await window.electronAPI.deleteCategory(category.id);
+
+      // Filter out categories with invalid names
+      const validCategories = loadedCategories.filter(
+        category =>
+          category.category_name && category.category_name.trim() !== ""
+      );
+
+      if (validCategories.length === 0) {
+        console.warn("No valid categories found in preset:", presetName);
+        alert(t("app.categories.presets.loadFailed"));
+        return;
+      }
+
+      // Clear all existing categories for this project first
+      await window.electronAPI.clearProjectCategories(currentProject.id);
+
+      // After clearing, there should be no existing categories for this project
+      const existingNames = new Set<string>();
+
+      // Create new categories from preset, handling parent-child relationships
+      const createdCategories = [];
+      const categoryMap = new Map<string, number>(); // Map preset category names to created IDs
+
+      // First pass: Create all parent categories (those without parent_name)
+      for (const category of validCategories.filter(cat => !cat.parent_name)) {
+        let categoryName = category.category_name;
+        let counter = 1;
+
+        // Make name unique if it already exists
+        while (existingNames.has(categoryName.toLowerCase())) {
+          categoryName = `${category.category_name} (${counter})`;
+          counter++;
+        }
+
+        try {
+          const newCategory = await window.electronAPI.createCategory({
+            name: categoryName,
+            color: category.color,
+            description: category.description || "",
+            project_id: currentProject.id,
+            parent_id: null,
+          });
+
+          if (newCategory) {
+            // Add to existing names to avoid duplicates within this preset
+            existingNames.add(categoryName.toLowerCase());
+            createdCategories.push(categoryName);
+            categoryMap.set(category.category_name, newCategory.id);
+          }
+        } catch (error) {
+          console.warn(
+            `Failed to create parent category "${categoryName}":`,
+            error
+          );
         }
       }
-      // Create new categories from preset
-      for (const category of loadedCategories) {
-        await window.electronAPI.createCategory({
-          name: category.name,
-          color: category.color,
-          description: category.description,
-        });
+
+      // Second pass: Create subcategories (those with parent_name)
+      for (const category of validCategories.filter(cat => cat.parent_name)) {
+        const parentId = categoryMap.get(category.parent_name);
+        if (!parentId) {
+          console.warn(
+            `Parent category "${category.parent_name}" not found for "${category.category_name}"`
+          );
+          continue;
+        }
+
+        let categoryName = category.category_name;
+        let counter = 1;
+
+        // For subcategories, we need to ensure names are unique within the parent
+        // Since we cleared all categories, we just need to check within this preset creation
+        const subcategoriesInThisParent = new Set<string>();
+
+        while (subcategoriesInThisParent.has(categoryName.toLowerCase())) {
+          categoryName = `${category.category_name} (${counter})`;
+          counter++;
+        }
+
+        try {
+          const newCategory = await window.electronAPI.createCategory({
+            name: categoryName,
+            color: category.color,
+            description: category.description || "",
+            project_id: currentProject.id,
+            parent_id: parentId,
+          });
+
+          if (newCategory) {
+            createdCategories.push(categoryName);
+            subcategoriesInThisParent.add(categoryName.toLowerCase());
+          }
+        } catch (error) {
+          console.warn(
+            `Failed to create subcategory "${categoryName}":`,
+            error
+          );
+        }
       }
+
       await loadCategories();
       onCategoriesChange();
-      alert(t("app.categories.presets.loadSuccess"));
+
+      if (createdCategories.length > 0) {
+        alert(t("app.categories.presets.loadSuccess"));
+      } else {
+        alert("No categories could be created from the preset");
+      }
     } catch (error) {
       console.error("Failed to load preset:", error);
       alert(t("app.categories.presets.loadFailed"));
+    }
+  };
+
+  const handleDeletePreset = async (presetName: string) => {
+    const confirmMessage = t("app.categories.presets.confirmDelete", {
+      presetName,
+    });
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      await window.electronAPI.deletePreset(presetName);
+      await loadPresets();
+      alert(t("app.categories.presets.deleteSuccess"));
+    } catch (error) {
+      console.error("Failed to delete preset:", error);
+      alert(t("app.categories.presets.deleteFailed"));
     }
   };
 
@@ -509,13 +648,21 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             <h4>{t("app.categories.presets.load")}</h4>
             <div className={styles.presetButtons}>
               {presets.map(preset => (
-                <button
-                  key={preset}
-                  onClick={() => handleLoadPreset(preset)}
-                  className={styles.loadPresetBtn}
-                >
-                  {preset}
-                </button>
+                <div key={preset} className={styles.presetItem}>
+                  <button
+                    onClick={() => handleLoadPreset(preset)}
+                    className={styles.loadPresetBtn}
+                  >
+                    {preset}
+                  </button>
+                  <button
+                    onClick={() => handleDeletePreset(preset)}
+                    className={styles.deletePresetBtn}
+                    title={t("app.categories.presets.delete")}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
               ))}
             </div>
           </div>

@@ -65,11 +65,11 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
   const loadData = async () => {
     try {
+      if (!currentProject) return;
+
       const [clipsData, categoriesData] = await Promise.all([
-        currentProject
-          ? window.electronAPI.getClips(currentProject.id)
-          : Promise.resolve([]),
-        window.electronAPI.getCategoriesHierarchical(),
+        window.electronAPI.getClips(currentProject.id),
+        window.electronAPI.getCategoriesHierarchical(currentProject.id),
       ]);
 
       setClips(clipsData);

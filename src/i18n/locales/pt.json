@@ -72,12 +72,16 @@
         "title": "Predefinições",
         "save": "Guardar como Predefinição",
         "load": "Carregar Predefinição",
+        "delete": "Eliminar Predefinição",
         "enterName": "Introduzir nome da predefinição",
         "saveSuccess": "Predefinição guardada com sucesso!",
         "loadSuccess": "Predefinição carregada com sucesso!",
+        "deleteSuccess": "Predefinição eliminada com sucesso!",
         "saveFailed": "Falha ao guardar predefinição",
         "loadFailed": "Falha ao carregar predefinição",
-        "confirmLoad": "Tem a certeza que pretende carregar a predefinição \"{presetName}\"? Isto irá substituir as suas categorias atuais."
+        "deleteFailed": "Falha ao eliminar predefinição",
+        "confirmLoad": "Tem a certeza que pretende carregar a predefinição \"{presetName}\"? Isto irá substituir as suas categorias atuais.",
+        "confirmDelete": "Tem a certeza que pretende eliminar a predefinição \"{presetName}\"? Esta ação não pode ser desfeita."
       }
     },
     "clips": {

@@ -10,6 +10,18 @@ export interface Category {
   color: string;
   description?: string;
   parent_id?: number | null; // For subcategories
+  project_id: number; // Required for project-specific categories
+  created_at?: string;
+}
+
+export interface CategoryPreset {
+  id?: number;
+  preset_name: string;
+  category_name: string;
+  color: string;
+  description?: string;
+  parent_name?: string | null; // For subcategories within preset
+  sort_order?: number;
   created_at?: string;
 }
 
@@ -187,6 +199,9 @@ const migrateDatabase = () => {
     const hasParentId = categoriesTableInfo.some(
       col => col.name === "parent_id"
     );
+    const hasProjectIdInCategories = categoriesTableInfo.some(
+      col => col.name === "project_id"
+    );
 
     if (!hasParentId) {
       console.log("Adding subcategories support...");
@@ -198,6 +213,246 @@ const migrateDatabase = () => {
       `);
 
       console.log("Subcategories support added successfully");
+    }
+
+    if (!hasProjectIdInCategories) {
+      console.log("Adding project-specific categories support...");
+
+      // Add project_id column to categories table
+      db.exec(`
+        ALTER TABLE categories 
+        ADD COLUMN project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE
+      `);
+
+      console.log("Project-specific categories support added successfully");
+    }
+
+    // Always check and fix categories table constraints if needed
+    // Get the current table schema
+    const constraintCheckResult = db
+      .prepare(
+        `
+      SELECT sql FROM sqlite_master WHERE type='table' AND name='categories'
+    `
+      )
+      .get() as { sql: string } | undefined;
+
+    console.log("Current categories table schema:", constraintCheckResult?.sql);
+
+    // If the table exists but doesn't have the correct composite constraint, fix it
+    if (
+      constraintCheckResult &&
+      constraintCheckResult.sql &&
+      !constraintCheckResult.sql.includes("UNIQUE(name, parent_id, project_id)")
+    ) {
+      console.log("Categories table has incorrect constraints. Fixing...");
+
+      // Backup existing categories
+      const existingCategories = db
+        .prepare("SELECT * FROM categories")
+        .all() as Category[];
+      console.log(
+        `Backing up ${existingCategories.length} existing categories`
+      );
+
+      // Drop and recreate the table with proper constraints
+      db.exec("DROP TABLE IF EXISTS categories");
+      db.exec(`
+        CREATE TABLE categories (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          color TEXT NOT NULL,
+          description TEXT,
+          parent_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
+          project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(name, parent_id, project_id)
+        )
+      `);
+
+      // Restore data with default project_id if missing
+      if (existingCategories.length > 0) {
+        const insertStmt = db.prepare(`
+          INSERT INTO categories (name, color, description, parent_id, project_id, created_at)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `);
+
+        let restoredCount = 0;
+        for (const category of existingCategories) {
+          try {
+            insertStmt.run(
+              category.name,
+              category.color,
+              category.description,
+              category.parent_id,
+              category.project_id || 1, // Default to project 1 if no project_id
+              category.created_at || new Date().toISOString()
+            );
+            restoredCount++;
+          } catch (error) {
+            console.log(
+              `Skipping duplicate category: ${category.name} - ${error}`
+            );
+          }
+        }
+        console.log(`Restored ${restoredCount} categories`);
+      }
+
+      console.log("Categories table constraints fixed successfully");
+    } else {
+      console.log("Categories table constraints are correct");
+    }
+
+    // Check if we need to create or migrate the category_presets table
+    const tablesResult = db
+      .prepare(
+        `
+      SELECT name FROM sqlite_master WHERE type='table' AND name='category_presets'
+    `
+      )
+      .all();
+
+    if (tablesResult.length === 0) {
+      console.log("Creating category presets table...");
+
+      // Create the new category_presets table
+      db.exec(`
+        CREATE TABLE category_presets (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          preset_name TEXT NOT NULL,
+          category_name TEXT NOT NULL,
+          color TEXT NOT NULL,
+          description TEXT,
+          parent_name TEXT,
+          sort_order INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(preset_name, category_name, parent_name)
+        )
+      `);
+
+      console.log("Category presets table created successfully");
+    } else {
+      // Check if the existing table has the old structure
+      const presetTableInfo = db
+        .prepare("PRAGMA table_info(category_presets)")
+        .all() as Array<{
+        name: string;
+      }>;
+
+      const hasOldStructure =
+        presetTableInfo.some(col => col.name === "name") &&
+        presetTableInfo.some(col => col.name === "categories") &&
+        !presetTableInfo.some(col => col.name === "preset_name");
+
+      if (hasOldStructure) {
+        console.log("Migrating old preset table structure...");
+
+        // Get existing presets from old structure
+        const oldPresets = db
+          .prepare("SELECT * FROM category_presets")
+          .all() as Array<{
+          name: string;
+          categories: string;
+        }>;
+
+        // Rename old table
+        db.exec("ALTER TABLE category_presets RENAME TO category_presets_old");
+
+        // Create new table
+        db.exec(`
+          CREATE TABLE category_presets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            preset_name TEXT NOT NULL,
+            category_name TEXT NOT NULL,
+            color TEXT NOT NULL,
+            description TEXT,
+            parent_name TEXT,
+            sort_order INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(preset_name, category_name, parent_name)
+          )
+        `);
+
+        // Migrate old presets to new structure
+        for (const oldPreset of oldPresets) {
+          try {
+            const categories = JSON.parse(oldPreset.categories) as Category[];
+            for (let i = 0; i < categories.length; i++) {
+              const category = categories[i];
+              let parentName = null;
+
+              // Try to find parent by parent_id
+              if (category.parent_id) {
+                const parent = categories.find(
+                  c => c.id === category.parent_id
+                );
+                parentName = parent?.name || null;
+              }
+
+              db.prepare(
+                `
+                INSERT INTO category_presets (preset_name, category_name, color, description, parent_name, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?)
+              `
+              ).run(
+                oldPreset.name,
+                category.name,
+                category.color,
+                category.description || null,
+                parentName,
+                i
+              );
+            }
+          } catch (error) {
+            console.log(`Error migrating preset ${oldPreset.name}:`, error);
+          }
+        }
+
+        // Drop old table
+        db.exec("DROP TABLE category_presets_old");
+
+        console.log("Old preset table structure migrated successfully");
+      }
+    }
+
+    // Migrate any existing global categories (project_id = NULL) to presets
+    const globalCategories = db
+      .prepare(
+        `
+      SELECT * FROM categories WHERE project_id IS NULL
+    `
+      )
+      .all() as Category[];
+
+    if (globalCategories.length > 0) {
+      console.log(
+        `Migrating ${globalCategories.length} global categories to presets...`
+      );
+
+      // Create a "Default" preset from existing global categories
+      for (const category of globalCategories) {
+        try {
+          db.prepare(
+            `
+            INSERT INTO category_presets (preset_name, category_name, color, description, sort_order)
+            VALUES (?, ?, ?, ?, ?)
+          `
+          ).run(
+            "Default",
+            category.name,
+            category.color,
+            category.description || null,
+            0
+          );
+        } catch (error) {
+          console.log(`Skipping duplicate category: ${category.name}`);
+        }
+      }
+
+      // Remove global categories from categories table
+      db.exec("DELETE FROM categories WHERE project_id IS NULL");
+
+      console.log("Global categories migrated to presets successfully");
     }
   } catch (error) {
     console.error("Error during database migration:", error);
@@ -231,7 +486,7 @@ const createTables = () => {
     )
   `);
 
-  // Categories table
+  // Categories table - for project-specific categories
   db.exec(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -239,8 +494,24 @@ const createTables = () => {
       color TEXT NOT NULL,
       description TEXT,
       parent_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
+      project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(name, parent_id)
+      UNIQUE(name, parent_id, project_id)
+    )
+  `);
+
+  // Category presets table - for global preset templates
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS category_presets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      preset_name TEXT NOT NULL,
+      category_name TEXT NOT NULL,
+      color TEXT NOT NULL,
+      description TEXT,
+      parent_name TEXT, -- Reference to parent by name within same preset
+      sort_order INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(preset_name, category_name, parent_name)
     )
   `);
 
@@ -277,82 +548,14 @@ const createTables = () => {
 
 const insertDefaultCategories = () => {
   try {
-    const existingCategories = db
-      .prepare("SELECT COUNT(*) as count FROM categories")
-      .get() as { count: number };
-
-    if (existingCategories.count === 0) {
-      const parentCategories = [
-        {
-          name: "Offense",
-          color: "#4CAF50",
-          description: "Offensive plays and actions",
-        },
-        {
-          name: "Defense",
-          color: "#f44336",
-          description: "Defensive plays and actions",
-        },
-        {
-          name: "Screens",
-          color: "#9C27B0",
-          description: "Screen actions and plays",
-        },
-        {
-          name: "Rebounds",
-          color: "#FF9800",
-          description: "Offensive and defensive rebounds",
-        },
-        {
-          name: "Turnovers",
-          color: "#795548",
-          description: "Turnovers and steals",
-        },
-        {
-          name: "Player 1",
-          color: "#2196F3",
-          description: "Player 1 specific clips",
-        },
-        {
-          name: "Player 2",
-          color: "#00BCD4",
-          description: "Player 2 specific clips",
-        },
-        {
-          name: "Player 3",
-          color: "#8BC34A",
-          description: "Player 3 specific clips",
-        },
-        {
-          name: "Player 4",
-          color: "#FFC107",
-          description: "Player 4 specific clips",
-        },
-        {
-          name: "Player 5",
-          color: "#E91E63",
-          description: "Player 5 specific clips",
-        },
-      ];
-
-      const stmt = db.prepare(`
-        INSERT INTO categories (name, color, description, parent_id)
-        VALUES (?, ?, ?, ?)
-      `);
-
-      const parentIds = new Map<string, number>();
-      parentCategories.forEach(category => {
-        const result = stmt.run(
-          category.name,
-          category.color,
-          category.description,
-          null
-        );
-        parentIds.set(category.name, result.lastInsertRowid as number);
-      });
-    }
+    // Default categories are no longer inserted automatically since categories
+    // are now project-specific. They will be created when users create projects
+    // or load presets instead.
+    console.log(
+      "Skipping default categories insertion - using project-specific categories now"
+    );
   } catch (error) {
-    console.error("Error inserting default categories:", error);
+    console.error("Error in insertDefaultCategories:", error);
   }
 };
 
@@ -428,23 +631,27 @@ export const deleteProject = (id: number): void => {
 };
 
 // Category operations
-export const getCategories = (): Category[] => {
+export const getCategories = (projectId: number): Category[] => {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM categories ORDER BY parent_id ASC, name ASC"
-    );
-    return stmt.all() as Category[];
+    const stmt = db.prepare(`
+      SELECT * FROM categories 
+      WHERE project_id = ?
+      ORDER BY parent_id ASC, name ASC
+    `);
+    return stmt.all(projectId) as Category[];
   } catch (error) {
     console.error("Error getting categories:", error);
     return [];
   }
 };
 
-export const getCategoriesHierarchical = (): (Category & {
+export const getCategoriesHierarchical = (
+  projectId: number
+): (Category & {
   children?: Category[];
 })[] => {
   try {
-    const allCategories = getCategories();
+    const allCategories = getCategories(projectId);
     const parentCategories = allCategories.filter(cat => !cat.parent_id);
 
     return parentCategories.map(parent => ({
@@ -462,15 +669,16 @@ export const createCategory = (
 ): Category => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO categories (name, color, description, parent_id)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO categories (name, color, description, parent_id, project_id)
+      VALUES (?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       category.name,
       category.color,
       category.description || null,
-      category.parent_id || null
+      category.parent_id || null,
+      category.project_id
     );
 
     return {
@@ -480,6 +688,139 @@ export const createCategory = (
     };
   } catch (error) {
     console.error("Error creating category:", error);
+    throw error;
+  }
+};
+
+// Category preset operations
+export const savePreset = (
+  presetName: string,
+  categories: Category[]
+): void => {
+  try {
+    // First, delete any existing preset with this name
+    db.prepare("DELETE FROM category_presets WHERE preset_name = ?").run(
+      presetName
+    );
+
+    // Insert categories as preset
+    const stmt = db.prepare(`
+      INSERT INTO category_presets (preset_name, category_name, color, description, parent_name, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    categories.forEach((category, index) => {
+      // Find parent name if exists
+      let parentName = null;
+      if (category.parent_id) {
+        const parent = categories.find(c => c.id === category.parent_id);
+        parentName = parent?.name || null;
+      }
+
+      stmt.run(
+        presetName,
+        category.name,
+        category.color,
+        category.description || null,
+        parentName,
+        index
+      );
+    });
+  } catch (error) {
+    console.error("Error saving preset:", error);
+    throw error;
+  }
+};
+
+export const loadPreset = (presetName: string): CategoryPreset[] => {
+  try {
+    const stmt = db.prepare(`
+      SELECT * FROM category_presets 
+      WHERE preset_name = ? 
+      ORDER BY sort_order, category_name
+    `);
+    return stmt.all(presetName) as CategoryPreset[];
+  } catch (error) {
+    console.error("Error loading preset:", error);
+    return [];
+  }
+};
+
+export const getPresets = (): string[] => {
+  try {
+    const stmt = db.prepare(`
+      SELECT DISTINCT preset_name FROM category_presets 
+      ORDER BY preset_name
+    `);
+    return stmt.all().map((row: any) => row.preset_name);
+  } catch (error) {
+    console.error("Error getting presets:", error);
+    return [];
+  }
+};
+
+export const deletePreset = (presetName: string): void => {
+  try {
+    db.prepare("DELETE FROM category_presets WHERE preset_name = ?").run(
+      presetName
+    );
+  } catch (error) {
+    console.error("Error deleting preset:", error);
+    throw error;
+  }
+};
+
+export const importPresetToProject = async (
+  presetName: string,
+  projectId: number
+): Promise<void> => {
+  try {
+    // Clear existing categories for the project
+    clearProjectCategories(projectId);
+
+    // Load preset data
+    const presetCategories = loadPreset(presetName);
+
+    // Create categories from preset, handling parent-child relationships
+    const categoryMap = new Map<string, number>(); // preset name -> new category ID
+
+    // First pass: Create parent categories
+    for (const presetCat of presetCategories.filter(c => !c.parent_name)) {
+      const newCategory = createCategory({
+        name: presetCat.category_name,
+        color: presetCat.color,
+        description: presetCat.description,
+        project_id: projectId,
+      });
+      categoryMap.set(presetCat.category_name, newCategory.id!);
+    }
+
+    // Second pass: Create child categories
+    for (const presetCat of presetCategories.filter(c => c.parent_name)) {
+      const parentId = categoryMap.get(presetCat.parent_name!);
+      if (parentId) {
+        const newCategory = createCategory({
+          name: presetCat.category_name,
+          color: presetCat.color,
+          description: presetCat.description,
+          parent_id: parentId,
+          project_id: projectId,
+        });
+        categoryMap.set(presetCat.category_name, newCategory.id!);
+      }
+    }
+  } catch (error) {
+    console.error("Error importing preset to project:", error);
+    throw error;
+  }
+};
+
+export const clearProjectCategories = (projectId: number): void => {
+  try {
+    const stmt = db.prepare("DELETE FROM categories WHERE project_id = ?");
+    stmt.run(projectId);
+  } catch (error) {
+    console.error("Error clearing project categories:", error);
     throw error;
   }
 };
@@ -638,57 +979,4 @@ export const resetDatabase = () => {
   } catch (error) {
     console.error("Error resetting database:", error);
   }
-};
-
-// Category preset operations
-export const savePreset = (
-  presetName: string,
-  categories: Category[]
-): void => {
-  db.prepare(
-    `CREATE TABLE IF NOT EXISTS category_presets (
-    name TEXT PRIMARY KEY,
-    categories TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`
-  ).run();
-
-  db.prepare(
-    `INSERT OR REPLACE INTO category_presets (name, categories) VALUES (?, ?)`
-  ).run(presetName, JSON.stringify(categories));
-};
-
-export const loadPreset = (presetName: string): Category[] => {
-  db.prepare(
-    `CREATE TABLE IF NOT EXISTS category_presets (
-    name TEXT PRIMARY KEY,
-    categories TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`
-  ).run();
-
-  const preset = db
-    .prepare(`SELECT categories FROM category_presets WHERE name = ?`)
-    .get(presetName) as { categories: string } | undefined;
-
-  if (!preset) {
-    throw new Error(`Preset ${presetName} not found`);
-  }
-
-  return JSON.parse(preset.categories);
-};
-
-export const getPresets = (): string[] => {
-  db.prepare(
-    `CREATE TABLE IF NOT EXISTS category_presets (
-    name TEXT PRIMARY KEY,
-    categories TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`
-  ).run();
-
-  const presets = db.prepare(`SELECT name FROM category_presets`).all() as {
-    name: string;
-  }[];
-  return presets.map(p => p.name);
 };
