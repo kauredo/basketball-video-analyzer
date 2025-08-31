@@ -10,6 +10,7 @@ export interface ElectronAPI {
     title: string;
     categories: number[];
     notes?: string;
+    projectId: number;
   }) => Promise<any>;
   openClipFolder: () => Promise<void>;
   playClip: (clipPath: string) => Promise<void>;
@@ -23,6 +24,18 @@ export interface ElectronAPI {
     }>;
   }) => Promise<{ count: number; exportDir: string }>;
 
+  // Project operations
+  createProject: (project: {
+    name: string;
+    video_path: string;
+    video_name: string;
+    description?: string;
+  }) => Promise<any>;
+  getProject: (videoPath: string) => Promise<any | null>;
+  getProjects: () => Promise<any[]>;
+  updateProjectLastOpened: (projectId: number) => Promise<boolean>;
+  deleteProject: (id: number) => Promise<boolean>;
+
   // Category operations
   getCategories: () => Promise<any[]>;
   createCategory: (category: any) => Promise<any>;
@@ -33,7 +46,7 @@ export interface ElectronAPI {
   getPresets: () => Promise<string[]>;
 
   // Clip operations
-  getClips: (videoPath?: string) => Promise<any[]>;
+  getClips: (projectId?: number) => Promise<any[]>;
   updateClip: (id: number, updates: any) => Promise<boolean>;
   deleteClip: (id: number) => Promise<boolean>;
   getClipsByCategory: (categoryId: number) => Promise<any[]>;
@@ -64,6 +77,14 @@ const electronAPI: ElectronAPI = {
   exportClipsByCategory: params =>
     ipcRenderer.invoke("export-clips-by-category", params),
 
+  // Project operations
+  createProject: project => ipcRenderer.invoke("create-project", project),
+  getProject: videoPath => ipcRenderer.invoke("get-project", videoPath),
+  getProjects: () => ipcRenderer.invoke("get-projects"),
+  updateProjectLastOpened: projectId =>
+    ipcRenderer.invoke("update-project-last-opened", projectId),
+  deleteProject: id => ipcRenderer.invoke("delete-project", id),
+
   // Category operations
   getCategories: () => ipcRenderer.invoke("get-categories"),
   createCategory: category => ipcRenderer.invoke("create-category", category),
@@ -76,7 +97,7 @@ const electronAPI: ElectronAPI = {
   getPresets: () => ipcRenderer.invoke("get-presets"),
 
   // Clip operations
-  getClips: videoPath => ipcRenderer.invoke("get-clips", videoPath),
+  getClips: projectId => ipcRenderer.invoke("get-clips", projectId),
   updateClip: (id, updates) => ipcRenderer.invoke("update-clip", id, updates),
   deleteClip: id => ipcRenderer.invoke("delete-clip", id),
   getClipsByCategory: categoryId =>

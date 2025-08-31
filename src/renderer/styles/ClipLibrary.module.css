@@ -31,6 +31,28 @@
   margin: 0;
 }
 
+.projectInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  min-width: 200px;
+}
+
+.projectName {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.projectDetails {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 .clipFilters {
   margin-bottom: var(--spacing-lg);
   padding: var(--spacing-md);

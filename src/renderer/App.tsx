@@ -30,6 +30,7 @@ import { KeyBindingEditor } from "./components/KeyBindingEditor";
 export const App: React.FC = () => {
   const { t } = useTranslation();
   const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [currentProject, setCurrentProject] = useState<any | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [markInTime, setMarkInTime] = useState<number | null>(null);
@@ -83,12 +84,33 @@ export const App: React.FC = () => {
       setIsLoading(true);
       const filePath = await window.electronAPI.selectVideoFile();
       if (filePath) {
+        // Check if a project already exists for this video
+        let project = await window.electronAPI.getProject(filePath);
+
+        if (!project) {
+          // Create a new project for this video
+          const videoName = filePath.split(/[/\\]/).pop() || "Untitled Video";
+          const projectName = videoName.replace(/\.[^/.]+$/, ""); // Remove extension
+
+          project = await window.electronAPI.createProject({
+            name: projectName,
+            video_path: filePath,
+            video_name: videoName,
+            description: `Project for ${videoName}`,
+          });
+        } else {
+          // Update last opened time for existing project
+          await window.electronAPI.updateProjectLastOpened(project.id);
+        }
+
+        setCurrentProject(project);
         setVideoPath(filePath);
         // Reset marks when new video is loaded
         setMarkInTime(null);
         setMarkOutTime(null);
         setCurrentTime(0);
         setDuration(0);
+        setRefreshTrigger(prev => prev + 1);
       }
     } catch (error) {
       console.error("Error selecting video:", error);
@@ -218,7 +240,10 @@ export const App: React.FC = () => {
             />
           )}
           <div className={styles.clipLibraryPanel}>
-            <ClipLibrary onRefresh={refreshTrigger} />
+            <ClipLibrary
+              onRefresh={refreshTrigger}
+              currentProject={currentProject}
+            />
           </div>
         </div>
       </main>
@@ -246,6 +271,7 @@ export const App: React.FC = () => {
                 markOutTime={markOutTime}
                 onClipCreated={handleClipCreated}
                 onClearMarks={handleClearMarks}
+                currentProject={currentProject}
               />
             </div>
           </div>

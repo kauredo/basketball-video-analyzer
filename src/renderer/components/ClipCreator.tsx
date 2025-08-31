@@ -24,6 +24,7 @@ interface ClipCreatorProps {
   markOutTime: number | null;
   onClipCreated: () => void;
   onClearMarks: () => void;
+  currentProject: any | null;
 }
 
 export const ClipCreator: React.FC<ClipCreatorProps> = ({
@@ -32,6 +33,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   markOutTime,
   onClipCreated,
   onClearMarks,
+  currentProject,
 }) => {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -107,12 +109,17 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   const handleCreateClip = async () => {
     if (!videoPath || markInTime === null || markOutTime === null) {
-      alert(t("app.clips.creator.errorMarkPoints"));
+      alert(t("app.clips.creator.markInOutRequired"));
+      return;
+    }
+
+    if (!currentProject) {
+      alert("No project loaded. Please select a video first.");
       return;
     }
 
     if (selectedCategories.length === 0) {
-      alert(t("app.clips.creator.errorSelectCategory"));
+      alert(t("app.clips.creator.categoryRequired"));
       return;
     }
 
@@ -128,6 +135,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         title: title,
         categories: selectedCategories,
         notes: clipNotes.trim() || undefined,
+        projectId: currentProject.id,
       });
     } catch (error) {
       console.error("Error creating clip:", error);

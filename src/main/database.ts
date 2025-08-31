@@ -12,8 +12,19 @@ export interface Category {
   created_at?: string;
 }
 
+export interface Project {
+  id?: number;
+  name: string;
+  video_path: string;
+  video_name: string;
+  description?: string;
+  created_at?: string;
+  last_opened?: string;
+}
+
 export interface Clip {
   id?: number;
+  project_id: number;
   video_path: string;
   output_path: string;
   thumbnail_path?: string;
@@ -39,11 +50,135 @@ export const setupDatabase = () => {
     db = new Database(dbPath);
     db.pragma("journal_mode = WAL");
 
+    migrateDatabase();
     createTables();
     insertDefaultCategories();
     console.log("Database setup complete");
   } catch (error) {
     console.error("Error setting up database:", error);
+  }
+};
+
+const migrateDatabase = () => {
+  try {
+    // Check if we need to migrate existing clips table
+    const tableInfo = db.prepare("PRAGMA table_info(clips)").all() as Array<{
+      name: string;
+    }>;
+    const hasProjectId = tableInfo.some(col => col.name === "project_id");
+
+    if (!hasProjectId) {
+      console.log("Migrating database schema...");
+
+      // First, create the projects table
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS projects (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          video_path TEXT NOT NULL UNIQUE,
+          video_name TEXT NOT NULL,
+          description TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          last_opened DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Create a temporary clips table with the new schema
+      db.exec(`
+        CREATE TABLE clips_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          project_id INTEGER NOT NULL,
+          video_path TEXT NOT NULL,
+          output_path TEXT NOT NULL,
+          thumbnail_path TEXT,
+          start_time REAL NOT NULL,
+          end_time REAL NOT NULL,
+          duration REAL NOT NULL,
+          title TEXT NOT NULL,
+          categories TEXT NOT NULL,
+          notes TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
+        )
+      `);
+
+      // Get existing clips
+      const existingClips = db.prepare("SELECT * FROM clips").all() as Array<{
+        id: number;
+        video_path: string;
+        output_path: string;
+        thumbnail_path?: string;
+        start_time: number;
+        end_time: number;
+        duration: number;
+        title: string;
+        categories: string;
+        notes?: string;
+        created_at: string;
+      }>;
+
+      if (existingClips.length > 0) {
+        console.log(`Migrating ${existingClips.length} existing clips...`);
+
+        // Create projects for unique video paths and migrate clips
+        const videoPathToProjectId = new Map<string, number>();
+
+        for (const clip of existingClips) {
+          let projectId = videoPathToProjectId.get(clip.video_path);
+
+          if (!projectId) {
+            // Create a new project for this video
+            const videoName =
+              clip.video_path.split(/[/\\]/).pop() || "Untitled Video";
+            const projectName = videoName.replace(/\.[^/.]+$/, ""); // Remove extension
+
+            const stmt = db.prepare(`
+              INSERT INTO projects (name, video_path, video_name, description)
+              VALUES (?, ?, ?, ?)
+            `);
+
+            const result = stmt.run(
+              projectName,
+              clip.video_path,
+              videoName,
+              `Migrated project for ${videoName}`
+            );
+
+            projectId = result.lastInsertRowid as number;
+            videoPathToProjectId.set(clip.video_path, projectId);
+          }
+
+          // Insert clip with project_id
+          const insertStmt = db.prepare(`
+            INSERT INTO clips_new (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, notes, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `);
+
+          insertStmt.run(
+            projectId,
+            clip.video_path,
+            clip.output_path,
+            clip.thumbnail_path,
+            clip.start_time,
+            clip.end_time,
+            clip.duration,
+            clip.title,
+            clip.categories,
+            clip.notes,
+            clip.created_at
+          );
+        }
+      }
+
+      // Drop old table and rename new one
+      db.exec("DROP TABLE clips");
+      db.exec("ALTER TABLE clips_new RENAME TO clips");
+
+      console.log("Database migration completed successfully");
+    }
+  } catch (error) {
+    console.error("Error during database migration:", error);
+    throw error;
   }
 };
 
@@ -53,13 +188,26 @@ const setupKeyBindingsTable = () => {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
-    INSERT OR IGNORE INTO key_bindings (key, value) VALUES 
+    INSERT OR IGNORE INTO key_bindings (key, value) VALUES
       ('markInKey', 'z'),
       ('markOutKey', 'm');
   `);
 };
 
 const createTables = () => {
+  // Projects table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS projects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      video_path TEXT NOT NULL UNIQUE,
+      video_name TEXT NOT NULL,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_opened DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // Categories table
   db.exec(`
     CREATE TABLE IF NOT EXISTS categories (
@@ -75,6 +223,7 @@ const createTables = () => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS clips (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
       video_path TEXT NOT NULL,
       output_path TEXT NOT NULL,
       thumbnail_path TEXT,
@@ -84,12 +233,15 @@ const createTables = () => {
       title TEXT NOT NULL,
       categories TEXT NOT NULL,
       notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
     )
   `);
 
   // Create indexes
   db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_projects_video_path ON projects(video_path);
+    CREATE INDEX IF NOT EXISTS idx_clips_project_id ON clips(project_id);
     CREATE INDEX IF NOT EXISTS idx_clips_video_path ON clips(video_path);
     CREATE INDEX IF NOT EXISTS idx_clips_categories ON clips(categories);
     CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
@@ -174,6 +326,77 @@ const insertDefaultCategories = () => {
   }
 };
 
+// Project operations
+export const createProject = (
+  project: Omit<Project, "id" | "created_at" | "last_opened">
+): Project => {
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO projects (name, video_path, video_name, description)
+      VALUES (?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      project.name,
+      project.video_path,
+      project.video_name,
+      project.description || null
+    );
+
+    return {
+      id: result.lastInsertRowid as number,
+      ...project,
+      created_at: new Date().toISOString(),
+      last_opened: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error creating project:", error);
+    throw error;
+  }
+};
+
+export const getProject = (videoPath: string): Project | null => {
+  try {
+    const stmt = db.prepare("SELECT * FROM projects WHERE video_path = ?");
+    return (stmt.get(videoPath) as Project) || null;
+  } catch (error) {
+    console.error("Error getting project:", error);
+    return null;
+  }
+};
+
+export const getProjects = (): Project[] => {
+  try {
+    const stmt = db.prepare("SELECT * FROM projects ORDER BY last_opened DESC");
+    return stmt.all() as Project[];
+  } catch (error) {
+    console.error("Error getting projects:", error);
+    return [];
+  }
+};
+
+export const updateProjectLastOpened = (projectId: number): void => {
+  try {
+    const stmt = db.prepare(
+      "UPDATE projects SET last_opened = CURRENT_TIMESTAMP WHERE id = ?"
+    );
+    stmt.run(projectId);
+  } catch (error) {
+    console.error("Error updating project last opened:", error);
+  }
+};
+
+export const deleteProject = (id: number): void => {
+  try {
+    // This will also delete all associated clips due to CASCADE
+    const stmt = db.prepare("DELETE FROM projects WHERE id = ?");
+    stmt.run(id);
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    throw error;
+  }
+};
+
 // Category operations
 export const getCategories = (): Category[] => {
   try {
@@ -241,14 +464,14 @@ export const deleteCategory = (id: number): void => {
 };
 
 // Clip operations
-export const getClips = (videoPath?: string): Clip[] => {
+export const getClips = (projectId?: number): Clip[] => {
   try {
     let stmt;
-    if (videoPath) {
+    if (projectId) {
       stmt = db.prepare(
-        "SELECT * FROM clips WHERE video_path = ? ORDER BY created_at DESC"
+        "SELECT * FROM clips WHERE project_id = ? ORDER BY created_at DESC"
       );
-      return stmt.all(videoPath) as Clip[];
+      return stmt.all(projectId) as Clip[];
     } else {
       stmt = db.prepare("SELECT * FROM clips ORDER BY created_at DESC");
       return stmt.all() as Clip[];
@@ -262,11 +485,12 @@ export const getClips = (videoPath?: string): Clip[] => {
 export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO clips (video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
+      clip.project_id,
       clip.video_path,
       clip.output_path,
       clip.thumbnail_path,
@@ -318,8 +542,8 @@ export const deleteClip = (id: number): void => {
 export const getClipsByCategory = (categoryId: number): Clip[] => {
   try {
     const stmt = db.prepare(`
-      SELECT * FROM clips 
-      WHERE categories LIKE ? 
+      SELECT * FROM clips
+      WHERE categories LIKE ?
       ORDER BY created_at DESC
     `);
 

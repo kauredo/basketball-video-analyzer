@@ -15,8 +15,14 @@ import {
   updateClip,
   deleteClip,
   getClipsByCategory,
+  createProject,
+  getProject,
+  getProjects,
+  updateProjectLastOpened,
+  deleteProject,
   Category,
   Clip,
+  Project,
   resetDatabase,
   getKeyBindings,
   setKeyBinding,
@@ -126,12 +132,20 @@ ipcMain.handle(
       title: string;
       categories: number[];
       notes?: string;
+      projectId: number;
     }
   ) => {
     return new Promise((resolve, reject) => {
       try {
-        const { inputPath, startTime, endTime, title, categories, notes } =
-          params;
+        const {
+          inputPath,
+          startTime,
+          endTime,
+          title,
+          categories,
+          notes,
+          projectId,
+        } = params;
 
         // Use native path separators for file system operations
         const normalizedInputPath = path.normalize(inputPath);
@@ -261,6 +275,7 @@ ipcMain.handle(
                   console.log("Clip created successfully");
                   // Save clip to database with thumbnail path
                   const clipData = {
+                    project_id: projectId,
                     video_path: normalizedInputPath,
                     output_path: outputPath,
                     thumbnail_path: thumbnailPath,
@@ -449,10 +464,67 @@ ipcMain.handle("delete-category", async (_event, id: number) => {
   }
 });
 
-// Clip operations
-ipcMain.handle("get-clips", async (_event, videoPath?: string) => {
+// Project operations
+ipcMain.handle(
+  "create-project",
+  async (
+    _event,
+    projectData: Omit<Project, "id" | "created_at" | "last_opened">
+  ) => {
+    try {
+      return createProject(projectData);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      throw error;
+    }
+  }
+);
+
+ipcMain.handle("get-project", async (_event, videoPath: string) => {
   try {
-    return getClips(videoPath);
+    return getProject(videoPath);
+  } catch (error) {
+    console.error("Error getting project:", error);
+    return null;
+  }
+});
+
+ipcMain.handle("get-projects", async () => {
+  try {
+    return getProjects();
+  } catch (error) {
+    console.error("Error getting projects:", error);
+    return [];
+  }
+});
+
+ipcMain.handle(
+  "update-project-last-opened",
+  async (_event, projectId: number) => {
+    try {
+      updateProjectLastOpened(projectId);
+      return true;
+    } catch (error) {
+      console.error("Error updating project last opened:", error);
+      return false;
+    }
+  }
+);
+
+ipcMain.handle("delete-project", async (_event, id: number) => {
+  try {
+    deleteProject(id);
+    return true;
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    throw error;
+  }
+});
+
+// Clip operations
+ipcMain.handle("get-clips", async (_event, projectId?: number) => {
+  try {
+    return getClips(projectId);
   } catch (error) {
     console.error("Error getting clips:", error);
     return [];
