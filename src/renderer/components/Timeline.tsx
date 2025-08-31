@@ -163,12 +163,30 @@ export const Timeline: React.FC<TimelineProps> = ({
     onTimeSeek(Math.max(0, Math.min(videoDuration, newTime)));
   };
 
-  // Handle clip selection
+  // Handle clip selection with accurate positioning
   const handleClipClick = (clip: Clip, event: React.MouseEvent) => {
     event.stopPropagation();
     setSelectedClip(clip);
     onClipSelect(clip);
-    onTimeSeek(clip.start_time);
+
+    // Calculate the exact time within the clip based on click position
+    const clipElement = event.currentTarget as HTMLElement;
+    const rect = clipElement.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickPercentage = clickX / rect.width;
+
+    // Calculate the time within the clip's duration
+    const clipDuration = clip.end_time - clip.start_time;
+    const timeWithinClip = clickPercentage * clipDuration;
+    const exactTime = clip.start_time + timeWithinClip;
+
+    // Clamp to clip boundaries
+    const clampedTime = Math.max(
+      clip.start_time,
+      Math.min(clip.end_time, exactTime)
+    );
+
+    onTimeSeek(clampedTime);
   };
 
   // Calculate current time indicator position

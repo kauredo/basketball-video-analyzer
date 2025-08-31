@@ -28,6 +28,7 @@ import { ClipLibrary } from "./components/ClipLibrary";
 import { Timeline } from "./components/Timeline";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { InstructionsModal } from "./components/InstructionsModal";
+import { ProjectSelector } from "./components/ProjectSelector";
 import { KeyBindingEditor } from "./components/KeyBindingEditor";
 import { Clip, Category } from "../types/global";
 
@@ -44,6 +45,8 @@ export const App: React.FC = () => {
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [hasExistingProjects, setHasExistingProjects] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(360); // Default panel width for clips
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(true); // Start with side panel closed
   const [bottomPanelHeight, setBottomPanelHeight] = useState(300); // Default panel height for timeline
@@ -56,6 +59,29 @@ export const App: React.FC = () => {
   const sideResizeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const videoPlayerRef = useRef<any>(null);
+
+  // Check for existing projects on startup
+  useEffect(() => {
+    const checkExistingProjects = async () => {
+      try {
+        const projects = await window.electronAPI.getProjects();
+        const hasProjects = projects && projects.length > 0;
+        setHasExistingProjects(hasProjects);
+
+        // Show project selector if there are existing projects and no video is loaded
+        if (hasProjects && !videoPath) {
+          setShowProjectSelector(true);
+        } else if (!hasProjects && !videoPath) {
+          // Show instructions modal for first-time users
+          setShowInstructions(true);
+        }
+      } catch (error) {
+        console.error("Error checking existing projects:", error);
+      }
+    };
+
+    checkExistingProjects();
+  }, [videoPath]);
 
   // Load clips and categories when refresh trigger changes
   useEffect(() => {
@@ -166,12 +192,17 @@ export const App: React.FC = () => {
       setIsLoading(true);
       const filePath = await window.electronAPI.selectVideoFile();
       if (filePath) {
+        const videoName = filePath.split("/").pop() || "Unknown Video";
+
         // Check if a project already exists for this video
         let project = await window.electronAPI.getProject(filePath);
 
         if (!project) {
           // Create a new project for this video
-          const videoName = filePath.split(/[/\\]/).pop() || "Untitled Video";
+          const timestamp = new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", " ");
           const projectName = videoName.replace(/\.[^/.]+$/, ""); // Remove extension
 
           project = await window.electronAPI.createProject({
@@ -187,19 +218,38 @@ export const App: React.FC = () => {
 
         setCurrentProject(project);
         setVideoPath(filePath);
-        // Reset marks when new video is loaded
-        setMarkInTime(null);
-        setMarkOutTime(null);
-        setCurrentTime(0);
-        setDuration(0);
         setRefreshTrigger(prev => prev + 1);
+        setShowProjectSelector(false);
+        setShowInstructions(false);
       }
     } catch (error) {
       console.error("Error selecting video:", error);
-      alert(t("app.video.loadingError"));
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSelectProject = async (project: any) => {
+    try {
+      setIsLoading(true);
+
+      // Update last opened time
+      await window.electronAPI.updateProjectLastOpened(project.id);
+
+      setCurrentProject(project);
+      setVideoPath(project.video_path);
+      setRefreshTrigger(prev => prev + 1);
+      setShowProjectSelector(false);
+    } catch (error) {
+      console.error("Error selecting project:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateNewProject = () => {
+    setShowProjectSelector(false);
+    handleSelectVideo();
   };
 
   const handleMarkIn = useCallback(() => {
@@ -459,12 +509,20 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Instructions Modal */}
+      {/* Instructions Modal - only show for first-time users with no projects */}
       <InstructionsModal
-        isOpen={!videoPath || showInstructions}
+        isOpen={!hasExistingProjects && !videoPath && showInstructions}
         onClose={() => setShowInstructions(false)}
         onSelectVideo={handleSelectVideo}
-        showSelectVideoButton={!videoPath}
+        showSelectVideoButton={true}
+      />
+
+      {/* Project Selector Modal */}
+      <ProjectSelector
+        isOpen={showProjectSelector}
+        onClose={() => setShowProjectSelector(false)}
+        onSelectProject={handleSelectProject}
+        onCreateNew={handleCreateNewProject}
       />
     </div>
   );
