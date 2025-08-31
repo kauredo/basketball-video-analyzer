@@ -219,8 +219,9 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     return (
       <div
         key={category.id}
-        className={styles.categoryItem}
-        style={{ marginLeft: `${level * 20}px` }}
+        className={`${styles.categoryItem} ${
+          level > 0 ? styles.subcategoryItem : ""
+        }`}
       >
         <div className={styles.categoryHeader}>
           <div
@@ -265,27 +266,32 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label>Color</label>
-                  <div className={styles.colorPicker}>
-                    {colorPresets.map(color => (
-                      <button
-                        key={color}
-                        className={`${styles.colorOption} ${
-                          editingCategory.color === color ? styles.selected : ""
-                        }`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => {
-                          const updatedCategory: Category = {
-                            ...editingCategory,
-                            color,
-                          };
-                          setEditingCategory(updatedCategory);
-                        }}
-                      />
-                    ))}
+                {/* Only show color picker for parent categories */}
+                {level === 0 && (
+                  <div className={styles.formGroup}>
+                    <label>Color</label>
+                    <div className={styles.colorPicker}>
+                      {colorPresets.map(color => (
+                        <button
+                          key={color}
+                          className={`${styles.colorOption} ${
+                            editingCategory.color === color
+                              ? styles.selected
+                              : ""
+                          }`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => {
+                            const updatedCategory: Category = {
+                              ...editingCategory,
+                              color,
+                            };
+                            setEditingCategory(updatedCategory);
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className={styles.formGroup}>
                   <label>Description (optional)</label>
