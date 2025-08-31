@@ -62,9 +62,9 @@ export const App: React.FC = () => {
     const loadData = async () => {
       if (currentProject) {
         try {
-          const [clipsData, categoriesData] = await Promise.all([
-            window.electronAPI.getClips(currentProject.id),
-            window.electronAPI.getCategories(),
+                    const [clipsData, categoriesData] = await Promise.all([
+            currentProject ? window.electronAPI.getClips(currentProject.id) : Promise.resolve([]),
+            window.electronAPI.getCategoriesHierarchical(),
           ]);
           setClips(clipsData || []);
           setCategories(categoriesData || []);

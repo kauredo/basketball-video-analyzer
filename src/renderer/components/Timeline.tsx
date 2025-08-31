@@ -60,27 +60,56 @@ export const Timeline: React.FC<TimelineProps> = ({
     return matchesSearch && matchesCategory;
   });
 
-  // Convert clips to timeline format with percentages
-  const timelineClips: TimelineClip[] = filteredClips.map(clip => {
-    let category_ids: number[] = [];
-    try {
-      category_ids = JSON.parse(clip.categories || "[]");
-    } catch (e) {
-      category_ids = [];
-    }
+  // Convert clips to timeline format with percentages and expand clips for multiple categories
+  const expandClipsForCategories = (): TimelineClip[] => {
+    const expandedClips: TimelineClip[] = [];
+    
+    filteredClips.forEach(clip => {
+      let category_ids: number[] = [];
+      try {
+        category_ids = JSON.parse(clip.categories || "[]");
+      } catch (e) {
+        category_ids = [];
+      }
 
-    return {
-      ...clip,
-      category_ids,
-      startPercentage: (clip.start_time / videoDuration) * 100,
-      widthPercentage:
-        ((clip.end_time - clip.start_time) / videoDuration) * 100,
-    };
-  });
+      // Create a separate timeline clip for each category the clip belongs to
+      category_ids.forEach(categoryId => {
+        expandedClips.push({
+          ...clip,
+          category_ids: [categoryId], // Single category for this instance
+          startPercentage: (clip.start_time / videoDuration) * 100,
+          widthPercentage: ((clip.end_time - clip.start_time) / videoDuration) * 100,
+        });
+      });
+
+      // If no categories, create one clip with empty category
+      if (category_ids.length === 0) {
+        expandedClips.push({
+          ...clip,
+          category_ids: [],
+          startPercentage: (clip.start_time / videoDuration) * 100,
+          widthPercentage: ((clip.end_time - clip.start_time) / videoDuration) * 100,
+        });
+      }
+    });
+
+    return expandedClips;
+  };
+
+  const timelineClips = expandClipsForCategories();
 
   // Group clips by category for timeline tracks - organize hierarchically
   const organizeCategories = (categories: Category[]) => {
     const result: Array<{ category: Category; clips: TimelineClip[] }> = [];
+    
+    // Get all categories (including children) flattened for easier lookup
+    const allCategories: Category[] = [];
+    categories.forEach(cat => {
+      allCategories.push(cat);
+      if (cat.children) {
+        allCategories.push(...cat.children);
+      }
+    });
     
     // First add parent categories and their clips
     categories.filter(cat => !cat.parent_id).forEach(parentCategory => {
@@ -141,10 +170,20 @@ export const Timeline: React.FC<TimelineProps> = ({
   // Calculate current time indicator position
   const currentTimePercentage = (currentTime / videoDuration) * 100;
 
-  // Get category color for a clip
+  // Get category color for a clip (now works with single category per timeline clip)
   const getClipColor = (clip: TimelineClip): string => {
     if (clip.category_ids.length === 0) return "#4CAF50";
-    const category = categories.find(c => c.id === clip.category_ids[0]);
+    
+    // Get all categories (including children) for lookup
+    const allCategories: Category[] = [];
+    categories.forEach(cat => {
+      allCategories.push(cat);
+      if (cat.children) {
+        allCategories.push(...cat.children);
+      }
+    });
+    
+    const category = allCategories.find(c => c.id === clip.category_ids[0]);
     return category?.color || "#4CAF50";
   };
 
@@ -217,77 +256,138 @@ export const Timeline: React.FC<TimelineProps> = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredClips.map(clip => {
-                    // Parse clip categories to get the first one for display
+                  {/* Show clips expanded by categories */}
+                  {filteredClips.flatMap(clip => {
+                    // Parse clip categories
                     let clipCategoryIds: number[] = [];
                     try {
                       clipCategoryIds = JSON.parse(clip.categories || "[]");
                     } catch (e) {
                       clipCategoryIds = [];
                     }
-                    const category = categories.find(
-                      c => c.id === clipCategoryIds[0]
-                    );
 
-                    return (
-                      <tr
-                        key={clip.id}
-                        className={`${styles.clipRow} ${
-                          selectedClip?.id === clip.id ? styles.selected : ""
-                        }`}
-                        onClick={() =>
-                          handleClipClick(clip, {
-                            stopPropagation: () => {},
-                          } as React.MouseEvent)
-                        }
-                      >
-                        <td className={styles.categoryCell}>
-                          <div className={styles.categoryContainer}>
-                            <div
-                              className={styles.categoryIndicator}
-                              style={{
-                                backgroundColor: category?.color || "#4CAF50",
-                              }}
-                            />
-                            <span className={styles.categoryName}>
-                              {category?.name || "No Category"}
+                    // If no categories, show once with "No Category"
+                    if (clipCategoryIds.length === 0) {
+                      return [
+                        <tr
+                          key={`${clip.id}-no-category`}
+                          className={`${styles.clipRow} ${
+                            selectedClip?.id === clip.id ? styles.selected : ""
+                          }`}
+                          onClick={() =>
+                            handleClipClick(clip, {
+                              stopPropagation: () => {},
+                            } as React.MouseEvent)
+                          }
+                        >
+                          <td className={styles.categoryCell}>
+                            <div className={styles.categoryContainer}>
+                              <div
+                                className={styles.categoryIndicator}
+                                style={{ backgroundColor: "#4CAF50" }}
+                              />
+                              <span className={styles.categoryName}>No Category</span>
+                            </div>
+                          </td>
+                          <td className={styles.titleCell}>
+                            <span className={styles.clipTitle}>{clip.title}</span>
+                          </td>
+                          <td className={styles.timeCell}>
+                            <span className={styles.timeRange}>
+                              {formatTime(clip.start_time)} - {formatTime(clip.end_time)}
                             </span>
-                            {clipCategoryIds.length > 1 && (
-                              <span className={styles.categoryCount}>
-                                +{clipCategoryIds.length - 1}
+                          </td>
+                          <td className={styles.durationCell}>
+                            <span className={styles.duration}>
+                              {formatTime(clip.end_time - clip.start_time)}
+                            </span>
+                          </td>
+                          <td className={styles.notesCell}>
+                            <span className={styles.notes}>
+                              {clip.notes ? (clip.notes.length > 30 ? `${clip.notes.substring(0, 30)}...` : clip.notes) : "-"}
+                            </span>
+                          </td>
+                          <td className={styles.actionsCell}>
+                            <button
+                              className={styles.playBtn}
+                              onClick={e => handleClipClick(clip, e)}
+                              title={t("app.timeline.playClip")}
+                            >
+                              <FontAwesomeIcon icon={faPlay} />
+                            </button>
+                          </td>
+                        </tr>
+                      ];
+                    }
+
+                    // Get all categories (including children) for lookup
+                    const allCategories: Category[] = [];
+                    categories.forEach(cat => {
+                      allCategories.push(cat);
+                      if (cat.children) {
+                        allCategories.push(...cat.children);
+                      }
+                    });
+
+                    // Show once per category
+                    return clipCategoryIds.map((categoryId, index) => {
+                      const category = allCategories.find(c => c.id === categoryId);
+                      
+                      return (
+                        <tr
+                          key={`${clip.id}-cat-${categoryId}`}
+                          className={`${styles.clipRow} ${
+                            selectedClip?.id === clip.id ? styles.selected : ""
+                          }`}
+                          onClick={() =>
+                            handleClipClick(clip, {
+                              stopPropagation: () => {},
+                            } as React.MouseEvent)
+                          }
+                        >
+                          <td className={styles.categoryCell}>
+                            <div className={styles.categoryContainer}>
+                              <div
+                                className={styles.categoryIndicator}
+                                style={{
+                                  backgroundColor: category?.color || "#4CAF50",
+                                }}
+                              />
+                              <span className={styles.categoryName}>
+                                {category?.parent_id ? '└ ' : ''}{category?.name || "Unknown Category"}
                               </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className={styles.titleCell}>
-                          <span className={styles.clipTitle}>{clip.title}</span>
-                        </td>
-                        <td className={styles.timeCell}>
-                          <span className={styles.timeRange}>
-                            {formatTime(clip.start_time)} - {formatTime(clip.end_time)}
-                          </span>
-                        </td>
-                        <td className={styles.durationCell}>
-                          <span className={styles.duration}>
-                            {formatTime(clip.end_time - clip.start_time)}
-                          </span>
-                        </td>
-                        <td className={styles.notesCell}>
-                          <span className={styles.notes}>
-                            {clip.notes ? (clip.notes.length > 30 ? `${clip.notes.substring(0, 30)}...` : clip.notes) : "-"}
-                          </span>
-                        </td>
-                        <td className={styles.actionsCell}>
-                          <button
-                            className={styles.playBtn}
-                            onClick={e => handleClipClick(clip, e)}
-                            title={t("app.timeline.playClip")}
-                          >
-                            <FontAwesomeIcon icon={faPlay} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
+                            </div>
+                          </td>
+                          <td className={styles.titleCell}>
+                            <span className={styles.clipTitle}>{clip.title}</span>
+                          </td>
+                          <td className={styles.timeCell}>
+                            <span className={styles.timeRange}>
+                              {formatTime(clip.start_time)} - {formatTime(clip.end_time)}
+                            </span>
+                          </td>
+                          <td className={styles.durationCell}>
+                            <span className={styles.duration}>
+                              {formatTime(clip.end_time - clip.start_time)}
+                            </span>
+                          </td>
+                          <td className={styles.notesCell}>
+                            <span className={styles.notes}>
+                              {clip.notes ? (clip.notes.length > 30 ? `${clip.notes.substring(0, 30)}...` : clip.notes) : "-"}
+                            </span>
+                          </td>
+                          <td className={styles.actionsCell}>
+                            <button
+                              className={styles.playBtn}
+                              onClick={e => handleClipClick(clip, e)}
+                              title={t("app.timeline.playClip")}
+                            >
+                              <FontAwesomeIcon icon={faPlay} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    });
                   })}
                 </tbody>
               </table>
