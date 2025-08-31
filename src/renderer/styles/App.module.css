@@ -13,9 +13,21 @@
 
 .mainContent {
   display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
   position: relative;
+  height: 100%;
+}
+
+.videoContainer {
+  flex: 1;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
 }
 
 .videoSection {
@@ -25,35 +37,37 @@
   flex-direction: column;
   min-width: 300px;
   position: relative;
+  height: 100%;
+  overflow: hidden;
 }
 
-.sidePanel {
+/* Bottom Panel Styles */
+.bottomPanel {
   background: var(--bg-secondary);
-  border-left: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: var(--sidebar-width);
+  width: 100%;
   position: relative;
-  transition: width 0.2s ease;
-  min-width: 280px;
-  max-width: 600px;
+  transition: height 0.2s ease;
+  min-height: 200px;
+  max-height: 600px;
+  flex-shrink: 0;
 }
 
-.sidePanelCollapsed {
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
+.bottomPanelCollapsed {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
   overflow: hidden;
-  margin-right: 0;
-  border-left: none;
+  border-top: none;
 }
 
-.sidePanelCollapsed .resizeHandle {
+.bottomPanelCollapsed .resizeHandle {
   display: none;
 }
 
-.sidePanelCollapsed .clipLibraryPanel {
+.bottomPanelCollapsed .panelContent {
   display: none;
 }
 
@@ -82,12 +96,53 @@
   box-shadow: var(--shadow-md);
 }
 
-.clipLibraryPanel {
+.panelContent {
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   background: var(--bg-secondary);
-  padding: var(--spacing-md) 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tab Navigation */
+.tabNavigation {
+  display: flex;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.tabButton {
+  flex: 1;
+  padding: var(--spacing-md);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  border-bottom: 2px solid transparent;
+}
+
+.tabButton:hover {
+  background: var(--bg-quaternary);
+  color: var(--text-primary);
+}
+
+.tabButton.active {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.tabContent {
+  flex: 1;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -95,12 +150,12 @@
 /* Resizable Panel Styles */
 .resizeHandle {
   position: absolute;
-  left: 0;
   top: 0;
-  bottom: 0;
-  width: 4px;
+  left: 0;
+  right: 0;
+  height: 4px;
   background: transparent;
-  cursor: ew-resize;
+  cursor: ns-resize;
   z-index: var(--z-dropdown);
   opacity: 0;
   transition: all var(--transition-fast);
@@ -110,44 +165,44 @@
 .resizeHandle:active {
   background: var(--color-primary);
   opacity: 0.7;
-  width: 6px;
-  left: -1px;
+  height: 6px;
+  top: -1px;
 }
 
 .resizeHandle::before {
   content: "";
   position: absolute;
-  left: -2px;
-  top: 0;
-  bottom: 0;
-  width: 8px;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 8px;
   background: transparent;
 }
 
 /* Ensure smooth resizing */
-.sidePanel:has(.resizeHandle:hover) .clipLibraryPanel,
-.sidePanel:has(.resizeHandle:active) .clipLibraryPanel {
+.bottomPanel:has(.resizeHandle:hover) .panelContent,
+.bottomPanel:has(.resizeHandle:active) .panelContent {
   pointer-events: none;
   user-select: none;
 }
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
-  .sidePanel {
+  .bottomPanel {
     position: fixed;
-    top: var(--header-height);
-    right: 0;
     bottom: 0;
-    width: 100% !important;
-    max-width: 100%;
-    min-width: 100%;
+    left: 0;
+    right: 0;
+    height: 70vh !important;
+    max-height: 70vh;
+    min-height: 200px;
     z-index: var(--z-overlay);
-    transform: translateX(100%);
+    transform: translateY(100%);
     transition: transform var(--transition-normal);
   }
 
-  .sidePanel:not(.sidePanelCollapsed) {
-    transform: translateX(0);
+  .bottomPanel:not(.bottomPanelCollapsed) {
+    transform: translateY(0);
   }
 
   .resizeHandle {

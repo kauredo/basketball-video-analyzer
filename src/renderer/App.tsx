@@ -17,15 +17,19 @@ import {
   faTimes,
   faTrash,
   faQuestionCircle,
+  faLayerGroup,
+  faList,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./styles/App.module.css";
 import { VideoPlayer } from "./components/VideoPlayer";
 import { CategoryManager } from "./components/CategoryManager";
 import { ClipCreator } from "./components/ClipCreator";
 import { ClipLibrary } from "./components/ClipLibrary";
+import { Timeline } from "./components/Timeline";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { InstructionsModal } from "./components/InstructionsModal";
 import { KeyBindingEditor } from "./components/KeyBindingEditor";
+import { Clip, Category } from "../types/global";
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
@@ -41,10 +45,54 @@ export const App: React.FC = () => {
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
-  const [sidePanelWidth, setSidePanelWidth] = useState(360); // Default panel width
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(300); // Default panel height
+  const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<"library" | "timeline">(
+    "timeline"
+  );
+  const [clips, setClips] = useState<Clip[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
 
   const resizeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
+  const videoPlayerRef = useRef<any>(null);
+
+  // Load clips and categories when refresh trigger changes
+  useEffect(() => {
+    const loadData = async () => {
+      if (currentProject) {
+        try {
+          const [clipsData, categoriesData] = await Promise.all([
+            window.electronAPI.getClips(currentProject.id),
+            window.electronAPI.getCategories(),
+          ]);
+          setClips(clipsData || []);
+          setCategories(categoriesData || []);
+        } catch (error) {
+          console.error("Error loading data:", error);
+        }
+      }
+    };
+    loadData();
+  }, [refreshTrigger, currentProject]);
+
+  // Handle video seeking from timeline
+  const handleTimeSeek = useCallback((time: number) => {
+    if (videoPlayerRef.current && videoPlayerRef.current.seekTo) {
+      videoPlayerRef.current.seekTo(time);
+    }
+    setCurrentTime(time);
+  }, []);
+
+  // Handle clip selection from timeline
+  const handleClipSelect = useCallback(
+    (clip: Clip) => {
+      setSelectedClip(clip);
+      handleTimeSeek(clip.start_time);
+    },
+    [handleTimeSeek]
+  );
 
   // Handle panel resizing
   const startResize = useCallback(
@@ -52,15 +100,15 @@ export const App: React.FC = () => {
       isResizing.current = true;
       e.preventDefault();
 
-      const startX = e.pageX;
-      const startWidth = sidePanelWidth;
+      const startY = e.pageY;
+      const startHeight = bottomPanelHeight;
 
       const handleMouseMove = (e: MouseEvent) => {
         if (!isResizing.current) return;
 
-        const deltaX = startX - e.pageX; // Inverted for right-to-left resize
-        const newWidth = Math.min(Math.max(280, startWidth + deltaX), 600);
-        setSidePanelWidth(newWidth);
+        const deltaY = startY - e.pageY; // Inverted for bottom-to-top resize
+        const newHeight = Math.min(Math.max(200, startHeight + deltaY), 600);
+        setBottomPanelHeight(newHeight);
       };
 
       const handleMouseUp = () => {
@@ -73,10 +121,10 @@ export const App: React.FC = () => {
 
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "ew-resize";
+      document.body.style.cursor = "ns-resize";
       document.body.style.userSelect = "none";
     },
-    [sidePanelWidth]
+    [bottomPanelHeight]
   );
 
   const handleSelectVideo = async () => {
@@ -190,12 +238,12 @@ export const App: React.FC = () => {
         <div className={styles.headerActions}>
           <button
             className={styles.btn}
-            onClick={() => setIsSidePanelCollapsed(!isSidePanelCollapsed)}
+            onClick={() => setIsBottomPanelCollapsed(!isBottomPanelCollapsed)}
           >
             <FontAwesomeIcon icon={faFilm} />{" "}
-            {isSidePanelCollapsed
-              ? t("app.buttons.showSidePanel")
-              : t("app.buttons.hideSidePanel")}
+            {isBottomPanelCollapsed
+              ? t("app.buttons.showBottomPanel")
+              : t("app.buttons.hideBottomPanel")}
           </button>
           <button
             className={styles.settingsButton}
@@ -207,43 +255,82 @@ export const App: React.FC = () => {
       </header>
 
       <main className={styles.mainContent}>
-        <div className={styles.videoSection}>
-          <VideoPlayer
-            videoPath={videoPath}
-            onTimeUpdate={setCurrentTime}
-            onDurationChange={setDuration}
-            markInTime={markInTime}
-            markOutTime={markOutTime}
-            onMarkIn={handleMarkIn}
-            onMarkOut={handleMarkOut}
-            onClearMarks={handleClearMarks}
-          />
+        <div className={styles.videoContainer}>
+          <div className={styles.videoSection}>
+            <VideoPlayer
+              ref={videoPlayerRef}
+              videoPath={videoPath}
+              onTimeUpdate={setCurrentTime}
+              onDurationChange={setDuration}
+              markInTime={markInTime}
+              markOutTime={markOutTime}
+              onMarkIn={handleMarkIn}
+              onMarkOut={handleMarkOut}
+              onClearMarks={handleClearMarks}
+            />
+          </div>
         </div>
 
         <div
-          className={`${styles.sidePanel} ${
-            isSidePanelCollapsed ? styles.sidePanelCollapsed : ""
+          className={`${styles.bottomPanel} ${
+            isBottomPanelCollapsed ? styles.bottomPanelCollapsed : ""
           }`}
           style={
             {
-              width: isSidePanelCollapsed ? 0 : `${sidePanelWidth}px`,
-              "--panel-width": `${sidePanelWidth}px`,
+              height: isBottomPanelCollapsed ? 0 : `${bottomPanelHeight}px`,
+              "--panel-height": `${bottomPanelHeight}px`,
             } as React.CSSProperties
           }
           ref={resizeRef}
         >
-          {!isSidePanelCollapsed && (
+          {!isBottomPanelCollapsed && (
             <div
               className={styles.resizeHandle}
               onMouseDown={startResize}
               title="Drag to resize panel"
             />
           )}
-          <div className={styles.clipLibraryPanel}>
-            <ClipLibrary
-              onRefresh={refreshTrigger}
-              currentProject={currentProject}
-            />
+          <div className={styles.panelContent}>
+            {/* Tab Navigation */}
+            <div className={styles.tabNavigation}>
+              <button
+                className={`${styles.tabButton} ${
+                  activeTab === "timeline" ? styles.active : ""
+                }`}
+                onClick={() => setActiveTab("timeline")}
+              >
+                <FontAwesomeIcon icon={faLayerGroup} />{" "}
+                {t("app.timeline.title")}
+              </button>
+              <button
+                className={`${styles.tabButton} ${
+                  activeTab === "library" ? styles.active : ""
+                }`}
+                onClick={() => setActiveTab("library")}
+              >
+                <FontAwesomeIcon icon={faList} /> {t("app.clips.library")}
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className={styles.tabContent}>
+              {activeTab === "timeline" && currentProject && (
+                <Timeline
+                  clips={clips}
+                  categories={categories}
+                  currentTime={currentTime}
+                  videoDuration={duration}
+                  onTimeSeek={handleTimeSeek}
+                  onClipSelect={handleClipSelect}
+                />
+              )}
+              {activeTab === "library" && (
+                <ClipLibrary
+                  onRefresh={refreshTrigger}
+                  currentProject={currentProject}
+                />
+              )}
+            </div>
           </div>
         </div>
       </main>

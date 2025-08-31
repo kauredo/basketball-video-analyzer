@@ -8,6 +8,20 @@ export interface Category {
   children?: Category[];
 }
 
+export interface Clip {
+  id: number;
+  video_path: string;
+  output_path: string;
+  thumbnail_path?: string;
+  start_time: number;
+  end_time: number;
+  duration: number;
+  title: string;
+  categories: string; // JSON array of category IDs
+  notes?: string;
+  created_at: string;
+}
+
 export interface ElectronAPI {
   // Video operations
   selectVideoFile: () => Promise<string | null>;

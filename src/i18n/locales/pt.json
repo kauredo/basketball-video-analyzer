@@ -7,6 +7,8 @@
       "settings": "Definições",
       "showSidePanel": "Mostrar Painel Lateral",
       "hideSidePanel": "Ocultar Painel Lateral",
+      "showBottomPanel": "Mostrar Painel Inferior",
+      "hideBottomPanel": "Ocultar Painel Inferior",
       "markIn": "Marcar Início",
       "markOut": "Marcar Fim",
       "clearMarks": "Limpar Marcas",
@@ -131,6 +133,23 @@
       "skip30sForward": "Avançar 30 segundos (Alt + →)",
       "skip1minBack": "Retroceder 1 minuto (Ctrl/Cmd + ←)",
       "skip1minForward": "Avançar 1 minuto (Ctrl/Cmd + →)"
+    },
+    "timeline": {
+      "title": "Linha do Tempo",
+      "clips": "clips",
+      "expand": "Expandir linha do tempo",
+      "collapse": "Recolher linha do tempo",
+      "clipsList": "Lista de Clips",
+      "search": "Pesquisar clips...",
+      "allCategories": "Todas as Categorias",
+      "noClips": "Nenhum clip encontrado",
+      "playClip": "Reproduzir clip",
+      "visualTimeline": "Linha do Tempo Visual",
+      "duration": "Duração",
+      "currentTime": "Tempo Atual",
+      "legend": "Legenda",
+      "selectedClip": "Clip Selecionado",
+      "currentPosition": "Posição Atual"
     }
   }
 }

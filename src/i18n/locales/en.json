@@ -7,6 +7,8 @@
       "settings": "Settings",
       "showSidePanel": "Show Side Panel",
       "hideSidePanel": "Hide Side Panel",
+      "showBottomPanel": "Show Bottom Panel",
+      "hideBottomPanel": "Hide Bottom Panel",
       "markIn": "Mark In",
       "markOut": "Mark Out",
       "clearMarks": "Clear Marks",
@@ -140,6 +142,23 @@
       "skip30sForward": "Skip 30 seconds forward (Alt + →)",
       "skip1minBack": "Skip 1 minute back (Ctrl/Cmd + ←)",
       "skip1minForward": "Skip 1 minute forward (Ctrl/Cmd + →)"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "clips": "clips",
+      "expand": "Expand timeline",
+      "collapse": "Collapse timeline",
+      "clipsList": "Clips List",
+      "search": "Search clips...",
+      "allCategories": "All Categories",
+      "noClips": "No clips found",
+      "playClip": "Play clip",
+      "visualTimeline": "Visual Timeline",
+      "duration": "Duration",
+      "currentTime": "Current Time",
+      "legend": "Legend",
+      "selectedClip": "Selected Clip",
+      "currentPosition": "Current Position"
     }
   }
 }
