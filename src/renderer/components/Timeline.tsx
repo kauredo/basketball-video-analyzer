@@ -125,19 +125,6 @@ export const Timeline: React.FC<TimelineProps> = ({
 
   return (
     <div className={styles.timeline}>
-      {/* Timeline Header */}
-      <div className={styles.timelineHeader}>
-        <div className={styles.headerLeft}>
-          <h3>
-            <FontAwesomeIcon icon={faLayerGroup} />
-            {t("app.timeline.title")}
-          </h3>
-          <span className={styles.clipCount}>
-            {filteredClips.length} {t("app.timeline.clips")}
-          </span>
-        </div>
-      </div>
-
       <div className={styles.timelineContent}>
         {/* Left Panel: Clips Table */}
         <div className={styles.clipsPanel}>

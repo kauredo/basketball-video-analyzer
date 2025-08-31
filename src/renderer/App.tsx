@@ -41,20 +41,19 @@ export const App: React.FC = () => {
   const [markOutTime, setMarkOutTime] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
-  const [bottomPanelHeight, setBottomPanelHeight] = useState(300); // Default panel height
+  const [sidePanelWidth, setSidePanelWidth] = useState(360); // Default panel width for clips
+  const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(false);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(300); // Default panel height for timeline
   const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<"library" | "timeline">(
-    "timeline"
-  );
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
 
   const resizeRef = useRef<HTMLDivElement>(null);
+  const sideResizeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const videoPlayerRef = useRef<any>(null);
 
@@ -94,8 +93,8 @@ export const App: React.FC = () => {
     [handleTimeSeek]
   );
 
-  // Handle panel resizing
-  const startResize = useCallback(
+  // Handle bottom panel resizing (timeline)
+  const startBottomResize = useCallback(
     (e: React.MouseEvent) => {
       isResizing.current = true;
       e.preventDefault();
@@ -125,6 +124,39 @@ export const App: React.FC = () => {
       document.body.style.userSelect = "none";
     },
     [bottomPanelHeight]
+  );
+
+  // Handle side panel resizing (clips library)
+  const startSideResize = useCallback(
+    (e: React.MouseEvent) => {
+      isResizing.current = true;
+      e.preventDefault();
+
+      const startX = e.pageX;
+      const startWidth = sidePanelWidth;
+
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isResizing.current) return;
+
+        const deltaX = startX - e.pageX; // Inverted for right-to-left resize
+        const newWidth = Math.min(Math.max(280, startWidth + deltaX), 600);
+        setSidePanelWidth(newWidth);
+      };
+
+      const handleMouseUp = () => {
+        isResizing.current = false;
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
+    },
+    [sidePanelWidth]
   );
 
   const handleSelectVideo = async () => {
@@ -238,9 +270,18 @@ export const App: React.FC = () => {
         <div className={styles.headerActions}>
           <button
             className={styles.btn}
+            onClick={() => setIsSidePanelCollapsed(!isSidePanelCollapsed)}
+          >
+            <FontAwesomeIcon icon={faList} />{" "}
+            {isSidePanelCollapsed
+              ? t("app.buttons.showSidePanel")
+              : t("app.buttons.hideSidePanel")}
+          </button>
+          <button
+            className={styles.btn}
             onClick={() => setIsBottomPanelCollapsed(!isBottomPanelCollapsed)}
           >
-            <FontAwesomeIcon icon={faFilm} />{" "}
+            <FontAwesomeIcon icon={faLayerGroup} />{" "}
             {isBottomPanelCollapsed
               ? t("app.buttons.showBottomPanel")
               : t("app.buttons.hideBottomPanel")}
@@ -255,81 +296,82 @@ export const App: React.FC = () => {
       </header>
 
       <main className={styles.mainContent}>
-        <div className={styles.videoContainer}>
-          <div className={styles.videoSection}>
-            <VideoPlayer
-              ref={videoPlayerRef}
-              videoPath={videoPath}
-              onTimeUpdate={setCurrentTime}
-              onDurationChange={setDuration}
-              markInTime={markInTime}
-              markOutTime={markOutTime}
-              onMarkIn={handleMarkIn}
-              onMarkOut={handleMarkOut}
-              onClearMarks={handleClearMarks}
-            />
-          </div>
-        </div>
-
-        <div
-          className={`${styles.bottomPanel} ${
-            isBottomPanelCollapsed ? styles.bottomPanelCollapsed : ""
-          }`}
-          style={
-            {
-              height: isBottomPanelCollapsed ? 0 : `${bottomPanelHeight}px`,
-              "--panel-height": `${bottomPanelHeight}px`,
-            } as React.CSSProperties
-          }
-          ref={resizeRef}
-        >
-          {!isBottomPanelCollapsed && (
-            <div
-              className={styles.resizeHandle}
-              onMouseDown={startResize}
-              title="Drag to resize panel"
-            />
-          )}
-          <div className={styles.panelContent}>
-            {/* Tab Navigation */}
-            <div className={styles.tabNavigation}>
-              <button
-                className={`${styles.tabButton} ${
-                  activeTab === "timeline" ? styles.active : ""
-                }`}
-                onClick={() => setActiveTab("timeline")}
-              >
-                <FontAwesomeIcon icon={faLayerGroup} />{" "}
-                {t("app.timeline.title")}
-              </button>
-              <button
-                className={`${styles.tabButton} ${
-                  activeTab === "library" ? styles.active : ""
-                }`}
-                onClick={() => setActiveTab("library")}
-              >
-                <FontAwesomeIcon icon={faList} /> {t("app.clips.library")}
-              </button>
+        <div className={styles.contentWithSidePanel}>
+          <div className={styles.videoContainer}>
+            <div className={styles.videoSection}>
+              <VideoPlayer
+                ref={videoPlayerRef}
+                videoPath={videoPath}
+                onTimeUpdate={setCurrentTime}
+                onDurationChange={setDuration}
+                markInTime={markInTime}
+                markOutTime={markOutTime}
+                onMarkIn={handleMarkIn}
+                onMarkOut={handleMarkOut}
+                onClearMarks={handleClearMarks}
+              />
             </div>
 
-            {/* Tab Content */}
-            <div className={styles.tabContent}>
-              {activeTab === "timeline" && currentProject && (
-                <Timeline
-                  clips={clips}
-                  categories={categories}
-                  currentTime={currentTime}
-                  videoDuration={duration}
-                  onTimeSeek={handleTimeSeek}
-                  onClipSelect={handleClipSelect}
+            {/* Bottom Panel - Timeline */}
+            <div
+              className={`${styles.bottomPanel} ${
+                isBottomPanelCollapsed ? styles.bottomPanelCollapsed : ""
+              }`}
+              style={
+                {
+                  height: isBottomPanelCollapsed ? 0 : `${bottomPanelHeight}px`,
+                  "--panel-height": `${bottomPanelHeight}px`,
+                } as React.CSSProperties
+              }
+              ref={resizeRef}
+            >
+              {!isBottomPanelCollapsed && (
+                <div
+                  className={styles.resizeHandle}
+                  onMouseDown={startBottomResize}
+                  title="Drag to resize timeline panel"
                 />
               )}
-              {activeTab === "library" && (
-                <ClipLibrary
-                  onRefresh={refreshTrigger}
-                  currentProject={currentProject}
-                />
-              )}
+              <div className={styles.timelineContent}>
+                {currentProject && (
+                  <Timeline
+                    clips={clips}
+                    categories={categories}
+                    currentTime={currentTime}
+                    videoDuration={duration}
+                    onTimeSeek={handleTimeSeek}
+                    onClipSelect={handleClipSelect}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Side Panel - Clips Library */}
+          <div
+            className={`${styles.sidePanel} ${
+              isSidePanelCollapsed ? styles.sidePanelCollapsed : ""
+            }`}
+            style={
+              {
+                width: isSidePanelCollapsed ? 0 : `${sidePanelWidth}px`,
+                "--panel-width": `${sidePanelWidth}px`,
+              } as React.CSSProperties
+            }
+            ref={sideResizeRef}
+          >
+            {!isSidePanelCollapsed && (
+              <div
+                className={styles.sideResizeHandle}
+                onMouseDown={startSideResize}
+                title="Drag to resize clips panel"
+              />
+            )}
+            <div className={styles.clipLibraryPanel}>
+              <ClipLibrary
+                onRefresh={refreshTrigger}
+                currentProject={currentProject}
+              />
             </div>
           </div>
         </div>
