@@ -389,8 +389,21 @@
 
 .filterButtons {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: var(--spacing-sm);
+}
+
+.categoryGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.subcategoryButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-left: var(--spacing-lg);
 }
 
 .filterBtn {
@@ -408,6 +421,12 @@
   align-items: center;
   gap: var(--spacing-sm);
   white-space: nowrap;
+}
+
+.subcategoryBtn {
+  font-size: var(--font-size-xs);
+  padding: 0 var(--spacing-sm);
+  height: calc(var(--button-height) - 4px);
 }
 
 .filterBtn:hover {

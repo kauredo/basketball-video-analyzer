@@ -78,13 +78,38 @@ export const Timeline: React.FC<TimelineProps> = ({
     };
   });
 
-  // Group clips by category for timeline tracks
-  const clipsByCategory = categories.map(category => ({
-    category,
-    clips: timelineClips.filter(clip =>
-      clip.category_ids.includes(category.id!)
-    ),
-  }));
+  // Group clips by category for timeline tracks - organize hierarchically
+  const organizeCategories = (categories: Category[]) => {
+    const result: Array<{ category: Category; clips: TimelineClip[] }> = [];
+    
+    // First add parent categories and their clips
+    categories.filter(cat => !cat.parent_id).forEach(parentCategory => {
+      const parentClips = timelineClips.filter(clip =>
+        clip.category_ids.includes(parentCategory.id!)
+      );
+      
+      if (parentClips.length > 0) {
+        result.push({ category: parentCategory, clips: parentClips });
+      }
+      
+      // Then add subcategories and their clips
+      if (parentCategory.children) {
+        parentCategory.children.forEach(subcategory => {
+          const subClips = timelineClips.filter(clip =>
+            clip.category_ids.includes(subcategory.id!)
+          );
+          
+          if (subClips.length > 0) {
+            result.push({ category: subcategory, clips: subClips });
+          }
+        });
+      }
+    });
+    
+    return result;
+  };
+
+  const clipsByCategory = organizeCategories(categories);
 
   // Format time for display
   const formatTime = (seconds: number): string => {
@@ -154,11 +179,20 @@ export const Timeline: React.FC<TimelineProps> = ({
                 className={styles.categoryFilter}
               >
                 <option value="">{t("app.timeline.allCategories")}</option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
+                {categories
+                  .filter(cat => !cat.parent_id) // Only show parent categories in filter
+                  .map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                {categories
+                  .filter(cat => cat.parent_id) // Then show subcategories
+                  .map(category => (
+                    <option key={category.id} value={category.id}>
+                      └ {category.name}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
@@ -171,66 +205,92 @@ export const Timeline: React.FC<TimelineProps> = ({
                 <p>{t("app.timeline.noClips")}</p>
               </div>
             ) : (
-              <div className={styles.clipsGrid}>
-                {filteredClips.map(clip => {
-                  // Parse clip categories to get the first one for display
-                  let clipCategoryIds: number[] = [];
-                  try {
-                    clipCategoryIds = JSON.parse(clip.categories || "[]");
-                  } catch (e) {
-                    clipCategoryIds = [];
-                  }
-                  const category = categories.find(
-                    c => c.id === clipCategoryIds[0]
-                  );
+              <table className={styles.clipsTableElement}>
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Title</th>
+                    <th>Time</th>
+                    <th>Duration</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredClips.map(clip => {
+                    // Parse clip categories to get the first one for display
+                    let clipCategoryIds: number[] = [];
+                    try {
+                      clipCategoryIds = JSON.parse(clip.categories || "[]");
+                    } catch (e) {
+                      clipCategoryIds = [];
+                    }
+                    const category = categories.find(
+                      c => c.id === clipCategoryIds[0]
+                    );
 
-                  return (
-                    <div
-                      key={clip.id}
-                      className={`${styles.clipRow} ${
-                        selectedClip?.id === clip.id ? styles.selected : ""
-                      }`}
-                      onClick={() =>
-                        handleClipClick(clip, {
-                          stopPropagation: () => {},
-                        } as React.MouseEvent)
-                      }
-                    >
-                      <div
-                        className={styles.categoryIndicator}
-                        style={{
-                          backgroundColor: category?.color || "#4CAF50",
-                        }}
-                      />
-                      <div className={styles.clipInfo}>
-                        <div className={styles.clipTitle}>{clip.title}</div>
-                        <div className={styles.clipCategory}>
-                          {clipCategoryIds.length > 1
-                            ? `${category?.name} +${clipCategoryIds.length - 1}`
-                            : category?.name || "No Category"}
-                        </div>
-                        <div className={styles.clipTiming}>
-                          {formatTime(clip.start_time)} -{" "}
-                          {formatTime(clip.end_time)}
-                          <span className={styles.duration}>
-                            ({formatTime(clip.end_time - clip.start_time)})
-                          </span>
-                        </div>
-                        {clip.notes && (
-                          <div className={styles.clipNotes}>{clip.notes}</div>
-                        )}
-                      </div>
-                      <button
-                        className={styles.playBtn}
-                        onClick={e => handleClipClick(clip, e)}
-                        title={t("app.timeline.playClip")}
+                    return (
+                      <tr
+                        key={clip.id}
+                        className={`${styles.clipRow} ${
+                          selectedClip?.id === clip.id ? styles.selected : ""
+                        }`}
+                        onClick={() =>
+                          handleClipClick(clip, {
+                            stopPropagation: () => {},
+                          } as React.MouseEvent)
+                        }
                       >
-                        <FontAwesomeIcon icon={faPlay} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+                        <td className={styles.categoryCell}>
+                          <div className={styles.categoryContainer}>
+                            <div
+                              className={styles.categoryIndicator}
+                              style={{
+                                backgroundColor: category?.color || "#4CAF50",
+                              }}
+                            />
+                            <span className={styles.categoryName}>
+                              {category?.name || "No Category"}
+                            </span>
+                            {clipCategoryIds.length > 1 && (
+                              <span className={styles.categoryCount}>
+                                +{clipCategoryIds.length - 1}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className={styles.titleCell}>
+                          <span className={styles.clipTitle}>{clip.title}</span>
+                        </td>
+                        <td className={styles.timeCell}>
+                          <span className={styles.timeRange}>
+                            {formatTime(clip.start_time)} - {formatTime(clip.end_time)}
+                          </span>
+                        </td>
+                        <td className={styles.durationCell}>
+                          <span className={styles.duration}>
+                            {formatTime(clip.end_time - clip.start_time)}
+                          </span>
+                        </td>
+                        <td className={styles.notesCell}>
+                          <span className={styles.notes}>
+                            {clip.notes ? (clip.notes.length > 30 ? `${clip.notes.substring(0, 30)}...` : clip.notes) : "-"}
+                          </span>
+                        </td>
+                        <td className={styles.actionsCell}>
+                          <button
+                            className={styles.playBtn}
+                            onClick={e => handleClipClick(clip, e)}
+                            title={t("app.timeline.playClip")}
+                          >
+                            <FontAwesomeIcon icon={faPlay} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             )}
           </div>
         </div>
@@ -271,7 +331,9 @@ export const Timeline: React.FC<TimelineProps> = ({
                     className={styles.trackColorIndicator}
                     style={{ backgroundColor: category.color }}
                   />
-                  <span className={styles.trackName}>{category.name}</span>
+                  <span className={`${styles.trackName} ${category.parent_id ? styles.subcategoryTrack : ''}`}>
+                    {category.parent_id && '└ '}{category.name}
+                  </span>
                   <span className={styles.trackCount}>
                     ({categoryClips.length})
                   </span>

@@ -20,6 +20,8 @@ interface Category {
   name: string;
   color: string;
   description?: string;
+  parent_id?: number;
+  children?: Category[];
 }
 
 interface Clip {
@@ -67,7 +69,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         currentProject
           ? window.electronAPI.getClips(currentProject.id)
           : Promise.resolve([]),
-        window.electronAPI.getCategories(),
+        window.electronAPI.getCategoriesHierarchical(),
       ]);
 
       setClips(clipsData);
@@ -401,39 +403,81 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 >
                   All ({clips.length})
                 </button>
-                {categories.map(category => {
-                  const count = clips.filter(clip => {
-                    try {
-                      const clipCategories = JSON.parse(clip.categories);
-                      return clipCategories.includes(category.id);
-                    } catch {
-                      return false;
-                    }
-                  }).length;
+                {categories
+                  .filter(category => !category.parent_id) // Only show parent categories
+                  .map(category => {
+                    const count = clips.filter(clip => {
+                      try {
+                        const clipCategories = JSON.parse(clip.categories);
+                        return clipCategories.includes(category.id);
+                      } catch {
+                        return false;
+                      }
+                    }).length;
 
-                  return (
-                    <button
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={`${styles.filterBtn} ${
-                        selectedCategory === category.id ? styles.active : ""
-                      }`}
-                      style={{
-                        borderColor: category.color,
-                        backgroundColor:
-                          selectedCategory === category.id
-                            ? category.color
-                            : "transparent",
-                        color:
-                          selectedCategory === category.id
-                            ? "#fff"
-                            : category.color,
-                      }}
-                    >
-                      {category.name} ({count})
-                    </button>
-                  );
-                })}
+                    return (
+                      <div key={category.id} className={styles.categoryGroup}>
+                        <button
+                          onClick={() => setSelectedCategory(category.id)}
+                          className={`${styles.filterBtn} ${
+                            selectedCategory === category.id ? styles.active : ""
+                          }`}
+                          style={{
+                            borderColor: category.color,
+                            backgroundColor:
+                              selectedCategory === category.id
+                                ? category.color
+                                : "transparent",
+                            color:
+                              selectedCategory === category.id
+                                ? "#fff"
+                                : category.color,
+                          }}
+                        >
+                          {category.name} ({count})
+                        </button>
+                        
+                        {/* Show subcategories only if parent is selected */}
+                        {selectedCategory === category.id && category.children && category.children.length > 0 && (
+                          <div className={styles.subcategoryButtons}>
+                            {category.children.map((subcategory: Category) => {
+                              const subCount = clips.filter(clip => {
+                                try {
+                                  const clipCategories = JSON.parse(clip.categories);
+                                  return clipCategories.includes(subcategory.id);
+                                } catch {
+                                  return false;
+                                }
+                              }).length;
+
+                              return (
+                                <button
+                                  key={subcategory.id}
+                                  onClick={() => setSelectedCategory(subcategory.id)}
+                                  className={`${styles.filterBtn} ${styles.subcategoryBtn} ${
+                                    selectedCategory === subcategory.id ? styles.active : ""
+                                  }`}
+                                  style={{
+                                    borderColor: subcategory.color,
+                                    backgroundColor:
+                                      selectedCategory === subcategory.id
+                                        ? subcategory.color
+                                        : "transparent",
+                                    color:
+                                      selectedCategory === subcategory.id
+                                        ? "#fff"
+                                        : subcategory.color,
+                                  }}
+                                >
+                                  {subcategory.name} ({subCount})
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
             </div>
 
