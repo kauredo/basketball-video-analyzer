@@ -133,7 +133,13 @@
       "markIn": "Mark In",
       "markOut": "Mark Out",
       "previousFrame": "Previous frame (Shift + ←)",
-      "nextFrame": "Next frame (Shift + →)"
+      "nextFrame": "Next frame (Shift + →)",
+      "skip5sBack": "Skip 5 seconds back (←)",
+      "skip5sForward": "Skip 5 seconds forward (→)",
+      "skip30sBack": "Skip 30 seconds back (Alt + ←)",
+      "skip30sForward": "Skip 30 seconds forward (Alt + →)",
+      "skip1minBack": "Skip 1 minute back (Ctrl/Cmd + ←)",
+      "skip1minForward": "Skip 1 minute forward (Ctrl/Cmd + →)"
     }
   }
 }

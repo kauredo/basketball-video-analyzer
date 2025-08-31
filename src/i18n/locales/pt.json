@@ -124,7 +124,13 @@
       "markIn": "Marcar Início",
       "markOut": "Marcar Fim",
       "previousFrame": "Frame anterior (Shift + ←)",
-      "nextFrame": "Próximo frame (Shift + →)"
+      "nextFrame": "Próximo frame (Shift + →)",
+      "skip5sBack": "Retroceder 5 segundos (←)",
+      "skip5sForward": "Avançar 5 segundos (→)",
+      "skip30sBack": "Retroceder 30 segundos (Alt + ←)",
+      "skip30sForward": "Avançar 30 segundos (Alt + →)",
+      "skip1minBack": "Retroceder 1 minuto (Ctrl/Cmd + ←)",
+      "skip1minForward": "Avançar 1 minuto (Ctrl/Cmd + →)"
     }
   }
 }

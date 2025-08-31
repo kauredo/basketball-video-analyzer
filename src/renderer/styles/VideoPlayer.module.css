@@ -141,6 +141,28 @@
   justify-content: center;
 }
 
+.skipButton {
+  min-width: 60px;
+  width: auto;
+  padding: var(--spacing-sm) var(--spacing-xs);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.skipButtonMedium {
+  background: var(--bg-quaternary);
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+}
+
+.skipButtonLarge {
+  background: var(--bg-quaternary);
+  border-color: var(--color-info);
+  color: var(--color-info);
+  font-weight: var(--font-weight-medium);
+}
+
 .playButton:hover,
 .skipButton:hover,
 .frameButton:hover {

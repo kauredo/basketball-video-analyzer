@@ -127,13 +127,25 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       } else if (key === "escape") {
         onClearMarks();
       } else if (key === "arrowright") {
-        if (e.shiftKey) {
+        if (e.ctrlKey || e.metaKey) {
+          // Ctrl/Cmd + Right Arrow = 1 minute forward
+          skipTime(60);
+        } else if (e.altKey) {
+          // Alt + Right Arrow = 30 seconds forward
+          skipTime(30);
+        } else if (e.shiftKey) {
           stepFrame(1);
         } else {
           skipTime(5);
         }
       } else if (key === "arrowleft") {
-        if (e.shiftKey) {
+        if (e.ctrlKey || e.metaKey) {
+          // Ctrl/Cmd + Left Arrow = 1 minute backward
+          skipTime(-60);
+        } else if (e.altKey) {
+          // Alt + Left Arrow = 30 seconds backward
+          skipTime(-30);
+        } else if (e.shiftKey) {
           stepFrame(-1);
         } else {
           skipTime(-5);
@@ -392,9 +404,31 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
               </button>
 
+              {/* 1 minute backward */}
+              <button
+                onClick={() => skipTime(-60)}
+                className={`${styles.skipButton} ${styles.skipButtonLarge}`}
+                title={t("app.video.skip1minBack")}
+              >
+                <FontAwesomeIcon icon={faBackwardStep} />
+                <span className={styles.skipText}>1m</span>
+              </button>
+
+              {/* 30 seconds backward */}
+              <button
+                onClick={() => skipTime(-30)}
+                className={`${styles.skipButton} ${styles.skipButtonMedium}`}
+                title={t("app.video.skip30sBack")}
+              >
+                <FontAwesomeIcon icon={faBackwardStep} />
+                <span className={styles.skipText}>30s</span>
+              </button>
+
+              {/* 5 seconds backward */}
               <button
                 onClick={() => skipTime(-5)}
                 className={styles.skipButton}
+                title={t("app.video.skip5sBack")}
               >
                 <FontAwesomeIcon icon={faBackwardStep} />
                 <span className={styles.skipText}>5s</span>
@@ -416,8 +450,33 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <FontAwesomeIcon icon={faAnglesRight} />
               </button>
 
-              <button onClick={() => skipTime(5)} className={styles.skipButton}>
+              {/* 5 seconds forward */}
+              <button
+                onClick={() => skipTime(5)}
+                className={styles.skipButton}
+                title={t("app.video.skip5sForward")}
+              >
                 <span className={styles.skipText}>5s</span>
+                <FontAwesomeIcon icon={faForwardStep} />
+              </button>
+
+              {/* 30 seconds forward */}
+              <button
+                onClick={() => skipTime(30)}
+                className={`${styles.skipButton} ${styles.skipButtonMedium}`}
+                title={t("app.video.skip30sForward")}
+              >
+                <span className={styles.skipText}>30s</span>
+                <FontAwesomeIcon icon={faForwardStep} />
+              </button>
+
+              {/* 1 minute forward */}
+              <button
+                onClick={() => skipTime(60)}
+                className={`${styles.skipButton} ${styles.skipButtonLarge}`}
+                title={t("app.video.skip1minForward")}
+              >
+                <span className={styles.skipText}>1m</span>
                 <FontAwesomeIcon icon={faForwardStep} />
               </button>
 
