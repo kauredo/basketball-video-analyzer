@@ -80,8 +80,8 @@
         "saveFailed": "Failed to save preset",
         "loadFailed": "Failed to load preset",
         "deleteFailed": "Failed to delete preset",
-        "confirmLoad": "Are you sure you want to load the preset \"{presetName}\"? This will replace your current categories.",
-        "confirmDelete": "Are you sure you want to delete the preset \"{presetName}\"? This action cannot be undone."
+        "confirmLoad": "Are you sure you want to load the preset '{{presetName}}'? This will replace your current categories.",
+        "confirmDelete": "Are you sure you want to delete the preset '{{presetName}}'? This action cannot be undone."
       },
       "default": {
         "offense": "Offense",
