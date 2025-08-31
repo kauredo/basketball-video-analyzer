@@ -11,9 +11,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-md);
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--border-color);
   flex-wrap: wrap;
   gap: var(--spacing-sm);
 }
@@ -67,14 +64,6 @@
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
   border: 1px solid var(--border-color);
-  min-height: var(--min-interactive-size);
-}
-
-.categoryHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  width: 100%;
 }
 
 .categoryItem:hover {
@@ -92,7 +81,6 @@
   border-radius: var(--radius-sm);
   font-size: 0.9em;
   opacity: 0.9;
-  min-height: calc(var(--min-interactive-size) - 8px);
 }
 
 .subcategoryItem:hover {
@@ -250,7 +238,6 @@
   box-shadow: var(--shadow-md);
   width: calc(100% - 40px);
   max-width: 100%;
-  box-sizing: border-box;
 }
 
 .subcategoryFormHeader {
@@ -375,6 +362,10 @@
   display: flex;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-sm);
+}
+
+.editActions.spacingMd {
+  margin-top: var(--spacing-md);
 }
 
 .saveBtn,
@@ -514,13 +505,6 @@
 }
 
 /* Hierarchical category styles */
-.categoryHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  width: 100%;
-}
-
 .expandButton {
   width: 20px;
   height: 20px;
@@ -578,24 +562,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-.editInput {
-  flex: 1;
-  height: var(--input-height);
-  padding: 0 var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  margin-right: var(--spacing-sm);
-}
-
-.editActions {
-  display: flex;
-  gap: var(--spacing-xs);
-  flex-shrink: 0;
-}
-
 /* Subcategory form styles */
 .addSubcategoryForm {
   background: var(--bg-secondary);
@@ -618,7 +584,6 @@
   border-radius: var(--radius-md);
   font-size: var(--font-size-md);
   transition: all var(--transition-fast);
-  box-sizing: border-box;
 }
 
 .subcategoryDescriptionInput {
@@ -637,12 +602,6 @@
   border-color: var(--color-primary);
   outline: none;
   box-shadow: var(--focus-ring);
-}
-
-.subcategoryActions {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
 }
 
 .createSubcategoryBtn {
@@ -671,12 +630,6 @@
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-}
-
-.editActions {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
 }
 
 .saveBtn {

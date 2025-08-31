@@ -390,7 +390,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         ) : (
           <>
             {/* Category Filter */}
-            <div className={styles.categoryFilter}>
+            <div className={styles.categoryFilterSection}>
               <h4>{t("app.clips.filterByCategory")}</h4>
               <div className={styles.filterButtons}>
                 <button

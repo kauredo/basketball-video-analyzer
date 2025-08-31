@@ -410,7 +410,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               />
             </div>
 
-            <div className={styles.subcategoryActions}>
+            <div className={`${styles.editActions} ${styles.spacingMd}`}>
               <button
                 onClick={() =>
                   handleCreateSubcategory(category.id!, category.color)
@@ -524,26 +524,6 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
       {/* Category List */}
       <div className={styles.categoryList}>
-        {/* Debug Info */}
-        <div
-          style={{
-            padding: "10px",
-            background: "#f0f0f0",
-            margin: "10px 0",
-            borderRadius: "5px",
-          }}
-        >
-          <strong>Debug Info:</strong>
-          <div>Total categories loaded: {categories.length}</div>
-          <div>
-            Categories with children:{" "}
-            {categories.filter(c => c.children && c.children.length > 0).length}
-          </div>
-          <div>
-            Expanded categories: {Array.from(expandedCategories).join(", ")}
-          </div>
-        </div>
-
         {categories
           .filter(category => !category.parent_id) // Only show top-level categories
           .map(category => renderCategory(category))}

@@ -1,5 +1,9 @@
 @import "./variables.css";
 
+* {
+  box-sizing: border-box;
+}
+
 .app {
   height: 100vh;
   display: flex;
@@ -29,8 +33,6 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  transition: width var(--transition-fast);
-  position: relative;
   width: var(--sidebar-width);
   position: relative;
   transition: width 0.2s ease;
@@ -91,13 +93,6 @@
 }
 
 /* Resizable Panel Styles */
-.sidePanel {
-  position: relative;
-  transition: width 0.2s ease;
-  min-width: 280px;
-  max-width: 600px;
-}
-
 .resizeHandle {
   position: absolute;
   left: 0;
@@ -343,18 +338,11 @@
 .getStartedBtn {
   height: calc(var(--button-height) * 1.5);
   background: var(--color-primary);
-  border: none;
   color: var(--text-primary);
   padding: 0 var(--spacing-xl);
   border-radius: var(--radius-lg);
-  cursor: pointer;
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
-  transition: all var(--transition-fast);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  white-space: nowrap;
   box-shadow: var(--shadow-md);
   margin-top: var(--spacing-xl);
 }
