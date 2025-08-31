@@ -198,7 +198,9 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                 categories.forEach(cat => {
                   allCategoryIds.push(cat.id);
                   if (cat.children) {
-                    cat.children.forEach(child => allCategoryIds.push(child.id));
+                    cat.children.forEach(child =>
+                      allCategoryIds.push(child.id)
+                    );
                   }
                 });
                 setSelectedCategories(allCategoryIds);
@@ -226,11 +228,15 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                 <button
                   onClick={() => handleCategoryToggle(parentCategory.id)}
                   className={`${styles.categoryBtn} ${
-                    selectedCategories.includes(parentCategory.id) ? styles.selected : ""
+                    selectedCategories.includes(parentCategory.id)
+                      ? styles.selected
+                      : ""
                   }`}
                   style={{
                     borderColor: parentCategory.color,
-                    backgroundColor: selectedCategories.includes(parentCategory.id)
+                    backgroundColor: selectedCategories.includes(
+                      parentCategory.id
+                    )
                       ? parentCategory.color
                       : "transparent",
                     color: selectedCategories.includes(parentCategory.id)
@@ -238,40 +244,51 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                       : parentCategory.color,
                   }}
                 >
-                  <span className={styles.categoryName}>{parentCategory.name}</span>
+                  <span className={styles.categoryName}>
+                    {parentCategory.name}
+                  </span>
                   {selectedCategories.includes(parentCategory.id) && (
                     <span className={styles.selectedIndicator}>✓</span>
                   )}
                 </button>
-                
+
                 {/* Subcategory Buttons */}
-                {parentCategory.children && parentCategory.children.length > 0 && (
-                  <div className={styles.subcategoryGrid}>
-                    {parentCategory.children.map((subcategory: Category) => (
-                      <button
-                        key={subcategory.id}
-                        onClick={() => handleCategoryToggle(subcategory.id)}
-                        className={`${styles.categoryBtn} ${styles.subcategoryBtn} ${
-                          selectedCategories.includes(subcategory.id) ? styles.selected : ""
-                        }`}
-                        style={{
-                          borderColor: subcategory.color,
-                          backgroundColor: selectedCategories.includes(subcategory.id)
-                            ? subcategory.color
-                            : "transparent",
-                          color: selectedCategories.includes(subcategory.id)
-                            ? "#fff"
-                            : subcategory.color,
-                        }}
-                      >
-                        <span className={styles.categoryName}>└ {subcategory.name}</span>
-                        {selectedCategories.includes(subcategory.id) && (
-                          <span className={styles.selectedIndicator}>✓</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {parentCategory.children &&
+                  parentCategory.children.length > 0 && (
+                    <div className={styles.subcategoryGrid}>
+                      {parentCategory.children.map((subcategory: Category) => (
+                        <button
+                          key={subcategory.id}
+                          onClick={() => handleCategoryToggle(subcategory.id)}
+                          className={`${styles.categoryBtn} ${
+                            styles.subcategoryBtn
+                          } ${
+                            selectedCategories.includes(subcategory.id)
+                              ? styles.selected
+                              : ""
+                          }`}
+                          style={{
+                            borderColor: subcategory.color,
+                            backgroundColor: selectedCategories.includes(
+                              subcategory.id
+                            )
+                              ? subcategory.color
+                              : "transparent",
+                            color: selectedCategories.includes(subcategory.id)
+                              ? "#fff"
+                              : subcategory.color,
+                          }}
+                        >
+                          <span className={styles.categoryName}>
+                            └ {subcategory.name}
+                          </span>
+                          {selectedCategories.includes(subcategory.id) && (
+                            <span className={styles.selectedIndicator}>✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
               </div>
             ))}
         </div>

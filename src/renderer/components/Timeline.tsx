@@ -63,7 +63,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   // Convert clips to timeline format with percentages and expand clips for multiple categories
   const expandClipsForCategories = (): TimelineClip[] => {
     const expandedClips: TimelineClip[] = [];
-    
+
     filteredClips.forEach(clip => {
       let category_ids: number[] = [];
       try {
@@ -78,7 +78,8 @@ export const Timeline: React.FC<TimelineProps> = ({
           ...clip,
           category_ids: [categoryId], // Single category for this instance
           startPercentage: (clip.start_time / videoDuration) * 100,
-          widthPercentage: ((clip.end_time - clip.start_time) / videoDuration) * 100,
+          widthPercentage:
+            ((clip.end_time - clip.start_time) / videoDuration) * 100,
         });
       });
 
@@ -88,7 +89,8 @@ export const Timeline: React.FC<TimelineProps> = ({
           ...clip,
           category_ids: [],
           startPercentage: (clip.start_time / videoDuration) * 100,
-          widthPercentage: ((clip.end_time - clip.start_time) / videoDuration) * 100,
+          widthPercentage:
+            ((clip.end_time - clip.start_time) / videoDuration) * 100,
         });
       }
     });
@@ -101,7 +103,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   // Group clips by category for timeline tracks - organize hierarchically
   const organizeCategories = (categories: Category[]) => {
     const result: Array<{ category: Category; clips: TimelineClip[] }> = [];
-    
+
     // Get all categories (including children) flattened for easier lookup
     const allCategories: Category[] = [];
     categories.forEach(cat => {
@@ -110,31 +112,33 @@ export const Timeline: React.FC<TimelineProps> = ({
         allCategories.push(...cat.children);
       }
     });
-    
+
     // First add parent categories and their clips
-    categories.filter(cat => !cat.parent_id).forEach(parentCategory => {
-      const parentClips = timelineClips.filter(clip =>
-        clip.category_ids.includes(parentCategory.id!)
-      );
-      
-      if (parentClips.length > 0) {
-        result.push({ category: parentCategory, clips: parentClips });
-      }
-      
-      // Then add subcategories and their clips
-      if (parentCategory.children) {
-        parentCategory.children.forEach(subcategory => {
-          const subClips = timelineClips.filter(clip =>
-            clip.category_ids.includes(subcategory.id!)
-          );
-          
-          if (subClips.length > 0) {
-            result.push({ category: subcategory, clips: subClips });
-          }
-        });
-      }
-    });
-    
+    categories
+      .filter(cat => !cat.parent_id)
+      .forEach(parentCategory => {
+        const parentClips = timelineClips.filter(clip =>
+          clip.category_ids.includes(parentCategory.id!)
+        );
+
+        if (parentClips.length > 0) {
+          result.push({ category: parentCategory, clips: parentClips });
+        }
+
+        // Then add subcategories and their clips
+        if (parentCategory.children) {
+          parentCategory.children.forEach(subcategory => {
+            const subClips = timelineClips.filter(clip =>
+              clip.category_ids.includes(subcategory.id!)
+            );
+
+            if (subClips.length > 0) {
+              result.push({ category: subcategory, clips: subClips });
+            }
+          });
+        }
+      });
+
     return result;
   };
 
@@ -173,7 +177,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   // Get category color for a clip (now works with single category per timeline clip)
   const getClipColor = (clip: TimelineClip): string => {
     if (clip.category_ids.length === 0) return "#4CAF50";
-    
+
     // Get all categories (including children) for lookup
     const allCategories: Category[] = [];
     categories.forEach(cat => {
@@ -182,7 +186,7 @@ export const Timeline: React.FC<TimelineProps> = ({
         allCategories.push(...cat.children);
       }
     });
-    
+
     const category = allCategories.find(c => c.id === clip.category_ids[0]);
     return category?.color || "#4CAF50";
   };
@@ -230,8 +234,9 @@ export const Timeline: React.FC<TimelineProps> = ({
                       <option key={subcategory.id} value={subcategory.id}>
                         └ {subcategory.name}
                       </option>
-                    ))
-                  ]).flat()}
+                    )),
+                  ])
+                  .flat()}
               </select>
             </div>
           </div>
@@ -286,15 +291,20 @@ export const Timeline: React.FC<TimelineProps> = ({
                                 className={styles.categoryIndicator}
                                 style={{ backgroundColor: "#4CAF50" }}
                               />
-                              <span className={styles.categoryName}>No Category</span>
+                              <span className={styles.categoryName}>
+                                No Category
+                              </span>
                             </div>
                           </td>
                           <td className={styles.titleCell}>
-                            <span className={styles.clipTitle}>{clip.title}</span>
+                            <span className={styles.clipTitle}>
+                              {clip.title}
+                            </span>
                           </td>
                           <td className={styles.timeCell}>
                             <span className={styles.timeRange}>
-                              {formatTime(clip.start_time)} - {formatTime(clip.end_time)}
+                              {formatTime(clip.start_time)} -{" "}
+                              {formatTime(clip.end_time)}
                             </span>
                           </td>
                           <td className={styles.durationCell}>
@@ -304,7 +314,11 @@ export const Timeline: React.FC<TimelineProps> = ({
                           </td>
                           <td className={styles.notesCell}>
                             <span className={styles.notes}>
-                              {clip.notes ? (clip.notes.length > 30 ? `${clip.notes.substring(0, 30)}...` : clip.notes) : "-"}
+                              {clip.notes
+                                ? clip.notes.length > 30
+                                  ? `${clip.notes.substring(0, 30)}...`
+                                  : clip.notes
+                                : "-"}
                             </span>
                           </td>
                           <td className={styles.actionsCell}>
@@ -316,7 +330,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                               <FontAwesomeIcon icon={faPlay} />
                             </button>
                           </td>
-                        </tr>
+                        </tr>,
                       ];
                     }
 
@@ -331,8 +345,10 @@ export const Timeline: React.FC<TimelineProps> = ({
 
                     // Show once per category
                     return clipCategoryIds.map((categoryId, index) => {
-                      const category = allCategories.find(c => c.id === categoryId);
-                      
+                      const category = allCategories.find(
+                        c => c.id === categoryId
+                      );
+
                       return (
                         <tr
                           key={`${clip.id}-cat-${categoryId}`}
@@ -354,16 +370,20 @@ export const Timeline: React.FC<TimelineProps> = ({
                                 }}
                               />
                               <span className={styles.categoryName}>
-                                {category?.parent_id ? '└ ' : ''}{category?.name || "Unknown Category"}
+                                {category?.parent_id ? "└ " : ""}
+                                {category?.name || "Unknown Category"}
                               </span>
                             </div>
                           </td>
                           <td className={styles.titleCell}>
-                            <span className={styles.clipTitle}>{clip.title}</span>
+                            <span className={styles.clipTitle}>
+                              {clip.title}
+                            </span>
                           </td>
                           <td className={styles.timeCell}>
                             <span className={styles.timeRange}>
-                              {formatTime(clip.start_time)} - {formatTime(clip.end_time)}
+                              {formatTime(clip.start_time)} -{" "}
+                              {formatTime(clip.end_time)}
                             </span>
                           </td>
                           <td className={styles.durationCell}>
@@ -373,7 +393,11 @@ export const Timeline: React.FC<TimelineProps> = ({
                           </td>
                           <td className={styles.notesCell}>
                             <span className={styles.notes}>
-                              {clip.notes ? (clip.notes.length > 30 ? `${clip.notes.substring(0, 30)}...` : clip.notes) : "-"}
+                              {clip.notes
+                                ? clip.notes.length > 30
+                                  ? `${clip.notes.substring(0, 30)}...`
+                                  : clip.notes
+                                : "-"}
                             </span>
                           </td>
                           <td className={styles.actionsCell}>
@@ -431,8 +455,13 @@ export const Timeline: React.FC<TimelineProps> = ({
                     className={styles.trackColorIndicator}
                     style={{ backgroundColor: category.color }}
                   />
-                  <span className={`${styles.trackName} ${category.parent_id ? styles.subcategoryTrack : ''}`}>
-                    {category.parent_id && '└ '}{category.name}
+                  <span
+                    className={`${styles.trackName} ${
+                      category.parent_id ? styles.subcategoryTrack : ""
+                    }`}
+                  >
+                    {category.parent_id && "└ "}
+                    {category.name}
                   </span>
                   <span className={styles.trackCount}>
                     ({categoryClips.length})

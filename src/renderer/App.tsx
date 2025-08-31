@@ -45,7 +45,7 @@ export const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(360); // Default panel width for clips
-  const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(false);
+  const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(true); // Start with side panel closed
   const [bottomPanelHeight, setBottomPanelHeight] = useState(300); // Default panel height for timeline
   const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(false);
   const [clips, setClips] = useState<Clip[]>([]);
@@ -62,8 +62,10 @@ export const App: React.FC = () => {
     const loadData = async () => {
       if (currentProject) {
         try {
-                    const [clipsData, categoriesData] = await Promise.all([
-            currentProject ? window.electronAPI.getClips(currentProject.id) : Promise.resolve([]),
+          const [clipsData, categoriesData] = await Promise.all([
+            currentProject
+              ? window.electronAPI.getClips(currentProject.id)
+              : Promise.resolve([]),
             window.electronAPI.getCategoriesHierarchical(),
           ]);
           setClips(clipsData || []);
