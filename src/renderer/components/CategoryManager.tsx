@@ -627,44 +627,63 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
       <div className={styles.presetManager}>
         <h4>{t("app.categories.presets.title")}</h4>
-        <div className={styles.presetControls}>
-          <input
-            type="text"
-            value={newPresetName}
-            onChange={e => setNewPresetName(e.target.value)}
-            placeholder={t("app.categories.presets.enterName")}
-            className={styles.presetNameInput}
-          />
-          <button
-            onClick={handleSavePreset}
-            disabled={!newPresetName.trim()}
-            className={styles.savePresetBtn}
-          >
-            {t("app.categories.presets.save")}
-          </button>
+        <p className={styles.presetDescription}>
+          {t("app.categories.presets.description")}
+        </p>
+
+        <div className={styles.savePresetSection}>
+          <h5>{t("app.categories.presets.saveCurrentCategories")}</h5>
+          <div className={styles.presetControls}>
+            <input
+              type="text"
+              value={newPresetName}
+              onChange={e => setNewPresetName(e.target.value)}
+              placeholder={t("app.categories.presets.enterName")}
+              className={styles.presetNameInput}
+            />
+            <button
+              onClick={handleSavePreset}
+              disabled={!newPresetName.trim()}
+              className={styles.savePresetBtn}
+            >
+              <FontAwesomeIcon icon={faSave} /> {t("app.categories.presets.save")}
+            </button>
+          </div>
         </div>
-        {presets.length > 0 && (
+
+        {presets.length > 0 ? (
           <div className={styles.presetList}>
-            <h4>{t("app.categories.presets.load")}</h4>
+            <h5>{t("app.categories.presets.yourSavedPresets")} ({presets.length})</h5>
+            <p className={styles.presetListDescription}>
+              {t("app.categories.presets.loadDescription")}
+            </p>
             <div className={styles.presetButtons}>
               {presets.map(preset => (
                 <div key={preset} className={styles.presetItem}>
                   <button
                     onClick={() => handleLoadPreset(preset)}
                     className={styles.loadPresetBtn}
+                    title={t("app.categories.presets.loadTooltip", { presetName: preset })}
                   >
-                    {preset}
+                    <FontAwesomeIcon icon={faFolderTree} /> {preset}
                   </button>
                   <button
                     onClick={() => handleDeletePreset(preset)}
                     className={styles.deletePresetBtn}
-                    title={t("app.categories.presets.delete")}
+                    title={t("app.categories.presets.deleteTooltip", { presetName: preset })}
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
                 </div>
               ))}
             </div>
+          </div>
+        ) : (
+          <div className={styles.noPresetsMessage}>
+            <p>{t("app.categories.presets.noPresetsYet")}</p>
+            <p className={styles.noPresetsHint}>
+              {t("app.categories.presets.createFirstPreset")}
+            </p>
           </div>
         )}
       </div>

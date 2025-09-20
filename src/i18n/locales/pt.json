@@ -69,19 +69,27 @@
       "errorUpdating": "Erro ao atualizar categoria. O nome pode já existir.",
       "errorDeleting": "Erro ao eliminar categoria.",
       "presets": {
-        "title": "Predefinições",
-        "save": "Guardar como Predefinição",
+        "title": "Predefinições de Categorias",
+        "description": "Guarde os seus layouts de categorias como modelos reutilizáveis para diferentes cenários de análise. Crie múltiplas predefinições como 'Análise de Adversário', 'Desenvolvimento de Jogador', 'Análise de Equipa', etc.",
+        "saveCurrentCategories": "Guardar Categorias Atuais como Nova Predefinição",
+        "save": "Guardar Predefinição",
         "load": "Carregar Predefinição",
         "delete": "Eliminar Predefinição",
-        "enterName": "Introduzir nome da predefinição",
-        "saveSuccess": "Predefinição guardada com sucesso!",
+        "enterName": "Introduzir nome da predefinição (ex: 'Análise Adversário', 'Desenvolvimento Jogador')",
+        "yourSavedPresets": "As Suas Predefinições Guardadas",
+        "loadDescription": "Clique em qualquer predefinição abaixo para carregar a sua estrutura de categorias no projeto atual:",
+        "loadTooltip": "Carregar categorias de '{{presetName}}' no projeto atual",
+        "deleteTooltip": "Eliminar predefinição '{{presetName}}' permanentemente",
+        "noPresetsYet": "Ainda não foram guardadas predefinições",
+        "createFirstPreset": "Crie a sua primeira predefinição construindo categorias acima, depois guarde-as com um nome descritivo.",
+        "saveSuccess": "Predefinição guardada com sucesso! Pode agora carregá-la em qualquer projeto.",
         "loadSuccess": "Predefinição carregada com sucesso!",
         "deleteSuccess": "Predefinição eliminada com sucesso!",
         "saveFailed": "Falha ao guardar predefinição",
         "loadFailed": "Falha ao carregar predefinição",
         "deleteFailed": "Falha ao eliminar predefinição",
-        "confirmLoad": "Tem a certeza que pretende carregar a predefinição {{presetName}}? Isto irá substituir as suas categorias atuais.",
-        "confirmDelete": "Tem a certeza que pretende eliminar a predefinição {{presetName}}? Esta ação não pode ser desfeita."
+        "confirmLoad": "Tem a certeza que pretende carregar a predefinição '{{presetName}}'? Isto irá substituir as suas categorias atuais.",
+        "confirmDelete": "Tem a certeza que pretende eliminar a predefinição '{{presetName}}'? Esta ação não pode ser desfeita."
       }
     },
     "clips": {
