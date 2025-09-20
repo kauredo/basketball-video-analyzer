@@ -1,5 +1,5 @@
 {
-  "name": "basketball-clip-cutter",
+  "name": "basketball-video-analyzer",
   "version": "1.0.0",
   "description": "Desktop app for cutting and categorizing basketball video clips for team scouting",
   "main": "dist/main/main.js",
@@ -90,7 +90,7 @@
           "config": {
             "maintainer": "Basketball Video Analyzer Team",
             "homepage": "https://github.com/kauredo/basketball-video-analyzer",
-            "name": "basketball-clip-cutter",
+            "name": "basketball-video-analyzer",
             "productName": "Basketball Video Analyzer"
           }
         },
@@ -99,7 +99,7 @@
           "config": {
             "maintainer": "Basketball Video Analyzer Team",
             "homepage": "https://github.com/kauredo/basketball-video-analyzer",
-            "name": "basketball-clip-cutter",
+            "name": "basketball-video-analyzer",
             "productName": "Basketball Video Analyzer"
           }
         }
