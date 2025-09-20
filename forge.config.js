@@ -3,13 +3,21 @@ const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 
 module.exports = {
   packagerConfig: {
-    asar: true,
+    asar: {
+      unpack: "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native}/**/*"
+    },
     name: "basketball-video-analyzer",
     executableName: "basketball-video-analyzer",
     appBundleId: "com.yourname.basketball-video-analyzer",
     icon: "./assets/icon",
     osxSign: false,
     osxNotarize: false,
+    // Allow unsigned apps on macOS for development
+    extendInfo: {
+      NSAppTransportSecurity: {
+        NSAllowsArbitraryLoads: true
+      }
+    },
     // Windows-specific options
     win32metadata: {
       CompanyName: "Basketball Video Analyzer Team",
