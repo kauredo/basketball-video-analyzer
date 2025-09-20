@@ -4,19 +4,19 @@ const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 module.exports = {
   packagerConfig: {
     asar: true,
-    name: "Basketball Video Analyzer",
-    executableName: "basketball-clip-cutter",
-    appBundleId: "com.yourname.basketball-clip-cutter",
+    name: "basketball-video-analyzer",
+    executableName: "basketball-video-analyzer",
+    appBundleId: "com.yourname.basketball-video-analyzer",
     icon: "./assets/icon",
     osxSign: false,
     osxNotarize: false,
     // Windows-specific options
     win32metadata: {
-      CompanyName: "Your Company",
+      CompanyName: "Basketball Video Analyzer Team",
       FileDescription: "Basketball Video Analyzer",
-      OriginalFilename: "basketball-clip-cutter.exe",
+      OriginalFilename: "basketball-video-analyzer.exe",
       ProductName: "Basketball Video Analyzer",
-      InternalName: "basketball-clip-cutter",
+      InternalName: "basketball-video-analyzer",
     },
   },
   rebuildConfig: {},
@@ -24,7 +24,7 @@ module.exports = {
     process.platform === "win32" && {
       name: "@electron-forge/maker-squirrel",
       config: {
-        name: "basketball-clip-cutter",
+        name: "basketball-video-analyzer",
       },
     },
     process.platform === "darwin" && {
@@ -41,21 +41,23 @@ module.exports = {
     process.platform === "linux" && {
       name: "@electron-forge/maker-deb",
       config: {
-        name: "basketball-clip-cutter",
-        productName: "Basketball Video Analyzer",
-        description: "Basketball Video Analyzer",
-        category: "Video",
-        bin: "basketball-clip-cutter",
+        options: {
+          maintainer: "Basketball Video Analyzer Team",
+          homepage: "https://github.com/kauredo/basketball-video-analyzer",
+          description: "Basketball Video Analyzer - Desktop app for cutting and categorizing basketball video clips",
+          categories: ["Video", "AudioVideo"],
+        },
       },
     },
     process.platform === "linux" && {
       name: "@electron-forge/maker-rpm",
       config: {
-        name: "basketball-clip-cutter",
-        productName: "Basketball Video Analyzer",
-        description: "Basketball Video Analyzer",
-        category: "Video",
-        bin: "basketball-clip-cutter",
+        options: {
+          maintainer: "Basketball Video Analyzer Team",
+          homepage: "https://github.com/kauredo/basketball-video-analyzer",
+          description: "Basketball Video Analyzer - Desktop app for cutting and categorizing basketball video clips",
+          categories: ["Video", "AudioVideo"],
+        },
       },
     },
   ].filter(Boolean),
