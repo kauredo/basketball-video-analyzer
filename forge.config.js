@@ -42,16 +42,20 @@ module.exports = {
       name: "@electron-forge/maker-deb",
       config: {
         name: "basketball-clip-cutter",
+        productName: "Basketball Video Analyzer",
         description: "Basketball Video Analyzer",
         category: "Video",
+        bin: "basketball-clip-cutter",
       },
     },
     process.platform === "linux" && {
       name: "@electron-forge/maker-rpm",
       config: {
         name: "basketball-clip-cutter",
+        productName: "Basketball Video Analyzer",
         description: "Basketball Video Analyzer",
         category: "Video",
+        bin: "basketball-clip-cutter",
       },
     },
   ].filter(Boolean),
