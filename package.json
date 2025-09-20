@@ -83,8 +83,7 @@
           "name": "@electron-forge/maker-dmg",
           "config": {
             "name": "Basketball Video Analyzer",
-            "icon": "./assets/icon.icns",
-            "background": "./assets/dmg-background.png"
+            "icon": "./assets/icon.icns"
           }
         },
         {
