@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -110,6 +110,14 @@ jobs:
           DEBUG: "electron-forge:*"
           ELECTRON_FORGE_MAKERS: '["@electron-forge/maker-squirrel"]'
 
+      - name: Build for Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          npm run make
+        env:
+          DEBUG: "electron-forge:*"
+          ELECTRON_FORGE_MAKERS: '["@electron-forge/maker-deb","@electron-forge/maker-rpm"]'
+
       - name: Upload macOS artifacts
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
@@ -129,6 +137,16 @@ jobs:
             out/make/**/*.exe
             out/make/**/*.nupkg
             out/make/**/*Setup.exe
+          retention-days: 30
+
+      - name: Upload Linux artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: basketball-video-analyzer-linux
+          path: |
+            out/make/**/*.deb
+            out/make/**/*.rpm
           retention-days: 30
 
       # Upload logs on failure

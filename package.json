@@ -89,14 +89,18 @@
           "name": "@electron-forge/maker-deb",
           "config": {
             "maintainer": "Basketball Video Analyzer Team",
-            "homepage": "https://github.com/kauredo/basketball-video-analyzer"
+            "homepage": "https://github.com/kauredo/basketball-video-analyzer",
+            "name": "basketball-clip-cutter",
+            "productName": "Basketball Video Analyzer"
           }
         },
         {
           "name": "@electron-forge/maker-rpm",
           "config": {
             "maintainer": "Basketball Video Analyzer Team",
-            "homepage": "https://github.com/kauredo/basketball-video-analyzer"
+            "homepage": "https://github.com/kauredo/basketball-video-analyzer",
+            "name": "basketball-clip-cutter",
+            "productName": "Basketball Video Analyzer"
           }
         }
       ],
