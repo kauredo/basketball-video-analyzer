@@ -144,7 +144,15 @@
       "skip30sBack": "Retroceder 30 segundos (Alt + ←)",
       "skip30sForward": "Avançar 30 segundos (Alt + →)",
       "skip1minBack": "Retroceder 1 minuto (Ctrl/Cmd + ←)",
-      "skip1minForward": "Avançar 1 minuto (Ctrl/Cmd + →)"
+      "skip1minForward": "Avançar 1 minuto (Ctrl/Cmd + →)",
+      "timeSearch": {
+        "placeholder": "Saltar para tempo (ex: 1:23:45, 12:30)",
+        "tooltip": "Introduza o tempo em formato HH:MM:SS, MM:SS, ou segundos para saltar para esse momento",
+        "jumpToTime": "Saltar para este tempo",
+        "enterTime": "Por favor introduza um tempo para saltar",
+        "invalidFormat": "Formato de tempo inválido. Use HH:MM:SS, MM:SS, ou segundos (ex: 1:23:45, 12:30, 150)",
+        "timeExceedsVideo": "O tempo excede a duração do vídeo"
+      }
     },
     "timeline": {
       "title": "Linha do Tempo",

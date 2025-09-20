@@ -19,6 +19,8 @@ import {
   faKeyboard,
   faAnglesLeft,
   faAnglesRight,
+  faSearch,
+  faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/VideoPlayer.module.css";
 
@@ -86,6 +88,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       markOutKey: "m",
     });
     const [videoError, setVideoError] = useState<string | null>(null);
+    const [timeSearchValue, setTimeSearchValue] = useState("");
+    const [timeSearchError, setTimeSearchError] = useState<string | null>(null);
 
     // Expose methods to parent component
     useImperativeHandle(ref, () => ({
@@ -278,9 +282,87 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     };
 
     const formatTime = (time: number): string => {
-      const minutes = Math.floor(time / 60);
+      const hours = Math.floor(time / 3600);
+      const minutes = Math.floor((time % 3600) / 60);
       const seconds = Math.floor(time % 60);
+
+      if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+      }
       return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    };
+
+    const parseTime = (timeString: string): number | null => {
+      if (!timeString.trim()) return null;
+
+      // Remove extra spaces and normalize
+      const cleaned = timeString.trim();
+
+      // Match patterns: HH:MM:SS, MM:SS, or just SS
+      const timeRegex = /^(?:(\d{1,2}):)?(\d{1,2}):(\d{1,2})$|^(\d{1,4})$/;
+      const match = cleaned.match(timeRegex);
+
+      if (!match) return null;
+
+      let hours = 0, minutes = 0, seconds = 0;
+
+      if (match[4]) {
+        // Just seconds (e.g., "90" = 1:30)
+        seconds = parseInt(match[4], 10);
+      } else {
+        // HH:MM:SS or MM:SS format
+        if (match[1] !== undefined) {
+          // HH:MM:SS format
+          hours = parseInt(match[1], 10);
+          minutes = parseInt(match[2], 10);
+          seconds = parseInt(match[3], 10);
+        } else {
+          // MM:SS format
+          minutes = parseInt(match[2], 10);
+          seconds = parseInt(match[3], 10);
+        }
+      }
+
+      // Validate ranges
+      if (seconds >= 60 || minutes >= 60 || hours >= 24) {
+        return null;
+      }
+
+      return hours * 3600 + minutes * 60 + seconds;
+    };
+
+    const handleTimeSearch = () => {
+      setTimeSearchError(null);
+
+      if (!timeSearchValue.trim()) {
+        setTimeSearchError(t("app.video.timeSearch.enterTime"));
+        return;
+      }
+
+      const targetTime = parseTime(timeSearchValue);
+
+      if (targetTime === null) {
+        setTimeSearchError(t("app.video.timeSearch.invalidFormat"));
+        return;
+      }
+
+      if (targetTime > duration) {
+        setTimeSearchError(t("app.video.timeSearch.timeExceedsVideo"));
+        return;
+      }
+
+      if (videoRef.current) {
+        videoRef.current.currentTime = targetTime;
+        setCurrentTime(targetTime);
+        setTimeSearchValue(""); // Clear after successful jump
+        setTimeSearchError(null);
+      }
+    };
+
+    const handleTimeSearchKeyPress = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleTimeSearch();
+      }
     };
 
     const jumpToMark = (time: number) => {
@@ -512,6 +594,34 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
                 <div className={styles.timeDisplay}>
                   {formatTime(currentTime)} / {formatTime(duration)}
+                </div>
+
+                <div className={styles.timeSearchContainer}>
+                  <div className={styles.timeSearchInput}>
+                    <FontAwesomeIcon icon={faClock} className={styles.timeSearchIcon} />
+                    <input
+                      type="text"
+                      value={timeSearchValue}
+                      onChange={(e) => setTimeSearchValue(e.target.value)}
+                      onKeyPress={handleTimeSearchKeyPress}
+                      placeholder={t("app.video.timeSearch.placeholder")}
+                      className={`${styles.timeSearchField} ${timeSearchError ? styles.timeSearchError : ''}`}
+                      title={t("app.video.timeSearch.tooltip")}
+                    />
+                    <button
+                      onClick={handleTimeSearch}
+                      className={styles.timeSearchButton}
+                      disabled={!timeSearchValue.trim()}
+                      title={t("app.video.timeSearch.jumpToTime")}
+                    >
+                      <FontAwesomeIcon icon={faSearch} />
+                    </button>
+                  </div>
+                  {timeSearchError && (
+                    <div className={styles.timeSearchErrorMessage}>
+                      {timeSearchError}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.volumeControl}>

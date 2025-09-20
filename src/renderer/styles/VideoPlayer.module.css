@@ -346,3 +346,93 @@
   border: 1px solid var(--border-color-light);
   box-shadow: var(--shadow-sm);
 }
+
+/* Time Search Styles */
+.timeSearchContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 200px;
+}
+
+.timeSearchInput {
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs);
+  gap: var(--spacing-xs);
+  transition: all var(--transition-fast);
+}
+
+.timeSearchInput:hover {
+  border-color: var(--border-color-hover);
+}
+
+.timeSearchInput:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.timeSearchIcon {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+  margin-left: var(--spacing-xs);
+}
+
+.timeSearchField {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  outline: none;
+  width: 140px;
+  font-family: var(--font-mono);
+}
+
+.timeSearchField::placeholder {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.timeSearchField.timeSearchError {
+  color: var(--color-danger);
+}
+
+.timeSearchButton {
+  background: var(--color-primary);
+  border: none;
+  color: white;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  transition: all var(--transition-fast);
+}
+
+.timeSearchButton:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.timeSearchButton:disabled {
+  background: var(--bg-quaternary);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.timeSearchErrorMessage {
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+  text-align: center;
+  max-width: 200px;
+  line-height: 1.2;
+}

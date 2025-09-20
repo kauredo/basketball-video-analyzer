@@ -153,7 +153,15 @@
       "skip30sBack": "Skip 30 seconds back (Alt + ←)",
       "skip30sForward": "Skip 30 seconds forward (Alt + →)",
       "skip1minBack": "Skip 1 minute back (Ctrl/Cmd + ←)",
-      "skip1minForward": "Skip 1 minute forward (Ctrl/Cmd + →)"
+      "skip1minForward": "Skip 1 minute forward (Ctrl/Cmd + →)",
+      "timeSearch": {
+        "placeholder": "Jump to time (e.g., 1:23:45, 12:30)",
+        "tooltip": "Enter time in HH:MM:SS, MM:SS, or seconds format to jump to that moment",
+        "jumpToTime": "Jump to this time",
+        "enterTime": "Please enter a time to jump to",
+        "invalidFormat": "Invalid time format. Use HH:MM:SS, MM:SS, or seconds (e.g., 1:23:45, 12:30, 150)",
+        "timeExceedsVideo": "Time exceeds video duration"
+      }
     },
     "timeline": {
       "title": "Timeline",
