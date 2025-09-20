@@ -68,8 +68,7 @@
           "config": {
             "name": "basketball_video_analyzer",
             "description": "Desktop app for cutting and categorizing basketball video clips",
-            "setupIcon": "./assets/icon.ico",
-            "loadingGif": "./assets/loading.gif"
+            "setupIcon": "./assets/icon.ico"
           }
         },
         {
