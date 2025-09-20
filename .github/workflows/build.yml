@@ -65,8 +65,6 @@ jobs:
           npm_config_build_from_source: true
           npm_config_python: ${{ github.workspace }}/python.exe
           npm_config_registry: "https://registry.npmjs.org/"
-          ELECTRON_MIRROR: "https://npmmirror.com/mirrors/electron/"
-          ELECTRON_BUILDER_BINARIES_MIRROR: "https://npmmirror.com/mirrors/electron-builder-binaries/"
         run: |
           npm config list
           npm install -g @electron/rebuild
