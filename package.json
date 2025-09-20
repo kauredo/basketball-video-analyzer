@@ -12,8 +12,13 @@
     "dev:renderer": "webpack --mode=development --watch",
     "package": "electron-forge package",
     "make": "electron-forge make",
+    "make:all": "electron-forge make --platform=win32,darwin,linux",
+    "publish": "electron-forge publish",
+    "dist": "npm run build && npm run make:all",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
-    "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f"
+    "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f",
+    "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
+    "release": "npm version patch && npm run dist"
   },
   "keywords": [
     "basketball",
@@ -26,27 +31,86 @@
     "npmRebuild": true,
     "nodeGypRebuild": false
   },
-  "author": "Your Name",
-  "license": "MIT",
+  "author": {
+    "name": "Basketball Video Analyzer Team",
+    "email": "contact@basketballvideoanalyzer.com"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://github.com/kauredo/basketball-video-analyzer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kauredo/basketball-video-analyzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kauredo/basketball-video-analyzer/issues"
+  },
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": {
+        "name": "Basketball Video Analyzer",
+        "executableName": "basketball-video-analyzer",
+        "appBundleId": "com.basketballvideoanalyzer.app",
+        "appCategoryType": "public.app-category.sports",
+        "icon": "./assets/icon",
+        "ignore": [
+          "^/src/",
+          "^/assets/",
+          "^/.git",
+          "^/node_modules/(?!.*/(node_modules|dist))",
+          "^/README.md",
+          "^/tsconfig.json",
+          "^/webpack.config.js"
+        ]
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "basketball_video_analyzer"
+            "name": "basketball_video_analyzer",
+            "description": "Desktop app for cutting and categorizing basketball video clips",
+            "setupIcon": "./assets/icon.ico",
+            "loadingGif": "./assets/loading.gif"
           }
         },
         {
           "name": "@electron-forge/maker-zip",
           "platforms": [
-            "darwin"
+            "darwin",
+            "linux"
           ]
         },
         {
           "name": "@electron-forge/maker-dmg",
-          "config": {}
+          "config": {
+            "name": "Basketball Video Analyzer",
+            "icon": "./assets/icon.icns",
+            "background": "./assets/dmg-background.png"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {
+            "maintainer": "Basketball Video Analyzer Team",
+            "homepage": "https://github.com/kauredo/basketball-video-analyzer"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {
+            "maintainer": "Basketball Video Analyzer Team",
+            "homepage": "https://github.com/kauredo/basketball-video-analyzer"
+          }
+        }
+      ],
+      "publishers": [
+        {
+          "name": "@electron-forge/publisher-github",
+          "config": {
+            "repository": {
+              "owner": "kauredo",
+              "name": "basketball-video-analyzer"
+            }
+          }
         }
       ]
     }

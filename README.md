@@ -1,19 +1,84 @@
 # 🏀 Basketball Video Analyzer
 
-A desktop application designed specifically for basketball coaches and analysts to cut, categorize, and organize video clips across multiple projects with reusable preset templates.
+**Professional video analysis tool for basketball coaches and teams**
+
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
+![License](https://img.shields.io/badge/license-Free%20for%20Teams-green.svg)
+
+A powerful desktop application designed specifically for basketball coaches and analysts to cut, categorize, and organize video clips across multiple projects with reusable preset templates.
 
 ![App Screenshot](screenshot.png)
 
-## 🎯 Purpose
+## 📥 Installation
+
+### 🚀 Quick Install (Recommended)
+
+**Download the latest version for your operating system:**
+
+#### Windows
+
+- **[Download Basketball Video Analyzer.exe](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/Basketball-Video-Analyzer-Setup.exe)** (Windows 10/11)
+- Run the installer and follow the setup wizard
+- The app will auto-update when new versions are available
+
+#### macOS
+
+- **[Download Basketball Video Analyzer.dmg](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/Basketball-Video-Analyzer.dmg)** (macOS 10.15+)
+- Open the .dmg file and drag the app to Applications folder
+- Right-click and "Open" the first time (due to macOS security)
+
+#### Linux
+
+**Ubuntu/Debian:**
+
+- **[Download .deb package](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/basketball-video-analyzer.deb)**
+- Install: `sudo dpkg -i basketball-video-analyzer.deb`
+
+**Red Hat/Fedora:**
+
+- **[Download .rpm package](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/basketball-video-analyzer.rpm)**
+- Install: `sudo rpm -i basketball-video-analyzer.rpm`
+
+**Other Linux:**
+
+- **[Download .zip archive](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/basketball-video-analyzer-linux.zip)**
+- Extract and run the executable
+
+### 💻 System Requirements
+
+#### Minimum Requirements
+
+- **OS**: Windows 10, macOS 10.15, or Ubuntu 18.04+
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 2GB free space (plus space for video clips)
+- **CPU**: Intel i5 or AMD equivalent
+- **GPU**: Any modern graphics card (for video playback)
+
+#### Recommended for Large Videos (4K)
+
+- **RAM**: 16GB
+- **CPU**: Intel i7/AMD Ryzen 7 or better
+- **Storage**: SSD recommended for video processing
+
+#### Supported Video Formats
+
+- **Input**: MP4, MOV, AVI, MKV, WebM
+- **Output**: MP4 (H.264 for maximum compatibility)
+
+---
+
+## 🎯 What This App Does
 
 This app solves the common problem of **creating organized video libraries for team analysis** across multiple games, opponents, and seasons. Instead of recreating category systems for every video, coaches can:
 
-- Create project-specific clip libraries with consistent organization
-- Build hierarchical category systems (parent categories with subcategories)
-- Save category structures as reusable presets across projects
-- Cut specific plays and automatically organize them in project folders
-- Export organized clip libraries to share with teams, players, or staff
-- Maintain consistent video analysis workflows throughout the season
+- ✅ Create project-specific clip libraries with consistent organization
+- ✅ Build hierarchical category systems (parent categories with subcategories)
+- ✅ Save category structures as reusable presets across projects
+- ✅ Cut specific plays and automatically organize them in project folders
+- ✅ **Jump to specific times** using HH:MM:SS search (new feature!)
+- ✅ Export organized clip libraries to share with teams, players, or staff
+- ✅ Maintain consistent video analysis workflows throughout the season
 
 Perfect for building "Opponent Scouting" projects with reusable category presets, or creating "Player Development" libraries that maintain the same organizational structure across multiple sessions.
 
@@ -22,6 +87,7 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 ### 🎬 Advanced Video Cutting
 
 - **Simple Mark & Cut**: Use `I` and `O` keys to mark in/out points during video playback
+- **Time Search**: Jump to specific moments using HH:MM:SS format (e.g., 1:23:45, 12:30, or just 150 seconds)
 - **Real Video Files**: Creates actual MP4 clips using FFmpeg (not just timestamps)
 - **Precise Control**: Frame-by-frame navigation and comprehensive keyboard shortcuts
 
@@ -42,10 +108,10 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 ### 🎯 Preset Template System
 
 - **Save Category Structures**: Save your complete category hierarchy as reusable presets
+- **Multiple Presets**: Create different templates for different scenarios (Opponent Scouting, Player Development, etc.)
 - **Load Across Projects**: Apply saved presets to new projects for consistent organization
 - **Preset Management**: Save, load, and delete presets with user-friendly confirmation dialogs
-- **Subcategory Preservation**: Presets maintain complete hierarchical structures including all subcategories
-- **Template Library**: Build a library of preset templates for different analysis types (scouting, player development, etc.)
+- **Template Library**: Build a library of preset templates for different analysis types
 
 ### 📚 Enhanced Clip Library
 
@@ -68,52 +134,7 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 - **Dynamic Language Switching**: Change languages without restarting the application
 - **Localized Dialogs**: All confirmation dialogs and messages respect language selection
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Node.js** (version 16 or higher)
-- **npm** (comes with Node.js)
-- **Git** (for cloning)
-
-### Installation
-
-1. **Run the setup script:**
-
-   ```bash
-   chmod +x setup.sh
-   ./setup.sh
-   ```
-
-2. **Copy file contents** from the provided artifacts into the created files:
-
-   - Copy all TypeScript, HTML, CSS, and component files
-   - Each file content is provided in the artifacts
-
-3. **Build and run:**
-   ```bash
-   npm run build
-   npm start
-   ```
-
-### Manual Setup (Alternative)
-
-```bash
-# Clone or create project directory
-mkdir basketball-clip-cutter && cd basketball-clip-cutter
-
-# Copy all provided files into the correct directories
-# (package.json, tsconfig.json, src/ files, etc.)
-
-# Install dependencies
-npm install
-
-# Build and run
-npm run build
-npm start
-```
-
-## 📖 How to Use
+## 🚀 Quick Start Guide
 
 ### 1. Create or Select a Project
 
@@ -144,15 +165,25 @@ npm start
 - Supports: MP4, MOV, AVI, MKV, WebM formats
 - Video loads within your current project context
 
-### 4. Cut Video Clips
+### 4. Navigate and Cut Video Clips
 
-#### Using Keyboard Shortcuts (Recommended):
+#### Quick Time Navigation:
+
+- **Time Search**: Use the time search box to jump to specific moments
+  - Type `1:23:45` to jump to 1 hour, 23 minutes, 45 seconds
+  - Type `12:30` to jump to 12 minutes, 30 seconds
+  - Type `150` to jump to 150 seconds (2:30)
+  - Press Enter or click the search button
+
+#### Keyboard Shortcuts:
 
 - **`Space`** - Play/Pause video
 - **`I`** - Mark In point (start of clip)
 - **`O`** - Mark Out point (end of clip)
 - **`C`** - Clear marks
 - **`←/→`** - Skip 5 seconds
+- **`Alt + ←/→`** - Skip 30 seconds
+- **`Ctrl/Cmd + ←/→`** - Skip 1 minute
 
 #### Using Mouse:
 
@@ -193,45 +224,37 @@ npm start
 1. **Create Project**: "vs Team ABC - 2024 Conference Game"
 2. **Load Preset**: Apply your standard "Opponent Scouting" category preset
 3. **Video Analysis**: Load opponent game footage and cut relevant plays
-4. **Categorize**: Organize clips by "Offense Schemes", "Defensive Sets", "Transition", etc.
-5. **Export**: Create organized folders for coaching staff review
-6. **Reuse**: Save any new categories back to your scouting preset for future games
+4. **Quick Navigation**: Use time search to jump to specific plays (e.g., type `18:30` for a key moment)
+5. **Categorize**: Organize clips by "Offense Schemes", "Defensive Sets", "Transition", etc.
+6. **Export**: Create organized folders for coaching staff review
+7. **Reuse**: Save any new categories back to your scouting preset for future games
 
 ### Player Development Workflow
 
 1. **Create Project**: "Player 5 - Post Development Session 3"
 2. **Load Preset**: Apply "Player Development" preset with skill-based categories
 3. **Session Recording**: Cut clips from practice or game footage
-4. **Hierarchical Organization**: "Post Moves" → "Drop Steps" → "Strong Hand" vs "Weak Hand"
-5. **Individual Review**: Export player-specific folders for one-on-one sessions
-6. **Progress Tracking**: Compare with previous project libraries to track improvement
-
-### Team Preparation Workflow
-
-1. **Create Project**: "Season 2024 - Offensive System Implementation"
-2. **Custom Categories**: Build detailed hierarchy: "Offensive Sets" → "Horns" → "High Ball Screen" → "Show Coverage"
-3. **Multi-Game Analysis**: Cut clips from multiple games showing execution evolution
-4. **Save as Preset**: Save category structure as "Offensive System Analysis" for future use
-5. **Team Distribution**: Export hierarchical folders for position coaches and individual player review
-
----
-
-### For Opponent Scouting:
-
-1. **Create opponent categories**: `Their Offense`, `Their Weak Side`, `Their Screens`
-2. **Cut opponent plays** during film study
-3. **Export for team** to study before games
+4. **Time Navigation**: Jump to specific drill moments using time search
+5. **Hierarchical Organization**: "Post Moves" → "Drop Steps" → "Strong Hand" vs "Weak Hand"
+6. **Individual Review**: Export player-specific folders for one-on-one sessions
+7. **Progress Tracking**: Compare with previous project libraries to track improvement
 
 ## ⌨️ Keyboard Shortcuts
 
-| Key     | Action                  |
-| ------- | ----------------------- |
-| `Space` | Play/Pause video        |
-| `I`     | Mark In (start of clip) |
-| `O`     | Mark Out (end of clip)  |
-| `C`     | Clear marks             |
-| `←`     | Skip backward 5 seconds |
-| `→`     | Skip forward 5 seconds  |
+| Key            | Action                   |
+| -------------- | ------------------------ |
+| `Space`        | Play/Pause video         |
+| `I`            | Mark In (start of clip)  |
+| `O`            | Mark Out (end of clip)   |
+| `C`            | Clear marks              |
+| `←`            | Skip backward 5 seconds  |
+| `→`            | Skip forward 5 seconds   |
+| `Alt + ←`      | Skip backward 30 seconds |
+| `Alt + →`      | Skip forward 30 seconds  |
+| `Ctrl/Cmd + ←` | Skip backward 1 minute   |
+| `Ctrl/Cmd + →` | Skip forward 1 minute    |
+| `Shift + ←`    | Previous frame           |
+| `Shift + →`    | Next frame               |
 
 ## 📁 File Organization
 
@@ -244,7 +267,7 @@ The app automatically organizes your files with project-based structure:
 │   │   ├── 🎬 Offense_PickRoll_001.mp4
 │   │   ├── 🎬 Defense_Rotation_002.mp4
 │   │   └── ...
-│   ├── � Project_2_Player_Development/
+│   ├── 📁 Project_2_Player_Development/
 │   │   ├── 🎬 Player5_PostMoves_001.mp4
 │   │   └── ...
 │   └── ...
@@ -255,159 +278,141 @@ The app automatically organizes your files with project-based structure:
     └── ...
 ```
 
-**Export folders** maintain hierarchical structure:
-
-```
-📁 Exported Clips/
-├── 📁 Offense/                         # Parent category folder
-│   ├── 📁 Pick & Roll/                 # Subcategory folder
-│   │   ├── 📁 Ball Screen High/        # Sub-subcategory folder
-│   │   │   ├── 🎬 clip_001.mp4
-│   │   │   └── 🎬 clip_002.mp4
-│   │   └── 📁 Ball Screen Low/
-│   └── 📁 Post Ups/
-├── 📁 Defense/
-│   ├── 📁 Help Defense/
-│   └── 📁 Transition Defense/
-├── 📁 Rebounds/
-│   ├── 🎬 Rebound_Game1_001.mp4
-│   └── 🎬 Rebound_Game2_003.mp4
-├── 📁 Screens/
-│   ├── 🎬 Screen_Game1_002.mp4
-│   └── 🎬 Screen_Game2_004.mp4
-└── 📁 Player 5/
-    ├── 🎬 Player5_Offense_001.mp4
-    └── 🎬 Player5_Defense_002.mp4
-```
-
-## 🔧 Technical Details
-
-### Built With:
-
-- **Electron** - Desktop app framework
-- **React + TypeScript** - User interface with hierarchical component architecture
-- **FFmpeg** - Video processing and clip creation
-- **SQLite** - Local database for projects, hierarchical categories, presets, and clip metadata
-- **better-sqlite3** - High-performance synchronous SQLite bindings
-- **i18next** - Internationalization framework with dynamic language switching
-
-### Database Architecture:
-
-- **Project Isolation**: Each project maintains separate category and clip collections
-- **Hierarchical Categories**: Parent-child relationships with unlimited nesting depth
-- **Constraint Management**: UNIQUE constraints per project prevent category conflicts
-- **Preset Storage**: Category structures serialized and saved as reusable templates
-- **Migration System**: Automatic database schema updates for new features
-
-### Performance:
-
-- Clips are processed locally (no cloud uploads)
-- Original video files remain untouched
-- Fast clip creation (typically 10-30 seconds per clip)
-- Efficient project switching with lazy loading
-- Hierarchical category queries optimized for deep structures
-
-### File Formats:
-
-- **Input**: MP4, MOV, AVI, MKV, WebM
-- **Output**: MP4 (H.264 codec for maximum compatibility)
-- **Presets**: JSON format for cross-platform compatibility
-
 ## 🚨 Troubleshooting
 
-### Video Won't Load
+### Installation Issues
 
-- **Check format**: Ensure video is MP4, MOV, AVI, MKV, or WebM
-- **File path**: Avoid special characters in filename/path
-- **Codec**: Some unusual codecs may not be supported
+#### Windows
 
-### Project and Category Issues
+- **"Windows protected your PC"**: Click "More info" → "Run anyway" (app is not yet code-signed)
+- **Installation fails**: Run as administrator
+- **App won't start**: Install [Visual C++ Redistributable](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
 
-- **Missing categories**: Ensure you're in the correct project - categories are project-specific
-- **Preset loading fails**: Check that preset files haven't been corrupted or manually edited
-- **Database errors**: App automatically handles migrations - restart if issues persist
+#### macOS
 
-### Clip Creation Fails
+- **"App can't be opened"**: Right-click app → "Open" → "Open" (bypass Gatekeeper)
+- **Permission denied**: Check System Preferences → Security & Privacy → General
+- **App crashes**: Ensure macOS 10.15+ and check Console for errors
 
-- **Disk space**: Ensure enough free space for output clips
-- **Permissions**: Check write permissions to app data folder
-- **FFmpeg**: App includes FFmpeg automatically, no manual install needed
-- **Project folders**: App automatically creates project-specific clip directories
+#### Linux
+
+- **Package conflicts**: Install with `--force-depends` flag
+- **Missing dependencies**: Install `libgtk-3-0`, `libxss1`, `libgconf-2-4`
+- **Permission errors**: Run with `sudo` or check file permissions
+
+### Video Issues
+
+- **Video won't load**: Ensure format is supported (MP4, MOV, AVI, MKV, WebM)
+- **Playback stutters**: Close other applications or try lower resolution video
+- **Audio issues**: Check system audio settings and volume controls
 
 ### Performance Issues
 
-- **Large videos**: 4K+ videos may process slowly
-- **Old hardware**: Consider lower resolution videos for better performance
-- **Multiple clips**: Process clips one at a time for best results
-- **Large projects**: Consider archiving old projects to maintain performance
+- **Slow clip creation**: Large 4K videos may take longer to process
+- **App runs slowly**: Close other resource-heavy applications
+- **Out of memory**: Ensure sufficient RAM for video size
 
-### Can't Find Clips
+### Can't Find Files
 
-- Click **"Open Folder"** to see where clips are stored
-- Check app data folder: `~/AppData/basketball-clip-cutter/clips/` (Windows)
+- Click **"Open Clips Folder"** to locate created clips
+- Default location varies by OS:
+  - **Windows**: `%APPDATA%/basketball-video-analyzer/clips/`
+  - **macOS**: `~/Library/Application Support/basketball-video-analyzer/clips/`
+  - **Linux**: `~/.config/basketball-video-analyzer/clips/`
 
-## 🎬 Advanced Use Cases
+## 🔄 Updates
 
-### 🏆 Comprehensive Team Scouting
+The app automatically checks for updates on startup. When a new version is available:
 
-_"I need a complete opponent analysis system that I can reuse for every game"_
+1. You'll see a notification in the app
+2. Click "Download Update" to get the latest version
+3. The app will restart with new features and bug fixes
 
-- Create "vs [Opponent Name]" projects with standardized scouting categories
-- Use preset templates: "Offensive Sets", "Defensive Schemes", "Special Situations", "Personnel Packages"
-- Build detailed subcategories: "Offense" → "Pick & Roll" → "Coverage vs Show" → "Player Reactions"
-- Export hierarchical folders that match your coaching staff's analysis workflow
-- Save time by loading your "Opponent Scouting" preset for every new opponent project
+## 📞 Support
 
-### 🎯 Systematic Player Development
+Having issues? We're here to help:
 
-_"Track individual player progress across multiple sessions with consistent organization"_
-
-- Create player-specific projects: "Player 5 - Post Development Series"
-- Load "Player Development" preset with skill-based hierarchical categories
-- Track progress: "Post Moves" → "Drop Steps" → "Footwork" → "Strong Hand vs Weak Hand"
-- Compare clips across multiple development sessions within the same project
-- Export individualized folders for one-on-one player review sessions
-
-### 📊 Advanced Season Analysis
-
-_"Build a comprehensive database of our team's execution across an entire season"_
-
-- Create season-long projects: "2024 Season - Offensive System Evolution"
-- Use consistent category presets to maintain organizational standards
-- Track improvement: Compare early season vs late season execution of same concepts
-- Build searchable libraries: Find all "Transition Defense" clips from conference games
-- Export compilation videos showing team growth and areas needing attention
-
-### 🎓 Comprehensive Teaching Library
-
-_"Create reusable instructional content with consistent organization"_
-
-- Build "Teaching Concepts" projects with preset category structures
-- Develop hierarchical organization: "Fundamentals" → "Shooting" → "Form" → "Follow Through"
-- Save teaching presets: "Youth Fundamentals", "Advanced Concepts", "Position Specific"
-- Export organized instructional folders that can be reused with different teams
-- Maintain consistency in teaching approaches across multiple seasons
-
-### 🔄 Cross-Season Consistency
-
-_"Maintain the same organizational system across multiple years"_
-
-- Save category structures as reusable presets once, apply everywhere
-- Create standardized workflows: Same categories for every opponent, every player development session
-- Build institutional knowledge: New coaches can load existing preset templates
-- Maintain continuity: Transfer successful organizational systems between seasons
+- **📖 Documentation**: Check this README for common solutions
+- **🐛 Bug Reports**: [Create an issue on GitHub](https://github.com/kauredo/basketball-video-analyzer/issues)
+- **💡 Feature Requests**: [Suggest new features](https://github.com/kauredo/basketball-video-analyzer/issues)
+- **📧 Email Support**: contact@basketballvideoanalyzer.com
 
 ## 🤝 Contributing
 
-This is a specialized tool for basketball analysis. To suggest improvements:
+We welcome contributions from the basketball and developer communities:
 
-1. **File issues** for bugs or feature requests
-2. **Document workflows** that could be improved
-3. **Share use cases** that aren't currently supported
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-MIT License - Feel free to modify for your team's specific needs.
+**Free for Basketball Teams and Personal Use**
+
+This software is free to use for:
+- ✅ Basketball teams and coaches (any level)
+- ✅ Educational institutions
+- ✅ Personal/individual use
+- ✅ Non-commercial purposes
+
+**Restrictions:**
+- ❌ Cannot be sold or commercialized
+- ❌ Cannot be redistributed for profit
+- ❌ Modified versions cannot be distributed
+
+For commercial licensing inquiries, contact: contact@basketballvideoanalyzer.com
+
+See the [LICENSE](LICENSE) file for complete terms.
+
+---
+
+## 🚀 For Developers
+
+### Development Setup
+
+#### Prerequisites
+
+- **Node.js** 16+ and **npm**
+- **Git** for cloning the repository
+
+#### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/kauredo/basketball-video-analyzer.git
+cd basketball-video-analyzer
+
+# Install dependencies
+npm install
+
+# Start development environment
+npm run dev
+```
+
+#### Build and Package
+
+```bash
+# Build the application
+npm run build
+
+# Create distributable packages for all platforms
+npm run make:all
+
+# Create a release (bump version + build + package)
+npm run release
+```
+
+#### Project Structure
+
+```
+src/
+├── main/           # Electron main process
+├── renderer/       # React frontend
+├── types/          # TypeScript definitions
+└── i18n/          # Internationalization
+```
 
 ---
 
