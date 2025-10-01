@@ -23,6 +23,23 @@ export interface Clip {
 }
 
 export interface ElectronAPI {
+  // System operations
+  systemCheck: () => Promise<{
+    success: boolean;
+    issues: string[];
+    warnings: string[];
+    system: {
+      platform: string;
+      arch: string;
+      nodeVersion: string;
+      ffmpegPath: string;
+      clipsDirectory: string;
+    } | null;
+  }>;
+  cancelClipCreation: (
+    processId: string
+  ) => Promise<{ success: boolean; reason?: string }>;
+
   // Video operations
   selectVideoFile: () => Promise<string | null>;
   cutVideoClip: (params: {
@@ -66,6 +83,7 @@ export interface ElectronAPI {
   // Event listeners
   onClipProgress: (callback: (data: any) => void) => void;
   onClipCreated: (callback: (clip: any) => void) => void;
+  onClipProcessId: (callback: (data: { processId: string }) => void) => void;
   onKeyBindingsChanged: (
     callback: (bindings: { markInKey: string; markOutKey: string }) => void
   ) => void;

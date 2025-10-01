@@ -149,7 +149,20 @@
         "errorInvalidDuration": "Invalid clip duration. Please check your mark in/out points.",
         "errorInvalidTime": "Invalid time values. Please mark valid in/out points.",
         "errorInvalidTitle": "Invalid clip title. Please provide a valid title.",
-        "errorNoCategories": "No categories selected. Please select at least one category."
+        "errorNoCategories": "No categories selected. Please select at least one category.",
+        "clipCreatedSuccess": "Clip created successfully!",
+        "retryingClipCreation": "Retrying clip creation... Attempt {{attempt}}/{{maxRetries}} (waiting {{delay}}s)",
+        "errorAfterRetries": "Failed to create clip after multiple attempts: {{translationKey}}",
+        "systemCheck": {
+          "error_ffmpeg_not_found": "FFmpeg not found. Video processing is not available.",
+          "error_documents_not_accessible": "Cannot access Documents folder. Please check folder permissions.",
+          "error_no_write_access": "No write access to clips folder. Please check permissions.",
+          "error_system_check_failed": "System check failed. Please try again.",
+          "warning_low_disk_space": "Warning: Low disk space (less than 1GB available)."
+        },
+        "clipCreationCancelled": "Clip creation was cancelled.",
+        "clipCancellationFailed": "Failed to cancel clip creation.",
+        "unsupportedFormat": "Unsupported video format: {{format}}. Please use MP4, AVI, MOV, MKV, WMV, FLV, WebM, or M4V."
       }
     },
     "video": {

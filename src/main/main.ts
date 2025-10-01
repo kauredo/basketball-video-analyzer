@@ -47,6 +47,9 @@ if (ffmpegStatic) {
 
 let mainWindow: BrowserWindow;
 
+// Track active clip creation processes
+const activeClipProcesses = new Map<string, any>();
+
 const createWindow = (): void => {
   mainWindow = new BrowserWindow({
     height: 1000,
@@ -100,6 +103,91 @@ const getClipsDirectory = () => {
   const clipsDir = path.join(documentsDir, "Basketball Clip Cutter", "clips");
   return clipsDir;
 };
+
+// Pre-flight system checks
+ipcMain.handle("system-check", async () => {
+  const issues: string[] = [];
+  const warnings: string[] = [];
+
+  try {
+    // Check FFmpeg availability
+    const ffmpegPath = ffmpegStatic;
+    if (!ffmpegPath || !fs.existsSync(ffmpegPath)) {
+      issues.push("ERROR_FFMPEG_NOT_FOUND");
+    }
+
+    // Check clips directory access
+    const clipsDir = getClipsDirectory();
+    const documentsDir = path.dirname(clipsDir);
+
+    try {
+      if (!fs.existsSync(documentsDir)) {
+        issues.push("ERROR_DOCUMENTS_NOT_ACCESSIBLE");
+      } else {
+        // Test write access
+        const testFile = path.join(documentsDir, ".test-write");
+        try {
+          fs.writeFileSync(testFile, "test");
+          fs.unlinkSync(testFile);
+        } catch {
+          issues.push("ERROR_NO_WRITE_ACCESS");
+        }
+      }
+    } catch (error) {
+      issues.push("ERROR_DOCUMENTS_NOT_ACCESSIBLE");
+    }
+
+    // Check available disk space (if possible)
+    try {
+      if (process.platform !== "win32" && fs.existsSync(documentsDir)) {
+        const stats = require("fs").statfsSync(documentsDir);
+        const freeSpaceGB = stats.free / (1024 * 1024 * 1024);
+        if (freeSpaceGB < 1) {
+          warnings.push("WARNING_LOW_DISK_SPACE");
+        }
+      }
+    } catch (error) {
+      console.warn("Could not check disk space:", error);
+    }
+
+    return {
+      success: issues.length === 0,
+      issues,
+      warnings,
+      system: {
+        platform: process.platform,
+        arch: process.arch,
+        nodeVersion: process.version,
+        ffmpegPath: ffmpegPath || "not found",
+        clipsDirectory: clipsDir,
+      },
+    };
+  } catch (error) {
+    console.error("System check error:", error);
+    return {
+      success: false,
+      issues: ["ERROR_SYSTEM_CHECK_FAILED"],
+      warnings: [],
+      system: null,
+    };
+  }
+});
+
+// Cancel clip creation
+ipcMain.handle("cancel-clip-creation", async (_event, processId: string) => {
+  try {
+    const process = activeClipProcesses.get(processId);
+    if (process) {
+      process.kill();
+      activeClipProcesses.delete(processId);
+      return { success: true };
+    }
+    return { success: false, reason: "Process not found" };
+  } catch (error) {
+    console.error("Error cancelling clip creation:", error);
+    return { success: false, reason: "Cancel failed" };
+  }
+});
 
 // Video file operations
 ipcMain.handle("select-video-file", async () => {
@@ -249,6 +337,10 @@ ipcMain.handle(
         const ffmpegPath = ffmpegStatic;
         console.log("Using FFmpeg from:", ffmpegPath);
 
+        // Generate process ID for cancellation support
+        const processId = uuidv4().slice(0, 8);
+        mainWindow.webContents.send("clip-process-id", { processId });
+
         // First, generate the thumbnail
         const thumbnailCommand = ffmpeg(normalizedInputPath);
 
@@ -263,12 +355,16 @@ ipcMain.handle(
           .output(thumbnailPath)
           .on("start", commandLine => {
             console.log("Thumbnail FFmpeg command:", commandLine);
+            // Store the thumbnail process for potential cancellation
+            activeClipProcesses.set(`${processId}-thumb`, thumbnailCommand);
           })
           .on("error", error => {
             console.error("Thumbnail creation error:", error);
+            activeClipProcesses.delete(`${processId}-thumb`);
             reject(new Error("ERROR_THUMBNAIL_FAILED"));
           })
           .on("end", () => {
+            activeClipProcesses.delete(`${processId}-thumb`);
             console.log("Thumbnail created successfully");
 
             // After thumbnail is created, create the clip
@@ -298,8 +394,11 @@ ipcMain.handle(
               .output(outputPath)
               .on("start", commandLine => {
                 console.log("Clip FFmpeg command:", commandLine);
+                // Store the clip process for potential cancellation
+                activeClipProcesses.set(processId, clipCommand);
               })
               .on("end", () => {
+                activeClipProcesses.delete(processId);
                 try {
                   console.log("Clip created successfully");
                   // Save clip to database with thumbnail path
@@ -330,6 +429,7 @@ ipcMain.handle(
                 }
               })
               .on("error", error => {
+                activeClipProcesses.delete(processId);
                 console.error("FFmpeg clip creation error:", error);
                 console.error("Error stack:", error.stack);
                 console.error("Input path:", normalizedInputPath);

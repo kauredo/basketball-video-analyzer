@@ -106,6 +106,12 @@
   text-align: center;
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.progressActions {
+  display: flex;
+  justify-content: center;
 }
 
 .clipCreationActions {
@@ -149,14 +155,23 @@
 }
 
 .cancelBtn {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: #ef4444;
+  color: white;
+  width: auto;
+  min-width: 120px;
+  flex: none;
 }
 
-.cancelBtn:hover {
-  background: var(--bg-quaternary);
-  border-color: var(--border-color-hover);
+.cancelBtn:hover:not(:disabled) {
+  background: #dc2626;
   transform: translateY(-1px);
+}
+
+.cancelBtn:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* Category Selection */

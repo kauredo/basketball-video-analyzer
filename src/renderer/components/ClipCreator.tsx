@@ -10,6 +10,8 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipCreator.module.css";
+import { useToast } from "../hooks/useToast";
+import { ToastContainer } from "./Toast";
 
 interface Category {
   id: number;
@@ -38,12 +40,16 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   currentProject,
 }) => {
   const { t } = useTranslation();
+  const { toasts, removeToast, showError, showSuccess, showWarning } =
+    useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [clipTitle, setClipTitle] = useState("");
   const [clipNotes, setClipNotes] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
+  const [currentProcessId, setCurrentProcessId] = useState<string | null>(null);
 
   useEffect(() => {
     loadCategories();
@@ -57,14 +63,22 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     window.electronAPI.onClipCreated(clip => {
       setIsCreating(false);
       setProgress(0);
+      setCurrentProcessId(null);
+      showSuccess(t("app.clips.creator.clipCreatedSuccess"));
       resetForm();
       onClipCreated();
       onClearMarks();
     });
 
+    // Listen for clip process ID
+    window.electronAPI.onClipProcessId(data => {
+      setCurrentProcessId(data.processId);
+    });
+
     return () => {
       window.electronAPI.removeAllListeners("clip-progress");
       window.electronAPI.removeAllListeners("clip-created");
+      window.electronAPI.removeAllListeners("clip-process-id");
     };
   }, [onClipCreated, onClearMarks]);
 
@@ -85,7 +99,41 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     setClipNotes("");
     setSelectedCategories([]);
     setProgress(0);
+    setRetryCount(0);
+    setCurrentProcessId(null);
   };
+
+  const handleCancelCreation = async () => {
+    if (currentProcessId) {
+      try {
+        const result = await window.electronAPI.cancelClipCreation(
+          currentProcessId
+        );
+        if (result.success) {
+          setIsCreating(false);
+          setProgress(0);
+          setCurrentProcessId(null);
+          showWarning(t("app.clips.creator.clipCreationCancelled"));
+        } else {
+          showError(t("app.clips.creator.clipCancellationFailed"));
+        }
+      } catch (error) {
+        console.error("Error cancelling clip creation:", error);
+        showError(t("app.clips.creator.clipCancellationFailed"));
+      }
+    }
+  };
+
+  const isRetryableError = (errorMessage: string) => {
+    return [
+      "ERROR_INSUFFICIENT_SPACE",
+      "ERROR_NO_WRITE_ACCESS",
+      "ERROR_FFMPEG_FAILED",
+      "ERROR_THUMBNAIL_FAILED",
+    ].includes(errorMessage);
+  };
+
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const handleCategoryToggle = (categoryId: number) => {
     setSelectedCategories(prev =>
@@ -123,40 +171,134 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   const handleCreateClip = async () => {
     if (!videoPath || markInTime === null || markOutTime === null) {
-      alert(t("app.clips.creator.errorMarkPoints"));
+      showError(t("app.clips.creator.errorMarkPoints"));
       return;
     }
 
     if (!currentProject) {
-      alert("No project loaded. Please select a video first.");
+      showError("No project loaded. Please select a video first.");
       return;
     }
 
     if (selectedCategories.length === 0) {
-      alert(t("app.clips.creator.errorSelectCategory"));
+      showError(t("app.clips.creator.errorSelectCategory"));
       return;
     }
 
+    // Validate video file format
+    const supportedFormats = [
+      ".mp4",
+      ".avi",
+      ".mov",
+      ".mkv",
+      ".wmv",
+      ".flv",
+      ".webm",
+      ".m4v",
+    ];
+    const fileExtension = videoPath
+      .toLowerCase()
+      .substring(videoPath.lastIndexOf("."));
+
+    if (!supportedFormats.includes(fileExtension)) {
+      showError(
+        t("app.clips.creator.unsupportedFormat", { format: fileExtension })
+      );
+      return;
+    }
+
+    // Run pre-flight system checks
+    try {
+      const systemCheck = await window.electronAPI.systemCheck();
+
+      if (!systemCheck.success) {
+        for (const issue of systemCheck.issues) {
+          showError(t(`app.clips.creator.systemCheck.${issue.toLowerCase()}`));
+        }
+        return;
+      }
+
+      if (systemCheck.warnings.length > 0) {
+        for (const warning of systemCheck.warnings) {
+          showWarning(
+            t(`app.clips.creator.systemCheck.${warning.toLowerCase()}`)
+          );
+        }
+      }
+    } catch (error) {
+      console.error("System check failed:", error);
+      showError(t("app.clips.creator.systemCheck.error_system_check_failed"));
+      return;
+    }
+
+    await attemptCreateClip();
+  };
+
+  const attemptCreateClip = async (attempt: number = 1): Promise<void> => {
+    const maxRetries = 3;
     const title = clipTitle.trim() || generateClipTitle();
 
     try {
       setIsCreating(true);
+      setRetryCount(attempt - 1);
 
       await window.electronAPI.cutVideoClip({
-        inputPath: videoPath,
-        startTime: markInTime,
-        endTime: markOutTime,
+        inputPath: videoPath!,
+        startTime: markInTime!,
+        endTime: markOutTime!,
         title: title,
         categories: selectedCategories,
         notes: clipNotes.trim() || undefined,
         projectId: currentProject.id,
       });
     } catch (error) {
-      console.error("Error creating clip:", error);
+      // Enhanced error logging for diagnostics
+      const errorInfo = {
+        attempt,
+        timestamp: new Date().toISOString(),
+        videoPath,
+        markInTime,
+        markOutTime,
+        duration: markOutTime! - markInTime!,
+        selectedCategoriesCount: selectedCategories.length,
+        clipTitle: title,
+        error:
+          error instanceof Error
+            ? {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+              }
+            : String(error),
+        userAgent: navigator.userAgent,
+        currentProject: currentProject
+          ? {
+              id: currentProject.id,
+              name: currentProject.name,
+            }
+          : null,
+      };
 
-      // Handle specific error codes with appropriate translations
+      console.error(`Error creating clip (attempt ${attempt}):`, errorInfo);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
+
+      // Check if error is retryable and we haven't exceeded max retries
+      if (isRetryableError(errorMessage) && attempt < maxRetries) {
+        const delay = Math.pow(2, attempt - 1) * 1000; // Exponential backoff: 1s, 2s, 4s
+        showWarning(
+          t("app.clips.creator.retryingClipCreation", {
+            attempt,
+            maxRetries,
+            delay: delay / 1000,
+          })
+        );
+
+        await sleep(delay);
+        return attemptCreateClip(attempt + 1);
+      }
+
+      // Handle specific error codes with appropriate translations
       let translationKey = "app.clips.creator.errorCreating";
 
       switch (errorMessage) {
@@ -194,8 +336,18 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           translationKey = "app.clips.creator.errorCreating";
       }
 
-      alert(t(translationKey));
+      if (attempt >= maxRetries) {
+        showError(
+          t("app.clips.creator.errorAfterRetries", {
+            translationKey: t(translationKey),
+          })
+        );
+      } else {
+        showError(t(translationKey));
+      }
+
       setIsCreating(false);
+      setRetryCount(0);
     }
   };
 
@@ -375,6 +527,15 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           <div className={styles.progressText}>
             {t("app.clips.creator.creating")} {Math.round(progress)}%
           </div>
+          <div className={styles.progressActions}>
+            <button
+              onClick={handleCancelCreation}
+              className={styles.cancelBtn}
+              disabled={!currentProcessId}
+            >
+              {t("app.clips.creator.cancel")}
+            </button>
+          </div>
         </div>
       )}
 
@@ -398,6 +559,9 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           )}
         </button>
       </div>
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };

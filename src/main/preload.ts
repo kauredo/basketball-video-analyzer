@@ -1,6 +1,23 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 export interface ElectronAPI {
+  // System operations
+  systemCheck: () => Promise<{
+    success: boolean;
+    issues: string[];
+    warnings: string[];
+    system: {
+      platform: string;
+      arch: string;
+      nodeVersion: string;
+      ffmpegPath: string;
+      clipsDirectory: string;
+    } | null;
+  }>;
+  cancelClipCreation: (
+    processId: string
+  ) => Promise<{ success: boolean; reason?: string }>;
+
   // Video operations
   selectVideoFile: () => Promise<string | null>;
   cutVideoClip: (params: {
@@ -57,6 +74,7 @@ export interface ElectronAPI {
   // Event listeners
   onClipProgress: (callback: (data: any) => void) => void;
   onClipCreated: (callback: (clip: any) => void) => void;
+  onClipProcessId: (callback: (data: { processId: string }) => void) => void;
   onKeyBindingsChanged: (
     callback: (bindings: { markInKey: string; markOutKey: string }) => void
   ) => void;
@@ -72,6 +90,11 @@ export interface ElectronAPI {
 }
 
 const electronAPI: ElectronAPI = {
+  // System operations
+  systemCheck: () => ipcRenderer.invoke("system-check"),
+  cancelClipCreation: (processId: string) =>
+    ipcRenderer.invoke("cancel-clip-creation", processId),
+
   // Video operations
   selectVideoFile: () => ipcRenderer.invoke("select-video-file"),
   cutVideoClip: params => ipcRenderer.invoke("cut-video-clip", params),
@@ -123,6 +146,9 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.on("keyBindingsChanged", (_event, bindings) =>
       callback(bindings)
     );
+  },
+  onClipProcessId: (callback: (data: { processId: string }) => void) => {
+    ipcRenderer.on("clip-process-id", (_event, data) => callback(data));
   },
   removeAllListeners: channel => {
     ipcRenderer.removeAllListeners(channel);
