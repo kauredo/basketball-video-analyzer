@@ -181,10 +181,40 @@ ipcMain.handle(
         const thumbnailPath = path.join(normalizedClipsDir, thumbnailFileName);
         const duration = endTime - startTime;
 
+        // Validate input parameters
+        if (duration <= 0) {
+          console.error("Invalid duration:", duration);
+          reject(new Error("ERROR_INVALID_DURATION"));
+          return;
+        }
+
+        if (startTime < 0 || endTime < 0) {
+          console.error(
+            "Invalid time values - startTime:",
+            startTime,
+            "endTime:",
+            endTime
+          );
+          reject(new Error("ERROR_INVALID_TIME"));
+          return;
+        }
+
+        if (!title || title.trim().length === 0) {
+          console.error("Empty or invalid title provided");
+          reject(new Error("ERROR_INVALID_TITLE"));
+          return;
+        }
+
+        if (!categories || categories.length === 0) {
+          console.error("No categories provided");
+          reject(new Error("ERROR_NO_CATEGORIES"));
+          return;
+        }
+
         // Validate that input file exists and is accessible
         if (!fs.existsSync(normalizedInputPath)) {
           console.error("Input file does not exist:", normalizedInputPath);
-          reject(new Error("Input file does not exist"));
+          reject(new Error("ERROR_FILE_NOT_FOUND"));
           return;
         }
 
@@ -193,11 +223,7 @@ ipcMain.handle(
           fs.accessSync(normalizedClipsDir, fs.constants.W_OK);
         } catch (error) {
           console.error("No write access to clips directory:", error);
-          reject(
-            new Error(
-              `Cannot write to clips directory at ${normalizedClipsDir}. Please check your Documents folder permissions.`
-            )
-          );
+          reject(new Error("ERROR_NO_WRITE_ACCESS"));
           return;
         }
 
@@ -210,7 +236,7 @@ ipcMain.handle(
           if (process.platform !== "win32") {
             const { free } = require("fs").statfsSync(normalizedClipsDir);
             if (free < estimatedSize) {
-              reject(new Error("Not enough disk space to create the clip"));
+              reject(new Error("ERROR_INSUFFICIENT_SPACE"));
               return;
             }
           }
@@ -240,7 +266,7 @@ ipcMain.handle(
           })
           .on("error", error => {
             console.error("Thumbnail creation error:", error);
-            reject(new Error(`Failed to create thumbnail: ${error.message}`));
+            reject(new Error("ERROR_THUMBNAIL_FAILED"));
           })
           .on("end", () => {
             console.log("Thumbnail created successfully");
@@ -300,7 +326,7 @@ ipcMain.handle(
                   });
                 } catch (dbError) {
                   console.error("Database error:", dbError);
-                  reject(dbError);
+                  reject(new Error("ERROR_DATABASE_FAILED"));
                 }
               })
               .on("error", error => {
@@ -310,7 +336,7 @@ ipcMain.handle(
                 console.error("Output path:", outputPath);
                 console.error("Start time:", startTime);
                 console.error("Duration:", duration);
-                reject(new Error(`FFmpeg error: ${error.message}`));
+                reject(new Error("ERROR_FFMPEG_FAILED"));
               })
               .on("progress", progress => {
                 mainWindow.webContents.send("clip-progress", {

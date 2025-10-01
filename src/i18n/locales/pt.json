@@ -127,8 +127,20 @@
         "cancel": "Cancelar",
         "creating": "A criar clip...",
         "errorMarkPoints": "Por favor marque pontos de entrada e saída no vídeo primeiro.",
+        "markInOutRequired": "Por favor marque pontos de entrada e saída no vídeo primeiro.",
         "errorSelectCategory": "Por favor selecione pelo menos uma categoria para este clip.",
-        "errorCreating": "Erro ao criar clip. Por favor tente novamente."
+        "categoryRequired": "Por favor selecione pelo menos uma categoria para este clip.",
+        "errorCreating": "Erro ao criar clip. Por favor tente novamente.",
+        "errorNoWriteAccess": "Não é possível escrever na pasta de clips. Verifique as permissões da pasta Documentos.",
+        "errorInsufficientSpace": "Não há espaço suficiente em disco para criar o clip.",
+        "errorFileNotFound": "Ficheiro de vídeo não encontrado ou não acessível.",
+        "errorFFmpegFailed": "Falha no processamento de vídeo. O ficheiro pode estar corrompido ou não ser suportado.",
+        "errorDatabaseFailed": "Falha ao guardar informações do clip na base de dados.",
+        "errorThumbnailFailed": "Falha ao criar miniatura para o clip.",
+        "errorInvalidDuration": "Duração de clip inválida. Verifique os pontos de entrada/saída.",
+        "errorInvalidTime": "Valores de tempo inválidos. Marque pontos de entrada/saída válidos.",
+        "errorInvalidTitle": "Título de clip inválido. Forneça um título válido.",
+        "errorNoCategories": "Nenhuma categoria selecionada. Selecione pelo menos uma categoria."
       }
     },
     "video": {

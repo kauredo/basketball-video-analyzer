@@ -136,8 +136,20 @@
         "cancel": "Cancel",
         "creating": "Creating clip...",
         "errorMarkPoints": "Please mark in and out points on the video first.",
+        "markInOutRequired": "Please mark in and out points on the video first.",
         "errorSelectCategory": "Please select at least one category for this clip.",
-        "errorCreating": "Error creating clip. Please try again."
+        "categoryRequired": "Please select at least one category for this clip.",
+        "errorCreating": "Error creating clip. Please try again.",
+        "errorNoWriteAccess": "Cannot write to clips folder. Please check your Documents folder permissions.",
+        "errorInsufficientSpace": "Not enough disk space to create the clip.",
+        "errorFileNotFound": "Input video file not found or is not accessible.",
+        "errorFFmpegFailed": "Video processing failed. The video file may be corrupted or unsupported.",
+        "errorDatabaseFailed": "Failed to save clip information to database.",
+        "errorThumbnailFailed": "Failed to create thumbnail for the clip.",
+        "errorInvalidDuration": "Invalid clip duration. Please check your mark in/out points.",
+        "errorInvalidTime": "Invalid time values. Please mark valid in/out points.",
+        "errorInvalidTitle": "Invalid clip title. Please provide a valid title.",
+        "errorNoCategories": "No categories selected. Please select at least one category."
       }
     },
     "video": {

@@ -123,7 +123,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   const handleCreateClip = async () => {
     if (!videoPath || markInTime === null || markOutTime === null) {
-      alert(t("app.clips.creator.markInOutRequired"));
+      alert(t("app.clips.creator.errorMarkPoints"));
       return;
     }
 
@@ -133,7 +133,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     }
 
     if (selectedCategories.length === 0) {
-      alert(t("app.clips.creator.categoryRequired"));
+      alert(t("app.clips.creator.errorSelectCategory"));
       return;
     }
 
@@ -153,7 +153,48 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       });
     } catch (error) {
       console.error("Error creating clip:", error);
-      alert(t("app.clips.creator.errorCreating"));
+
+      // Handle specific error codes with appropriate translations
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      let translationKey = "app.clips.creator.errorCreating";
+
+      switch (errorMessage) {
+        case "ERROR_NO_WRITE_ACCESS":
+          translationKey = "app.clips.creator.errorNoWriteAccess";
+          break;
+        case "ERROR_INSUFFICIENT_SPACE":
+          translationKey = "app.clips.creator.errorInsufficientSpace";
+          break;
+        case "ERROR_FILE_NOT_FOUND":
+          translationKey = "app.clips.creator.errorFileNotFound";
+          break;
+        case "ERROR_FFMPEG_FAILED":
+          translationKey = "app.clips.creator.errorFFmpegFailed";
+          break;
+        case "ERROR_DATABASE_FAILED":
+          translationKey = "app.clips.creator.errorDatabaseFailed";
+          break;
+        case "ERROR_THUMBNAIL_FAILED":
+          translationKey = "app.clips.creator.errorThumbnailFailed";
+          break;
+        case "ERROR_INVALID_DURATION":
+          translationKey = "app.clips.creator.errorInvalidDuration";
+          break;
+        case "ERROR_INVALID_TIME":
+          translationKey = "app.clips.creator.errorInvalidTime";
+          break;
+        case "ERROR_INVALID_TITLE":
+          translationKey = "app.clips.creator.errorInvalidTitle";
+          break;
+        case "ERROR_NO_CATEGORIES":
+          translationKey = "app.clips.creator.errorNoCategories";
+          break;
+        default:
+          translationKey = "app.clips.creator.errorCreating";
+      }
+
+      alert(t(translationKey));
       setIsCreating(false);
     }
   };
