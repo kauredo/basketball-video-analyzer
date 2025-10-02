@@ -352,12 +352,14 @@ We welcome contributions from the basketball and developer communities:
 **Free for Basketball Teams and Personal Use**
 
 This software is free to use for:
+
 - ✅ Basketball teams and coaches (any level)
 - ✅ Educational institutions
 - ✅ Personal/individual use
 - ✅ Non-commercial purposes
 
 **Restrictions:**
+
 - ❌ Cannot be sold or commercialized
 - ❌ Cannot be redistributed for profit
 - ❌ Modified versions cannot be distributed

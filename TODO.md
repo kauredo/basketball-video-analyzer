@@ -128,7 +128,6 @@
 ###### 1. **Main Interface Screenshot** (`screenshot.png` for README)
 
 - [ ] **Content to capture:**
-
   - Basketball game video loaded and playing (preferably 720p+ quality)
   - Category panel open showing hierarchical structure:
     - "Offense" (expanded)
@@ -146,7 +145,6 @@
   - Professional, clean UI with good color contrast
 
 - [ ] **Technical specifications:**
-
   - **Resolution:** 1200x800px minimum (2400x1600px for retina)
   - **Format:** PNG with high quality compression
   - **File size:** Under 500KB for fast GitHub loading
@@ -154,9 +152,7 @@
   - **UI scaling:** Ensure text is readable at different sizes
 
 - [ ] **Detailed staging process:**
-
   1. **Prepare demo video:**
-
      - Find/create 2-3 minute basketball highlight reel
      - Ensure video has clear plays (pick & roll, fast breaks, etc.)
      - Use copyright-free footage or create your own
@@ -183,13 +179,11 @@
      ```
 
   3. **Create sample projects:**
-
      - "vs Lakers Game 1 - Jan 15"
      - "Player Development - Guards"
      - "Team Scrimmage Analysis"
 
   4. **Position video:**
-
      - Set to 5:30 timestamp for realistic feel
      - Ensure play is clearly visible
      - Show video controls but not blocking content
@@ -203,7 +197,6 @@
 ###### 2. **Category Management Deep Dive**
 
 - [ ] **Content to capture:**
-
   - Category editor panel fully expanded
   - "Edit Categories" button highlighted/active
   - Multiple presets dropdown showing:
@@ -223,14 +216,12 @@
     - Save/Cancel buttons
 
 - [ ] **Technical specifications:**
-
   - **Resolution:** 800x600px minimum (1600x1200px retina)
   - **Focus:** Center on category management panel
   - **Clarity:** Ensure all text is crisp and readable
   - **Highlighting:** Use callouts or arrows if needed
 
 - [ ] **Detailed staging process:**
-
   1. **Create realistic categories coaches would use:**
 
      ```
@@ -269,7 +260,6 @@
      ```
 
   2. **Set up presets with descriptive names:**
-
      - Show variety of use cases
      - Include templates for different levels (youth, high school, college)
      - Demonstrate preset loading workflow
@@ -282,7 +272,6 @@
 ###### 3. **Video Cutting Workflow (Step-by-Step)**
 
 - [ ] **Content to capture:**
-
   - Video showing clear basketball play in progress
   - Timeline with visible markers:
     - Mark In point at 2:15 (green marker)
@@ -304,29 +293,24 @@
     - **Create Clip** button ready to click
 
 - [ ] **Technical specifications:**
-
   - **Resolution:** 1000x700px minimum (2000x1400px retina)
   - **Multi-step:** Show before/during/after of marking process
   - **Annotations:** Include keyboard shortcut hints (I/O keys)
   - **Quality:** Ensure video content is clearly visible
 
 - [ ] **Detailed staging process:**
-
   1. **Select appropriate basketball play:**
-
      - Choose clear, easy-to-understand play (pick & roll is ideal)
      - Ensure play has beginning, middle, end (8-15 seconds)
      - Good video quality with clear player actions
 
   2. **Demonstrate marking process:**
-
      - Start with unmarked video
      - Show marking In point at start of play
      - Show marking Out point at completion
      - Display visual feedback of marked region
 
   3. **Fill clip creation form with realistic details:**
-
      - Use coaching terminology
      - Show multiple category selection
      - Include detailed notes coaches would write
@@ -340,7 +324,6 @@
 ###### 4. **Clip Library & Organization**
 
 - [ ] **Content to capture:**
-
   - Main clip library view with grid layout
   - 12-15 clip thumbnails showing:
     - Different basketball plays
@@ -380,23 +363,19 @@
     ```
 
 - [ ] **Technical specifications:**
-
   - **Resolution:** 900x600px minimum (1800x1200px retina)
   - **Variety:** Show diverse clip thumbnails
   - **Organization:** Clear hierarchy and structure
   - **Functionality:** All UI elements visible and purposeful
 
 - [ ] **Detailed staging process:**
-
   1. **Create diverse clip library:**
-
      - Mix of offensive and defensive plays
      - Various clip lengths (5-30 seconds)
      - Different game situations
      - Multiple projects to show organization
 
   2. **Set up realistic filtering:**
-
      - Show active filters
      - Display clip counts for each category
      - Demonstrate search functionality
@@ -409,7 +388,6 @@
 ###### 5. **Time Search Feature Showcase**
 
 - [ ] **Content to capture:**
-
   - Video player with time search input highlighted
   - Multiple time format examples demonstrated:
     - "1:23:45" (1 hour, 23 minutes, 45 seconds)
@@ -424,22 +402,18 @@
   - Success feedback: "Jumped to 12:30" notification
 
 - [ ] **Technical specifications:**
-
   - **Resolution:** 600x400px focused screenshot
   - **Clarity:** Time search prominently featured
   - **Examples:** Multiple format demonstrations
   - **Context:** Show within full video player
 
 - [ ] **Detailed staging process:**
-
   1. **Demonstrate different time formats:**
-
      - Start with HH:MM:SS for long videos
      - Show MM:SS for typical game clips
      - Include seconds-only for quick jumps
 
   2. **Show successful navigation:**
-
      - Video position before search
      - Time entry process
      - Video position after jump
@@ -572,14 +546,12 @@ Learn the basics of marking and cutting video clips...
 ###### **Icon Concept Development:**
 
 - [ ] **Primary concept:** Basketball + Video/Film combination
-
   - Basketball with play button overlay
   - Film strip with basketball court pattern
   - Whistle + video camera combination
   - Coach's clipboard with video frame
 
 - [ ] **Color scheme:**
-
   - Primary: Basketball orange (#FF6B35 or #E85D00)
   - Secondary: Court green (#228B22 or #32CD32)
   - Accent: Video blue (#4A90E2 or #007AFF)
@@ -597,7 +569,6 @@ Learn the basics of marking and cutting video clips...
 
 - [ ] **File:** `assets/icon.icns`
 - [ ] **Sizes required in .icns:**
-
   - 16x16px (icon_16x16)
   - 32x32px (icon_16x16@2x)
   - 32x32px (icon_32x32)
@@ -619,7 +590,6 @@ Learn the basics of marking and cutting video clips...
 
 - [ ] **File:** `assets/icon.ico`
 - [ ] **Sizes required in .ico:**
-
   - 16x16px (small taskbar)
   - 24x24px (small toolbar)
   - 32x32px (medium toolbar)
@@ -636,7 +606,6 @@ Learn the basics of marking and cutting video clips...
 ####### **Linux Icon (.png)**
 
 - [ ] **Files needed:**
-
   - `assets/icon.png` (256x256px)
   - `assets/icon@2x.png` (512x512px)
   - `assets/icon@3x.png` (768x768px)
@@ -650,7 +619,6 @@ Learn the basics of marking and cutting video clips...
 - [ ] **File:** `assets/dmg-background.png`
 - [ ] **Dimensions:** 540x380px (exact size for macOS DMG)
 - [ ] **Content design:**
-
   - Basketball court background (subtle, not distracting)
   - App icon positioned on left side
   - Applications folder icon on right side
@@ -669,14 +637,12 @@ Learn the basics of marking and cutting video clips...
 
 - [ ] **File:** `assets/loading.gif`
 - [ ] **Specifications:**
-
   - Size: 64x64px or 128x128px
   - Duration: 2-3 seconds loop
   - File size: Under 100KB
   - Frame rate: 15-20 fps for smooth animation
 
 - [ ] **Animation concepts:**
-
   - Basketball bouncing with subtle rotation
   - Video progress bar filling up
   - Spinning basketball with play button
@@ -840,14 +806,12 @@ Learn the basics of marking and cutting video clips...
 ###### **Technology Stack Selection:**
 
 - [ ] **Primary choice: React Joyride**
-
   - **Pros**: Most popular, well-maintained, flexible
   - **Cons**: Larger bundle size
   - **Installation**: `npm install react-joyride`
   - **Bundle impact**: ~45KB gzipped
 
 - [ ] **Alternative: Reactour**
-
   - **Pros**: Lightweight, simple API
   - **Cons**: Less customization options
   - **Installation**: `npm install @reactour/tour`
@@ -1374,7 +1338,7 @@ export const useFirstTimeUser = (): FirstTimeUserState & {
   const markTourCompleted = () => {
     localStorage.setItem("tour_completed", "true");
     localStorage.setItem("tour_completed_date", new Date().toISOString());
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       hasCompletedTour: true,
       shouldShowTour: false,
@@ -1385,7 +1349,7 @@ export const useFirstTimeUser = (): FirstTimeUserState & {
     localStorage.removeItem("tour_completed");
     localStorage.removeItem("tour_skipped");
     localStorage.removeItem("tour_completed_date");
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       hasCompletedTour: false,
       shouldShowTour: true,
@@ -2349,13 +2313,11 @@ netlify deploy --prod
 ####### **Recommended Software:**
 
 - [ ] **Screen Recording:** OBS Studio (free)
-
   - **Settings:** 1920x1080, 30fps, CRF 23
   - **Audio:** Built-in mic or external USB mic
   - **Filters:** Noise suppression, gain
 
 - [ ] **Video Editing:** DaVinci Resolve (free)
-
   - **Timeline:** 1080p 30fps project
   - **Color:** Consistent with app branding
   - **Audio:** Background music (royalty-free)
@@ -2415,7 +2377,6 @@ Demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://www.youtub
 ###### **Twitter/X (@BasketballVideoAnalyzer)**
 
 - [ ] **Account setup:**
-
   - **Bio:** "Free video analysis tool for basketball coaches 🏀 Create organized clip libraries • Time search • Preset templates • Download ⬇️"
   - **Profile image:** App icon
   - **Header image:** App screenshot with features highlighted
@@ -2444,7 +2405,6 @@ Demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://www.youtub
 ###### **LinkedIn (Company Page)**
 
 - [ ] **Professional positioning:**
-
   - Target: High school, college, and professional coaches
   - Content: Industry insights, coaching efficiency, team analysis
   - Tone: Professional, educational, results-focused
@@ -2470,7 +2430,6 @@ Demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://www.youtub
 ####### **Reddit Engagement:**
 
 - [ ] **Target subreddits:**
-
   - r/Basketball (3.4M members)
   - r/basketballcoach (12K members)
   - r/BasketballTips (180K members)
@@ -2497,7 +2456,6 @@ Demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://www.youtub
 ####### **Facebook Groups:**
 
 - [ ] **Target groups:**
-
   - "Basketball Coaches Network" (45K members)
   - "Youth Basketball Coaches" (38K members)
   - "High School Basketball Coaches" (22K members)
@@ -2522,7 +2480,6 @@ Demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://www.youtub
 ####### **Visual Content Tools:**
 
 - [ ] **Canva Pro** (recommended)
-
   - **Templates:** Social media posts, infographics
   - **Brand kit:** Upload app colors, fonts, logos
   - **Automation:** Resize content for different platforms
@@ -2917,7 +2874,7 @@ export const useAppInitialization = () => {
         setCurrentMessage(step.message);
 
         // Simulate initialization step
-        await new Promise(resolve => setTimeout(resolve, step.duration));
+        await new Promise((resolve) => setTimeout(resolve, step.duration));
 
         // Update progress
         const newProgress = ((i + 1) / INITIALIZATION_STEPS.length) * 100;
@@ -3157,7 +3114,7 @@ export class AutoUpdater {
       this.sendToRenderer("update-checking");
     });
 
-    autoUpdater.on("update-available", info => {
+    autoUpdater.on("update-available", (info) => {
       log.info("Update available:", info.version);
       this.sendToRenderer("update-available", {
         version: info.version,
@@ -3166,7 +3123,7 @@ export class AutoUpdater {
       });
     });
 
-    autoUpdater.on("update-not-available", info => {
+    autoUpdater.on("update-not-available", (info) => {
       log.info("Update not available:", info.version);
       this.sendToRenderer("update-not-available");
 
@@ -3182,20 +3139,20 @@ export class AutoUpdater {
       }
     });
 
-    autoUpdater.on("error", error => {
+    autoUpdater.on("error", (error) => {
       log.error("Auto-updater error:", error);
       this.sendToRenderer("update-error", error.message);
 
       if (this.isManualCheck) {
         dialog.showErrorBox(
           "Update Error",
-          `Failed to check for updates: ${error.message}`
+          `Failed to check for updates: ${error.message}`,
         );
         this.isManualCheck = false;
       }
     });
 
-    autoUpdater.on("download-progress", progressObj => {
+    autoUpdater.on("download-progress", (progressObj) => {
       this.sendToRenderer("update-download-progress", {
         percent: Math.round(progressObj.percent),
         bytesPerSecond: progressObj.bytesPerSecond,
@@ -3204,7 +3161,7 @@ export class AutoUpdater {
       });
     });
 
-    autoUpdater.on("update-downloaded", info => {
+    autoUpdater.on("update-downloaded", (info) => {
       log.info("Update downloaded:", info.version);
       this.sendToRenderer("update-downloaded", {
         version: info.version,
@@ -3221,9 +3178,12 @@ export class AutoUpdater {
     }, 10000);
 
     // Check for updates every 4 hours
-    setInterval(() => {
-      this.checkForUpdates(false);
-    }, 4 * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.checkForUpdates(false);
+      },
+      4 * 60 * 60 * 1000,
+    );
   }
 
   public checkForUpdates(manual = false) {

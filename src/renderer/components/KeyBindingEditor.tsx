@@ -53,7 +53,7 @@ export const KeyBindingEditor: React.FC<KeyBindingEditorProps> = () => {
         key: editingKey,
         value: newKey,
       });
-      setKeyBindings(prev => ({ ...prev, [editingKey]: newKey }));
+      setKeyBindings((prev) => ({ ...prev, [editingKey]: newKey }));
       alert(t("app.settings.keyBindingSaved"));
     } catch (error) {
       console.error("Failed to save key binding:", error);

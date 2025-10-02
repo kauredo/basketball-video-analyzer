@@ -71,7 +71,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
 }) => {
   return (
     <div className={styles.toastContainer}>
-      {toasts.map(toast => (
+      {toasts.map((toast) => (
         <Toast
           key={toast.id}
           message={toast.message}

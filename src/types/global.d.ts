@@ -37,7 +37,7 @@ export interface ElectronAPI {
     } | null;
   }>;
   cancelClipCreation: (
-    processId: string
+    processId: string,
   ) => Promise<{ success: boolean; reason?: string }>;
 
   // Video operations
@@ -66,7 +66,7 @@ export interface ElectronAPI {
   getCategories: () => Promise<Category[]>;
   getCategoriesHierarchical: () => Promise<Category[]>;
   createCategory: (
-    category: Omit<Category, "id" | "created_at">
+    category: Omit<Category, "id" | "created_at">,
   ) => Promise<Category>;
   updateCategory: (id: number, updates: Partial<Category>) => Promise<boolean>;
   deleteCategory: (id: number) => Promise<boolean>;
@@ -85,7 +85,7 @@ export interface ElectronAPI {
   onClipCreated: (callback: (clip: any) => void) => void;
   onClipProcessId: (callback: (data: { processId: string }) => void) => void;
   onKeyBindingsChanged: (
-    callback: (bindings: { markInKey: string; markOutKey: string }) => void
+    callback: (bindings: { markInKey: string; markOutKey: string }) => void,
   ) => void;
   removeAllListeners: (channel: string) => void;
   resetDatabase: () => Promise<boolean>;
@@ -94,7 +94,7 @@ export interface ElectronAPI {
   getKeyBindings: () => Promise<{ markInKey: string; markOutKey: string }>;
   setKeyBinding: (
     key: "markInKey" | "markOutKey",
-    value: string
+    value: string,
   ) => Promise<void>;
 }
 

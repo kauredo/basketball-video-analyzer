@@ -4,7 +4,8 @@ const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 module.exports = {
   packagerConfig: {
     asar: {
-      unpack: "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native}/**/*"
+      unpack:
+        "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native}/**/*",
     },
     name: "basketball-video-analyzer",
     executableName: "basketball-video-analyzer",
@@ -15,8 +16,8 @@ module.exports = {
     // Allow unsigned apps on macOS for development
     extendInfo: {
       NSAppTransportSecurity: {
-        NSAllowsArbitraryLoads: true
-      }
+        NSAllowsArbitraryLoads: true,
+      },
     },
     // Windows-specific options
     win32metadata: {
@@ -52,7 +53,8 @@ module.exports = {
         options: {
           maintainer: "Basketball Video Analyzer Team",
           homepage: "https://github.com/kauredo/basketball-video-analyzer",
-          description: "Basketball Video Analyzer - Desktop app for cutting and categorizing basketball video clips",
+          description:
+            "Basketball Video Analyzer - Desktop app for cutting and categorizing basketball video clips",
           categories: ["Video", "AudioVideo"],
         },
       },
@@ -63,7 +65,8 @@ module.exports = {
         options: {
           maintainer: "Basketball Video Analyzer Team",
           homepage: "https://github.com/kauredo/basketball-video-analyzer",
-          description: "Basketball Video Analyzer - Desktop app for cutting and categorizing basketball video clips",
+          description:
+            "Basketball Video Analyzer - Desktop app for cutting and categorizing basketball video clips",
           categories: ["Video", "AudioVideo"],
         },
       },

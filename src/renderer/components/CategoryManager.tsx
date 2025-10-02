@@ -26,7 +26,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
   const [isEditing, setIsEditing] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -38,7 +38,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     description: "",
   });
   const [addingSubcategoryTo, setAddingSubcategoryTo] = useState<number | null>(
-    null
+    null,
   );
   const [newSubcategory, setNewSubcategory] = useState({
     name: "",
@@ -58,13 +58,13 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       if (!currentProject) return;
 
       const cats = await window.electronAPI.getCategoriesHierarchical(
-        currentProject.id
+        currentProject.id,
       );
       setCategories(cats);
 
       // Auto-expand categories that have children
       const expandedIds = new Set<number>();
-      cats.forEach(category => {
+      cats.forEach((category) => {
         if (category.children && category.children.length > 0) {
           expandedIds.add(category.id!);
         }
@@ -106,7 +106,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
   const handleCreateSubcategory = async (
     parentId: number,
-    parentColor: string
+    parentColor: string,
   ) => {
     if (!newSubcategory.name.trim() || !currentProject) return;
 
@@ -122,7 +122,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       setNewSubcategory({ name: "", color: "#4CAF50", description: "" });
       setAddingSubcategoryTo(null);
       // Expand the parent category to show the new subcategory
-      setExpandedCategories(prev => new Set([...prev, parentId]));
+      setExpandedCategories((prev) => new Set([...prev, parentId]));
       await loadCategories();
       onCategoriesChange();
     } catch (error) {
@@ -175,13 +175,13 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       // Flatten the hierarchical categories structure into a flat array
       const flatCategories: Category[] = [];
 
-      categories.forEach(parentCategory => {
+      categories.forEach((parentCategory) => {
         // Add the parent category
         flatCategories.push(parentCategory);
 
         // Add all children if they exist
         if (parentCategory.children && parentCategory.children.length > 0) {
-          parentCategory.children.forEach(child => {
+          parentCategory.children.forEach((child) => {
             flatCategories.push(child);
           });
         }
@@ -212,8 +212,8 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
       // Filter out categories with invalid names
       const validCategories = loadedCategories.filter(
-        category =>
-          category.category_name && category.category_name.trim() !== ""
+        (category) =>
+          category.category_name && category.category_name.trim() !== "",
       );
 
       if (validCategories.length === 0) {
@@ -233,7 +233,9 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       const categoryMap = new Map<string, number>(); // Map preset category names to created IDs
 
       // First pass: Create all parent categories (those without parent_name)
-      for (const category of validCategories.filter(cat => !cat.parent_name)) {
+      for (const category of validCategories.filter(
+        (cat) => !cat.parent_name,
+      )) {
         let categoryName = category.category_name;
         let counter = 1;
 
@@ -261,17 +263,17 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
         } catch (error) {
           console.warn(
             `Failed to create parent category "${categoryName}":`,
-            error
+            error,
           );
         }
       }
 
       // Second pass: Create subcategories (those with parent_name)
-      for (const category of validCategories.filter(cat => cat.parent_name)) {
+      for (const category of validCategories.filter((cat) => cat.parent_name)) {
         const parentId = categoryMap.get(category.parent_name);
         if (!parentId) {
           console.warn(
-            `Parent category "${category.parent_name}" not found for "${category.category_name}"`
+            `Parent category "${category.parent_name}" not found for "${category.category_name}"`,
           );
           continue;
         }
@@ -304,7 +306,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
         } catch (error) {
           console.warn(
             `Failed to create subcategory "${categoryName}":`,
-            error
+            error,
           );
         }
       }
@@ -393,7 +395,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   <input
                     type="text"
                     value={editingCategory.name}
-                    onChange={e => {
+                    onChange={(e) => {
                       const updatedCategory: Category = {
                         ...editingCategory,
                         name: e.target.value,
@@ -410,7 +412,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   <div className={styles.formGroup}>
                     <label>Color</label>
                     <div className={styles.colorPicker}>
-                      {colorPresets.map(color => (
+                      {colorPresets.map((color) => (
                         <button
                           key={color}
                           className={`${styles.colorOption} ${
@@ -437,7 +439,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   <input
                     type="text"
                     value={editingCategory.description || ""}
-                    onChange={e => {
+                    onChange={(e) => {
                       const updatedCategory: Category = {
                         ...editingCategory,
                         description: e.target.value,
@@ -525,7 +527,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               <input
                 type="text"
                 value={newSubcategory.name}
-                onChange={e =>
+                onChange={(e) =>
                   setNewSubcategory({ ...newSubcategory, name: e.target.value })
                 }
                 placeholder="Enter subcategory name (e.g., Top, Side, 60°)..."
@@ -538,7 +540,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               <input
                 type="text"
                 value={newSubcategory.description}
-                onChange={e =>
+                onChange={(e) =>
                   setNewSubcategory({
                     ...newSubcategory,
                     description: e.target.value,
@@ -578,7 +580,9 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
         {hasChildren && isExpanded && (
           <div className={styles.subcategories}>
-            {category.children!.map(child => renderCategory(child, level + 1))}
+            {category.children!.map((child) =>
+              renderCategory(child, level + 1),
+            )}
           </div>
         )}
       </div>
@@ -637,7 +641,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             <input
               type="text"
               value={newPresetName}
-              onChange={e => setNewPresetName(e.target.value)}
+              onChange={(e) => setNewPresetName(e.target.value)}
               placeholder={t("app.categories.presets.enterName")}
               className={styles.presetNameInput}
             />
@@ -646,31 +650,38 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               disabled={!newPresetName.trim()}
               className={styles.savePresetBtn}
             >
-              <FontAwesomeIcon icon={faSave} /> {t("app.categories.presets.save")}
+              <FontAwesomeIcon icon={faSave} />{" "}
+              {t("app.categories.presets.save")}
             </button>
           </div>
         </div>
 
         {presets.length > 0 ? (
           <div className={styles.presetList}>
-            <h5>{t("app.categories.presets.yourSavedPresets")} ({presets.length})</h5>
+            <h5>
+              {t("app.categories.presets.yourSavedPresets")} ({presets.length})
+            </h5>
             <p className={styles.presetListDescription}>
               {t("app.categories.presets.loadDescription")}
             </p>
             <div className={styles.presetButtons}>
-              {presets.map(preset => (
+              {presets.map((preset) => (
                 <div key={preset} className={styles.presetItem}>
                   <button
                     onClick={() => handleLoadPreset(preset)}
                     className={styles.loadPresetBtn}
-                    title={t("app.categories.presets.loadTooltip", { presetName: preset })}
+                    title={t("app.categories.presets.loadTooltip", {
+                      presetName: preset,
+                    })}
                   >
                     <FontAwesomeIcon icon={faFolderTree} /> {preset}
                   </button>
                   <button
                     onClick={() => handleDeletePreset(preset)}
                     className={styles.deletePresetBtn}
-                    title={t("app.categories.presets.deleteTooltip", { presetName: preset })}
+                    title={t("app.categories.presets.deleteTooltip", {
+                      presetName: preset,
+                    })}
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
@@ -691,8 +702,8 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       {/* Category List */}
       <div className={styles.categoryList}>
         {categories
-          .filter(category => !category.parent_id) // Only show top-level categories
-          .map(category => renderCategory(category))}
+          .filter((category) => !category.parent_id) // Only show top-level categories
+          .map((category) => renderCategory(category))}
       </div>
 
       {/* Add New Category */}
@@ -705,7 +716,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           <input
             type="text"
             value={newCategory.name}
-            onChange={e =>
+            onChange={(e) =>
               setNewCategory({ ...newCategory, name: e.target.value })
             }
             placeholder={t("app.categories.placeholder")}
@@ -714,7 +725,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
           <div className={styles.colorPicker}>
             <label>{t("app.categories.colorLabel")}</label>
-            {colorPresets.map(color => (
+            {colorPresets.map((color) => (
               <button
                 key={color}
                 className={`${styles.colorOption} ${
@@ -729,7 +740,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           <input
             type="text"
             value={newCategory.description}
-            onChange={e =>
+            onChange={(e) =>
               setNewCategory({ ...newCategory, description: e.target.value })
             }
             placeholder={t("app.categories.descriptionPlaceholder")}

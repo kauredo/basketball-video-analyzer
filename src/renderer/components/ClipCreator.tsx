@@ -55,12 +55,12 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     loadCategories();
 
     // Listen for clip progress
-    window.electronAPI.onClipProgress(data => {
+    window.electronAPI.onClipProgress((data) => {
       setProgress(data.percent || 0);
     });
 
     // Listen for clip creation completion
-    window.electronAPI.onClipCreated(clip => {
+    window.electronAPI.onClipCreated((clip) => {
       setIsCreating(false);
       setProgress(0);
       setCurrentProcessId(null);
@@ -71,7 +71,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     });
 
     // Listen for clip process ID
-    window.electronAPI.onClipProcessId(data => {
+    window.electronAPI.onClipProcessId((data) => {
       setCurrentProcessId(data.processId);
     });
 
@@ -86,7 +86,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     try {
       if (!currentProject) return;
       const cats = await window.electronAPI.getCategoriesHierarchical(
-        currentProject.id
+        currentProject.id,
       );
       setCategories(cats);
     } catch (error) {
@@ -106,9 +106,8 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   const handleCancelCreation = async () => {
     if (currentProcessId) {
       try {
-        const result = await window.electronAPI.cancelClipCreation(
-          currentProcessId
-        );
+        const result =
+          await window.electronAPI.cancelClipCreation(currentProcessId);
         if (result.success) {
           setIsCreating(false);
           setProgress(0);
@@ -133,13 +132,14 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     ].includes(errorMessage);
   };
 
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   const handleCategoryToggle = (categoryId: number) => {
-    setSelectedCategories(prev =>
+    setSelectedCategories((prev) =>
       prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId],
     );
   };
 
@@ -148,7 +148,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
     // Get all categories (including children) for proper name lookup
     const allCategories: Category[] = [];
-    categories.forEach(cat => {
+    categories.forEach((cat) => {
       allCategories.push(cat);
       if (cat.children) {
         allCategories.push(...cat.children);
@@ -156,8 +156,8 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     });
 
     const selectedCategoryNames = allCategories
-      .filter(cat => selectedCategories.includes(cat.id))
-      .map(cat => cat.name)
+      .filter((cat) => selectedCategories.includes(cat.id))
+      .map((cat) => cat.name)
       .join(" + ");
 
     const timestamp = new Date().toLocaleTimeString("en-US", {
@@ -202,7 +202,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
     if (!supportedFormats.includes(fileExtension)) {
       showError(
-        t("app.clips.creator.unsupportedFormat", { format: fileExtension })
+        t("app.clips.creator.unsupportedFormat", { format: fileExtension }),
       );
       return;
     }
@@ -221,7 +221,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       if (systemCheck.warnings.length > 0) {
         for (const warning of systemCheck.warnings) {
           showWarning(
-            t(`app.clips.creator.systemCheck.${warning.toLowerCase()}`)
+            t(`app.clips.creator.systemCheck.${warning.toLowerCase()}`),
           );
         }
       }
@@ -291,7 +291,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
             attempt,
             maxRetries,
             delay: delay / 1000,
-          })
+          }),
         );
 
         await sleep(delay);
@@ -340,7 +340,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         showError(
           t("app.clips.creator.errorAfterRetries", {
             translationKey: t(translationKey),
-          })
+          }),
         );
       } else {
         showError(t(translationKey));
@@ -391,11 +391,11 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
               onClick={() => {
                 // Get all category IDs including children
                 const allCategoryIds: number[] = [];
-                categories.forEach(cat => {
+                categories.forEach((cat) => {
                   allCategoryIds.push(cat.id);
                   if (cat.children) {
-                    cat.children.forEach(child =>
-                      allCategoryIds.push(child.id)
+                    cat.children.forEach((child) =>
+                      allCategoryIds.push(child.id),
                     );
                   }
                 });
@@ -417,8 +417,8 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         </div>
         <div className={styles.categoryGrid}>
           {categories
-            .filter(cat => !cat.parent_id) // Only show parent categories
-            .map(parentCategory => (
+            .filter((cat) => !cat.parent_id) // Only show parent categories
+            .map((parentCategory) => (
               <div key={parentCategory.id} className={styles.categoryGroup}>
                 {/* Parent Category Button */}
                 <button
@@ -431,7 +431,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                   style={{
                     borderColor: parentCategory.color,
                     backgroundColor: selectedCategories.includes(
-                      parentCategory.id
+                      parentCategory.id,
                     )
                       ? parentCategory.color
                       : "transparent",
@@ -466,7 +466,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                           style={{
                             borderColor: subcategory.color,
                             backgroundColor: selectedCategories.includes(
-                              subcategory.id
+                              subcategory.id,
                             )
                               ? subcategory.color
                               : "transparent",
@@ -497,7 +497,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           <input
             type="text"
             value={clipTitle}
-            onChange={e => setClipTitle(e.target.value)}
+            onChange={(e) => setClipTitle(e.target.value)}
             placeholder={t("app.clips.creator.titlePlaceholder")}
             className={styles.clipTitleInput}
           />
@@ -507,7 +507,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           <label>{t("app.clips.creator.notes")}</label>
           <textarea
             value={clipNotes}
-            onChange={e => setClipNotes(e.target.value)}
+            onChange={(e) => setClipNotes(e.target.value)}
             placeholder={t("app.clips.creator.notesPlaceholder")}
             className={styles.clipNotesInput}
             rows={3}

@@ -21,42 +21,42 @@ export const useToast = () => {
         duration,
       };
 
-      setToasts(prev => [...prev, newToast]);
+      setToasts((prev) => [...prev, newToast]);
       return id;
     },
-    []
+    [],
   );
 
   const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
   const showSuccess = useCallback(
     (message: string, duration?: number) => {
       return addToast(message, "success", duration);
     },
-    [addToast]
+    [addToast],
   );
 
   const showError = useCallback(
     (message: string, duration?: number) => {
       return addToast(message, "error", duration);
     },
-    [addToast]
+    [addToast],
   );
 
   const showWarning = useCallback(
     (message: string, duration?: number) => {
       return addToast(message, "warning", duration);
     },
-    [addToast]
+    [addToast],
   );
 
   const showInfo = useCallback(
     (message: string, duration?: number) => {
       return addToast(message, "info", duration);
     },
-    [addToast]
+    [addToast],
   );
 
   const clearAll = useCallback(() => {

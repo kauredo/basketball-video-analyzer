@@ -27,10 +27,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       </label>
       <select
         value={i18n.language}
-        onChange={e => handleLanguageChange(e.target.value)}
+        onChange={(e) => handleLanguageChange(e.target.value)}
         className={styles.select}
       >
-        {languages.map(lang => (
+        {languages.map((lang) => (
           <option key={lang.code} value={lang.code}>
             {lang.name}
           </option>

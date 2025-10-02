@@ -15,7 +15,7 @@ export interface ElectronAPI {
     } | null;
   }>;
   cancelClipCreation: (
-    processId: string
+    processId: string,
   ) => Promise<{ success: boolean; reason?: string }>;
 
   // Video operations
@@ -76,7 +76,7 @@ export interface ElectronAPI {
   onClipCreated: (callback: (clip: any) => void) => void;
   onClipProcessId: (callback: (data: { processId: string }) => void) => void;
   onKeyBindingsChanged: (
-    callback: (bindings: { markInKey: string; markOutKey: string }) => void
+    callback: (bindings: { markInKey: string; markOutKey: string }) => void,
   ) => void;
   removeAllListeners: (channel: string) => void;
   resetDatabase: () => Promise<boolean>;
@@ -97,67 +97,67 @@ const electronAPI: ElectronAPI = {
 
   // Video operations
   selectVideoFile: () => ipcRenderer.invoke("select-video-file"),
-  cutVideoClip: params => ipcRenderer.invoke("cut-video-clip", params),
+  cutVideoClip: (params) => ipcRenderer.invoke("cut-video-clip", params),
   openClipFolder: () => ipcRenderer.invoke("open-clip-folder"),
-  playClip: clipPath => ipcRenderer.invoke("play-clip", clipPath),
-  exportClipsByCategory: params =>
+  playClip: (clipPath) => ipcRenderer.invoke("play-clip", clipPath),
+  exportClipsByCategory: (params) =>
     ipcRenderer.invoke("export-clips-by-category", params),
 
   // Project operations
-  createProject: project => ipcRenderer.invoke("create-project", project),
-  getProject: videoPath => ipcRenderer.invoke("get-project", videoPath),
+  createProject: (project) => ipcRenderer.invoke("create-project", project),
+  getProject: (videoPath) => ipcRenderer.invoke("get-project", videoPath),
   getProjects: () => ipcRenderer.invoke("get-projects"),
-  updateProjectLastOpened: projectId =>
+  updateProjectLastOpened: (projectId) =>
     ipcRenderer.invoke("update-project-last-opened", projectId),
-  deleteProject: id => ipcRenderer.invoke("delete-project", id),
+  deleteProject: (id) => ipcRenderer.invoke("delete-project", id),
 
   // Category operations
   getCategories: (projectId: number) =>
     ipcRenderer.invoke("get-categories", projectId),
   getCategoriesHierarchical: (projectId: number) =>
     ipcRenderer.invoke("get-categories-hierarchical", projectId),
-  createCategory: category => ipcRenderer.invoke("create-category", category),
-  clearProjectCategories: projectId =>
+  createCategory: (category) => ipcRenderer.invoke("create-category", category),
+  clearProjectCategories: (projectId) =>
     ipcRenderer.invoke("clear-project-categories", projectId),
   updateCategory: (id, updates) =>
     ipcRenderer.invoke("update-category", id, updates),
-  deleteCategory: id => ipcRenderer.invoke("delete-category", id),
+  deleteCategory: (id) => ipcRenderer.invoke("delete-category", id),
   savePreset: (presetName, categories) =>
     ipcRenderer.invoke("save-preset", presetName, categories),
-  loadPreset: presetName => ipcRenderer.invoke("load-preset", presetName),
+  loadPreset: (presetName) => ipcRenderer.invoke("load-preset", presetName),
   getPresets: () => ipcRenderer.invoke("get-presets"),
-  deletePreset: presetName => ipcRenderer.invoke("delete-preset", presetName),
+  deletePreset: (presetName) => ipcRenderer.invoke("delete-preset", presetName),
 
   // Clip operations
-  getClips: projectId => ipcRenderer.invoke("get-clips", projectId),
+  getClips: (projectId) => ipcRenderer.invoke("get-clips", projectId),
   updateClip: (id, updates) => ipcRenderer.invoke("update-clip", id, updates),
-  deleteClip: id => ipcRenderer.invoke("delete-clip", id),
-  getClipsByCategory: categoryId =>
+  deleteClip: (id) => ipcRenderer.invoke("delete-clip", id),
+  getClipsByCategory: (categoryId) =>
     ipcRenderer.invoke("get-clips-by-category", categoryId),
 
   // Event listeners
-  onClipProgress: callback => {
+  onClipProgress: (callback) => {
     ipcRenderer.on("clip-progress", (_event, data) => callback(data));
   },
-  onClipCreated: callback => {
+  onClipCreated: (callback) => {
     ipcRenderer.on("clip-created", (_event, clip) => callback(clip));
   },
-  onKeyBindingsChanged: callback => {
+  onKeyBindingsChanged: (callback) => {
     ipcRenderer.on("keyBindingsChanged", (_event, bindings) =>
-      callback(bindings)
+      callback(bindings),
     );
   },
   onClipProcessId: (callback: (data: { processId: string }) => void) => {
     ipcRenderer.on("clip-process-id", (_event, data) => callback(data));
   },
-  removeAllListeners: channel => {
+  removeAllListeners: (channel) => {
     ipcRenderer.removeAllListeners(channel);
   },
   resetDatabase: () => ipcRenderer.invoke("reset-database"),
 
   // Settings operations
   getKeyBindings: () => ipcRenderer.invoke("getKeyBindings"),
-  setKeyBinding: params => ipcRenderer.invoke("setKeyBinding", params),
+  setKeyBinding: (params) => ipcRenderer.invoke("setKeyBinding", params),
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

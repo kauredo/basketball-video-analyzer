@@ -116,7 +116,7 @@ export const App: React.FC = () => {
       setSelectedClip(clip);
       handleTimeSeek(clip.start_time);
     },
-    [handleTimeSeek]
+    [handleTimeSeek],
   );
 
   // Handle bottom panel resizing (timeline)
@@ -149,7 +149,7 @@ export const App: React.FC = () => {
       document.body.style.cursor = "ns-resize";
       document.body.style.userSelect = "none";
     },
-    [bottomPanelHeight]
+    [bottomPanelHeight],
   );
 
   // Handle side panel resizing (clips library)
@@ -182,7 +182,7 @@ export const App: React.FC = () => {
       document.body.style.cursor = "ew-resize";
       document.body.style.userSelect = "none";
     },
-    [sidePanelWidth]
+    [sidePanelWidth],
   );
 
   const handleSelectVideo = async () => {
@@ -216,7 +216,7 @@ export const App: React.FC = () => {
 
         setCurrentProject(project);
         setVideoPath(filePath);
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
         setShowProjectSelector(false);
         setShowInstructions(false);
       }
@@ -236,7 +236,7 @@ export const App: React.FC = () => {
 
       setCurrentProject(project);
       setVideoPath(project.video_path);
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger((prev) => prev + 1);
       setShowProjectSelector(false);
     } catch (error) {
       console.error("Error selecting project:", error);
@@ -276,7 +276,7 @@ export const App: React.FC = () => {
 
   const handleClipCreated = useCallback(() => {
     // Refresh the clip library
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
     setShowClipCreator(false);
     handleClearMarks();
   }, [handleClearMarks]);
@@ -285,7 +285,7 @@ export const App: React.FC = () => {
     if (window.confirm(t("app.settings.confirmReset"))) {
       try {
         await window.electronAPI.resetDatabase();
-        setRefreshTrigger(prev => prev + 1);
+        setRefreshTrigger((prev) => prev + 1);
         setShowSettings(false);
         alert(t("app.settings.resetSuccess"));
       } catch (error) {
@@ -297,7 +297,7 @@ export const App: React.FC = () => {
 
   const handleCategoriesChange = useCallback(() => {
     // Trigger refresh for any components that depend on categories
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   }, []);
 
   const formatTime = (time: number): string => {
@@ -490,7 +490,7 @@ export const App: React.FC = () => {
 
               <CategoryManager
                 currentProject={currentProject}
-                onCategoriesChange={() => setRefreshTrigger(prev => prev + 1)}
+                onCategoriesChange={() => setRefreshTrigger((prev) => prev + 1)}
               />
 
               <div className={styles.dangerZone}>

@@ -83,7 +83,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     let filtered = clips;
 
     if (selectedCategory !== null) {
-      filtered = filtered.filter(clip => {
+      filtered = filtered.filter((clip) => {
         try {
           const clipCategories = JSON.parse(clip.categories);
           return clipCategories.includes(selectedCategory);
@@ -94,8 +94,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
 
     if (searchTerm) {
-      filtered = filtered.filter(clip =>
-        clip.title.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter((clip) =>
+        clip.title.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -111,7 +111,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const getClipCategories = (clip: Clip): Category[] => {
     try {
       const categoryIds = JSON.parse(clip.categories);
-      return categories.filter(cat => categoryIds.includes(cat.id));
+      return categories.filter((cat) => categoryIds.includes(cat.id));
     } catch {
       return [];
     }
@@ -150,7 +150,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       setIsExporting(true);
 
       // Get clips for the selected category
-      const clipsToExport = filteredClips.filter(clip => {
+      const clipsToExport = filteredClips.filter((clip) => {
         try {
           const clipCategories = JSON.parse(clip.categories);
           return clipCategories.includes(selectedCategory);
@@ -166,7 +166,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
       console.log("Attempting to export clips:", {
         categoryId: selectedCategory,
-        clipsToExport: clipsToExport.map(c => ({
+        clipsToExport: clipsToExport.map((c) => ({
           id: c.id,
           title: c.title,
           path: c.output_path,
@@ -175,7 +175,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
       const result = await window.electronAPI.exportClipsByCategory({
         categoryIds: [selectedCategory],
-        clips: clipsToExport.map(clip => ({
+        clips: clipsToExport.map((clip) => ({
           id: clip.id,
           title: clip.title,
           output_path: clip.output_path,
@@ -195,15 +195,15 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
             `- There might be permission issues\n` +
             `- The export directory could not be created\n\n` +
             `Clips that should have been exported:\n${clipsToExport
-              .map(c => `- ${c.title} (${c.output_path})`)
+              .map((c) => `- ${c.title} (${c.output_path})`)
               .join("\n")}\n\n` +
-            `Please check the console for technical details.`
+            `Please check the console for technical details.`,
         );
       } else {
         alert(
           `Successfully exported ${result.count} clip${
             result.count !== 1 ? "s" : ""
-          } to ${result.exportDir}`
+          } to ${result.exportDir}`,
         );
       }
     } catch (error) {
@@ -211,7 +211,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       alert(
         `Error exporting clips: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     } finally {
       setIsExporting(false);
@@ -230,7 +230,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       // Get all unique category IDs and their clips
       const categoryClips = new Map<number, Clip[]>();
 
-      filteredClips.forEach(clip => {
+      filteredClips.forEach((clip) => {
         try {
           const clipCategories = JSON.parse(clip.categories);
           clipCategories.forEach((catId: number) => {
@@ -254,18 +254,18 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         clipsInfo: Array.from(categoryClips.entries()).map(
           ([catId, clips]) => ({
             categoryId: catId,
-            clips: clips.map(c => ({
+            clips: clips.map((c) => ({
               id: c.id,
               title: c.title,
               path: c.output_path,
             })),
-          })
+          }),
         ),
       });
 
       const result = await window.electronAPI.exportClipsByCategory({
         categoryIds,
-        clips: filteredClips.map(clip => ({
+        clips: filteredClips.map((clip) => ({
           id: clip.id,
           title: clip.title,
           output_path: clip.output_path,
@@ -287,15 +287,15 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
             `- There might be permission issues\n` +
             `- The export directory could not be created\n\n` +
             `Clips that should have been exported:\n${allClips
-              .map(c => `- ${c.title} (${c.output_path})`)
+              .map((c) => `- ${c.title} (${c.output_path})`)
               .join("\n")}\n\n` +
-            `Please check the console for technical details.`
+            `Please check the console for technical details.`,
         );
       } else {
         alert(
           `Successfully exported ${result.count} clip${
             result.count !== 1 ? "s" : ""
-          } to ${result.exportDir}`
+          } to ${result.exportDir}`,
         );
       }
     } catch (error) {
@@ -303,7 +303,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       alert(
         `Error exporting clips: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     } finally {
       setIsExporting(false);
@@ -319,14 +319,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   };
 
   const getCategoryName = (categoryId: number): string => {
-    const category = categories.find(c => c.id === categoryId);
+    const category = categories.find((c) => c.id === categoryId);
     return category ? category.name : "Unknown";
   };
 
   const getClipStats = () => {
     const totalDuration = filteredClips.reduce(
       (sum, clip) => sum + clip.duration,
-      0
+      0,
     );
     return {
       count: filteredClips.length,
@@ -404,9 +404,9 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   All ({clips.length})
                 </button>
                 {categories
-                  .filter(category => !category.parent_id) // Only show parent categories
-                  .map(category => {
-                    const count = clips.filter(clip => {
+                  .filter((category) => !category.parent_id) // Only show parent categories
+                  .map((category) => {
+                    const count = clips.filter((clip) => {
                       try {
                         const clipCategories = JSON.parse(clip.categories);
                         return clipCategories.includes(category.id);
@@ -443,20 +443,20 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                         {(selectedCategory === category.id ||
                           (category.children &&
                             category.children.some(
-                              child => child.id === selectedCategory
+                              (child) => child.id === selectedCategory,
                             ))) &&
                           category.children &&
                           category.children.length > 0 && (
                             <div className={styles.subcategoryButtons}>
                               {category.children.map(
                                 (subcategory: Category) => {
-                                  const subCount = clips.filter(clip => {
+                                  const subCount = clips.filter((clip) => {
                                     try {
                                       const clipCategories = JSON.parse(
-                                        clip.categories
+                                        clip.categories,
                                       );
                                       return clipCategories.includes(
-                                        subcategory.id
+                                        subcategory.id,
                                       );
                                     } catch {
                                       return false;
@@ -491,7 +491,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                                       {subcategory.name} ({subCount})
                                     </button>
                                   );
-                                }
+                                },
                               )}
                             </div>
                           )}
@@ -544,10 +544,10 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   )}
                 </div>
               ) : (
-                filteredClips.map(clip => {
+                filteredClips.map((clip) => {
                   const clipCategories = getClipCategories(clip);
                   const createdDate = new Date(
-                    clip.created_at
+                    clip.created_at,
                   ).toLocaleDateString();
 
                   return (
@@ -576,7 +576,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
                         {/* Categories */}
                         <div className={styles.clipCategories}>
-                          {clipCategories.map(category => (
+                          {clipCategories.map((category) => (
                             <span
                               key={category.id}
                               className={styles.categoryTag}
@@ -638,7 +638,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 <p>
                   {selectedCategory
                     ? `Export all "${getCategoryName(
-                        selectedCategory
+                        selectedCategory,
                       )}" clips to share with your team`
                     : "Export clips organized by category for easy team sharing"}
                 </p>

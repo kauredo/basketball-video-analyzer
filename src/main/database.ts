@@ -78,7 +78,7 @@ const migrateDatabase = () => {
     const tableInfo = db.prepare("PRAGMA table_info(clips)").all() as Array<{
       name: string;
     }>;
-    const hasProjectId = tableInfo.some(col => col.name === "project_id");
+    const hasProjectId = tableInfo.some((col) => col.name === "project_id");
 
     if (!hasProjectId) {
       console.log("Migrating database schema...");
@@ -154,7 +154,7 @@ const migrateDatabase = () => {
               projectName,
               clip.video_path,
               videoName,
-              `Migrated project for ${videoName}`
+              `Migrated project for ${videoName}`,
             );
 
             projectId = result.lastInsertRowid as number;
@@ -178,7 +178,7 @@ const migrateDatabase = () => {
             clip.title,
             clip.categories,
             clip.notes,
-            clip.created_at
+            clip.created_at,
           );
         }
       }
@@ -197,10 +197,10 @@ const migrateDatabase = () => {
       name: string;
     }>;
     const hasParentId = categoriesTableInfo.some(
-      col => col.name === "parent_id"
+      (col) => col.name === "parent_id",
     );
     const hasProjectIdInCategories = categoriesTableInfo.some(
-      col => col.name === "project_id"
+      (col) => col.name === "project_id",
     );
 
     if (!hasParentId) {
@@ -233,7 +233,7 @@ const migrateDatabase = () => {
       .prepare(
         `
       SELECT sql FROM sqlite_master WHERE type='table' AND name='categories'
-    `
+    `,
       )
       .get() as { sql: string } | undefined;
 
@@ -252,7 +252,7 @@ const migrateDatabase = () => {
         .prepare("SELECT * FROM categories")
         .all() as Category[];
       console.log(
-        `Backing up ${existingCategories.length} existing categories`
+        `Backing up ${existingCategories.length} existing categories`,
       );
 
       // Drop and recreate the table with proper constraints
@@ -286,12 +286,12 @@ const migrateDatabase = () => {
               category.description,
               category.parent_id,
               category.project_id || 1, // Default to project 1 if no project_id
-              category.created_at || new Date().toISOString()
+              category.created_at || new Date().toISOString(),
             );
             restoredCount++;
           } catch (error) {
             console.log(
-              `Skipping duplicate category: ${category.name} - ${error}`
+              `Skipping duplicate category: ${category.name} - ${error}`,
             );
           }
         }
@@ -308,7 +308,7 @@ const migrateDatabase = () => {
       .prepare(
         `
       SELECT name FROM sqlite_master WHERE type='table' AND name='category_presets'
-    `
+    `,
       )
       .all();
 
@@ -340,9 +340,9 @@ const migrateDatabase = () => {
       }>;
 
       const hasOldStructure =
-        presetTableInfo.some(col => col.name === "name") &&
-        presetTableInfo.some(col => col.name === "categories") &&
-        !presetTableInfo.some(col => col.name === "preset_name");
+        presetTableInfo.some((col) => col.name === "name") &&
+        presetTableInfo.some((col) => col.name === "categories") &&
+        !presetTableInfo.some((col) => col.name === "preset_name");
 
       if (hasOldStructure) {
         console.log("Migrating old preset table structure...");
@@ -384,7 +384,7 @@ const migrateDatabase = () => {
               // Try to find parent by parent_id
               if (category.parent_id) {
                 const parent = categories.find(
-                  c => c.id === category.parent_id
+                  (c) => c.id === category.parent_id,
                 );
                 parentName = parent?.name || null;
               }
@@ -393,14 +393,14 @@ const migrateDatabase = () => {
                 `
                 INSERT INTO category_presets (preset_name, category_name, color, description, parent_name, sort_order)
                 VALUES (?, ?, ?, ?, ?, ?)
-              `
+              `,
               ).run(
                 oldPreset.name,
                 category.name,
                 category.color,
                 category.description || null,
                 parentName,
-                i
+                i,
               );
             }
           } catch (error) {
@@ -420,13 +420,13 @@ const migrateDatabase = () => {
       .prepare(
         `
       SELECT * FROM categories WHERE project_id IS NULL
-    `
+    `,
       )
       .all() as Category[];
 
     if (globalCategories.length > 0) {
       console.log(
-        `Migrating ${globalCategories.length} global categories to presets...`
+        `Migrating ${globalCategories.length} global categories to presets...`,
       );
 
       // Create a "Default" preset from existing global categories
@@ -436,13 +436,13 @@ const migrateDatabase = () => {
             `
             INSERT INTO category_presets (preset_name, category_name, color, description, sort_order)
             VALUES (?, ?, ?, ?, ?)
-          `
+          `,
           ).run(
             "Default",
             category.name,
             category.color,
             category.description || null,
-            0
+            0,
           );
         } catch (error) {
           console.log(`Skipping duplicate category: ${category.name}`);
@@ -552,7 +552,7 @@ const insertDefaultCategories = () => {
     // are now project-specific. They will be created when users create projects
     // or load presets instead.
     console.log(
-      "Skipping default categories insertion - using project-specific categories now"
+      "Skipping default categories insertion - using project-specific categories now",
     );
   } catch (error) {
     console.error("Error in insertDefaultCategories:", error);
@@ -561,7 +561,7 @@ const insertDefaultCategories = () => {
 
 // Project operations
 export const createProject = (
-  project: Omit<Project, "id" | "created_at" | "last_opened">
+  project: Omit<Project, "id" | "created_at" | "last_opened">,
 ): Project => {
   try {
     const stmt = db.prepare(`
@@ -573,7 +573,7 @@ export const createProject = (
       project.name,
       project.video_path,
       project.video_name,
-      project.description || null
+      project.description || null,
     );
 
     return {
@@ -611,7 +611,7 @@ export const getProjects = (): Project[] => {
 export const updateProjectLastOpened = (projectId: number): void => {
   try {
     const stmt = db.prepare(
-      "UPDATE projects SET last_opened = CURRENT_TIMESTAMP WHERE id = ?"
+      "UPDATE projects SET last_opened = CURRENT_TIMESTAMP WHERE id = ?",
     );
     stmt.run(projectId);
   } catch (error) {
@@ -646,17 +646,17 @@ export const getCategories = (projectId: number): Category[] => {
 };
 
 export const getCategoriesHierarchical = (
-  projectId: number
+  projectId: number,
 ): (Category & {
   children?: Category[];
 })[] => {
   try {
     const allCategories = getCategories(projectId);
-    const parentCategories = allCategories.filter(cat => !cat.parent_id);
+    const parentCategories = allCategories.filter((cat) => !cat.parent_id);
 
-    return parentCategories.map(parent => ({
+    return parentCategories.map((parent) => ({
       ...parent,
-      children: allCategories.filter(cat => cat.parent_id === parent.id),
+      children: allCategories.filter((cat) => cat.parent_id === parent.id),
     }));
   } catch (error) {
     console.error("Error getting hierarchical categories:", error);
@@ -665,7 +665,7 @@ export const getCategoriesHierarchical = (
 };
 
 export const createCategory = (
-  category: Omit<Category, "id" | "created_at">
+  category: Omit<Category, "id" | "created_at">,
 ): Category => {
   try {
     const stmt = db.prepare(`
@@ -678,7 +678,7 @@ export const createCategory = (
       category.color,
       category.description || null,
       category.parent_id || null,
-      category.project_id
+      category.project_id,
     );
 
     return {
@@ -695,12 +695,12 @@ export const createCategory = (
 // Category preset operations
 export const savePreset = (
   presetName: string,
-  categories: Category[]
+  categories: Category[],
 ): void => {
   try {
     // First, delete any existing preset with this name
     db.prepare("DELETE FROM category_presets WHERE preset_name = ?").run(
-      presetName
+      presetName,
     );
 
     // Insert categories as preset
@@ -713,7 +713,7 @@ export const savePreset = (
       // Find parent name if exists
       let parentName = null;
       if (category.parent_id) {
-        const parent = categories.find(c => c.id === category.parent_id);
+        const parent = categories.find((c) => c.id === category.parent_id);
         parentName = parent?.name || null;
       }
 
@@ -723,7 +723,7 @@ export const savePreset = (
         category.color,
         category.description || null,
         parentName,
-        index
+        index,
       );
     });
   } catch (error) {
@@ -762,7 +762,7 @@ export const getPresets = (): string[] => {
 export const deletePreset = (presetName: string): void => {
   try {
     db.prepare("DELETE FROM category_presets WHERE preset_name = ?").run(
-      presetName
+      presetName,
     );
   } catch (error) {
     console.error("Error deleting preset:", error);
@@ -772,7 +772,7 @@ export const deletePreset = (presetName: string): void => {
 
 export const importPresetToProject = async (
   presetName: string,
-  projectId: number
+  projectId: number,
 ): Promise<void> => {
   try {
     // Clear existing categories for the project
@@ -785,7 +785,7 @@ export const importPresetToProject = async (
     const categoryMap = new Map<string, number>(); // preset name -> new category ID
 
     // First pass: Create parent categories
-    for (const presetCat of presetCategories.filter(c => !c.parent_name)) {
+    for (const presetCat of presetCategories.filter((c) => !c.parent_name)) {
       const newCategory = createCategory({
         name: presetCat.category_name,
         color: presetCat.color,
@@ -796,7 +796,7 @@ export const importPresetToProject = async (
     }
 
     // Second pass: Create child categories
-    for (const presetCat of presetCategories.filter(c => c.parent_name)) {
+    for (const presetCat of presetCategories.filter((c) => c.parent_name)) {
       const parentId = categoryMap.get(presetCat.parent_name!);
       if (parentId) {
         const newCategory = createCategory({
@@ -827,14 +827,14 @@ export const clearProjectCategories = (projectId: number): void => {
 
 export const updateCategory = (
   id: number,
-  updates: Partial<Category>
+  updates: Partial<Category>,
 ): void => {
   try {
     const fields = Object.keys(updates).filter(
-      key => key !== "id" && key !== "created_at"
+      (key) => key !== "id" && key !== "created_at",
     );
-    const setClause = fields.map(field => `${field} = ?`).join(", ");
-    const values = fields.map(field => updates[field as keyof Category]);
+    const setClause = fields.map((field) => `${field} = ?`).join(", ");
+    const values = fields.map((field) => updates[field as keyof Category]);
 
     const stmt = db.prepare(`UPDATE categories SET ${setClause} WHERE id = ?`);
     stmt.run(...values, id);
@@ -860,7 +860,7 @@ export const getClips = (projectId?: number): Clip[] => {
     let stmt;
     if (projectId) {
       stmt = db.prepare(
-        "SELECT * FROM clips WHERE project_id = ? ORDER BY created_at DESC"
+        "SELECT * FROM clips WHERE project_id = ? ORDER BY created_at DESC",
       );
       return stmt.all(projectId) as Clip[];
     } else {
@@ -890,7 +890,7 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
       clip.duration,
       clip.title,
       clip.categories,
-      clip.notes || null
+      clip.notes || null,
     );
 
     return {
@@ -907,10 +907,10 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
 export const updateClip = (id: number, updates: Partial<Clip>): void => {
   try {
     const fields = Object.keys(updates).filter(
-      key => key !== "id" && key !== "created_at"
+      (key) => key !== "id" && key !== "created_at",
     );
-    const setClause = fields.map(field => `${field} = ?`).join(", ");
-    const values = fields.map(field => updates[field as keyof Clip]);
+    const setClause = fields.map((field) => `${field} = ?`).join(", ");
+    const values = fields.map((field) => updates[field as keyof Clip]);
 
     const stmt = db.prepare(`UPDATE clips SET ${setClause} WHERE id = ?`);
     stmt.run(...values, id);
@@ -956,7 +956,7 @@ export const getKeyBindings = (): KeyBindings => {
       ...acc,
       [row.key]: row.value,
     }),
-    { markInKey: "z", markOutKey: "m" } as KeyBindings
+    { markInKey: "z", markOutKey: "m" } as KeyBindings,
   );
 };
 

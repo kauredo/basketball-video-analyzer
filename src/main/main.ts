@@ -224,7 +224,7 @@ ipcMain.handle(
       categories: number[];
       notes?: string;
       projectId: number;
-    }
+    },
   ) => {
     return new Promise((resolve, reject) => {
       try {
@@ -252,8 +252,8 @@ ipcMain.handle(
             console.error("Error creating clips directory:", error);
             reject(
               new Error(
-                `Failed to create clips directory in Documents folder. Error: ${error.message}`
-              )
+                `Failed to create clips directory in Documents folder. Error: ${error.message}`,
+              ),
             );
             return;
           }
@@ -281,7 +281,7 @@ ipcMain.handle(
             "Invalid time values - startTime:",
             startTime,
             "endTime:",
-            endTime
+            endTime,
           );
           reject(new Error("ERROR_INVALID_TIME"));
           return;
@@ -353,12 +353,12 @@ ipcMain.handle(
           .frames(1)
           .outputOptions(["-y"]) // Overwrite output files
           .output(thumbnailPath)
-          .on("start", commandLine => {
+          .on("start", (commandLine) => {
             console.log("Thumbnail FFmpeg command:", commandLine);
             // Store the thumbnail process for potential cancellation
             activeClipProcesses.set(`${processId}-thumb`, thumbnailCommand);
           })
-          .on("error", error => {
+          .on("error", (error) => {
             console.error("Thumbnail creation error:", error);
             activeClipProcesses.delete(`${processId}-thumb`);
             reject(new Error("ERROR_THUMBNAIL_FAILED"));
@@ -392,7 +392,7 @@ ipcMain.handle(
                 "experimental", // Required for some Windows configurations
               ])
               .output(outputPath)
-              .on("start", commandLine => {
+              .on("start", (commandLine) => {
                 console.log("Clip FFmpeg command:", commandLine);
                 // Store the clip process for potential cancellation
                 activeClipProcesses.set(processId, clipCommand);
@@ -428,7 +428,7 @@ ipcMain.handle(
                   reject(new Error("ERROR_DATABASE_FAILED"));
                 }
               })
-              .on("error", error => {
+              .on("error", (error) => {
                 activeClipProcesses.delete(processId);
                 console.error("FFmpeg clip creation error:", error);
                 console.error("Error stack:", error.stack);
@@ -438,7 +438,7 @@ ipcMain.handle(
                 console.error("Duration:", duration);
                 reject(new Error("ERROR_FFMPEG_FAILED"));
               })
-              .on("progress", progress => {
+              .on("progress", (progress) => {
                 mainWindow.webContents.send("clip-progress", {
                   percent: progress.percent || 0,
                   timemark: progress.timemark,
@@ -452,7 +452,7 @@ ipcMain.handle(
         reject(error);
       }
     });
-  }
+  },
 );
 
 ipcMain.handle("open-clip-folder", async () => {
@@ -480,7 +480,7 @@ ipcMain.handle(
         output_path: string;
         categories: string;
       }>;
-    }
+    },
   ) => {
     try {
       const result = await dialog.showOpenDialog(mainWindow, {
@@ -502,7 +502,7 @@ ipcMain.handle(
       }
 
       // Get the project ID from the clip
-      const clipData = getClips(undefined).find(c => c.id === firstClip.id);
+      const clipData = getClips(undefined).find((c) => c.id === firstClip.id);
       if (!clipData) {
         throw new Error("Could not find clip data to determine project");
       }
@@ -511,7 +511,7 @@ ipcMain.handle(
 
       // Group clips by their categories
       const clipsByCategory = new Map<number, typeof params.clips>();
-      params.clips.forEach(clip => {
+      params.clips.forEach((clip) => {
         try {
           const clipCategories = JSON.parse(clip.categories);
           clipCategories.forEach((catId: number) => {
@@ -528,7 +528,7 @@ ipcMain.handle(
       // Export clips by category
       for (const categoryId of params.categoryIds) {
         const clips = clipsByCategory.get(categoryId) || [];
-        const category = categories.find(c => c.id === categoryId);
+        const category = categories.find((c) => c.id === categoryId);
 
         if (!category || clips.length === 0) continue;
 
@@ -558,7 +558,7 @@ ipcMain.handle(
       console.error("Error exporting clips:", error);
       throw error;
     }
-  }
+  },
 );
 
 // Category operations
@@ -580,7 +580,7 @@ ipcMain.handle(
       console.error("Error getting hierarchical categories:", error);
       return [];
     }
-  }
+  },
 );
 
 ipcMain.handle(
@@ -592,7 +592,7 @@ ipcMain.handle(
       console.error("Error creating category:", error);
       throw error;
     }
-  }
+  },
 );
 
 ipcMain.handle(
@@ -605,7 +605,7 @@ ipcMain.handle(
       console.error("Error clearing project categories:", error);
       throw error;
     }
-  }
+  },
 );
 
 ipcMain.handle(
@@ -618,7 +618,7 @@ ipcMain.handle(
       console.error("Error updating category:", error);
       throw error;
     }
-  }
+  },
 );
 
 ipcMain.handle("delete-category", async (_event, id: number) => {
@@ -636,7 +636,7 @@ ipcMain.handle(
   "create-project",
   async (
     _event,
-    projectData: Omit<Project, "id" | "created_at" | "last_opened">
+    projectData: Omit<Project, "id" | "created_at" | "last_opened">,
   ) => {
     try {
       return createProject(projectData);
@@ -644,7 +644,7 @@ ipcMain.handle(
       console.error("Error creating project:", error);
       throw error;
     }
-  }
+  },
 );
 
 ipcMain.handle("get-project", async (_event, videoPath: string) => {
@@ -675,7 +675,7 @@ ipcMain.handle(
       console.error("Error updating project last opened:", error);
       return false;
     }
-  }
+  },
 );
 
 ipcMain.handle("delete-project", async (_event, id: number) => {
@@ -708,14 +708,14 @@ ipcMain.handle(
       console.error("Error updating clip:", error);
       throw error;
     }
-  }
+  },
 );
 
 ipcMain.handle("delete-clip", async (_event, id: number) => {
   try {
     // Get clip info to delete file
     const clips = getClips();
-    const clip = clips.find(c => c.id === id);
+    const clip = clips.find((c) => c.id === id);
 
     if (clip) {
       // Delete video file
@@ -784,7 +784,7 @@ ipcMain.handle(
     const newBindings = await getKeyBindings();
     mainWindow.webContents.send("keyBindingsChanged", newBindings);
     return newBindings;
-  }
+  },
 );
 
 // Preset operations
@@ -792,7 +792,7 @@ ipcMain.handle(
   "save-preset",
   (_event, presetName: string, categories: Category[]) => {
     return savePreset(presetName, categories);
-  }
+  },
 );
 
 ipcMain.handle("load-preset", (_event, presetName: string) => {

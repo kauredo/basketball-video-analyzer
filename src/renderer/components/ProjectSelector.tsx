@@ -53,7 +53,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       // Sort by last_opened (most recent first)
       const sortedProjects = projectsData.sort(
         (a, b) =>
-          new Date(b.last_opened).getTime() - new Date(a.last_opened).getTime()
+          new Date(b.last_opened).getTime() - new Date(a.last_opened).getTime(),
       );
       setProjects(sortedProjects);
     } catch (error) {
@@ -75,13 +75,13 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
 
   const handleDeleteProject = async (
     project: Project,
-    event: React.MouseEvent
+    event: React.MouseEvent,
   ) => {
     event.stopPropagation();
 
     if (
       window.confirm(
-        `Are you sure you want to delete the project "${project.name}"? This will also delete all associated clips.`
+        `Are you sure you want to delete the project "${project.name}"? This will also delete all associated clips.`,
       )
     ) {
       try {
@@ -137,7 +137,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                   </div>
 
                   <div className={styles.projectsList}>
-                    {projects.map(project => (
+                    {projects.map((project) => (
                       <div
                         key={project.id}
                         className={styles.projectCard}
@@ -170,7 +170,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                         <div className={styles.projectActions}>
                           <button
                             className={styles.deleteBtn}
-                            onClick={e => handleDeleteProject(project, e)}
+                            onClick={(e) => handleDeleteProject(project, e)}
                             title="Delete project"
                           >
                             <FontAwesomeIcon icon={faTrash} />

@@ -42,7 +42,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   const timelineRef = useRef<HTMLDivElement>(null);
 
   // Filter clips based on search and category filter
-  const filteredClips = clips.filter(clip => {
+  const filteredClips = clips.filter((clip) => {
     const matchesSearch =
       clip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       clip.notes?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -64,7 +64,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   const expandClipsForCategories = (): TimelineClip[] => {
     const expandedClips: TimelineClip[] = [];
 
-    filteredClips.forEach(clip => {
+    filteredClips.forEach((clip) => {
       let category_ids: number[] = [];
       try {
         category_ids = JSON.parse(clip.categories || "[]");
@@ -73,7 +73,7 @@ export const Timeline: React.FC<TimelineProps> = ({
       }
 
       // Create a separate timeline clip for each category the clip belongs to
-      category_ids.forEach(categoryId => {
+      category_ids.forEach((categoryId) => {
         expandedClips.push({
           ...clip,
           category_ids: [categoryId], // Single category for this instance
@@ -106,7 +106,7 @@ export const Timeline: React.FC<TimelineProps> = ({
 
     // Get all categories (including children) flattened for easier lookup
     const allCategories: Category[] = [];
-    categories.forEach(cat => {
+    categories.forEach((cat) => {
       allCategories.push(cat);
       if (cat.children) {
         allCategories.push(...cat.children);
@@ -115,10 +115,10 @@ export const Timeline: React.FC<TimelineProps> = ({
 
     // First add parent categories and their clips
     categories
-      .filter(cat => !cat.parent_id)
-      .forEach(parentCategory => {
-        const parentClips = timelineClips.filter(clip =>
-          clip.category_ids.includes(parentCategory.id!)
+      .filter((cat) => !cat.parent_id)
+      .forEach((parentCategory) => {
+        const parentClips = timelineClips.filter((clip) =>
+          clip.category_ids.includes(parentCategory.id!),
         );
 
         if (parentClips.length > 0) {
@@ -127,9 +127,9 @@ export const Timeline: React.FC<TimelineProps> = ({
 
         // Then add subcategories and their clips
         if (parentCategory.children) {
-          parentCategory.children.forEach(subcategory => {
-            const subClips = timelineClips.filter(clip =>
-              clip.category_ids.includes(subcategory.id!)
+          parentCategory.children.forEach((subcategory) => {
+            const subClips = timelineClips.filter((clip) =>
+              clip.category_ids.includes(subcategory.id!),
             );
 
             if (subClips.length > 0) {
@@ -183,7 +183,7 @@ export const Timeline: React.FC<TimelineProps> = ({
     // Clamp to clip boundaries
     const clampedTime = Math.max(
       clip.start_time,
-      Math.min(clip.end_time, exactTime)
+      Math.min(clip.end_time, exactTime),
     );
 
     onTimeSeek(clampedTime);
@@ -198,14 +198,14 @@ export const Timeline: React.FC<TimelineProps> = ({
 
     // Get all categories (including children) for lookup
     const allCategories: Category[] = [];
-    categories.forEach(cat => {
+    categories.forEach((cat) => {
       allCategories.push(cat);
       if (cat.children) {
         allCategories.push(...cat.children);
       }
     });
 
-    const category = allCategories.find(c => c.id === clip.category_ids[0]);
+    const category = allCategories.find((c) => c.id === clip.category_ids[0]);
     return category?.color || "#4CAF50";
   };
 
@@ -223,30 +223,30 @@ export const Timeline: React.FC<TimelineProps> = ({
                   type="text"
                   placeholder={t("app.timeline.search")}
                   value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className={styles.searchInput}
                 />
               </div>
 
               <select
                 value={filterCategory || ""}
-                onChange={e =>
+                onChange={(e) =>
                   setFilterCategory(
-                    e.target.value ? Number(e.target.value) : null
+                    e.target.value ? Number(e.target.value) : null,
                   )
                 }
                 className={styles.categoryFilter}
               >
                 <option value="">{t("app.timeline.allCategories")}</option>
                 {categories
-                  .filter(cat => !cat.parent_id) // Parent categories
-                  .map(parentCategory => [
+                  .filter((cat) => !cat.parent_id) // Parent categories
+                  .map((parentCategory) => [
                     // Parent category option
                     <option key={parentCategory.id} value={parentCategory.id}>
                       {parentCategory.name}
                     </option>,
                     // Subcategory options
-                    ...(parentCategory.children || []).map(subcategory => (
+                    ...(parentCategory.children || []).map((subcategory) => (
                       <option key={subcategory.id} value={subcategory.id}>
                         └ {subcategory.name}
                       </option>
@@ -277,7 +277,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                 </thead>
                 <tbody>
                   {/* Show clips expanded by categories */}
-                  {filteredClips.flatMap(clip => {
+                  {filteredClips.flatMap((clip) => {
                     // Parse clip categories
                     let clipCategoryIds: number[] = [];
                     try {
@@ -342,7 +342,7 @@ export const Timeline: React.FC<TimelineProps> = ({
 
                     // Get all categories (including children) for lookup
                     const allCategories: Category[] = [];
-                    categories.forEach(cat => {
+                    categories.forEach((cat) => {
                       allCategories.push(cat);
                       if (cat.children) {
                         allCategories.push(...cat.children);
@@ -352,7 +352,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                     // Show once per category
                     return clipCategoryIds.map((categoryId, index) => {
                       const category = allCategories.find(
-                        c => c.id === categoryId
+                        (c) => c.id === categoryId,
                       );
 
                       return (
@@ -409,7 +409,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                           <td className={styles.actionsCell}>
                             <button
                               className={styles.playBtn}
-                              onClick={e => handleClipClick(clip, e)}
+                              onClick={(e) => handleClipClick(clip, e)}
                               title={t("app.timeline.playClip")}
                             >
                               <FontAwesomeIcon icon={faPlay} />
@@ -482,7 +482,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                   <div className={styles.trackBackground} />
 
                   {/* Clip Segments */}
-                  {categoryClips.map(clip => (
+                  {categoryClips.map((clip) => (
                     <div
                       key={clip.id}
                       className={`${styles.timelineClip} ${
@@ -493,9 +493,9 @@ export const Timeline: React.FC<TimelineProps> = ({
                         width: `${clip.widthPercentage}%`,
                         backgroundColor: getClipColor(clip),
                       }}
-                      onClick={e => handleClipClick(clip, e)}
+                      onClick={(e) => handleClipClick(clip, e)}
                       title={`${clip.title} (${formatTime(
-                        clip.start_time
+                        clip.start_time,
                       )} - ${formatTime(clip.end_time)})`}
                     >
                       <div className={styles.clipHandle} />
