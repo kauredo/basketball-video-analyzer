@@ -148,13 +148,12 @@
           "error_ffmpeg_not_found": "FFmpeg não encontrado. O processamento de vídeo não está disponível.",
           "error_documents_not_accessible": "Não é possível aceder à pasta Documentos. Verifique as permissões da pasta.",
           "error_no_write_access": "Sem acesso de escrita à pasta de clips. Verifique as permissões.",
-                    "error_system_check_failed": "Verifica\u00e7\u00e3o do sistema falhada. Tente novamente.",
-          "warning_low_disk_space": "Aviso: Pouco espa\u00e7o em disco (menos de 1GB dispon\u00edvel)."
+          "error_system_check_failed": "Verificação do sistema falhada. Tente novamente.",
+          "warning_low_disk_space": "Aviso: Pouco espaço em disco (menos de 1GB disponível)."
         },
-        "clipCreationCancelled": "Cria\u00e7\u00e3o de clip foi cancelada.",
-        "clipCancellationFailed": "Falha ao cancelar cria\u00e7\u00e3o de clip.",
-        "unsupportedFormat": "Formato de v\u00eddeo n\u00e3o suportado: {{format}}. Use MP4, AVI, MOV, MKV, WMV, FLV, WebM, ou M4V."
-        }"
+        "clipCreationCancelled": "Criação de clip foi cancelada.",
+        "clipCancellationFailed": "Falha ao cancelar criação de clip.",
+        "unsupportedFormat": "Formato de vídeo não suportado: {{format}}. Use MP4, AVI, MOV, MKV, WMV, FLV, WebM, ou M4V."
       }
     },
     "video": {
