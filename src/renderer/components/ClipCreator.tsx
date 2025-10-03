@@ -503,19 +503,14 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
             type="text"
             value={clipTitle}
             onChange={e => {
-              // Prevent interference during rapid updates
               e.stopPropagation();
               setClipTitle(e.target.value);
             }}
+            onKeyDown={e => {
+              e.stopPropagation();
+            }}
             placeholder={t("app.clips.creator.titlePlaceholder")}
             className={styles.clipTitleInput}
-            onFocus={e => {
-              // Ensure cursor is at end and field is ready for input
-              e.target.setSelectionRange(
-                e.target.value.length,
-                e.target.value.length
-              );
-            }}
           />
         </div>
 
@@ -525,21 +520,15 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
             ref={clipNotesInputRef}
             value={clipNotes}
             onChange={e => {
-              // Prevent interference during rapid updates
               e.stopPropagation();
               setClipNotes(e.target.value);
+            }}
+            onKeyDown={e => {
+              e.stopPropagation();
             }}
             placeholder={t("app.clips.creator.notesPlaceholder")}
             className={styles.clipNotesInput}
             rows={3}
-            onFocus={e => {
-              // Ensure cursor is at end and field is ready for input
-              const target = e.target as HTMLTextAreaElement;
-              target.setSelectionRange(
-                target.value.length,
-                target.value.length
-              );
-            }}
           />
         </div>
       </div>

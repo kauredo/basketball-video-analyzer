@@ -226,16 +226,11 @@ export const Timeline: React.FC<TimelineProps> = ({
                   placeholder={t("app.timeline.search")}
                   value={searchTerm}
                   onChange={e => {
-                    // Prevent interference during rapid updates
                     e.stopPropagation();
                     setSearchTerm(e.target.value);
                   }}
-                  onFocus={e => {
-                    // Ensure cursor is at end and field is ready for input
-                    e.target.setSelectionRange(
-                      e.target.value.length,
-                      e.target.value.length
-                    );
+                  onKeyDown={e => {
+                    e.stopPropagation();
                   }}
                   className={styles.searchInput}
                 />

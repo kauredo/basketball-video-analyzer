@@ -620,17 +620,12 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       type="text"
                       value={timeSearchValue}
                       onChange={e => {
-                        // Prevent interference during rapid updates
                         e.stopPropagation();
                         setTimeSearchValue(e.target.value);
                       }}
                       onKeyPress={handleTimeSearchKeyPress}
-                      onFocus={e => {
-                        // Ensure cursor is at end and field is ready for input
-                        e.target.setSelectionRange(
-                          e.target.value.length,
-                          e.target.value.length
-                        );
+                      onKeyDown={e => {
+                        e.stopPropagation();
                       }}
                       placeholder={t("app.video.timeSearch.placeholder")}
                       className={`${styles.timeSearchField} ${
