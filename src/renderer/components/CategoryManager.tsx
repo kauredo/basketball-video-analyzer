@@ -61,26 +61,26 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     loadPresets();
   }, [currentProject]);
 
-  // Focus input when entering edit mode
+  // Focus input when entering edit mode (only on ID change, not on every state update)
   useEffect(() => {
-    if (editingCategory && editInputRef.current) {
-      // Small delay to ensure the input is rendered
-      setTimeout(() => {
-        editInputRef.current?.focus();
+    if (editingCategory?.id && editInputRef.current) {
+      // Use requestAnimationFrame for smoother focus without delay
+      requestAnimationFrame(() => {
         const input = editInputRef.current;
         if (input) {
+          input.focus();
           input.setSelectionRange(input.value.length, input.value.length);
         }
-      }, 100);
+      });
     }
-  }, [editingCategory]);
+  }, [editingCategory?.id]); // Only depend on ID, not the whole object
 
   // Focus subcategory input when adding subcategory
   useEffect(() => {
-    if (addingSubcategoryTo && subcategoryInputRef.current) {
-      setTimeout(() => {
+    if (addingSubcategoryTo !== null && subcategoryInputRef.current) {
+      requestAnimationFrame(() => {
         subcategoryInputRef.current?.focus();
-      }, 100);
+      });
     }
   }, [addingSubcategoryTo]);
 
@@ -438,33 +438,19 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                       type="text"
                       value={editingCategory.name}
                       onChange={e => {
-                        // Prevent interference during rapid updates
                         e.stopPropagation();
-
-                        // Clear any pending updates
-                        if (updateTimeoutRef.current) {
-                          clearTimeout(updateTimeoutRef.current);
-                        }
-
                         const value = e.target.value;
-
-                        // Update immediately for responsive UI
-                        const updatedCategory: Category = {
+                        setEditingCategory({
                           ...editingCategory,
                           name: value,
-                        };
-                        setEditingCategory(updatedCategory);
+                        });
+                      }}
+                      onKeyDown={e => {
+                        // Prevent event bubbling that might interfere with typing
+                        e.stopPropagation();
                       }}
                       className={styles.editInput}
                       placeholder="Enter category name..."
-                      autoFocus
-                      onFocus={e => {
-                        // Prevent losing focus due to re-renders
-                        e.target.setSelectionRange(
-                          e.target.value.length,
-                          e.target.value.length
-                        );
-                      }}
                     />
                   </div>
 
@@ -502,27 +488,18 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                       type="text"
                       value={editingCategory.description || ""}
                       onChange={e => {
-                        // Prevent interference during rapid updates
                         e.stopPropagation();
-
                         const value = e.target.value;
-
-                        // Update immediately for responsive UI
-                        const updatedCategory: Category = {
+                        setEditingCategory({
                           ...editingCategory,
                           description: value,
-                        };
-                        setEditingCategory(updatedCategory);
+                        });
+                      }}
+                      onKeyDown={e => {
+                        e.stopPropagation();
                       }}
                       placeholder="Add a description..."
                       className={styles.editInput}
-                      onFocus={e => {
-                        // Prevent losing focus due to re-renders
-                        e.target.setSelectionRange(
-                          e.target.value.length,
-                          e.target.value.length
-                        );
-                      }}
                     />
                   </div>
 
@@ -604,25 +581,17 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   type="text"
                   value={newSubcategory.name}
                   onChange={e => {
-                    // Prevent interference during rapid updates
                     e.stopPropagation();
                     setNewSubcategory({
                       ...newSubcategory,
                       name: e.target.value,
                     });
                   }}
+                  onKeyDown={e => {
+                    e.stopPropagation();
+                  }}
                   placeholder="Enter subcategory name (e.g., Top, Side, 60°)..."
                   className={styles.subcategoryNameInput}
-                  autoFocus
-                  onFocus={e => {
-                    // Ensure cursor is at end and field is ready for input
-                    setTimeout(() => {
-                      e.target.setSelectionRange(
-                        e.target.value.length,
-                        e.target.value.length
-                      );
-                    }, 0);
-                  }}
                 />
               </div>
 
@@ -631,22 +600,17 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   type="text"
                   value={newSubcategory.description}
                   onChange={e => {
-                    // Prevent interference during rapid updates
                     e.stopPropagation();
                     setNewSubcategory({
                       ...newSubcategory,
                       description: e.target.value,
                     });
                   }}
+                  onKeyDown={e => {
+                    e.stopPropagation();
+                  }}
                   placeholder="Description (optional)..."
                   className={styles.subcategoryDescriptionInput}
-                  onFocus={e => {
-                    // Ensure cursor is at end and field is ready for input
-                    e.target.setSelectionRange(
-                      e.target.value.length,
-                      e.target.value.length
-                    );
-                  }}
                 />
               </div>
 
