@@ -468,10 +468,18 @@ ipcMain.handle(
 ipcMain.handle("open-clip-folder", async () => {
   try {
     const clipsDir = getClipsDirectory();
+    // Use openPath to open the directory directly (works on all platforms)
     if (fs.existsSync(clipsDir)) {
-      shell.showItemInFolder(clipsDir);
+      shell.openPath(clipsDir);
     } else {
-      shell.openPath(path.dirname(clipsDir)); // Open the parent "Basketball Clip Cutter" folder
+      // If clips dir doesn't exist, try to open parent folder
+      const parentDir = path.dirname(clipsDir);
+      if (fs.existsSync(parentDir)) {
+        shell.openPath(parentDir);
+      } else {
+        // Fallback to Documents folder
+        shell.openPath(app.getPath("documents"));
+      }
     }
   } catch (error) {
     console.error("Error opening clip folder:", error);

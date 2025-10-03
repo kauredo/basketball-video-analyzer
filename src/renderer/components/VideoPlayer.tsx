@@ -136,9 +136,12 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
     useEffect(() => {
       const handleKeyPress = (e: KeyboardEvent) => {
+        // Ignore keyboard shortcuts when user is typing in an input field
         if (
           e.target instanceof HTMLInputElement ||
-          e.target instanceof HTMLTextAreaElement
+          e.target instanceof HTMLTextAreaElement ||
+          e.target instanceof HTMLButtonElement ||
+          (e.target as HTMLElement)?.isContentEditable
         ) {
           return;
         }
@@ -146,16 +149,20 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         const key = e.key.toLowerCase();
 
         if (key === keyBindings.markInKey) {
+          e.preventDefault();
           onMarkIn();
         } else if (key === keyBindings.markOutKey) {
+          e.preventDefault();
           pauseVideo();
           onMarkOut();
         } else if (key === " ") {
           e.preventDefault();
           togglePlay();
         } else if (key === "escape") {
+          e.preventDefault();
           onClearMarks();
         } else if (key === "arrowright") {
+          e.preventDefault();
           if (e.ctrlKey || e.metaKey) {
             // Ctrl/Cmd + Right Arrow = 1 minute forward
             skipTime(60);
@@ -168,6 +175,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             skipTime(5);
           }
         } else if (key === "arrowleft") {
+          e.preventDefault();
           if (e.ctrlKey || e.metaKey) {
             // Ctrl/Cmd + Left Arrow = 1 minute backward
             skipTime(-60);
