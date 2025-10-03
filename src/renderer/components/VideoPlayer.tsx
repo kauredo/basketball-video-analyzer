@@ -479,9 +479,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               <div className={styles.progressTrack}>
                 <div
                   className={styles.progressFill}
-                  style={{ width: `${(currentTime / duration) * 100}%` }}
+                  style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
                 />
-                {markInTime !== null && markOutTime !== null && (
+                {markInTime !== null && markOutTime !== null && duration > 0 && (
                   <div
                     className={styles.markedRegion}
                     style={{
@@ -495,12 +495,12 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 <input
                   type="range"
                   min="0"
-                  max={duration}
+                  max={duration || 0}
                   value={currentTime}
                   onChange={handleSeek}
                   className={styles.progressSlider}
                 />
-                {markInTime !== null && (
+                {markInTime !== null && duration > 0 && (
                   <div
                     className={`${styles.markIndicator} ${styles.markIn}`}
                     style={{ left: `${(markInTime / duration) * 100}%` }}
@@ -510,7 +510,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     )}`}
                   />
                 )}
-                {markOutTime !== null && (
+                {markOutTime !== null && duration > 0 && (
                   <div
                     className={`${styles.markIndicator} ${styles.markOut}`}
                     style={{ left: `${(markOutTime / duration) * 100}%` }}

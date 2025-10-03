@@ -174,6 +174,11 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   };
 
   const handleCreateClip = async () => {
+    // Prevent multiple simultaneous clip creations
+    if (isCreating) {
+      return;
+    }
+
     if (!videoPath || markInTime === null || markOutTime === null) {
       showError(t("app.clips.creator.errorMarkPoints"));
       return;
