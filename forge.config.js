@@ -104,4 +104,34 @@ module.exports = {
       },
     },
   ],
+  // This is needed for electron-updater to work
+  hooks: {
+    postMake: async (forgeConfig, makeResults) => {
+      const fs = require("fs");
+      const path = require("path");
+      const yaml = require("js-yaml");
+
+      for (const result of makeResults) {
+        const outPath = path.dirname(result.artifacts[0]);
+
+        // Generate update metadata files for auto-updater
+        if (process.platform === "darwin") {
+          const latestMac = {
+            version: require("./package.json").version,
+            files: result.artifacts.map(artifact => ({
+              url: path.basename(artifact),
+              sha512: "", // Will be filled by GitHub
+            })),
+            path: result.artifacts[0] ? path.basename(result.artifacts[0]) : "",
+            sha512: "",
+            releaseDate: new Date().toISOString(),
+          };
+          fs.writeFileSync(
+            path.join(outPath, "latest-mac.yml"),
+            yaml.dump(latestMac)
+          );
+        }
+      }
+    },
+  },
 };
