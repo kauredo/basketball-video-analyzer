@@ -630,14 +630,23 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                 <input
                   type="text"
                   value={newSubcategory.description}
-                  onChange={e =>
+                  onChange={e => {
+                    // Prevent interference during rapid updates
+                    e.stopPropagation();
                     setNewSubcategory({
                       ...newSubcategory,
                       description: e.target.value,
-                    })
-                  }
+                    });
+                  }}
                   placeholder="Description (optional)..."
                   className={styles.subcategoryDescriptionInput}
+                  onFocus={e => {
+                    // Ensure cursor is at end and field is ready for input
+                    e.target.setSelectionRange(
+                      e.target.value.length,
+                      e.target.value.length
+                    );
+                  }}
                 />
               </div>
 
@@ -741,9 +750,20 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             <input
               type="text"
               value={newPresetName}
-              onChange={e => setNewPresetName(e.target.value)}
+              onChange={e => {
+                // Prevent interference during rapid updates
+                e.stopPropagation();
+                setNewPresetName(e.target.value);
+              }}
               placeholder={t("app.categories.presets.enterName")}
               className={styles.presetNameInput}
+              onFocus={e => {
+                // Ensure cursor is at end and field is ready for input
+                e.target.setSelectionRange(
+                  e.target.value.length,
+                  e.target.value.length
+                );
+              }}
             />
             <button
               onClick={handleSavePreset}
@@ -816,11 +836,20 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           <input
             type="text"
             value={newCategory.name}
-            onChange={e =>
-              setNewCategory({ ...newCategory, name: e.target.value })
-            }
+            onChange={e => {
+              // Prevent interference during rapid updates
+              e.stopPropagation();
+              setNewCategory({ ...newCategory, name: e.target.value });
+            }}
             placeholder={t("app.categories.placeholder")}
             className={styles.categoryNameInput}
+            onFocus={e => {
+              // Ensure cursor is at end and field is ready for input
+              e.target.setSelectionRange(
+                e.target.value.length,
+                e.target.value.length
+              );
+            }}
           />
 
           <div className={styles.colorPicker}>
@@ -840,11 +869,20 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           <input
             type="text"
             value={newCategory.description}
-            onChange={e =>
-              setNewCategory({ ...newCategory, description: e.target.value })
-            }
+            onChange={e => {
+              // Prevent interference during rapid updates
+              e.stopPropagation();
+              setNewCategory({ ...newCategory, description: e.target.value });
+            }}
             placeholder={t("app.categories.descriptionPlaceholder")}
             className={styles.categoryDescriptionInput}
+            onFocus={e => {
+              // Ensure cursor is at end and field is ready for input
+              e.target.setSelectionRange(
+                e.target.value.length,
+                e.target.value.length
+              );
+            }}
           />
 
           <button

@@ -75,10 +75,11 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onMarkOut,
       onClearMarks,
     },
-    ref,
+    ref
   ) => {
     const { t } = useTranslation();
     const videoRef = useRef<HTMLVideoElement>(null);
+    const timeSearchInputRef = useRef<HTMLInputElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -199,7 +200,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         // Move one frame forward or backward
         const newTime = Math.max(
           0,
-          Math.min(duration, currentTime + direction * frameDuration),
+          Math.min(duration, currentTime + direction * frameDuration)
         );
         videoRef.current.currentTime = newTime;
         setCurrentTime(newTime);
@@ -231,7 +232,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       console.error("Video path:", videoPath);
       console.error(
         "Formatted src:",
-        videoPath ? formatVideoSrc(videoPath) : null,
+        videoPath ? formatVideoSrc(videoPath) : null
       );
 
       let errorMessage = "Error loading video file";
@@ -287,7 +288,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       const seconds = Math.floor(time % 60);
 
       if (hours > 0) {
-        return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+        return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+          .toString()
+          .padStart(2, "0")}`;
       }
       return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     };
@@ -495,7 +498,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     style={{ left: `${(markInTime / duration) * 100}%` }}
                     onClick={() => jumpToMark(markInTime)}
                     title={`${t("app.video.markIn")}: ${formatTime(
-                      markInTime,
+                      markInTime
                     )}`}
                   />
                 )}
@@ -505,7 +508,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     style={{ left: `${(markOutTime / duration) * 100}%` }}
                     onClick={() => jumpToMark(markOutTime)}
                     title={`${t("app.video.markOut")}: ${formatTime(
-                      markOutTime,
+                      markOutTime
                     )}`}
                   />
                 )}
@@ -605,12 +608,26 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       className={styles.timeSearchIcon}
                     />
                     <input
+                      ref={timeSearchInputRef}
                       type="text"
                       value={timeSearchValue}
-                      onChange={(e) => setTimeSearchValue(e.target.value)}
+                      onChange={e => {
+                        // Prevent interference during rapid updates
+                        e.stopPropagation();
+                        setTimeSearchValue(e.target.value);
+                      }}
                       onKeyPress={handleTimeSearchKeyPress}
+                      onFocus={e => {
+                        // Ensure cursor is at end and field is ready for input
+                        e.target.setSelectionRange(
+                          e.target.value.length,
+                          e.target.value.length
+                        );
+                      }}
                       placeholder={t("app.video.timeSearch.placeholder")}
-                      className={`${styles.timeSearchField} ${timeSearchError ? styles.timeSearchError : ""}`}
+                      className={`${styles.timeSearchField} ${
+                        timeSearchError ? styles.timeSearchError : ""
+                      }`}
                       title={t("app.video.timeSearch.tooltip")}
                     />
                     <button
@@ -639,7 +656,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     max="1"
                     step="0.1"
                     value={volume}
-                    onChange={(e) => {
+                    onChange={e => {
                       const newVolume = parseFloat(e.target.value);
                       setVolume(newVolume);
                       if (videoRef.current) {
@@ -700,5 +717,5 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         </div>
       </div>
     );
-  },
+  }
 );
