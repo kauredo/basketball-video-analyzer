@@ -49,6 +49,7 @@ export interface ElectronAPI {
     title: string;
     categories: number[];
     notes?: string;
+    projectId: number;
   }) => Promise<any>;
   openClipFolder: () => Promise<void>;
   playClip: (clipPath: string) => Promise<void>;

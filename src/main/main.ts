@@ -243,18 +243,14 @@ ipcMain.handle(
         const clipsDir = getClipsDirectory();
         const normalizedClipsDir = path.normalize(clipsDir);
 
-        // Ensure clips directory exists
+        // Ensure clips directory exists with proper permissions
         if (!fs.existsSync(normalizedClipsDir)) {
           try {
-            fs.mkdirSync(normalizedClipsDir, { recursive: true });
+            fs.mkdirSync(normalizedClipsDir, { recursive: true, mode: 0o755 });
           } catch (err) {
             const error = err as Error;
             console.error("Error creating clips directory:", error);
-            reject(
-              new Error(
-                `Failed to create clips directory in Documents folder. Error: ${error.message}`,
-              ),
-            );
+            reject(new Error("ERROR_NO_WRITE_ACCESS"));
             return;
           }
         }
@@ -267,6 +263,12 @@ ipcMain.handle(
         const thumbnailFileName = `${safeTitle}_${timestamp}_${clipId}_thumb.jpg`;
         const outputPath = path.join(normalizedClipsDir, outputFileName);
         const thumbnailPath = path.join(normalizedClipsDir, thumbnailFileName);
+
+        // FFmpeg requires forward slashes even on Windows
+        const ffmpegInputPath = normalizedInputPath.replace(/\\/g, "/");
+        const ffmpegOutputPath = outputPath.replace(/\\/g, "/");
+        const ffmpegThumbnailPath = thumbnailPath.replace(/\\/g, "/");
+
         const duration = endTime - startTime;
 
         // Validate input parameters
@@ -333,7 +335,15 @@ ipcMain.handle(
           // Continue anyway, FFmpeg will fail if there's not enough space
         }
 
-        console.log("Starting thumbnail creation...");
+        console.log("Starting clip creation process...");
+        console.log("Platform:", process.platform);
+        console.log("Input path (native):", normalizedInputPath);
+        console.log("Input path (FFmpeg):", ffmpegInputPath);
+        console.log("Output path (native):", outputPath);
+        console.log("Output path (FFmpeg):", ffmpegOutputPath);
+        console.log("Thumbnail path (native):", thumbnailPath);
+        console.log("Thumbnail path (FFmpeg):", ffmpegThumbnailPath);
+
         const ffmpegPath = ffmpegStatic;
         console.log("Using FFmpeg from:", ffmpegPath);
 
@@ -342,7 +352,7 @@ ipcMain.handle(
         mainWindow.webContents.send("clip-process-id", { processId });
 
         // First, generate the thumbnail
-        const thumbnailCommand = ffmpeg(normalizedInputPath);
+        const thumbnailCommand = ffmpeg(ffmpegInputPath);
 
         if (ffmpegPath) {
           thumbnailCommand.setFfmpegPath(ffmpegPath);
@@ -352,7 +362,7 @@ ipcMain.handle(
           .setStartTime(startTime)
           .frames(1)
           .outputOptions(["-y"]) // Overwrite output files
-          .output(thumbnailPath)
+          .output(ffmpegThumbnailPath)
           .on("start", (commandLine) => {
             console.log("Thumbnail FFmpeg command:", commandLine);
             // Store the thumbnail process for potential cancellation
@@ -369,7 +379,7 @@ ipcMain.handle(
 
             // After thumbnail is created, create the clip
             console.log("Starting clip creation...");
-            const clipCommand = ffmpeg(normalizedInputPath);
+            const clipCommand = ffmpeg(ffmpegInputPath);
 
             if (ffmpegPath) {
               clipCommand.setFfmpegPath(ffmpegPath);
@@ -391,7 +401,7 @@ ipcMain.handle(
                 "-strict",
                 "experimental", // Required for some Windows configurations
               ])
-              .output(outputPath)
+              .output(ffmpegOutputPath)
               .on("start", (commandLine) => {
                 console.log("Clip FFmpeg command:", commandLine);
                 // Store the clip process for potential cancellation
