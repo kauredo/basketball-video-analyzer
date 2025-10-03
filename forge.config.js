@@ -7,10 +7,11 @@ module.exports = {
       unpack:
         "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native}/**/*",
     },
-    name: "basketball-video-analyzer",
+    name: "Basketball Video Analyzer",
     executableName: "basketball-video-analyzer",
     appBundleId: "com.yourname.basketball-video-analyzer",
     icon: "./assets/icon",
+    // Code signing disabled - users need to bypass Gatekeeper
     osxSign: false,
     osxNotarize: false,
     // Allow unsigned apps on macOS for development
@@ -33,7 +34,8 @@ module.exports = {
     process.platform === "win32" && {
       name: "@electron-forge/maker-squirrel",
       config: {
-        name: "basketball-video-analyzer",
+        name: "BasketballVideoAnalyzer",
+        title: "Basketball Video Analyzer",
       },
     },
     process.platform === "darwin" && {
