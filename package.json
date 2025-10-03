@@ -16,9 +16,7 @@
     "publish": "electron-forge publish",
     "dist": "npm run build && npm run make:all",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
-    "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f",
-    "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
-    "release": "npm version patch && npm run dist"
+    "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f"
   },
   "keywords": [
     "basketball",
