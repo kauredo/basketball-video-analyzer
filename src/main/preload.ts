@@ -87,6 +87,18 @@ export interface ElectronAPI {
     key: "markInKey" | "markOutKey";
     value: string;
   }) => Promise<void>;
+
+  // Update operations
+  onUpdateAvailable: (callback: (info: any) => void) => void;
+  onUpdateDownloaded: (callback: (info: any) => void) => void;
+  onDownloadProgress: (
+    callback: (progress: {
+      bytesPerSecond: number;
+      percent: number;
+      transferred: number;
+      total: number;
+    }) => void,
+  ) => void;
 }
 
 const electronAPI: ElectronAPI = {
@@ -158,6 +170,26 @@ const electronAPI: ElectronAPI = {
   // Settings operations
   getKeyBindings: () => ipcRenderer.invoke("getKeyBindings"),
   setKeyBinding: (params) => ipcRenderer.invoke("setKeyBinding", params),
+
+  // Update operations
+  onUpdateAvailable: (callback: (info: any) => void) => {
+    ipcRenderer.on("update-available", (_event, info) => callback(info));
+  },
+  onUpdateDownloaded: (callback: (info: any) => void) => {
+    ipcRenderer.on("update-downloaded", (_event, info) => callback(info));
+  },
+  onDownloadProgress: (
+    callback: (progress: {
+      bytesPerSecond: number;
+      percent: number;
+      transferred: number;
+      total: number;
+    }) => void,
+  ) => {
+    ipcRenderer.on("download-progress", (_event, progress) =>
+      callback(progress),
+    );
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

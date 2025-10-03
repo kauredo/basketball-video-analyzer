@@ -1,9 +1,10 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell, Menu } from "electron";
 import path from "path";
 import fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { v4 as uuidv4 } from "uuid";
+import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
 import {
   setupDatabase,
   getCategories,
@@ -50,6 +51,102 @@ let mainWindow: BrowserWindow;
 // Track active clip creation processes
 const activeClipProcesses = new Map<string, any>();
 
+const createMenu = (mainWindow: BrowserWindow): void => {
+  const isMac = process.platform === "darwin";
+
+  const template: any[] = [
+    // App menu (Mac only)
+    ...(isMac
+      ? [
+          {
+            label: app.name,
+            submenu: [
+              { role: "about" },
+              { type: "separator" },
+              {
+                label: "Check for Updates...",
+                click: () => checkForUpdates(mainWindow),
+              },
+              { type: "separator" },
+              { role: "services" },
+              { type: "separator" },
+              { role: "hide" },
+              { role: "hideOthers" },
+              { role: "unhide" },
+              { type: "separator" },
+              { role: "quit" },
+            ],
+          },
+        ]
+      : []),
+    // File menu
+    {
+      label: "File",
+      submenu: [isMac ? { role: "close" } : { role: "quit" }],
+    },
+    // Edit menu
+    {
+      label: "Edit",
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        ...(isMac
+          ? [
+              { role: "pasteAndMatchStyle" },
+              { role: "delete" },
+              { role: "selectAll" },
+            ]
+          : [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }]),
+      ],
+    },
+    // View menu
+    {
+      label: "View",
+      submenu: [
+        { role: "reload" },
+        { role: "forceReload" },
+        { role: "toggleDevTools" },
+        { type: "separator" },
+        { role: "resetZoom" },
+        { role: "zoomIn" },
+        { role: "zoomOut" },
+        { type: "separator" },
+        { role: "togglefullscreen" },
+      ],
+    },
+    // Help menu
+    {
+      label: "Help",
+      submenu: [
+        ...(!isMac
+          ? [
+              {
+                label: "Check for Updates...",
+                click: () => checkForUpdates(mainWindow),
+              },
+              { type: "separator" },
+            ]
+          : []),
+        {
+          label: "Learn More",
+          click: async () => {
+            await shell.openExternal(
+              "https://github.com/kauredo/basketball-video-analyzer"
+            );
+          },
+        },
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+};
+
 const createWindow = (): void => {
   mainWindow = new BrowserWindow({
     height: 1000,
@@ -72,11 +169,17 @@ const createWindow = (): void => {
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
+
+    // Setup auto-updater after window is ready
+    setupAutoUpdater(mainWindow);
   });
 
   mainWindow.on("closed", () => {
     app.quit();
   });
+
+  // Create application menu with "Check for Updates" option
+  createMenu(mainWindow);
 };
 
 app.whenReady().then(() => {
