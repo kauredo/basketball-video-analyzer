@@ -837,6 +837,27 @@ ipcMain.handle(
 
 ipcMain.handle("delete-project", async (_event, id: number) => {
   try {
+    // Get all clips for this project before deleting
+    const clips = getClips(id);
+
+    // Delete clip files from disk
+    for (const clip of clips) {
+      try {
+        // Delete video file
+        if (clip.output_path && fs.existsSync(clip.output_path)) {
+          fs.unlinkSync(clip.output_path);
+        }
+        // Delete thumbnail file
+        if (clip.thumbnail_path && fs.existsSync(clip.thumbnail_path)) {
+          fs.unlinkSync(clip.thumbnail_path);
+        }
+      } catch (fileError) {
+        console.warn(`Failed to delete files for clip ${clip.id}:`, fileError);
+        // Continue deleting other clips even if one fails
+      }
+    }
+
+    // Delete project from database (CASCADE will delete clips and categories)
     deleteProject(id);
     return true;
   } catch (error) {
@@ -914,8 +935,8 @@ ipcMain.handle("get-clips-by-category", async (_event, categoryId: number) => {
 
 ipcMain.handle("reset-database", async () => {
   try {
-    // Delete all clip files
-    const clipsDir = path.join(app.getPath("userData"), "clips");
+    // Delete all clip files using the centralized function
+    const clipsDir = getClipsDirectory();
     if (fs.existsSync(clipsDir)) {
       fs.rmSync(clipsDir, { recursive: true, force: true });
     }
