@@ -42,7 +42,7 @@ module.exports = {
       name: "@electron-forge/maker-dmg",
       config: {
         format: "ULFO",
-        name: "Basketball Video Analyzer",
+        name: "BasketballVideoAnalyzer",
       },
     },
     process.platform === "darwin" && {
