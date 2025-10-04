@@ -37,20 +37,32 @@ import {
   deletePreset,
 } from "./database";
 
+// Helper function to fix ASAR unpacked paths
+const fixAsarPath = (binaryPath: string): string => {
+  // In production, binaries are in app.asar.unpacked, not app.asar
+  // This is critical for Electron packaging to work correctly
+  let fixedPath = binaryPath.replace("app.asar", "app.asar.unpacked");
+
+  // Normalize and convert to forward slashes for fluent-ffmpeg
+  fixedPath = path.normalize(fixedPath).replace(/\\/g, "/");
+
+  return fixedPath;
+};
+
 // Set FFmpeg and FFprobe paths
 if (ffmpegStatic) {
-  // Fluent-ffmpeg requires forward slashes even on Windows
-  const ffmpegPath = path.normalize(ffmpegStatic).replace(/\\/g, "/");
+  const ffmpegPath = fixAsarPath(ffmpegStatic);
   console.log("FFmpeg path:", ffmpegPath);
+  console.log("FFmpeg exists:", fs.existsSync(ffmpegPath));
   ffmpeg.setFfmpegPath(ffmpegPath);
 } else {
   console.error("FFmpeg static path not found!");
 }
 
 if (ffprobeStatic.path) {
-  // Fluent-ffmpeg requires forward slashes even on Windows
-  const ffprobePath = path.normalize(ffprobeStatic.path).replace(/\\/g, "/");
+  const ffprobePath = fixAsarPath(ffprobeStatic.path);
   console.log("FFprobe path:", ffprobePath);
+  console.log("FFprobe exists:", fs.existsSync(ffprobePath));
   ffmpeg.setFfprobePath(ffprobePath);
 } else {
   console.error("FFprobe static path not found!");
@@ -475,7 +487,12 @@ ipcMain.handle(
         thumbnailCommand
           .setStartTime(startTime)
           .frames(1)
-          .outputOptions(["-y"]) // Overwrite output files
+          .outputOptions([
+            "-y", // Overwrite output files
+            "-q:v",
+            "2", // JPEG quality: 2-5 is high quality (1 is best, 31 is worst)
+          ])
+          .size("320x?") // 320px width, auto height to maintain aspect ratio
           .output(ffmpegThumbnailPath)
           .on("start", commandLine => {
             console.log("Thumbnail FFmpeg command:", commandLine);
@@ -509,15 +526,19 @@ ipcMain.handle(
               .outputOptions([
                 "-y", // Overwrite output files
                 "-movflags",
-                "+faststart", // Optimize for web playback
+                "+faststart", // Optimize for web playback - allows video to start playing before fully downloaded
                 "-c:v",
-                "libx264", // Use H.264 codec
+                "libx264", // Use H.264 codec for broad compatibility
                 "-preset",
-                "medium", // Balance between speed and quality
+                "veryfast", // Best speed/quality balance (faster than medium with similar quality)
+                "-crf",
+                "23", // Constant Rate Factor: 18-28 range, 23 is good balance (lower = better quality)
                 "-c:a",
-                "aac", // Use AAC audio codec
-                "-strict",
-                "experimental", // Required for some Windows configurations
+                "aac", // Use AAC audio codec for broad compatibility
+                "-b:a",
+                "128k", // Audio bitrate - good quality for basketball commentary/court sounds
+                "-ar",
+                "44100", // Audio sample rate - standard for video
               ])
               .output(ffmpegOutputPath)
               .on("start", commandLine => {
