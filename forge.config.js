@@ -7,7 +7,7 @@ module.exports = {
       unpack:
         "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native}/**/*",
     },
-    name: "Basketball Video Analyzer",
+    name: "BasketballVideoAnalyzer",
     executableName: "basketball-video-analyzer",
     appBundleId: "com.yourname.basketball-video-analyzer",
     icon: "./assets/icon",

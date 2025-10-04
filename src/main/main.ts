@@ -38,8 +38,8 @@ import {
 
 // Set FFmpeg path
 if (ffmpegStatic) {
-  // Ensure the path is properly formatted for the OS
-  const ffmpegPath = path.normalize(ffmpegStatic);
+  // Fluent-ffmpeg requires forward slashes even on Windows
+  const ffmpegPath = path.normalize(ffmpegStatic).replace(/\\/g, "/");
   console.log("FFmpeg path:", ffmpegPath);
   ffmpeg.setFfmpegPath(ffmpegPath);
 } else {
@@ -367,18 +367,11 @@ ipcMain.handle(
         const outputPath = path.join(normalizedClipsDir, outputFileName);
         const thumbnailPath = path.join(normalizedClipsDir, thumbnailFileName);
 
-        // On Windows, keep native backslashes and let fluent-ffmpeg handle escaping
-        // Only convert to forward slashes on non-Windows platforms
-        const isWindows = process.platform === "win32";
-        const ffmpegInputPath = isWindows
-          ? normalizedInputPath
-          : normalizedInputPath.replace(/\\/g, "/");
-        const ffmpegOutputPath = isWindows
-          ? outputPath
-          : outputPath.replace(/\\/g, "/");
-        const ffmpegThumbnailPath = isWindows
-          ? thumbnailPath
-          : thumbnailPath.replace(/\\/g, "/");
+        // FFmpeg (via fluent-ffmpeg) requires forward slashes on all platforms
+        // The library handles path conversion internally but needs forward slash input
+        const ffmpegInputPath = normalizedInputPath.replace(/\\/g, "/");
+        const ffmpegOutputPath = outputPath.replace(/\\/g, "/");
+        const ffmpegThumbnailPath = thumbnailPath.replace(/\\/g, "/");
 
         const duration = endTime - startTime;
 
@@ -481,6 +474,10 @@ ipcMain.handle(
           })
           .on("error", error => {
             console.error("Thumbnail creation error:", error);
+            console.error("Thumbnail error message:", error.message);
+            console.error("FFmpeg input path:", ffmpegInputPath);
+            console.error("FFmpeg thumbnail path:", ffmpegThumbnailPath);
+            console.error("FFmpeg binary path:", ffmpegPath);
             activeClipProcesses.delete(`${processId}-thumb`);
             reject(new Error("ERROR_THUMBNAIL_FAILED"));
           })
