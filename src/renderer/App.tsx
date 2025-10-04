@@ -319,6 +319,7 @@ export const App: React.FC = () => {
         </h1>
         <div className={styles.headerActions}>
           <button
+            type="button"
             className={styles.btn}
             onClick={() => setIsSidePanelCollapsed(!isSidePanelCollapsed)}
           >
@@ -328,6 +329,7 @@ export const App: React.FC = () => {
               : t("app.buttons.hideSidePanel")}
           </button>
           <button
+            type="button"
             className={styles.btn}
             onClick={() => setIsBottomPanelCollapsed(!isBottomPanelCollapsed)}
           >
@@ -337,6 +339,7 @@ export const App: React.FC = () => {
               : t("app.buttons.hideBottomPanel")}
           </button>
           <button
+            type="button"
             className={styles.settingsButton}
             onClick={() => setShowSettings(true)}
           >
@@ -437,6 +440,7 @@ export const App: React.FC = () => {
                 {t("app.modals.createClip")}
               </h2>
               <button
+                type="button"
                 className={styles.modalClose}
                 onClick={() => setShowClipCreator(false)}
               >
@@ -466,6 +470,7 @@ export const App: React.FC = () => {
                 <FontAwesomeIcon icon={faCog} /> {t("app.modals.settings")}
               </h2>
               <button
+                type="button"
                 className={styles.modalClose}
                 onClick={() => setShowSettings(false)}
               >
@@ -478,6 +483,7 @@ export const App: React.FC = () => {
               <KeyBindingEditor />
 
               <button
+                type="button"
                 className={styles.instructionsButton}
                 onClick={() => {
                   setShowInstructions(true);
@@ -496,6 +502,7 @@ export const App: React.FC = () => {
               <div className={styles.dangerZone}>
                 <h3>{t("app.settings.dangerZone")}</h3>
                 <button
+                  type="button"
                   className={styles.resetButton}
                   onClick={handleResetDatabase}
                 >

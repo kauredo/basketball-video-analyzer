@@ -520,6 +520,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
             }}
             placeholder={t("app.clips.creator.titlePlaceholder")}
             className={styles.clipTitleInput}
+            autoFocus
           />
         </div>
 

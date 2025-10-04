@@ -470,8 +470,7 @@ ipcMain.handle(
         console.log("Thumbnail path (native):", thumbnailPath);
         console.log("Thumbnail path (FFmpeg):", ffmpegThumbnailPath);
 
-        const ffmpegPath = ffmpegStatic;
-        console.log("Using FFmpeg from:", ffmpegPath);
+        console.log("Using globally configured FFmpeg and FFprobe paths");
 
         // Generate process ID for cancellation support
         const processId = uuidv4().slice(0, 8);
@@ -479,10 +478,6 @@ ipcMain.handle(
 
         // First, generate the thumbnail
         const thumbnailCommand = ffmpeg(ffmpegInputPath);
-
-        if (ffmpegPath) {
-          thumbnailCommand.setFfmpegPath(ffmpegPath);
-        }
 
         thumbnailCommand
           .setStartTime(startTime)
@@ -504,7 +499,6 @@ ipcMain.handle(
             console.error("Thumbnail error message:", error.message);
             console.error("FFmpeg input path:", ffmpegInputPath);
             console.error("FFmpeg thumbnail path:", ffmpegThumbnailPath);
-            console.error("FFmpeg binary path:", ffmpegPath);
             activeClipProcesses.delete(`${processId}-thumb`);
             reject(new Error("ERROR_THUMBNAIL_FAILED"));
           })
@@ -515,10 +509,6 @@ ipcMain.handle(
             // After thumbnail is created, create the clip
             console.log("Starting clip creation...");
             const clipCommand = ffmpeg(ffmpegInputPath);
-
-            if (ffmpegPath) {
-              clipCommand.setFfmpegPath(ffmpegPath);
-            }
 
             clipCommand
               .setStartTime(startTime)
