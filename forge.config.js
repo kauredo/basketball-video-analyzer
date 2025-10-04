@@ -5,7 +5,7 @@ module.exports = {
   packagerConfig: {
     asar: {
       unpack:
-        "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native}/**/*",
+        "**/node_modules/{fluent-ffmpeg,ffmpeg-static,ffprobe-static,better-sqlite3,lzma-native}/**/*",
     },
     name: "BasketballVideoAnalyzer",
     executableName: "basketball-video-analyzer",

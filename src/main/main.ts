@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
+import ffprobeStatic from "ffprobe-static";
 import { v4 as uuidv4 } from "uuid";
 import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
 import {
@@ -36,7 +37,7 @@ import {
   deletePreset,
 } from "./database";
 
-// Set FFmpeg path
+// Set FFmpeg and FFprobe paths
 if (ffmpegStatic) {
   // Fluent-ffmpeg requires forward slashes even on Windows
   const ffmpegPath = path.normalize(ffmpegStatic).replace(/\\/g, "/");
@@ -44,6 +45,15 @@ if (ffmpegStatic) {
   ffmpeg.setFfmpegPath(ffmpegPath);
 } else {
   console.error("FFmpeg static path not found!");
+}
+
+if (ffprobeStatic.path) {
+  // Fluent-ffmpeg requires forward slashes even on Windows
+  const ffprobePath = path.normalize(ffprobeStatic.path).replace(/\\/g, "/");
+  console.log("FFprobe path:", ffprobePath);
+  ffmpeg.setFfprobePath(ffprobePath);
+} else {
+  console.error("FFprobe static path not found!");
 }
 
 let mainWindow: BrowserWindow;
