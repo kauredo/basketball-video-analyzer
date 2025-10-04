@@ -146,7 +146,7 @@
         "errorAfterRetries": "Falha ao criar clip após múltiplas tentativas: {{translationKey}}",
         "systemCheck": {
           "error_ffmpeg_not_found": "FFmpeg não encontrado. O processamento de vídeo não está disponível.",
-          "error_documents_not_accessible": "Não é possível aceder à pasta Documentos. Verifique as permissões da pasta.",
+          "error_user_data_not_accessible": "Não é possível aceder à pasta de dados da aplicação. Verifique as permissões.",
           "error_no_write_access": "Sem acesso de escrita à pasta de clips. Verifique as permissões.",
           "error_system_check_failed": "Verificação do sistema falhada. Tente novamente.",
           "warning_low_disk_space": "Aviso: Pouco espaço em disco (menos de 1GB disponível)."

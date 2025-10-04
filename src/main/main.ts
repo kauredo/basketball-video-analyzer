@@ -199,15 +199,11 @@ app.on("window-all-closed", () => {
   }
 });
 
-// Get clips directory in user's Documents
+// Get clips directory in app's userData folder
 const getClipsDirectory = () => {
-  // Use Documents folder instead of AppData
-  const documentsDir = app.getPath("documents");
-  const clipsDir = path.join(
-    documentsDir,
-    "Basketball Video Analyzer",
-    "clips"
-  );
+  // Use userData folder - always accessible, no permissions needed
+  const userDataDir = app.getPath("userData");
+  const clipsDir = path.join(userDataDir, "clips");
   return clipsDir;
 };
 
@@ -225,14 +221,14 @@ ipcMain.handle("system-check", async () => {
 
     // Check clips directory access
     const clipsDir = getClipsDirectory();
-    const documentsDir = path.dirname(clipsDir);
+    const userDataDir = app.getPath("userData");
 
     try {
-      if (!fs.existsSync(documentsDir)) {
-        issues.push("ERROR_DOCUMENTS_NOT_ACCESSIBLE");
+      if (!fs.existsSync(userDataDir)) {
+        issues.push("ERROR_USER_DATA_NOT_ACCESSIBLE");
       } else {
         // Test write access
-        const testFile = path.join(documentsDir, ".test-write");
+        const testFile = path.join(userDataDir, ".test-write");
         try {
           fs.writeFileSync(testFile, "test");
           fs.unlinkSync(testFile);
@@ -241,13 +237,13 @@ ipcMain.handle("system-check", async () => {
         }
       }
     } catch (error) {
-      issues.push("ERROR_DOCUMENTS_NOT_ACCESSIBLE");
+      issues.push("ERROR_USER_DATA_NOT_ACCESSIBLE");
     }
 
     // Check available disk space (if possible)
     try {
-      if (process.platform !== "win32" && fs.existsSync(documentsDir)) {
-        const stats = require("fs").statfsSync(documentsDir);
+      if (process.platform !== "win32" && fs.existsSync(userDataDir)) {
+        const stats = require("fs").statfsSync(userDataDir);
         const freeSpaceGB = stats.free / (1024 * 1024 * 1024);
         if (freeSpaceGB < 1) {
           warnings.push("WARNING_LOW_DISK_SPACE");
