@@ -111,11 +111,13 @@ module.exports = {
       const path = require("path");
       const yaml = require("js-yaml");
 
+      let macMetadataGenerated = false;
+
       for (const result of makeResults) {
         const outPath = path.dirname(result.artifacts[0]);
 
-        // Generate update metadata files for auto-updater
-        if (process.platform === "darwin") {
+        // Generate update metadata files for auto-updater (only once per platform)
+        if (process.platform === "darwin" && !macMetadataGenerated) {
           const latestMac = {
             version: require("./package.json").version,
             files: result.artifacts.map(artifact => ({
@@ -130,6 +132,7 @@ module.exports = {
             path.join(outPath, "latest-mac.yml"),
             yaml.dump(latestMac)
           );
+          macMetadataGenerated = true;
         }
       }
     },
