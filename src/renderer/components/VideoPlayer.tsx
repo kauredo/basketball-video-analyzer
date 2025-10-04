@@ -531,7 +531,11 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
             <div className={styles.controlsSection}>
               <div className={styles.controlsRow}>
-                <button onClick={togglePlay} className={styles.playButton}>
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  className={styles.playButton}
+                >
                   <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
                 </button>
 

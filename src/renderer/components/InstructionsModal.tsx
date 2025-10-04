@@ -99,7 +99,11 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
           </div>
 
           {showSelectVideoButton && (
-            <button onClick={onSelectVideo} className={styles.getStartedBtn}>
+            <button
+              type="button"
+              onClick={onSelectVideo}
+              className={styles.getStartedBtn}
+            >
               <FontAwesomeIcon icon={faRocket} /> {t("app.buttons.getStarted")}
             </button>
           )}

@@ -397,6 +397,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           <h4>Categories ({selectedCategories.length} selected)</h4>
           <div className={styles.categoryActions}>
             <button
+              type="button"
               onClick={() => {
                 // Get all category IDs including children
                 const allCategoryIds: number[] = [];
@@ -416,6 +417,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
               <FontAwesomeIcon icon={faCheck} /> Select All
             </button>
             <button
+              type="button"
               onClick={() => setSelectedCategories([])}
               disabled={isCreating}
               className={styles.clearSelectionBtn}
@@ -431,6 +433,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
               <div key={parentCategory.id} className={styles.categoryGroup}>
                 {/* Parent Category Button */}
                 <button
+                  type="button"
                   onClick={() => handleCategoryToggle(parentCategory.id)}
                   className={`${styles.categoryBtn} ${
                     selectedCategories.includes(parentCategory.id)
@@ -463,6 +466,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                     <div className={styles.subcategoryGrid}>
                       {parentCategory.children.map((subcategory: Category) => (
                         <button
+                          type="button"
                           key={subcategory.id}
                           onClick={() => handleCategoryToggle(subcategory.id)}
                           className={`${styles.categoryBtn} ${

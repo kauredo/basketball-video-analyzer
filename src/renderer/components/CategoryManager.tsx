@@ -414,6 +414,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             {/* Show expand button for parent categories or if has children */}
             {(hasChildren || level === 0) && (
               <button
+                type="button"
                 onClick={() => hasChildren && toggleExpanded(category.id!)}
                 className={`${styles.expandButton} ${
                   hasChildren ? styles.hasChildren : styles.noChildren
@@ -461,6 +462,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                       <div className={styles.colorPicker}>
                         {colorPresets.map(color => (
                           <button
+                            type="button"
                             key={color}
                             className={`${styles.colorOption} ${
                               editingCategory.color === color
@@ -505,12 +507,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
                   <div className={styles.editActions}>
                     <button
+                      type="button"
                       onClick={handleUpdateCategory}
                       className={styles.saveBtn}
                     >
                       <FontAwesomeIcon icon={faCheck} /> Save Changes
                     </button>
                     <button
+                      type="button"
                       onClick={() => setEditingCategory(null)}
                       className={styles.cancelBtn}
                     >
@@ -536,12 +540,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                 {isEditing && (
                   <div className={styles.categoryActions}>
                     <button
+                      type="button"
                       onClick={() => setEditingCategory(category)}
                       className={styles.editBtn}
                     >
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
                     <button
+                      type="button"
                       onClick={() =>
                         category.id && handleDeleteCategory(category.id)
                       }
@@ -551,6 +557,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     </button>
                     {level === 0 && (
                       <button
+                        type="button"
                         onClick={() => setAddingSubcategoryTo(category.id!)}
                         className={styles.addSubBtn}
                         title="Add subcategory"
@@ -616,6 +623,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
               <div className={`${styles.editActions} ${styles.spacingMd}`}>
                 <button
+                  type="button"
                   onClick={() =>
                     handleCreateSubcategory(category.id!, category.color)
                   }
@@ -625,6 +633,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   <FontAwesomeIcon icon={faCheck} /> Add Subcategory
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setAddingSubcategoryTo(null);
                     setNewSubcategory({
@@ -687,6 +696,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           <FontAwesomeIcon icon={faFolderTree} /> {t("app.categories.title")}
         </h3>
         <button
+          type="button"
           onClick={() => setIsEditing(!isEditing)}
           className={styles.editToggleBtn}
         >
@@ -733,6 +743,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               onClick={handleSavePreset}
               disabled={!newPresetName.trim()}
               className={styles.savePresetBtn}
+              type="button"
             >
               <FontAwesomeIcon icon={faSave} />{" "}
               {t("app.categories.presets.save")}
@@ -752,6 +763,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               {presets.map(preset => (
                 <div key={preset} className={styles.presetItem}>
                   <button
+                    type="button"
                     onClick={() => handleLoadPreset(preset)}
                     className={styles.loadPresetBtn}
                     title={t("app.categories.presets.loadTooltip", {
@@ -761,6 +773,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     <FontAwesomeIcon icon={faFolderTree} /> {preset}
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleDeletePreset(preset)}
                     className={styles.deletePresetBtn}
                     title={t("app.categories.presets.deleteTooltip", {
@@ -820,6 +833,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             <label>{t("app.categories.colorLabel")}</label>
             {colorPresets.map(color => (
               <button
+                type="button"
                 key={color}
                 className={`${styles.colorOption} ${
                   newCategory.color === color ? styles.selected : ""
@@ -853,6 +867,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             onClick={handleCreateCategory}
             disabled={!newCategory.name.trim()}
             className={styles.createCategoryBtn}
+            type="button"
           >
             <FontAwesomeIcon icon={faPlus} /> {t("app.categories.add")}
           </button>

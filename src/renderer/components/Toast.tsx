@@ -48,7 +48,7 @@ export const Toast: React.FC<ToastProps> = ({
         <FontAwesomeIcon icon={getIcon()} className={styles.toastIcon} />
         <span className={styles.toastMessage}>{message}</span>
       </div>
-      <button onClick={onClose} className={styles.toastClose}>
+      <button type="button" onClick={onClose} className={styles.toastClose}>
         <FontAwesomeIcon icon={faTimes} />
       </button>
     </div>
@@ -71,7 +71,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
 }) => {
   return (
     <div className={styles.toastContainer}>
-      {toasts.map((toast) => (
+      {toasts.map(toast => (
         <Toast
           key={toast.id}
           message={toast.message}
