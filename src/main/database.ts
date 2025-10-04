@@ -74,6 +74,16 @@ export const setupDatabase = () => {
 
 const migrateDatabase = () => {
   try {
+    // Check if clips table exists first
+    const clipsTableExists = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='clips'")
+      .get();
+
+    if (!clipsTableExists) {
+      console.log("Clips table doesn't exist yet - skipping clips migration");
+      return;
+    }
+
     // Check if we need to migrate existing clips table
     const tableInfo = db.prepare("PRAGMA table_info(clips)").all() as Array<{
       name: string;
@@ -190,7 +200,16 @@ const migrateDatabase = () => {
       console.log("Database migration completed successfully");
     }
 
-    // Check if we need to add parent_id to categories table for subcategories
+    // Check if categories table exists first
+    const categoriesTableExists = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='categories'")
+      .get();
+
+    if (!categoriesTableExists) {
+      console.log("Categories table doesn't exist yet - skipping categories migration");
+      // Don't return - continue to check other migrations
+    } else {
+      // Check if we need to add parent_id to categories table for subcategories
     const categoriesTableInfo = db
       .prepare("PRAGMA table_info(categories)")
       .all() as Array<{
@@ -454,9 +473,11 @@ const migrateDatabase = () => {
 
       console.log("Global categories migrated to presets successfully");
     }
+    } // Close the else block for categoriesTableExists check
   } catch (error) {
     console.error("Error during database migration:", error);
-    throw error;
+    // Don't throw - allow database setup to continue
+    console.log("Continuing with database setup despite migration errors...");
   }
 };
 
@@ -548,14 +569,67 @@ const createTables = () => {
 
 const insertDefaultCategories = () => {
   try {
-    // Default categories are no longer inserted automatically since categories
-    // are now project-specific. They will be created when users create projects
-    // or load presets instead.
-    console.log(
-      "Skipping default categories insertion - using project-specific categories now",
-    );
+    // Check if we already have presets
+    const existingPresets = db
+      .prepare("SELECT COUNT(*) as count FROM category_presets")
+      .get() as { count: number };
+
+    if (existingPresets.count > 0) {
+      console.log("Presets already exist, skipping default preset insertion");
+      return;
+    }
+
+    console.log("Creating default Basketball preset...");
+
+    // Define default basketball categories with hierarchical structure
+    const defaultBasketballPreset = [
+      // Offense parent category
+      { name: "Offense", color: "#FF5722", description: "Offensive plays and actions", parent: null, order: 0 },
+      { name: "Pick & Roll", color: "#FF7043", description: "Pick and roll plays", parent: "Offense", order: 1 },
+      { name: "Isolation", color: "#FF8A65", description: "Isolation plays", parent: "Offense", order: 2 },
+      { name: "Fast Break", color: "#FFAB91", description: "Fast break opportunities", parent: "Offense", order: 3 },
+      { name: "Post Up", color: "#FFCCBC", description: "Post up plays", parent: "Offense", order: 4 },
+
+      // Defense parent category
+      { name: "Defense", color: "#2196F3", description: "Defensive plays and actions", parent: null, order: 5 },
+      { name: "Man-to-Man", color: "#42A5F5", description: "Man-to-man defense", parent: "Defense", order: 6 },
+      { name: "Zone Defense", color: "#64B5F6", description: "Zone defense", parent: "Defense", order: 7 },
+      { name: "Press", color: "#90CAF9", description: "Full or half court press", parent: "Defense", order: 8 },
+
+      // Transition
+      { name: "Transition", color: "#4CAF50", description: "Transition plays", parent: null, order: 9 },
+
+      // Rebounding parent category
+      { name: "Rebounding", color: "#9C27B0", description: "Rebounding situations", parent: null, order: 10 },
+      { name: "Offensive Rebound", color: "#AB47BC", description: "Offensive rebounds", parent: "Rebounding", order: 11 },
+      { name: "Defensive Rebound", color: "#BA68C8", description: "Defensive rebounds", parent: "Rebounding", order: 12 },
+
+      // Other categories
+      { name: "Turnovers", color: "#F44336", description: "Turnovers and mistakes", parent: null, order: 13 },
+      { name: "Special Plays", color: "#FFC107", description: "Set plays and special situations", parent: null, order: 14 },
+    ];
+
+    const insertStmt = db.prepare(`
+      INSERT OR IGNORE INTO category_presets (preset_name, category_name, color, description, parent_name, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    let insertedCount = 0;
+    for (const category of defaultBasketballPreset) {
+      const result = insertStmt.run(
+        "Basketball",
+        category.name,
+        category.color,
+        category.description,
+        category.parent,
+        category.order
+      );
+      if (result.changes > 0) insertedCount++;
+    }
+
+    console.log(`Created default Basketball preset with ${insertedCount} categories`);
   } catch (error) {
-    console.error("Error in insertDefaultCategories:", error);
+    console.error("Error inserting default categories:", error);
   }
 };
 
