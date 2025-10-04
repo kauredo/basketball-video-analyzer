@@ -72,6 +72,7 @@ export const KeyBindingEditor: React.FC<KeyBindingEditorProps> = () => {
             {t("app.settings.markInKey")}
           </label>
           <button
+            type="button"
             onClick={() => startEditing("markInKey")}
             onKeyDown={editingKey === "markInKey" ? handleKeyDown : undefined}
             className={`${styles.input} ${
@@ -88,6 +89,7 @@ export const KeyBindingEditor: React.FC<KeyBindingEditorProps> = () => {
             {t("app.settings.markOutKey")}
           </label>
           <button
+            type="button"
             onClick={() => startEditing("markOutKey")}
             onKeyDown={editingKey === "markOutKey" ? handleKeyDown : undefined}
             className={`${styles.input} ${

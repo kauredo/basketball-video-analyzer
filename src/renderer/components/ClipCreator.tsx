@@ -556,6 +556,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           </div>
           <div className={styles.progressActions}>
             <button
+              type="button"
               onClick={handleCancelCreation}
               className={styles.cancelBtn}
               disabled={!currentProcessId}
@@ -569,6 +570,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       {/* Create Clip Button */}
       <div className={styles.clipCreationActions}>
         <button
+          type="button"
           onClick={handleCreateClip}
           disabled={!canCreateClip || isCreating}
           className={styles.createClipBtn}

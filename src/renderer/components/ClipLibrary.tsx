@@ -388,6 +388,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
             <FontAwesomeIcon icon={faFolder} /> {t("app.clips.openFolder")}
           </button>
           <button
+            type="button"
             onClick={selectedCategory ? handleExportCategory : handleExportAll}
             disabled={isExporting || filteredClips.length === 0}
             className={styles.exportBtn}
@@ -424,6 +425,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
               <h4>{t("app.clips.filterByCategory")}</h4>
               <div className={styles.filterButtons}>
                 <button
+                  type="button"
                   onClick={() => setSelectedCategory(null)}
                   className={`${styles.filterBtn} ${
                     selectedCategory === null ? styles.active : ""
@@ -446,6 +448,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                     return (
                       <div key={category.id} className={styles.categoryGroup}>
                         <button
+                          type="button"
                           onClick={() => setSelectedCategory(category.id)}
                           className={`${styles.filterBtn} ${
                             selectedCategory === category.id
@@ -493,6 +496,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
                                   return (
                                     <button
+                                      type="button"
                                       key={subcategory.id}
                                       onClick={() =>
                                         setSelectedCategory(subcategory.id)
@@ -636,6 +640,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                       {/* Actions */}
                       <div className={styles.clipActions}>
                         <button
+                          type="button"
                           onClick={() => handlePlayClip(clip.output_path)}
                           className={styles.playBtn}
                           title="Play clip"
@@ -644,6 +649,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => handleDeleteClip(clip.id)}
                           className={styles.deleteBtn}
                           title="Delete clip"

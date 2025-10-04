@@ -36,7 +36,7 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
           <h2>
             <FontAwesomeIcon icon={faFilm} /> {t("app.welcome.title")}
           </h2>
-          <button className={styles.modalClose} onClick={onClose}>
+          <button type="button" className={styles.modalClose} onClick={onClose}>
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>

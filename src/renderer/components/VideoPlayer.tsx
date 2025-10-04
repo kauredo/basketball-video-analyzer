@@ -541,6 +541,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
                 {/* 1 minute backward */}
                 <button
+                  type="button"
                   onClick={() => skipTime(-60)}
                   className={`${styles.skipButton} ${styles.skipButtonLarge}`}
                   title={t("app.video.skip1minBack")}
@@ -551,6 +552,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
                 {/* 30 seconds backward */}
                 <button
+                  type="button"
                   onClick={() => skipTime(-30)}
                   className={`${styles.skipButton} ${styles.skipButtonMedium}`}
                   title={t("app.video.skip30sBack")}
@@ -561,6 +563,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
                 {/* 5 seconds backward */}
                 <button
+                  type="button"
                   onClick={() => skipTime(-5)}
                   className={styles.skipButton}
                   title={t("app.video.skip5sBack")}
@@ -570,6 +573,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => stepFrame(-1)}
                   className={styles.frameButton}
                   title={t("app.video.previousFrame")}
@@ -578,6 +582,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => stepFrame(1)}
                   className={styles.frameButton}
                   title={t("app.video.nextFrame")}
@@ -587,6 +592,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
                 {/* 5 seconds forward */}
                 <button
+                  type="button"
                   onClick={() => skipTime(5)}
                   className={styles.skipButton}
                   title={t("app.video.skip5sForward")}
@@ -597,6 +603,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
                 {/* 30 seconds forward */}
                 <button
+                  type="button"
                   onClick={() => skipTime(30)}
                   className={`${styles.skipButton} ${styles.skipButtonMedium}`}
                   title={t("app.video.skip30sForward")}
@@ -607,6 +614,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
                 {/* 1 minute forward */}
                 <button
+                  type="button"
                   onClick={() => skipTime(60)}
                   className={`${styles.skipButton} ${styles.skipButtonLarge}`}
                   title={t("app.video.skip1minForward")}
@@ -644,6 +652,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       title={t("app.video.timeSearch.tooltip")}
                     />
                     <button
+                      type="button"
                       onClick={handleTimeSearch}
                       className={styles.timeSearchButton}
                       disabled={!timeSearchValue.trim()}
@@ -683,6 +692,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
               <div className={styles.markControls}>
                 <button
+                  type="button"
                   onClick={onMarkIn}
                   className={`${styles.markBtn} ${styles.markInBtn}`}
                   disabled={!videoPath || !!videoError}
@@ -706,6 +716,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => {
                     pauseVideo();
                     onMarkOut();
@@ -718,6 +729,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </button>
 
                 <button
+                  type="button"
                   onClick={onClearMarks}
                   className={styles.clearMarksBtn}
                   disabled={markInTime === null && markOutTime === null}

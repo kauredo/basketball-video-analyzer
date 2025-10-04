@@ -103,7 +103,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
           <h2>
             <FontAwesomeIcon icon={faFilm} /> Select Project
           </h2>
-          <button className={styles.modalClose} onClick={onClose}>
+          <button type="button" className={styles.modalClose} onClick={onClose}>
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
@@ -117,7 +117,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
           ) : (
             <>
               <div className={styles.createNewSection}>
-                <button className={styles.createNewBtn} onClick={onCreateNew}>
+                <button type="button" className={styles.createNewBtn} onClick={onCreateNew}>
                   <FontAwesomeIcon icon={faPlus} />
                   <div>
                     <h3>Create New Project</h3>
@@ -169,6 +169,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                         </div>
                         <div className={styles.projectActions}>
                           <button
+                            type="button"
                             className={styles.deleteBtn}
                             onClick={(e) => handleDeleteProject(project, e)}
                             title="Delete project"
