@@ -19,6 +19,7 @@ import {
   faQuestionCircle,
   faLayerGroup,
   faList,
+  faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./styles/App.module.css";
 import { VideoPlayer } from "./components/VideoPlayer";
@@ -54,6 +55,7 @@ export const App: React.FC = () => {
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
+  const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
 
   const resizeRef = useRef<HTMLDivElement>(null);
   const sideResizeRef = useRef<HTMLDivElement>(null);
@@ -101,6 +103,26 @@ export const App: React.FC = () => {
     };
     loadData();
   }, [refreshTrigger, currentProject]);
+
+  // Listen for update download progress
+  useEffect(() => {
+    window.electronAPI.onDownloadProgress((progress) => {
+      const percent = Math.floor(progress.percent);
+      console.log(`Update download progress: ${percent}% (${progress.transferred}/${progress.total} bytes, ${progress.bytesPerSecond} bytes/sec)`);
+      setUpdateDownloadProgress(percent);
+    });
+
+    window.electronAPI.onUpdateDownloaded(() => {
+      console.log("Update downloaded successfully!");
+      setUpdateDownloadProgress(null);
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      window.electronAPI.removeAllListeners("download-progress");
+      window.electronAPI.removeAllListeners("update-downloaded");
+    };
+  }, []);
 
   // Handle video seeking from timeline
   const handleTimeSeek = useCallback((time: number) => {
@@ -317,6 +339,11 @@ export const App: React.FC = () => {
         <h1>
           <FontAwesomeIcon icon={faBasketball} /> {t("app.title")}
         </h1>
+        {updateDownloadProgress !== null && (
+          <div className={styles.updateProgress}>
+            <FontAwesomeIcon icon={faDownload} spin /> Downloading update... {updateDownloadProgress}%
+          </div>
+        )}
         <div className={styles.headerActions}>
           <button
             type="button"
