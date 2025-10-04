@@ -479,19 +479,25 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               <div className={styles.progressTrack}>
                 <div
                   className={styles.progressFill}
-                  style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                  style={{
+                    width: `${
+                      duration > 0 ? (currentTime / duration) * 100 : 0
+                    }%`,
+                  }}
                 />
-                {markInTime !== null && markOutTime !== null && duration > 0 && (
-                  <div
-                    className={styles.markedRegion}
-                    style={{
-                      left: `${(markInTime / duration) * 100}%`,
-                      width: `${
-                        ((markOutTime - markInTime) / duration) * 100
-                      }%`,
-                    }}
-                  />
-                )}
+                {markInTime !== null &&
+                  markOutTime !== null &&
+                  duration > 0 && (
+                    <div
+                      className={styles.markedRegion}
+                      style={{
+                        left: `${(markInTime / duration) * 100}%`,
+                        width: `${
+                          ((markOutTime - markInTime) / duration) * 100
+                        }%`,
+                      }}
+                    />
+                  )}
                 <input
                   type="range"
                   min="0"

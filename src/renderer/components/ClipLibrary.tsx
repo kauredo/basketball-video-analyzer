@@ -15,6 +15,30 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
 
+// Helper function to format file paths for img src
+const formatVideoSrc = (path: string): string => {
+  // Check if it's already a file URL
+  if (path.startsWith("file://")) {
+    return path;
+  }
+
+  // For Windows paths (detected by drive letter pattern like C:\ or C:/)
+  if (/^[A-Za-z]:[\\/]/.test(path)) {
+    // Convert backslashes to forward slashes for URL format
+    const normalizedPath = path.replace(/\\/g, "/");
+    // Windows file URLs need three slashes
+    return `file:///${normalizedPath}`;
+  }
+
+  // For Unix-like paths (starting with /)
+  if (path.startsWith("/")) {
+    return `file://${path}`;
+  }
+
+  // Fallback - just prepend file://
+  return `file://${path}`;
+};
+
 interface Category {
   id: number;
   name: string;
@@ -556,7 +580,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                       <div className={styles.clipThumbnail}>
                         {clip.thumbnail_path ? (
                           <img
-                            src={`file://${clip.thumbnail_path}`}
+                            src={formatVideoSrc(clip.thumbnail_path)}
                             alt={clip.title}
                             className={styles.thumbnailImage}
                           />

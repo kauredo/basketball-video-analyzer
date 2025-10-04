@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Basketball Clip Cutter",
+    "title": "Basketball Video Analyzer",
     "buttons": {
       "getStarted": "Get Started - Select Video",
       "selectVideo": "Select Video",
@@ -21,7 +21,7 @@
       "cancel": "Cancel"
     },
     "welcome": {
-      "title": "Welcome to Basketball Clip Cutter",
+      "title": "Welcome to Basketball Video Analyzer",
       "subtitle": "Perfect for creating and organizing basketball clips for team scouting",
       "steps": {
         "loadVideo": {

@@ -35,27 +35,27 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
     log.info("Checking for update...");
   });
 
-  autoUpdater.on("update-available", (info) => {
+  autoUpdater.on("update-available", info => {
     log.info("Update available:", info);
     mainWindow.webContents.send("update-available", info);
   });
 
-  autoUpdater.on("update-not-available", (info) => {
+  autoUpdater.on("update-not-available", info => {
     log.info("Update not available:", info);
   });
 
-  autoUpdater.on("error", (err) => {
+  autoUpdater.on("error", err => {
     log.error("Error in auto-updater:", err);
     mainWindow.webContents.send("update-error", err);
   });
 
-  autoUpdater.on("download-progress", (progressObj) => {
+  autoUpdater.on("download-progress", progressObj => {
     const logMessage = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% (${progressObj.transferred}/${progressObj.total})`;
     log.info(logMessage);
     mainWindow.webContents.send("download-progress", progressObj);
   });
 
-  autoUpdater.on("update-downloaded", (info) => {
+  autoUpdater.on("update-downloaded", info => {
     log.info("Update downloaded:", info);
     mainWindow.webContents.send("update-downloaded", info);
 
@@ -69,7 +69,7 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
         defaultId: 0,
         cancelId: 1,
       })
-      .then((result) => {
+      .then(result => {
         if (result.response === 0) {
           // Quit and install
           autoUpdater.quitAndInstall();
@@ -89,7 +89,7 @@ export function checkForUpdates(mainWindow: BrowserWindow) {
     return;
   }
 
-  autoUpdater.checkForUpdates().catch((err) => {
+  autoUpdater.checkForUpdates().catch(err => {
     dialog.showErrorBox(
       "Update Check Failed",
       "Failed to check for updates: " + err.message

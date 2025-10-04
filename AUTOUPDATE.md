@@ -5,6 +5,7 @@ This app now supports automatic over-the-air (OTA) updates via GitHub Releases!
 ## How It Works
 
 The app uses `electron-updater` to:
+
 1. **Check for updates** automatically every 6 hours (and on startup)
 2. **Download updates** in the background
 3. **Notify users** when an update is ready
@@ -36,6 +37,7 @@ git push --follow-tags
 ### What Happens Automatically
 
 When you push a tag or create a release, GitHub Actions:
+
 1. ✅ Builds the app on macOS, Windows, and Linux (in parallel)
 2. ✅ Creates installers (.dmg, .exe, .deb, .rpm)
 3. ✅ Publishes a GitHub Release with all installers attached
@@ -46,6 +48,7 @@ When you push a tag or create a release, GitHub Actions:
 ### Your GitHub Workflow
 
 Your `.github/workflows/release.yml` already handles:
+
 - Multi-platform builds (macOS, Windows, Linux)
 - Installer creation for all platforms
 - Release publishing with auto-generated notes
@@ -82,6 +85,7 @@ All you need to do is create a version tag!
 ### Update Check Frequency
 
 Edit `src/main/autoUpdater.ts`:
+
 ```typescript
 // Check every 6 hours (default)
 setInterval(() => {
@@ -92,6 +96,7 @@ setInterval(() => {
 ### Update Server
 
 Updates are fetched from GitHub Releases. Configuration in:
+
 - `forge.config.js` → `publishers` section
 - `package.json` → `build.publish` section
 
@@ -104,10 +109,12 @@ Auto-updates are automatically disabled when `NODE_ENV=development`
 ### "Updates not working"
 
 1. **Check GitHub release exists**
+
    - Must be a published (not draft) release
    - Must have proper installers attached
 
 2. **Check version number**
+
    - New version must be higher than current
    - Use semantic versioning (e.g., 1.0.0)
 
@@ -120,6 +127,7 @@ Auto-updates are automatically disabled when `NODE_ENV=development`
 ### "GITHUB_TOKEN error"
 
 Make sure your GitHub token:
+
 - Has `repo` scope
 - Is set in environment: `export GITHUB_TOKEN="..."`
 - Is valid and not expired
@@ -127,6 +135,7 @@ Make sure your GitHub token:
 ### "Code signing errors (macOS)"
 
 For macOS auto-updates to work properly in production:
+
 - App must be code-signed
 - Update `forge.config.js`:
   ```javascript
@@ -144,6 +153,7 @@ For macOS auto-updates to work properly in production:
 ## Testing Updates Locally
 
 1. Build version 1.0.0:
+
    ```bash
    npm version 1.0.0
    npm run build && npm run make
