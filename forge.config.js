@@ -112,14 +112,19 @@ module.exports = {
       const yaml = require("js-yaml");
 
       let macMetadataGenerated = false;
+      let winMetadataGenerated = false;
+      let linuxMetadataGenerated = false;
 
       for (const result of makeResults) {
         const outPath = path.dirname(result.artifacts[0]);
+        const version = require("./package.json").version;
 
         // Generate update metadata files for auto-updater (only once per platform)
+
+        // macOS: latest-mac.yml
         if (process.platform === "darwin" && !macMetadataGenerated) {
           const latestMac = {
-            version: require("./package.json").version,
+            version: version,
             files: result.artifacts.map(artifact => ({
               url: path.basename(artifact),
               sha512: "", // Will be filled by GitHub
@@ -133,6 +138,44 @@ module.exports = {
             yaml.dump(latestMac)
           );
           macMetadataGenerated = true;
+        }
+
+        // Windows: latest.yml
+        if (process.platform === "win32" && !winMetadataGenerated) {
+          const latestWin = {
+            version: version,
+            files: result.artifacts.map(artifact => ({
+              url: path.basename(artifact),
+              sha512: "", // Will be filled by GitHub
+            })),
+            path: result.artifacts[0] ? path.basename(result.artifacts[0]) : "",
+            sha512: "",
+            releaseDate: new Date().toISOString(),
+          };
+          fs.writeFileSync(
+            path.join(outPath, "latest.yml"),
+            yaml.dump(latestWin)
+          );
+          winMetadataGenerated = true;
+        }
+
+        // Linux: latest-linux.yml
+        if (process.platform === "linux" && !linuxMetadataGenerated) {
+          const latestLinux = {
+            version: version,
+            files: result.artifacts.map(artifact => ({
+              url: path.basename(artifact),
+              sha512: "", // Will be filled by GitHub
+            })),
+            path: result.artifacts[0] ? path.basename(result.artifacts[0]) : "",
+            sha512: "",
+            releaseDate: new Date().toISOString(),
+          };
+          fs.writeFileSync(
+            path.join(outPath, "latest-linux.yml"),
+            yaml.dump(latestLinux)
+          );
+          linuxMetadataGenerated = true;
         }
       }
     },
