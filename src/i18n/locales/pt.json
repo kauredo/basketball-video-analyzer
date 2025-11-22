@@ -177,7 +177,22 @@
         "enterTime": "Por favor introduza um tempo para saltar",
         "invalidFormat": "Formato de tempo inválido. Use HH:MM:SS, MM:SS, ou segundos (ex: 1:23:45, 12:30, 150)",
         "timeExceedsVideo": "O tempo excede a duração do vídeo"
-      }
+      },
+      "playbackSpeed": "Velocidade de Reprodução"
+    },
+    "shortcuts": {
+      "title": "Atalhos de Teclado",
+      "playPause": "Reproduzir/Pausar vídeo",
+      "markIn": "Marcar ponto de entrada",
+      "markOut": "Marcar ponto de saída",
+      "clearMarks": "Limpar marcas",
+      "seek5s": "Avançar/retroceder 5 segundos",
+      "seek30s": "Avançar/retroceder 30 segundos",
+      "seek1m": "Avançar/retroceder 1 minuto",
+      "frameStep": "Frame a frame"
+    },
+    "library": {
+      "searchPlaceholder": "Pesquisar clips..."
     },
     "timeline": {
       "title": "Linha do Tempo",

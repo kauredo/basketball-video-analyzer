@@ -20,6 +20,8 @@ import {
   faLayerGroup,
   faList,
   faDownload,
+  faSun,
+  faMoon,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./styles/App.module.css";
 import { VideoPlayer } from "./components/VideoPlayer";
@@ -31,6 +33,7 @@ import { LanguageSelector } from "./components/LanguageSelector";
 import { InstructionsModal } from "./components/InstructionsModal";
 import { ProjectSelector } from "./components/ProjectSelector";
 import { KeyBindingEditor } from "./components/KeyBindingEditor";
+import { ShortcutsModal } from "./components/ShortcutsModal";
 import { Clip, Category } from "../types/global";
 
 export const App: React.FC = () => {
@@ -47,6 +50,7 @@ export const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const [hasExistingProjects, setHasExistingProjects] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(360); // Default panel width for clips
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(true); // Start with side panel closed
@@ -56,6 +60,7 @@ export const App: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
 
   const resizeRef = useRef<HTMLDivElement>(null);
   const sideResizeRef = useRef<HTMLDivElement>(null);
@@ -103,6 +108,25 @@ export const App: React.FC = () => {
     };
     loadData();
   }, [refreshTrigger, currentProject]);
+
+  // Theme management
+  useEffect(() => {
+    // Load theme from localStorage on mount
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Apply theme to document and save to localStorage
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === "dark" ? "light" : "dark");
+  };
 
   // Listen for update download progress
   useEffect(() => {
@@ -336,7 +360,7 @@ export const App: React.FC = () => {
   return (
     <div className={styles.app}>
       <header className={styles.appHeader}>
-        <h1>
+        <h1 className={styles.title}>
           <FontAwesomeIcon icon={faBasketball} /> {t("app.title")}
         </h1>
         {updateDownloadProgress !== null && (
@@ -371,6 +395,22 @@ export const App: React.FC = () => {
             onClick={() => setShowSettings(true)}
           >
             <FontAwesomeIcon icon={faCog} /> {t("app.buttons.settings")}
+          </button>
+          <button
+            type="button"
+            className={styles.btn}
+            onClick={() => setShowShortcuts(true)}
+            title="Keyboard Shortcuts"
+          >
+            <FontAwesomeIcon icon={faQuestionCircle} />
+          </button>
+          <button
+            type="button"
+            className={styles.btn}
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            <FontAwesomeIcon icon={theme === "dark" ? faSun : faMoon} />
           </button>
         </div>
       </header>
@@ -556,6 +596,12 @@ export const App: React.FC = () => {
         onClose={() => setShowProjectSelector(false)}
         onSelectProject={handleSelectProject}
         onCreateNew={handleCreateNewProject}
+      />
+
+      {/* Shortcuts Modal */}
+      <ShortcutsModal
+        isOpen={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
       />
     </div>
   );

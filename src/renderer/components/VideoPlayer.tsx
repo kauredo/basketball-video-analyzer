@@ -21,6 +21,7 @@ import {
   faAnglesRight,
   faSearch,
   faClock,
+  faGaugeHigh,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/VideoPlayer.module.css";
 
@@ -84,6 +85,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
+    const [playbackRate, setPlaybackRate] = useState(1);
+    const [showSpeedMenu, setShowSpeedMenu] = useState(false);
     const [keyBindings, setKeyBindings] = useState({
       markInKey: "z",
       markOutKey: "m",
@@ -688,6 +691,40 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     className={styles.volumeSlider}
                   />
                 </div>
+
+                <div className={styles.speedControl}>
+                  <button
+                    type="button"
+                    className={styles.speedButton}
+                    onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                    title={t("app.video.playbackSpeed")}
+                  >
+                    <FontAwesomeIcon icon={faGaugeHigh} />
+                    <span className={styles.speedValue}>{playbackRate}x</span>
+                  </button>
+                  {showSpeedMenu && (
+                    <div className={styles.speedMenu}>
+                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map(rate => (
+                        <button
+                          key={rate}
+                          type="button"
+                          className={`${styles.speedOption} ${
+                            playbackRate === rate ? styles.activeSpeed : ""
+                          }`}
+                          onClick={() => {
+                            setPlaybackRate(rate);
+                            if (videoRef.current) {
+                              videoRef.current.playbackRate = rate;
+                            }
+                            setShowSpeedMenu(false);
+                          }}
+                        >
+                          {rate}x
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className={styles.markControls}>
@@ -731,7 +768,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 <button
                   type="button"
                   onClick={onClearMarks}
-                  className={styles.clearMarksBtn}
+                  className={`${styles.markBtn} ${styles.clearMarksBtn}`}
                   disabled={markInTime === null && markOutTime === null}
                 >
                   <FontAwesomeIcon icon={faTrash} /> Clear (Esc)

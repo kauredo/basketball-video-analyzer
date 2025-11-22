@@ -186,7 +186,22 @@
         "enterTime": "Please enter a time to jump to",
         "invalidFormat": "Invalid time format. Use HH:MM:SS, MM:SS, or seconds (e.g., 1:23:45, 12:30, 150)",
         "timeExceedsVideo": "Time exceeds video duration"
-      }
+      },
+      "playbackSpeed": "Playback Speed"
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "playPause": "Play/Pause video",
+      "markIn": "Mark In point",
+      "markOut": "Mark Out point",
+      "clearMarks": "Clear marks",
+      "seek5s": "Seek 5 seconds",
+      "seek30s": "Seek 30 seconds",
+      "seek1m": "Seek 1 minute",
+      "frameStep": "Frame-by-frame"
+    },
+    "library": {
+      "searchPlaceholder": "Search clips..."
     },
     "timeline": {
       "title": "Timeline",

@@ -357,6 +357,7 @@
 .exportBtn {
   background: var(--color-primary);
   border-color: var(--color-primary);
+  color: white;
 }
 
 .exportBtn:hover:not(:disabled) {
@@ -439,7 +440,7 @@
 .filterBtn.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -538,7 +539,7 @@
 
 .categoryTag {
   font-size: var(--font-size-xs);
-  color: var(--text-primary);
+  color: var(--text-white);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-md);
   font-weight: var(--font-weight-medium);
@@ -567,7 +568,7 @@
   min-height: var(--button-height);
   background: var(--color-primary);
   border: none;
-  color: var(--text-primary);
+  color: var(--text-white);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -601,6 +602,93 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.searchAndSortContainer {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--spacing-sm);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: var(--input-height);
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: 0 var(--spacing-md) 0 calc(var(--spacing-md) + var(--spacing-lg));
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+  margin: 0;
+}
+
+.searchInput:hover {
+  border-color: var(--border-color-hover);
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.sortControls {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.sortButton {
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-fast);
+  height: 28px;
+}
+
+.sortButton:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-color-hover);
+  color: var(--text-primary);
+}
+
+.activeSort {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.activeSort:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
 }
 
 /* Scrollable Content Area */

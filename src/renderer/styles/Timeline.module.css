@@ -643,3 +643,96 @@
 .timelineTracks::-webkit-scrollbar-thumb:hover {
   background: var(--border-color-hover);
 }
+
+/* Zoom Controls */
+.zoomControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: var(--bg-tertiary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.zoomIcon {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.zoomSlider {
+  width: 100px;
+  height: 4px;
+  -webkit-appearance: none;
+  background: var(--bg-quaternary);
+  border-radius: 2px;
+  outline: none;
+}
+
+.zoomSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.zoomSlider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.zoomValue {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  min-width: 3ch;
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* Horizontal Scrolling for Zoom */
+.timelineScrollContainer {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.timelineContentWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 100%;
+}
+
+/* Sticky Track Label */
+.trackLabelSticky {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  width: 160px;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Update existing trackLabel to match sticky behavior if needed, or replace usage */
+.trackLabel {
+  /* Keep existing styles as fallback or base */
+  width: 160px;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+}

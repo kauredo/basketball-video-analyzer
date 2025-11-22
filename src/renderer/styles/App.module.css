@@ -11,6 +11,10 @@
   background: var(--bg-main);
 }
 
+.title {
+  color: var(--text-primary);
+}
+
 .mainContent {
   display: flex;
   flex-direction: column;
@@ -389,7 +393,7 @@
 .settingsButton {
   height: var(--button-height);
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  border: none;
   color: var(--text-primary);
   padding: 0 var(--spacing-md);
   border-radius: var(--radius-md);
@@ -404,7 +408,6 @@
 
 .settingsButton:hover {
   background: var(--bg-quaternary);
-  border-color: var(--border-color-hover);
   transform: translateY(-1px);
 }
 

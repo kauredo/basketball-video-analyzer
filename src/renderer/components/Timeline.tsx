@@ -8,6 +8,8 @@ import {
   faLayerGroup,
   faFilter,
   faSearch,
+  faMagnifyingGlassMinus,
+  faMagnifyingGlassPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { Clip, Category } from "../../types/global";
@@ -39,6 +41,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<number | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const timelineRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,6 +104,9 @@ export const Timeline: React.FC<TimelineProps> = ({
 
   const timelineClips = expandClipsForCategories();
 
+  // Calculate timeline width based on zoom
+  const timelineWidth = `${zoomLevel * 100}%`;
+
   // Group clips by category for timeline tracks - organize hierarchically
   const organizeCategories = (categories: Category[]) => {
     const result: Array<{ category: Category; clips: TimelineClip[] }> = [];
@@ -158,6 +164,7 @@ export const Timeline: React.FC<TimelineProps> = ({
 
     const rect = timelineRef.current.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
+    // Calculate percentage relative to the zoomed width
     const percentage = (clickX / rect.width) * 100;
     const newTime = (percentage / 100) * videoDuration;
 
@@ -444,83 +451,105 @@ export const Timeline: React.FC<TimelineProps> = ({
                 {t("app.timeline.currentTime")}: {formatTime(currentTime)}
               </span>
             </div>
+            
+            <div className={styles.zoomControls}>
+              <FontAwesomeIcon icon={faMagnifyingGlassMinus} className={styles.zoomIcon} />
+              <input
+                type="range"
+                min="1"
+                max="10"
+                step="0.1"
+                value={zoomLevel}
+                onChange={(e) => setZoomLevel(parseFloat(e.target.value))}
+                className={styles.zoomSlider}
+                title="Zoom Timeline"
+              />
+              <FontAwesomeIcon icon={faMagnifyingGlassPlus} className={styles.zoomIcon} />
+              <span className={styles.zoomValue}>{Math.round(zoomLevel * 100)}%</span>
+            </div>
           </div>
 
-          {/* Timeline Ruler */}
-          <div className={styles.timelineRuler}>
-            {Array.from({ length: 11 }, (_, i) => {
-              const time = (i / 10) * videoDuration;
-              return (
-                <div key={i} className={styles.rulerMark}>
-                  <div className={styles.rulerLine} />
-                  <span className={styles.rulerLabel}>{formatTime(time)}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Timeline Tracks */}
-          <div className={styles.timelineTracks}>
-            {clipsByCategory.map(({ category, clips: categoryClips }) => (
-              <div key={category.id} className={styles.timelineTrack}>
-                <div className={styles.trackLabel}>
-                  <div
-                    className={styles.trackColorIndicator}
-                    style={{ backgroundColor: category.color }}
-                  />
-                  <span
-                    className={`${styles.trackName} ${
-                      category.parent_id ? styles.subcategoryTrack : ""
-                    }`}
-                  >
-                    {category.parent_id && "└ "}
-                    {category.name}
-                  </span>
-                  <span className={styles.trackCount}>
-                    ({categoryClips.length})
-                  </span>
-                </div>
-
-                <div
-                  className={styles.trackTimeline}
-                  ref={timelineRef}
-                  onClick={handleTimelineClick}
-                >
-                  {/* Track Background */}
-                  <div className={styles.trackBackground} />
-
-                  {/* Clip Segments */}
-                  {categoryClips.map(clip => (
-                    <div
-                      key={clip.id}
-                      className={`${styles.timelineClip} ${
-                        selectedClip?.id === clip.id ? styles.selectedClip : ""
-                      }`}
-                      style={{
-                        left: `${clip.startPercentage}%`,
-                        width: `${clip.widthPercentage}%`,
-                        backgroundColor: getClipColor(clip),
-                      }}
-                      onClick={e => handleClipClick(clip, e)}
-                      title={`${clip.title} (${formatTime(
-                        clip.start_time
-                      )} - ${formatTime(clip.end_time)})`}
-                    >
-                      <div className={styles.clipHandle} />
+          {/* Timeline Scroll Container */}
+          <div className={styles.timelineScrollContainer}>
+            <div className={styles.timelineContentWrapper} style={{ width: timelineWidth }}>
+              {/* Timeline Ruler */}
+              <div className={styles.timelineRuler}>
+                {Array.from({ length: Math.ceil(11 * zoomLevel) }, (_, i) => {
+                  const time = (i / (10 * zoomLevel)) * videoDuration;
+                  if (time > videoDuration) return null;
+                  return (
+                    <div key={i} className={styles.rulerMark} style={{ left: `${(time / videoDuration) * 100}%` }}>
+                      <div className={styles.rulerLine} />
+                      <span className={styles.rulerLabel}>{formatTime(time)}</span>
                     </div>
-                  ))}
-
-                  {/* Current Time Indicator */}
-                  <div
-                    className={styles.currentTimeIndicator}
-                    style={{ left: `${currentTimePercentage}%` }}
-                  >
-                    <div className={styles.timeIndicatorLine} />
-                    <div className={styles.timeIndicatorHandle} />
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            ))}
+
+              {/* Timeline Tracks */}
+              <div className={styles.timelineTracks}>
+                {clipsByCategory.map(({ category, clips: categoryClips }) => (
+                  <div key={category.id} className={styles.timelineTrack}>
+                    <div className={styles.trackLabelSticky}>
+                      <div
+                        className={styles.trackColorIndicator}
+                        style={{ backgroundColor: category.color }}
+                      />
+                      <span
+                        className={`${styles.trackName} ${
+                          category.parent_id ? styles.subcategoryTrack : ""
+                        }`}
+                      >
+                        {category.parent_id && "└ "}
+                        {category.name}
+                      </span>
+                      <span className={styles.trackCount}>
+                        ({categoryClips.length})
+                      </span>
+                    </div>
+
+                    <div
+                      className={styles.trackTimeline}
+                      ref={timelineRef}
+                      onClick={handleTimelineClick}
+                    >
+                      {/* Track Background */}
+                      <div className={styles.trackBackground} />
+
+                      {/* Clip Segments */}
+                      {categoryClips.map(clip => (
+                        <div
+                          key={clip.id}
+                          className={`${styles.timelineClip} ${
+                            selectedClip?.id === clip.id ? styles.selectedClip : ""
+                          }`}
+                          style={{
+                            left: `${clip.startPercentage}%`,
+                            width: `${clip.widthPercentage}%`,
+                            backgroundColor: getClipColor(clip),
+                          }}
+                          onClick={e => handleClipClick(clip, e)}
+                          title={`${clip.title} (${formatTime(
+                            clip.start_time
+                          )} - ${formatTime(clip.end_time)})`}
+                        >
+                          <div className={styles.clipHandle} />
+                        </div>
+                      ))}
+
+                      {/* Current Time Indicator */}
+                      <div
+                        className={styles.currentTimeIndicator}
+                        style={{ left: `${currentTimePercentage}%` }}
+                      >
+                        <div className={styles.timeIndicatorLine} />
+                        <div className={styles.timeIndicatorHandle} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Timeline Footer */}

@@ -12,6 +12,10 @@ import {
   faClock,
   faShare,
   faVideo,
+  faSort,
+  faSortUp,
+  faSortDown,
+  faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
 
@@ -75,17 +79,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [filteredClips, setFilteredClips] = useState<Clip[]>([]);
-  const [isExporting, setIsExporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "duration" | "title">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     loadData();
   }, [onRefresh, currentProject]);
-
-  useEffect(() => {
-    filterClips();
-  }, [clips, selectedCategory, searchTerm]);
 
   const loadData = async () => {
     try {
@@ -103,27 +104,50 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
   };
 
-  const filterClips = () => {
-    let filtered = clips;
+  const filteredClips = clips.filter(clip => {
+    const matchesSearch =
+      clip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      clip.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (selectedCategory !== null) {
-      filtered = filtered.filter(clip => {
-        try {
-          const clipCategories = JSON.parse(clip.categories);
-          return clipCategories.includes(selectedCategory);
-        } catch {
-          return false;
-        }
-      });
+    let matchesCategory = true;
+    if (selectedCategory) {
+      try {
+        const clipCategories = JSON.parse(clip.categories || "[]");
+        matchesCategory = clipCategories.includes(selectedCategory);
+      } catch (e) {
+        matchesCategory = false;
+      }
     }
 
-    if (searchTerm) {
-      filtered = filtered.filter(clip =>
-        clip.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    return matchesSearch && matchesCategory;
+  });
 
-    setFilteredClips(filtered);
+  const sortedClips = [...filteredClips].sort((a, b) => {
+    let comparison = 0;
+    switch (sortBy) {
+      case "date":
+        comparison =
+          new Date(b.created_at || 0).getTime() -
+          new Date(a.created_at || 0).getTime();
+        break;
+      case "duration":
+        comparison =
+          b.end_time - b.start_time - (a.end_time - a.start_time);
+        break;
+      case "title":
+        comparison = a.title.localeCompare(b.title);
+        break;
+    }
+    return sortOrder === "asc" ? -comparison : comparison;
+  });
+
+  const toggleSort = (field: "date" | "duration" | "title") => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("desc"); // Default to desc for new field
+    }
   };
 
   const formatTime = (time: number): string => {
@@ -549,9 +573,65 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
               </div>
             </div>
 
+            {/* Search and Sort Controls */}
+            <div className={styles.searchAndSortContainer}>
+              <div className={styles.searchContainer}>
+                <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
+                <input
+                  type="text"
+                  placeholder={t("app.library.searchPlaceholder")}
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className={styles.searchInput}
+                />
+              </div>
+
+              <div className={styles.sortControls}>
+                <button
+                  className={`${styles.sortButton} ${
+                    sortBy === "date" ? styles.activeSort : ""
+                  }`}
+                  onClick={() => toggleSort("date")}
+                >
+                  Date
+                  {sortBy === "date" && (
+                    <FontAwesomeIcon
+                      icon={sortOrder === "asc" ? faSortUp : faSortDown}
+                    />
+                  )}
+                </button>
+                <button
+                  className={`${styles.sortButton} ${
+                    sortBy === "duration" ? styles.activeSort : ""
+                  }`}
+                  onClick={() => toggleSort("duration")}
+                >
+                  Duration
+                  {sortBy === "duration" && (
+                    <FontAwesomeIcon
+                      icon={sortOrder === "asc" ? faSortUp : faSortDown}
+                    />
+                  )}
+                </button>
+                <button
+                  className={`${styles.sortButton} ${
+                    sortBy === "title" ? styles.activeSort : ""
+                  }`}
+                  onClick={() => toggleSort("title")}
+                >
+                  Title
+                  {sortBy === "title" && (
+                    <FontAwesomeIcon
+                      icon={sortOrder === "asc" ? faSortUp : faSortDown}
+                    />
+                  )}
+                </button>
+              </div>
+            </div>
+
             {/* Clips Grid */}
             <div className={styles.clipsGrid}>
-              {filteredClips.length === 0 ? (
+              {sortedClips.length === 0 ? (
                 <div className={styles.emptyState}>
                   {selectedCategory === null ? (
                     <div>
@@ -576,7 +656,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   )}
                 </div>
               ) : (
-                filteredClips.map(clip => {
+                sortedClips.map(clip => {
                   const clipCategories = getClipCategories(clip);
                   const createdDate = new Date(
                     clip.created_at
