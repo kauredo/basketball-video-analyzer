@@ -449,7 +449,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                       : "transparent",
                     color: selectedCategories.includes(parentCategory.id)
                       ? "#fff"
-                      : parentCategory.color,
+                      : "var(--text-primary)",
                   }}
                 >
                   <span className={styles.categoryName}>
@@ -485,7 +485,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                               : "transparent",
                             color: selectedCategories.includes(subcategory.id)
                               ? "#fff"
-                              : subcategory.color,
+                              : "var(--text-primary)",
                           }}
                         >
                           <span className={styles.categoryName}>

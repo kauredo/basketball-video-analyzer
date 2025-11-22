@@ -688,8 +688,21 @@ ipcMain.handle(
         // Copy clips to category folder
         for (const clip of clips) {
           if (fs.existsSync(clip.output_path)) {
-            const fileName = path.basename(clip.output_path);
-            const destPath = path.join(categoryDir, fileName);
+            // Use clip title for filename, sanitize it (allow spaces, parens, hyphens)
+            const safeTitle = clip.title.replace(/[^a-zA-Z0-9 \-\(\)]/g, "_").trim();
+            const ext = path.extname(clip.output_path);
+            let fileName = `${safeTitle}${ext}`;
+            
+            let destPath = path.join(categoryDir, fileName);
+            
+            // Handle duplicates
+            let counter = 1;
+            while (fs.existsSync(destPath)) {
+               fileName = `${safeTitle} (${counter})${ext}`;
+               destPath = path.join(categoryDir, fileName);
+               counter++;
+            }
+
             fs.copyFileSync(clip.output_path, destPath);
             exportedFiles.push(destPath);
           }

@@ -464,7 +464,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                             color:
                               selectedCategory === category.id
                                 ? "#fff"
-                                : category.color,
+                                : "var(--text-primary)",
                           }}
                         >
                           {category.name} ({count})
@@ -517,7 +517,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                                         color:
                                           selectedCategory === subcategory.id
                                             ? "#fff"
-                                            : subcategory.color,
+                                            : "var(--text-primary)",
                                       }}
                                     >
                                       {subcategory.name} ({subCount})
