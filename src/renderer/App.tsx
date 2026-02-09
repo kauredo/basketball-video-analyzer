@@ -38,6 +38,7 @@ import { Clip, Category } from "../types/global";
 import { useFocusTrap } from "./hooks/useFocusTrap";
 import { useToastContext } from "./contexts/ToastContext";
 import { useConfirm } from "./contexts/ConfirmContext";
+import { loadPref, savePref, STORAGE_KEYS } from "./utils/storage";
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
@@ -57,10 +58,10 @@ export const App: React.FC = () => {
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [hasExistingProjects, setHasExistingProjects] = useState(false);
-  const [sidePanelWidth, setSidePanelWidth] = useState(360); // Default panel width for clips
-  const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(true); // Start with side panel closed
-  const [bottomPanelHeight, setBottomPanelHeight] = useState(300); // Default panel height for timeline
-  const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(false);
+  const [sidePanelWidth, setSidePanelWidth] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_WIDTH, 360));
+  const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_COLLAPSED, true));
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(() => loadPref(STORAGE_KEYS.BOTTOM_PANEL_HEIGHT, 300));
+  const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.BOTTOM_PANEL_COLLAPSED, false));
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
@@ -86,8 +87,11 @@ export const App: React.FC = () => {
         if (hasProjects && !videoPath) {
           setShowProjectSelector(true);
         } else if (!hasProjects && !videoPath) {
-          // Show instructions modal for first-time users
-          setShowInstructions(true);
+          // Show instructions modal only on true first launch
+          const hasSeenWelcome = loadPref(STORAGE_KEYS.ONBOARDING_COMPLETE, false);
+          if (!hasSeenWelcome) {
+            setShowInstructions(true);
+          }
         }
       } catch (error) {
         console.error("Error checking existing projects:", error);
@@ -132,8 +136,23 @@ export const App: React.FC = () => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === "dark" ? "light" : "dark");
+    setTheme(prev => {
+      const next = prev === "dark" ? "light" : "dark";
+      showSuccess(t("app.settings.themeChanged", {
+        mode: next === "dark" ? t("app.settings.darkMode") : t("app.settings.lightMode"),
+      }));
+      return next;
+    });
   };
+
+  // Persist panel state
+  useEffect(() => {
+    savePref(STORAGE_KEYS.SIDE_PANEL_COLLAPSED, isSidePanelCollapsed);
+  }, [isSidePanelCollapsed]);
+
+  useEffect(() => {
+    savePref(STORAGE_KEYS.BOTTOM_PANEL_COLLAPSED, isBottomPanelCollapsed);
+  }, [isBottomPanelCollapsed]);
 
   // Listen for update download progress
   useEffect(() => {
@@ -191,6 +210,11 @@ export const App: React.FC = () => {
 
       const handleMouseUp = () => {
         isResizing.current = false;
+        // Save final height on mouseup
+        const finalEl = resizeRef.current;
+        if (finalEl) {
+          savePref(STORAGE_KEYS.BOTTOM_PANEL_HEIGHT, finalEl.clientHeight || bottomPanelHeight);
+        }
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = "";
@@ -224,6 +248,11 @@ export const App: React.FC = () => {
 
       const handleMouseUp = () => {
         isResizing.current = false;
+        // Save final width on mouseup
+        const finalEl = sideResizeRef.current;
+        if (finalEl) {
+          savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, finalEl.clientWidth || sidePanelWidth);
+        }
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = "";
@@ -621,8 +650,14 @@ export const App: React.FC = () => {
       {/* Instructions Modal - only show for first-time users with no projects */}
       <InstructionsModal
         isOpen={!hasExistingProjects && !videoPath && showInstructions}
-        onClose={() => setShowInstructions(false)}
-        onSelectVideo={handleSelectVideo}
+        onClose={() => {
+          setShowInstructions(false);
+          savePref(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
+        }}
+        onSelectVideo={() => {
+          savePref(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
+          handleSelectVideo();
+        }}
         showSelectVideoButton={true}
       />
 

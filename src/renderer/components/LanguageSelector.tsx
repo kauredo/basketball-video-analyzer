@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import styles from "../styles/LanguageSelector.module.css";
+import { useToastContext } from "../contexts/ToastContext";
 
 interface LanguageSelectorProps {
   className?: string;
@@ -10,6 +11,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   className,
 }) => {
   const { t, i18n } = useTranslation();
+  const { showSuccess } = useToastContext();
 
   const languages = [
     { code: "en", name: "English" },
@@ -17,7 +19,12 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   ];
 
   const handleLanguageChange = (languageCode: string) => {
-    i18n.changeLanguage(languageCode);
+    const lang = languages.find(l => l.code === languageCode);
+    i18n.changeLanguage(languageCode).then(() => {
+      if (lang) {
+        showSuccess(t("app.settings.languageChanged", { language: lang.name }));
+      }
+    });
   };
 
   return (

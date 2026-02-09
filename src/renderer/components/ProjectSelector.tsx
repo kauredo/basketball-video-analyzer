@@ -149,8 +149,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                   <div className={styles.sectionHeader}>
                     <h3>{t("app.projects.recentProjects")}</h3>
                     <span className={styles.projectCount}>
-                      {projects.length} project
-                      {projects.length !== 1 ? "s" : ""}
+                      {t("app.projects.projectCount", { count: projects.length })}
                     </span>
                   </div>
 

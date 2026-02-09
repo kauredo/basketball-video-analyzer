@@ -16,6 +16,7 @@
       "resetDatabase": "Reset Database",
       "showInstructions": "Show Instructions",
       "done": "Done",
+      "ok": "OK",
       "edit": "Edit",
       "save": "Save",
       "cancel": "Cancel",
@@ -65,7 +66,9 @@
       "theme": "Theme",
       "general": "General",
       "darkMode": "Dark Mode",
-      "lightMode": "Light Mode"
+      "lightMode": "Light Mode",
+      "languageChanged": "Language changed to {{language}}",
+      "themeChanged": "Switched to {{mode}}"
     },
     "categories": {
       "title": "Manage Categories",
@@ -78,6 +81,9 @@
       "errorCreating": "Error creating category. Name might already exist.",
       "errorUpdating": "Error updating category. Name might already exist.",
       "errorDeleting": "Error deleting category.",
+      "categoryCreated": "Category created successfully",
+      "categoryUpdated": "Category updated successfully",
+      "categoryDeleted": "Category deleted successfully",
       "editCategory": "Edit Category",
       "categoryName": "Category Name",
       "color": "Color",
@@ -136,6 +142,7 @@
       "confirmDelete": "Are you sure you want to delete this clip?",
       "exportSuccess": "Clips exported successfully",
       "exportError": "Error exporting clips",
+      "clipsSummary": "{{count}} clips \u2022 {{video}}",
       "noClipsYet": "No clips yet",
       "noClipsInCategory": "No clips in",
       "search": "Search clips...",
@@ -256,7 +263,9 @@
       "errorVideoFormat": "Video format not supported",
       "checkVideoFormat": "Please check if the video file exists and is in a supported format (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Downloading update... {{progress}}%",
-      "zoomTimeline": "Zoom Timeline"
+      "zoomTimeline": "Zoom Timeline",
+      "pathLabel": "Path:",
+      "volumeLabel": "Volume"
     },
     "shortcuts": {
       "title": "Keyboard Shortcuts",
@@ -284,7 +293,9 @@
       "confirmDelete": "Are you sure you want to delete the project \"{{name}}\"? This will also delete all associated clips.",
       "deleteError": "Error deleting project. Please try again.",
       "noProjectsYet": "No Projects Yet",
-      "noProjectsDescription": "Create your first project to get started with video analysis."
+      "noProjectsDescription": "Create your first project to get started with video analysis.",
+      "projectCount_one": "{{count}} project",
+      "projectCount_other": "{{count}} projects"
     },
     "timeline": {
       "title": "Timeline",
@@ -306,7 +317,12 @@
       "currentTime": "Current Time",
       "legend": "Legend",
       "selectedClip": "Selected Clip",
-      "currentPosition": "Current Position"
+      "currentPosition": "Current Position",
+      "noClipsGuidance": "Mark in/out points on the video to create your first clip."
+    },
+    "hints": {
+      "markKeys": "Press {{markIn}} to mark the start of a clip, {{markOut}} to mark the end.",
+      "firstClip": "Your clips appear here. Use categories to organize them."
     }
   }
 }

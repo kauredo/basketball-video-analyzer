@@ -282,6 +282,7 @@ export const Timeline: React.FC<TimelineProps> = ({
               <div className={styles.emptyState}>
                 <FontAwesomeIcon icon={faClock} />
                 <p>{t("app.timeline.noClips")}</p>
+                <p className={styles.emptyStateGuidance}>{t("app.timeline.noClipsGuidance")}</p>
               </div>
             ) : (
               <table className={styles.clipsTableElement}>

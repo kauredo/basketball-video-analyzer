@@ -162,6 +162,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       setNewCategory({ name: "", color: DEFAULT_CATEGORY_COLOR, description: "" });
       await loadCategories();
       onCategoriesChange();
+      showSuccess(t("app.categories.categoryCreated"));
     } catch (error) {
       console.error("Error creating category:", error);
       showError(t("app.categories.errorCreating"));
@@ -208,11 +209,12 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       setEditingCategory(null);
       await loadCategories();
       onCategoriesChange();
+      showSuccess(t("app.categories.categoryUpdated"));
     } catch (error) {
       console.error("Error updating category:", error);
       showError(t("app.categories.errorUpdating"));
     }
-  }, [editingCategory, loadCategories, onCategoriesChange, t]);
+  }, [editingCategory, loadCategories, onCategoriesChange, t, showSuccess]);
 
   const handleDeleteCategory = async (id: number) => {
     if (!(await confirm({ message: t("app.categories.confirmDelete"), danger: true }))) {
@@ -223,6 +225,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       await window.electronAPI.deleteCategory(id);
       await loadCategories();
       onCategoriesChange();
+      showSuccess(t("app.categories.categoryDeleted"));
     } catch (error) {
       console.error("Error deleting category:", error);
       showError(t("app.categories.errorDeleting"));

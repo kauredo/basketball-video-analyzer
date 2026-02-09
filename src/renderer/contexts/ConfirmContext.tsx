@@ -100,7 +100,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({
                 }`}
                 onClick={handleConfirm}
               >
-                {pending.options.confirmLabel || "OK"}
+                {pending.options.confirmLabel || t("app.buttons.ok")}
               </button>
             </div>
           </div>

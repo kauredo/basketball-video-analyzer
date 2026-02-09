@@ -16,6 +16,7 @@
       "resetDatabase": "Repor Base de Dados",
       "showInstructions": "Mostrar Instruções",
       "done": "Concluído",
+      "ok": "OK",
       "edit": "Editar",
       "save": "Guardar",
       "cancel": "Cancelar",
@@ -65,7 +66,9 @@
       "theme": "Tema",
       "general": "Geral",
       "darkMode": "Modo Escuro",
-      "lightMode": "Modo Claro"
+      "lightMode": "Modo Claro",
+      "languageChanged": "Idioma alterado para {{language}}",
+      "themeChanged": "Alterado para {{mode}}"
     },
     "categories": {
       "title": "Gerir Categorias",
@@ -78,6 +81,9 @@
       "errorCreating": "Erro ao criar categoria. O nome pode já existir.",
       "errorUpdating": "Erro ao atualizar categoria. O nome pode já existir.",
       "errorDeleting": "Erro ao eliminar categoria.",
+      "categoryCreated": "Categoria criada com sucesso",
+      "categoryUpdated": "Categoria atualizada com sucesso",
+      "categoryDeleted": "Categoria eliminada com sucesso",
       "editCategory": "Editar Categoria",
       "categoryName": "Nome da Categoria",
       "color": "Cor",
@@ -127,6 +133,7 @@
       "confirmDelete": "Tem a certeza que quer eliminar este clip?",
       "exportSuccess": "Clips exportados com sucesso",
       "exportError": "Erro ao exportar clips",
+      "clipsSummary": "{{count}} clips \u2022 {{video}}",
       "noClipsYet": "Ainda não há clips",
       "noClipsInCategory": "Nenhum clip em",
       "search": "Pesquisar clips...",
@@ -247,7 +254,9 @@
       "errorVideoFormat": "Formato de vídeo não suportado",
       "checkVideoFormat": "Verifique se o ficheiro de vídeo existe e está num formato suportado (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "A descarregar atualização... {{progress}}%",
-      "zoomTimeline": "Zoom da Linha do Tempo"
+      "zoomTimeline": "Zoom da Linha do Tempo",
+      "pathLabel": "Caminho:",
+      "volumeLabel": "Volume"
     },
     "shortcuts": {
       "title": "Atalhos de Teclado",
@@ -275,7 +284,9 @@
       "confirmDelete": "Tem a certeza que pretende eliminar o projeto \"{{name}}\"? Isto irá também eliminar todos os clips associados.",
       "deleteError": "Erro ao eliminar projeto. Por favor tente novamente.",
       "noProjectsYet": "Ainda Não Há Projetos",
-      "noProjectsDescription": "Crie o seu primeiro projeto para começar a análise de vídeo."
+      "noProjectsDescription": "Crie o seu primeiro projeto para começar a análise de vídeo.",
+      "projectCount_one": "{{count}} projeto",
+      "projectCount_other": "{{count}} projetos"
     },
     "timeline": {
       "title": "Linha do Tempo",
@@ -297,7 +308,12 @@
       "currentTime": "Tempo Atual",
       "legend": "Legenda",
       "selectedClip": "Clip Selecionado",
-      "currentPosition": "Posição Atual"
+      "currentPosition": "Posição Atual",
+      "noClipsGuidance": "Marque pontos de entrada/saída no vídeo para criar o seu primeiro clip."
+    },
+    "hints": {
+      "markKeys": "Prima {{markIn}} para marcar o início de um clip, {{markOut}} para marcar o fim.",
+      "firstClip": "Os seus clips aparecem aqui. Use categorias para os organizar."
     }
   }
 }

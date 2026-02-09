@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faKeyboard } from "@fortawesome/free-solid-svg-icons";
@@ -16,13 +16,24 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const trapRef = useFocusTrap(isOpen);
+  const [keyBindings, setKeyBindings] = useState({ markInKey: "z", markOutKey: "m" });
+
+  useEffect(() => {
+    if (isOpen) {
+      window.electronAPI.getKeyBindings().then(bindings => {
+        setKeyBindings(bindings);
+      }).catch(() => {
+        // Keep defaults
+      });
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const shortcuts = [
     { key: "Space", description: t("app.shortcuts.playPause") },
-    { key: "Z", description: t("app.shortcuts.markIn") },
-    { key: "M", description: t("app.shortcuts.markOut") },
+    { key: keyBindings.markInKey.toUpperCase(), description: t("app.shortcuts.markIn") },
+    { key: keyBindings.markOutKey.toUpperCase(), description: t("app.shortcuts.markOut") },
     { key: "Esc", description: t("app.shortcuts.clearMarks") },
     { key: "← / →", description: t("app.shortcuts.seek5s") },
     { key: "Alt + ← / →", description: t("app.shortcuts.seek30s") },

@@ -24,6 +24,7 @@ import {
   faGaugeHigh,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/VideoPlayer.module.css";
+import { ContextualHint } from "./ContextualHint";
 
 interface VideoPlayerProps {
   videoPath: string | null;
@@ -94,6 +95,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [videoError, setVideoError] = useState<string | null>(null);
     const [timeSearchValue, setTimeSearchValue] = useState("");
     const [timeSearchError, setTimeSearchError] = useState<string | null>(null);
+    const [showFirstVideoHint, setShowFirstVideoHint] = useState(false);
 
     // Expose methods to parent component
     useImperativeHandle(ref, () => ({
@@ -232,6 +234,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         setDuration(dur);
         onDurationChange(dur);
         setVideoError(null);
+        // Show first-video hint 2s after video loads
+        setTimeout(() => setShowFirstVideoHint(true), 2000);
       }
     };
 
@@ -453,7 +457,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 <h3>
                   <FontAwesomeIcon icon={faFilm} /> {videoError}
                 </h3>
-                <p>Path: {videoPath}</p>
+                <p>{t("app.video.pathLabel")} {videoPath}</p>
                 <p>
                   {t("app.video.checkVideoFormat")}
                 </p>
@@ -689,7 +693,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       }
                     }}
                     className={styles.volumeSlider}
-                    aria-label="Volume"
+                    aria-label={t("app.video.volumeLabel")}
                   />
                 </div>
 
@@ -727,6 +731,16 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   )}
                 </div>
               </div>
+
+              {showFirstVideoHint && (
+                <ContextualHint
+                  hintId="first-video"
+                  message={t("app.hints.markKeys", {
+                    markIn: keyBindings.markInKey.toUpperCase(),
+                    markOut: keyBindings.markOutKey.toUpperCase(),
+                  })}
+                />
+              )}
 
               <div className={styles.markControls}>
                 <button

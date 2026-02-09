@@ -139,7 +139,7 @@
   background: transparent;
   cursor: ew-resize;
   z-index: var(--z-dropdown);
-  opacity: 0;
+  opacity: 1;
   transition: all var(--transition-fast);
 }
 
@@ -159,6 +159,30 @@
   bottom: 0;
   width: 8px;
   background: transparent;
+}
+
+.sideResizeHandle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 2px;
+  border-radius: var(--radius-round);
+  background: var(--text-tertiary);
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 -6px 0 var(--text-tertiary),
+    0 6px 0 var(--text-tertiary);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sideResizeHandle:hover::after,
+.sideResizeHandle:active::after {
+  background: var(--text-white);
+  box-shadow:
+    0 -6px 0 var(--text-white),
+    0 6px 0 var(--text-white);
 }
 
 .collapseButtonLeft {
@@ -204,7 +228,7 @@
   background: transparent;
   cursor: ns-resize;
   z-index: var(--z-dropdown);
-  opacity: 0;
+  opacity: 1;
   transition: all var(--transition-fast);
 }
 
@@ -224,6 +248,30 @@
   right: 0;
   height: 8px;
   background: transparent;
+}
+
+.resizeHandle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 2px;
+  border-radius: var(--radius-round);
+  background: var(--text-tertiary);
+  transform: translate(-50%, -50%);
+  box-shadow:
+    -6px 0 0 var(--text-tertiary),
+    6px 0 0 var(--text-tertiary);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.resizeHandle:hover::after,
+.resizeHandle:active::after {
+  background: var(--text-white);
+  box-shadow:
+    -6px 0 0 var(--text-white),
+    6px 0 0 var(--text-white);
 }
 
 /* Ensure smooth resizing */

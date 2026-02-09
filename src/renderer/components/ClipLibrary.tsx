@@ -20,6 +20,8 @@ import {
 import styles from "../styles/ClipLibrary.module.css";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
+import { ContextualHint } from "./ContextualHint";
+import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 
 // Helper function to format file paths for img src
 const formatVideoSrc = (path: string): string => {
@@ -84,8 +86,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"date" | "duration" | "title">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortBy, setSortBy] = useState<"date" | "duration" | "title">(() => loadPref(STORAGE_KEYS.CLIP_SORT_BY, "date") as "date" | "duration" | "title");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() => loadPref(STORAGE_KEYS.CLIP_SORT_ORDER, "desc") as "asc" | "desc");
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
@@ -147,10 +149,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
   const toggleSort = (field: "date" | "duration" | "title") => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      const newOrder = sortOrder === "asc" ? "desc" : "asc";
+      setSortOrder(newOrder);
+      savePref(STORAGE_KEYS.CLIP_SORT_ORDER, newOrder);
     } else {
       setSortBy(field);
-      setSortOrder("desc"); // Default to desc for new field
+      setSortOrder("desc");
+      savePref(STORAGE_KEYS.CLIP_SORT_BY, field);
+      savePref(STORAGE_KEYS.CLIP_SORT_ORDER, "desc");
     }
   };
 
@@ -369,7 +375,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           <div className={styles.projectInfo}>
             <span className={styles.projectName}>{currentProject.name}</span>
             <span className={styles.projectDetails}>
-              {clips.length} clips • {currentProject.video_name}
+              {t("app.clips.clipsSummary", { count: clips.length, video: currentProject.video_name })}
             </span>
           </div>
         )}
@@ -599,6 +605,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 </button>
               </div>
             </div>
+
+            {/* First clip hint */}
+            {clips.length === 1 && (
+              <ContextualHint
+                hintId="first-clip"
+                message={t("app.hints.firstClip")}
+              />
+            )}
 
             {/* Clips Grid */}
             <div className={styles.clipsGrid}>
