@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faVideo,
-  faFolderOpen,
   faPlus,
   faClock,
   faCalendar,
@@ -12,6 +11,9 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ProjectSelector.module.css";
+import { useFocusTrap } from "../hooks/useFocusTrap";
+import { useToastContext } from "../contexts/ToastContext";
+import { useConfirm } from "../contexts/ConfirmContext";
 
 interface Project {
   id: number;
@@ -36,7 +38,10 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   onSelectProject,
   onCreateNew,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const trapRef = useFocusTrap(isOpen);
+  const { showError } = useToastContext();
+  const { confirm } = useConfirm();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -64,7 +69,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   };
 
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString(i18n.language, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -80,16 +85,17 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     event.stopPropagation();
 
     if (
-      window.confirm(
-        `Are you sure you want to delete the project "${project.name}"? This will also delete all associated clips.`,
-      )
+      await confirm({
+        message: t("app.projects.confirmDelete", { name: project.name }),
+        danger: true,
+      })
     ) {
       try {
         await window.electronAPI.deleteProject(project.id);
-        loadProjects(); // Refresh the list
+        loadProjects();
       } catch (error) {
         console.error("Error deleting project:", error);
-        alert("Error deleting project. Please try again.");
+        showError(t("app.projects.deleteError"));
       }
     }
   };
@@ -97,13 +103,25 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modal}>
+    <div
+      ref={trapRef}
+      className={styles.modal}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="project-selector-title"
+      onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+    >
       <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
-          <h2>
-            <FontAwesomeIcon icon={faFilm} /> Select Project
+          <h2 id="project-selector-title">
+            <FontAwesomeIcon icon={faFilm} /> {t("app.projects.selectProject")}
           </h2>
-          <button type="button" className={styles.modalClose} onClick={onClose}>
+          <button
+            type="button"
+            className={styles.modalClose}
+            onClick={onClose}
+            aria-label={t("app.buttons.close")}
+          >
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
@@ -112,7 +130,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
           {isLoading ? (
             <div className={styles.loading}>
               <FontAwesomeIcon icon={faFilm} spin />
-              <p>Loading projects...</p>
+              <p>{t("app.projects.loading")}</p>
             </div>
           ) : (
             <>
@@ -120,8 +138,8 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                 <button type="button" className={styles.createNewBtn} onClick={onCreateNew}>
                   <FontAwesomeIcon icon={faPlus} />
                   <div>
-                    <h3>Create New Project</h3>
-                    <p>Start with a new video file</p>
+                    <h3>{t("app.projects.createNew")}</h3>
+                    <p>{t("app.projects.createNewDescription")}</p>
                   </div>
                 </button>
               </div>
@@ -129,7 +147,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
               {projects.length > 0 && (
                 <>
                   <div className={styles.sectionHeader}>
-                    <h3>Recent Projects</h3>
+                    <h3>{t("app.projects.recentProjects")}</h3>
                     <span className={styles.projectCount}>
                       {projects.length} project
                       {projects.length !== 1 ? "s" : ""}
@@ -142,6 +160,14 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                         key={project.id}
                         className={styles.projectCard}
                         onClick={() => onSelectProject(project)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onSelectProject(project);
+                          }
+                        }}
                       >
                         <div className={styles.projectIcon}>
                           <FontAwesomeIcon icon={faVideo} />
@@ -159,11 +185,11 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                           <div className={styles.projectMeta}>
                             <span className={styles.metaItem}>
                               <FontAwesomeIcon icon={faClock} />
-                              Last opened: {formatDate(project.last_opened)}
+                              {t("app.projects.lastOpened")}: {formatDate(project.last_opened)}
                             </span>
                             <span className={styles.metaItem}>
                               <FontAwesomeIcon icon={faCalendar} />
-                              Created: {formatDate(project.created_at)}
+                              {t("app.projects.created")}: {formatDate(project.created_at)}
                             </span>
                           </div>
                         </div>
@@ -172,7 +198,8 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                             type="button"
                             className={styles.deleteBtn}
                             onClick={(e) => handleDeleteProject(project, e)}
-                            title="Delete project"
+                            title={t("app.projects.deleteProject")}
+                            aria-label={t("app.projects.deleteProject")}
                           >
                             <FontAwesomeIcon icon={faTrash} />
                           </button>
@@ -186,11 +213,8 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
               {projects.length === 0 && !isLoading && (
                 <div className={styles.emptyState}>
                   <FontAwesomeIcon icon={faVideo} />
-                  <h3>No Projects Yet</h3>
-                  <p>
-                    Create your first project to get started with video
-                    analysis.
-                  </p>
+                  <h3>{t("app.projects.noProjectsYet")}</h3>
+                  <p>{t("app.projects.noProjectsDescription")}</p>
                 </div>
               )}
             </>

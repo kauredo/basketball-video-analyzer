@@ -48,6 +48,11 @@
   border-color: var(--border-color-hover);
 }
 
+.editToggleBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .categoryList {
   display: flex;
   flex-direction: column;
@@ -133,8 +138,8 @@
 
 .editBtn,
 .deleteBtn {
-  height: 32px;
-  width: 32px;
+  height: var(--button-height);
+  width: var(--button-height);
   background: var(--bg-quaternary);
   border: 1px solid var(--border-color-light);
   color: var(--text-secondary);
@@ -162,6 +167,12 @@
   color: var(--text-primary);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+}
+
+.editBtn:focus-visible,
+.deleteBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 /* Improved category editing form */
@@ -358,6 +369,11 @@
   box-shadow: var(--shadow-md);
 }
 
+.colorOption:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .editActions {
   display: flex;
   gap: var(--spacing-sm);
@@ -396,6 +412,12 @@
   box-shadow: var(--shadow-sm);
 }
 
+.saveBtn:focus-visible,
+.createCategoryBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .cancelBtn {
   background: var(--bg-quaternary);
   border-color: var(--border-color-light);
@@ -408,6 +430,11 @@
   border-color: var(--border-color-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+}
+
+.cancelBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .presetManager {
@@ -514,7 +541,7 @@
 
 .deletePresetBtn:hover {
   background: var(--color-danger);
-  color: white;
+  color: var(--text-white);
   transform: scale(1.1);
 }
 
@@ -553,8 +580,8 @@
 
 /* Hierarchical category styles */
 .expandButton {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -591,7 +618,7 @@
   width: 32px;
   background: var(--color-success);
   border: 1px solid var(--color-success);
-  color: white;
+  color: var(--text-white);
   padding: 0;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -603,10 +630,15 @@
 }
 
 .addSubBtn:hover {
-  background: var(--color-success-dark);
-  border-color: var(--color-success-dark);
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+}
+
+.addSubBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 /* Subcategory form styles */
@@ -663,7 +695,7 @@
   align-items: center;
   gap: var(--spacing-sm);
   background: var(--color-primary);
-  color: white;
+  color: var(--text-white);
   border: 1px solid var(--color-primary);
 }
 
@@ -679,6 +711,11 @@
   transform: none;
 }
 
+.createSubcategoryBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .saveBtn {
   height: var(--button-height);
   padding: 0 var(--spacing-lg);
@@ -691,7 +728,7 @@
   align-items: center;
   gap: var(--spacing-sm);
   background: var(--color-primary);
-  color: white;
+  color: var(--text-white);
   border: 1px solid var(--color-primary);
 }
 
@@ -699,6 +736,11 @@
   background: var(--color-primary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+}
+
+.saveBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .cancelBtn {
@@ -788,7 +830,7 @@
 
 .presetItem:hover {
   border-color: var(--border-color-hover);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--shadow-sm);
 }
 
 .loadPresetBtn {

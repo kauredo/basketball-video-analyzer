@@ -18,6 +18,8 @@ import {
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
+import { useToastContext } from "../contexts/ToastContext";
+import { useConfirm } from "../contexts/ConfirmContext";
 
 // Helper function to format file paths for img src
 const formatVideoSrc = (path: string): string => {
@@ -76,6 +78,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   currentProject,
 }) => {
   const { t } = useTranslation();
+  const { showSuccess, showError, showWarning } = useToastContext();
+  const { confirm } = useConfirm();
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -170,12 +174,12 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       await window.electronAPI.playClip(clipPath);
     } catch (error) {
       console.error("Error playing clip:", error);
-      alert("Error playing clip. File may have been moved or deleted.");
+      showError(t("app.clips.errorPlayingClip"));
     }
   };
 
   const handleDeleteClip = async (clipId: number) => {
-    if (!confirm(t("app.clips.confirmDeleteClip"))) {
+    if (!(await confirm({ message: t("app.clips.confirmDeleteClip"), danger: true }))) {
       return;
     }
 
@@ -184,13 +188,13 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       await loadData();
     } catch (error) {
       console.error("Error deleting clip:", error);
-      alert("Error deleting clip.");
+      showError(t("app.clips.errorDeletingClip"));
     }
   };
 
   const handleExportCategory = async () => {
     if (selectedCategory === null || filteredClips.length === 0) {
-      alert("Please select a category with clips to export.");
+      showWarning(t("app.clips.selectCategoryToExport"));
       return;
     }
 
@@ -208,7 +212,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       });
 
       if (clipsToExport.length === 0) {
-        alert(`No clips found in the selected category to export.`);
+        showWarning(t("app.clips.noClipsInCategoryToExport"));
         return;
       }
 
@@ -237,30 +241,13 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
       if (result.count === 0) {
         console.error("Export returned 0 clips. Export result:", result);
-        alert(
-          `No clips were exported. This could be because:\n\n` +
-            `- The clip files may no longer exist in their original location\n` +
-            `- There might be permission issues\n` +
-            `- The export directory could not be created\n\n` +
-            `Clips that should have been exported:\n${clipsToExport
-              .map(c => `- ${c.title} (${c.output_path})`)
-              .join("\n")}\n\n` +
-            `Please check the console for technical details.`
-        );
+        showWarning(t("app.clips.exportNoneWarning"));
       } else {
-        alert(
-          `Successfully exported ${result.count} clip${
-            result.count !== 1 ? "s" : ""
-          } to ${result.exportDir}`
-        );
+        showSuccess(t("app.clips.exportSuccess", { count: result.count, dir: result.exportDir }));
       }
     } catch (error) {
       console.error("Error exporting clips:", error);
-      alert(
-        `Error exporting clips: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      showError(t("app.clips.exportErrorGeneric", { error: error instanceof Error ? error.message : "Unknown error" }));
     } finally {
       setIsExporting(false);
     }
@@ -268,7 +255,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
   const handleExportAll = async () => {
     if (filteredClips.length === 0) {
-      alert(t("app.clips.noClipsToExport"));
+      showWarning(t("app.clips.noClipsToExport"));
       return;
     }
 
@@ -293,7 +280,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       const categoryIds = Array.from(categoryClips.keys());
 
       if (categoryIds.length === 0) {
-        alert("No categories found in the filtered clips.");
+        showWarning(t("app.clips.noCategoriesInClips"));
         return;
       }
 
@@ -329,30 +316,13 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         console.error("Export returned 0 clips. Export result:", result);
         const allClips = Array.from(categoryClips.values()).flat();
 
-        alert(
-          `No clips were exported. This could be because:\n\n` +
-            `- The clip files may no longer exist in their original location\n` +
-            `- There might be permission issues\n` +
-            `- The export directory could not be created\n\n` +
-            `Clips that should have been exported:\n${allClips
-              .map(c => `- ${c.title} (${c.output_path})`)
-              .join("\n")}\n\n` +
-            `Please check the console for technical details.`
-        );
+        showWarning(t("app.clips.exportNoneWarning"));
       } else {
-        alert(
-          `Successfully exported ${result.count} clip${
-            result.count !== 1 ? "s" : ""
-          } to ${result.exportDir}`
-        );
+        showSuccess(t("app.clips.exportSuccess", { count: result.count, dir: result.exportDir }));
       }
     } catch (error) {
       console.error("Error exporting clips:", error);
-      alert(
-        `Error exporting clips: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      showError(t("app.clips.exportErrorGeneric", { error: error instanceof Error ? error.message : "Unknown error" }));
     } finally {
       setIsExporting(false);
     }
@@ -368,7 +338,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
   const getCategoryName = (categoryId: number): string => {
     const category = categories.find(c => c.id === categoryId);
-    return category ? category.name : "Unknown";
+    return category ? category.name : t("app.clips.unknown");
   };
 
   const getClipStats = () => {
@@ -437,9 +407,9 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           <div className={styles.emptyState}>
             <div>
               <h4>
-                <FontAwesomeIcon icon={faVideo} /> No Project Loaded
+                <FontAwesomeIcon icon={faVideo} /> {t("app.clips.noProjectLoaded")}
               </h4>
-              <p>Select a video file to start creating clips for a project.</p>
+              <p>{t("app.clips.selectVideoToStart")}</p>
             </div>
           </div>
         ) : (
@@ -455,7 +425,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                     selectedCategory === null ? styles.active : ""
                   }`}
                 >
-                  All ({clips.length})
+                  {t("app.clips.all")} ({clips.length})
                 </button>
                 {categories
                   .filter(category => !category.parent_id) // Only show parent categories
@@ -487,7 +457,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                                 : "transparent",
                             color:
                               selectedCategory === category.id
-                                ? "#fff"
+                                ? "var(--text-white)"
                                 : "var(--text-primary)",
                           }}
                         >
@@ -540,7 +510,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                                             : "transparent",
                                         color:
                                           selectedCategory === subcategory.id
-                                            ? "#fff"
+                                            ? "var(--text-white)"
                                             : "var(--text-primary)",
                                       }}
                                     >
@@ -560,15 +530,15 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
             {/* Stats */}
             <div className={styles.libraryStats}>
               <div className={styles.statItem}>
-                <span className={styles.statLabel}>Clips:</span>
+                <span className={styles.statLabel}>{t("app.clips.clipsCount")}:</span>
                 <span className={styles.statValue}>{stats.count}</span>
               </div>
               <div className={styles.statItem}>
-                <span className={styles.statLabel}>Total Duration:</span>
+                <span className={styles.statLabel}>{t("app.clips.totalDuration")}:</span>
                 <span className={styles.statValue}>{stats.totalDuration}</span>
               </div>
               <div className={styles.statItem}>
-                <span className={styles.statLabel}>Avg Duration:</span>
+                <span className={styles.statLabel}>{t("app.clips.avgDuration")}:</span>
                 <span className={styles.statValue}>{stats.avgDuration}</span>
               </div>
             </div>
@@ -583,6 +553,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className={styles.searchInput}
+                  aria-label={t("app.library.searchPlaceholder")}
                 />
               </div>
 
@@ -593,7 +564,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   }`}
                   onClick={() => toggleSort("date")}
                 >
-                  Date
+                  {t("app.clips.date")}
                   {sortBy === "date" && (
                     <FontAwesomeIcon
                       icon={sortOrder === "asc" ? faSortUp : faSortDown}
@@ -606,7 +577,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   }`}
                   onClick={() => toggleSort("duration")}
                 >
-                  Duration
+                  {t("app.clips.sortDuration")}
                   {sortBy === "duration" && (
                     <FontAwesomeIcon
                       icon={sortOrder === "asc" ? faSortUp : faSortDown}
@@ -619,7 +590,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   }`}
                   onClick={() => toggleSort("title")}
                 >
-                  Title
+                  {t("app.clips.sortTitle")}
                   {sortBy === "title" && (
                     <FontAwesomeIcon
                       icon={sortOrder === "asc" ? faSortUp : faSortDown}
@@ -640,8 +611,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                         {t("app.clips.noClipsYet")}
                       </h4>
                       <p>
-                        Start cutting clips from your video to build your
-                        library
+                        {t("app.clips.startCuttingClips")}
                       </p>
                     </div>
                   ) : (
@@ -651,7 +621,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                         {t("app.clips.noClipsInCategory")}{" "}
                         {getCategoryName(selectedCategory)}
                       </h4>
-                      <p>Create clips with this category to see them here</p>
+                      <p>{t("app.clips.createClipsInCategory")}</p>
                     </div>
                   )}
                 </div>
@@ -723,16 +693,17 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                           type="button"
                           onClick={() => handlePlayClip(clip.output_path)}
                           className={styles.playBtn}
-                          title="Play clip"
+                          title={t("app.clips.playClip")}
                         >
-                          <FontAwesomeIcon icon={faPlay} /> Play
+                          <FontAwesomeIcon icon={faPlay} /> {t("app.clips.play")}
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleDeleteClip(clip.id)}
                           className={styles.deleteBtn}
-                          title="Delete clip"
+                          title={t("app.clips.deleteClipTooltip")}
+                          aria-label={t("app.clips.deleteClipTooltip")}
                         >
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
@@ -747,14 +718,12 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
             {filteredClips.length > 0 && (
               <div className={styles.exportInfo}>
                 <h4>
-                  <FontAwesomeIcon icon={faShare} /> Sharing Clips
+                  <FontAwesomeIcon icon={faShare} /> {t("app.clips.sharingClips")}
                 </h4>
                 <p>
                   {selectedCategory
-                    ? `Export all "${getCategoryName(
-                        selectedCategory
-                      )}" clips to share with your team`
-                    : "Export clips organized by category for easy team sharing"}
+                    ? t("app.clips.exportCategoryClips", { category: getCategoryName(selectedCategory) })
+                    : t("app.clips.exportOrganizedClips")}
                 </p>
               </div>
             )}

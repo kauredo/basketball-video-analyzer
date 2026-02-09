@@ -17,7 +17,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #000;
+  background: var(--bg-main);
   overflow: hidden;
   min-height: 0;
 }
@@ -180,6 +180,13 @@
   transform: scale(0.95);
 }
 
+.playButton:focus-visible,
+.skipButton:focus-visible,
+.frameButton:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .skipText {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
@@ -244,9 +251,14 @@
   box-shadow: none;
 }
 
+.markBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .markInfo {
   text-align: center;
-  font-family: monospace;
+  font-family: var(--font-mono);
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
 }
@@ -259,7 +271,7 @@
 }
 
 .timeDisplay {
-  font-family: monospace;
+  font-family: var(--font-mono);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   white-space: nowrap;
@@ -315,12 +327,17 @@
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
   transition: all var(--transition-fast);
-  height: 28px;
+  height: 32px;
 }
 
 .speedButton:hover {
   background: var(--bg-hover);
   border-color: var(--border-color-hover);
+}
+
+.speedButton:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .speedValue {
@@ -362,9 +379,14 @@
   background: var(--bg-hover);
 }
 
+.speedOption:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .activeSpeed {
   background: var(--color-primary);
-  color: white;
+  color: var(--text-white);
 }
 
 .activeSpeed:hover {
@@ -481,15 +503,15 @@
 .timeSearchButton {
   background: var(--color-primary);
   border: none;
-  color: white;
+  color: var(--text-white);
   padding: var(--spacing-xs);
   border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   transition: all var(--transition-fast);
 }
 
@@ -503,6 +525,11 @@
   color: var(--text-tertiary);
   cursor: not-allowed;
   transform: none;
+}
+
+.timeSearchButton:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .timeSearchErrorMessage {

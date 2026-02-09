@@ -35,9 +35,14 @@ import { ProjectSelector } from "./components/ProjectSelector";
 import { KeyBindingEditor } from "./components/KeyBindingEditor";
 import { ShortcutsModal } from "./components/ShortcutsModal";
 import { Clip, Category } from "../types/global";
+import { useFocusTrap } from "./hooks/useFocusTrap";
+import { useToastContext } from "./contexts/ToastContext";
+import { useConfirm } from "./contexts/ConfirmContext";
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToastContext();
+  const { confirm } = useConfirm();
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [currentProject, setCurrentProject] = useState<any | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -66,6 +71,8 @@ export const App: React.FC = () => {
   const sideResizeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const videoPlayerRef = useRef<any>(null);
+  const clipCreatorTrapRef = useFocusTrap(showClipCreator);
+  const settingsTrapRef = useFocusTrap(showSettings);
 
   // Check for existing projects on startup
   useEffect(() => {
@@ -328,15 +335,15 @@ export const App: React.FC = () => {
   }, [handleClearMarks]);
 
   const handleResetDatabase = async () => {
-    if (window.confirm(t("app.settings.confirmReset"))) {
+    if (await confirm({ message: t("app.settings.confirmReset"), danger: true })) {
       try {
         await window.electronAPI.resetDatabase();
         setRefreshTrigger((prev) => prev + 1);
         setShowSettings(false);
-        alert(t("app.settings.resetSuccess"));
+        showSuccess(t("app.settings.resetSuccess"));
       } catch (error) {
         console.error("Error resetting database:", error);
-        alert(t("app.settings.resetError"));
+        showError(t("app.settings.resetError"));
       }
     }
   };
@@ -365,7 +372,7 @@ export const App: React.FC = () => {
         </h1>
         {updateDownloadProgress !== null && (
           <div className={styles.updateProgress}>
-            <FontAwesomeIcon icon={faDownload} spin /> Downloading update... {updateDownloadProgress}%
+            <FontAwesomeIcon icon={faDownload} spin /> {t("app.video.downloadingUpdate", { progress: updateDownloadProgress })}
           </div>
         )}
         <div className={styles.headerActions}>
@@ -400,17 +407,10 @@ export const App: React.FC = () => {
             type="button"
             className={styles.btn}
             onClick={() => setShowShortcuts(true)}
-            title="Keyboard Shortcuts"
+            title={t("app.shortcuts.title")}
+            aria-label={t("app.shortcuts.title")}
           >
             <FontAwesomeIcon icon={faQuestionCircle} />
-          </button>
-          <button
-            type="button"
-            className={styles.btn}
-            onClick={toggleTheme}
-            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            <FontAwesomeIcon icon={theme === "dark" ? faSun : faMoon} />
           </button>
         </div>
       </header>
@@ -449,7 +449,7 @@ export const App: React.FC = () => {
                 <div
                   className={styles.resizeHandle}
                   onMouseDown={startBottomResize}
-                  title="Drag to resize timeline panel"
+                  title={t("app.buttons.resizeTimeline")}
                 />
               )}
               <div className={styles.timelineContent}>
@@ -484,7 +484,7 @@ export const App: React.FC = () => {
               <div
                 className={styles.sideResizeHandle}
                 onMouseDown={startSideResize}
-                title="Drag to resize clips panel"
+                title={t("app.buttons.resizeClips")}
               />
             )}
             <div className={styles.clipLibraryPanel}>
@@ -499,10 +499,18 @@ export const App: React.FC = () => {
 
       {/* Clip Creator Modal */}
       {showClipCreator && (
-        <div className={styles.modal}>
+        <div
+          ref={clipCreatorTrapRef}
+          className={styles.modal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clip-creator-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowClipCreator(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowClipCreator(false); }}
+        >
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h2>
+              <h2 id="clip-creator-title">
                 <FontAwesomeIcon icon={faScissors} />{" "}
                 {t("app.modals.createClip")}
               </h2>
@@ -510,6 +518,7 @@ export const App: React.FC = () => {
                 type="button"
                 className={styles.modalClose}
                 onClick={() => setShowClipCreator(false)}
+                aria-label={t("app.buttons.close")}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
@@ -530,52 +539,79 @@ export const App: React.FC = () => {
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className={styles.modal}>
+        <div
+          ref={settingsTrapRef}
+          className={styles.modal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowSettings(false); }}
+        >
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h2>
+              <h2 id="settings-title">
                 <FontAwesomeIcon icon={faCog} /> {t("app.modals.settings")}
               </h2>
               <button
                 type="button"
                 className={styles.modalClose}
                 onClick={() => setShowSettings(false)}
+                aria-label={t("app.buttons.close")}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className={styles.modalBody}>
-              <LanguageSelector />
+              {/* General Section */}
+              <div className={styles.settingsSection}>
+                <h3 className={styles.settingsSectionTitle}>
+                  {t("app.settings.general")}
+                </h3>
+                <div className={styles.settingsRow}>
+                  <LanguageSelector />
+                </div>
+                <div className={styles.settingsRow}>
+                  <span>{t("app.settings.theme")}</span>
+                  <button
+                    type="button"
+                    className={styles.themeToggle}
+                    onClick={toggleTheme}
+                  >
+                    <FontAwesomeIcon icon={theme === "dark" ? faMoon : faSun} />{" "}
+                    {theme === "dark"
+                      ? t("app.settings.darkMode")
+                      : t("app.settings.lightMode")}
+                  </button>
+                </div>
+              </div>
 
-              <KeyBindingEditor />
+              {/* Key Bindings Section */}
+              <div className={styles.settingsSection}>
+                <KeyBindingEditor />
+              </div>
 
-              <button
-                type="button"
-                className={styles.instructionsButton}
-                onClick={() => {
-                  setShowInstructions(true);
-                  setShowSettings(false);
-                }}
-              >
-                <FontAwesomeIcon icon={faQuestionCircle} />{" "}
-                {t("app.buttons.showInstructions")}
-              </button>
+              {/* Categories Section */}
+              <div className={styles.settingsSection}>
+                <CategoryManager
+                  currentProject={currentProject}
+                  onCategoriesChange={() => setRefreshTrigger((prev) => prev + 1)}
+                />
+              </div>
 
-              <CategoryManager
-                currentProject={currentProject}
-                onCategoriesChange={() => setRefreshTrigger((prev) => prev + 1)}
-              />
-
-              <div className={styles.dangerZone}>
-                <h3>{t("app.settings.dangerZone")}</h3>
-                <button
-                  type="button"
-                  className={styles.resetButton}
-                  onClick={handleResetDatabase}
-                >
-                  <FontAwesomeIcon icon={faTrash} />{" "}
-                  {t("app.buttons.resetDatabase")}
-                </button>
+              {/* Danger Zone Section */}
+              <div className={styles.settingsSection}>
+                <div className={styles.dangerZone}>
+                  <h3>{t("app.settings.dangerZone")}</h3>
+                  <button
+                    type="button"
+                    className={styles.resetButton}
+                    onClick={handleResetDatabase}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />{" "}
+                    {t("app.buttons.resetDatabase")}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

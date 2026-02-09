@@ -3,11 +3,13 @@ import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faKeyboard } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/common.module.css";
+import { useToastContext } from "../contexts/ToastContext";
 
 interface KeyBindingEditorProps {}
 
 export const KeyBindingEditor: React.FC<KeyBindingEditorProps> = () => {
   const { t } = useTranslation();
+  const { showSuccess } = useToastContext();
   const [keyBindings, setKeyBindings] = useState({
     markInKey: "z",
     markOutKey: "m",
@@ -54,7 +56,7 @@ export const KeyBindingEditor: React.FC<KeyBindingEditorProps> = () => {
         value: newKey,
       });
       setKeyBindings((prev) => ({ ...prev, [editingKey]: newKey }));
-      alert(t("app.settings.keyBindingSaved"));
+      showSuccess(t("app.settings.keyBindingSaved"));
     } catch (error) {
       console.error("Failed to save key binding:", error);
     }
@@ -80,7 +82,7 @@ export const KeyBindingEditor: React.FC<KeyBindingEditorProps> = () => {
             }`}
           >
             {editingKey === "markInKey"
-              ? "Press any key..."
+              ? t("app.settings.pressAnyKey")
               : keyBindings.markInKey}
           </button>
         </div>
@@ -97,7 +99,7 @@ export const KeyBindingEditor: React.FC<KeyBindingEditorProps> = () => {
             }`}
           >
             {editingKey === "markOutKey"
-              ? "Press any key..."
+              ? t("app.settings.pressAnyKey")
               : keyBindings.markOutKey}
           </button>
         </div>

@@ -246,20 +246,20 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         videoPath ? formatVideoSrc(videoPath) : null
       );
 
-      let errorMessage = "Error loading video file";
+      let errorMessage = t("app.video.loadingError");
       if (error) {
         switch (error.code) {
           case 1:
-            errorMessage = "Video loading aborted";
+            errorMessage = t("app.video.errorVideoAborted");
             break;
           case 2:
-            errorMessage = "Network error while loading video";
+            errorMessage = t("app.video.errorVideoNetwork");
             break;
           case 3:
-            errorMessage = "Video decoding error - format may not be supported";
+            errorMessage = t("app.video.errorVideoDecoding");
             break;
           case 4:
-            errorMessage = "Video format not supported";
+            errorMessage = t("app.video.errorVideoFormat");
             break;
         }
       }
@@ -400,34 +400,30 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         <div className={styles.videoPlaceholder}>
           <div className={styles.placeholderContent}>
             <h3>
-              <FontAwesomeIcon icon={faFilm} /> Load a Video to Start Cutting
-              Clips
+              <FontAwesomeIcon icon={faFilm} /> {t("app.video.loadVideoTitle")}
             </h3>
             <p>
-              Select a basketball game video to begin creating clips for your
-              team
+              {t("app.video.loadVideoDescription")}
             </p>
             <div className={styles.placeholderTips}>
               <h4>
-                <FontAwesomeIcon icon={faKeyboard} /> Keyboard Shortcuts:
+                <FontAwesomeIcon icon={faKeyboard} /> {t("app.video.keyboardShortcuts")}:
               </h4>
               <ul>
                 <li>
-                  <kbd>Space</kbd> - Play/Pause
+                  <kbd>Space</kbd> - {t("app.video.playPause")}
                 </li>
                 <li>
-                  <kbd>{keyBindings.markInKey.toUpperCase()}</kbd> - Mark In
-                  Point
+                  <kbd>{keyBindings.markInKey.toUpperCase()}</kbd> - {t("app.video.markInPoint")}
                 </li>
                 <li>
-                  <kbd>{keyBindings.markOutKey.toUpperCase()}</kbd> - Mark Out
-                  Point
+                  <kbd>{keyBindings.markOutKey.toUpperCase()}</kbd> - {t("app.video.markOutPoint")}
                 </li>
                 <li>
-                  <kbd>Escape</kbd> - Clear Marks
+                  <kbd>Escape</kbd> - {t("app.buttons.clearMarks")}
                 </li>
                 <li>
-                  <kbd>←</kbd> / <kbd>→</kbd> - Previous/Next Frame
+                  <kbd>←</kbd> / <kbd>→</kbd> - {t("app.video.previousNextFrame")}
                 </li>
               </ul>
             </div>
@@ -459,8 +455,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </h3>
                 <p>Path: {videoPath}</p>
                 <p>
-                  Please check if the video file exists and is in a supported
-                  format (MP4, MOV, AVI, MKV, WebM)
+                  {t("app.video.checkVideoFormat")}
                 </p>
               </div>
             </div>
@@ -508,6 +503,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   value={currentTime}
                   onChange={handleSeek}
                   className={styles.progressSlider}
+                  aria-label={t("app.video.playPause")}
                 />
                 {markInTime !== null && duration > 0 && (
                   <div
@@ -538,6 +534,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   type="button"
                   onClick={togglePlay}
                   className={styles.playButton}
+                  aria-label={isPlaying ? t("app.buttons.pause") : t("app.buttons.play")}
                 >
                   <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
                 </button>
@@ -580,6 +577,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   onClick={() => stepFrame(-1)}
                   className={styles.frameButton}
                   title={t("app.video.previousFrame")}
+                  aria-label={t("app.video.previousFrame")}
                 >
                   <FontAwesomeIcon icon={faAnglesLeft} />
                 </button>
@@ -589,6 +587,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   onClick={() => stepFrame(1)}
                   className={styles.frameButton}
                   title={t("app.video.nextFrame")}
+                  aria-label={t("app.video.nextFrame")}
                 >
                   <FontAwesomeIcon icon={faAnglesRight} />
                 </button>
@@ -660,6 +659,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       className={styles.timeSearchButton}
                       disabled={!timeSearchValue.trim()}
                       title={t("app.video.timeSearch.jumpToTime")}
+                      aria-label={t("app.video.timeSearch.jumpToTime")}
                     >
                       <FontAwesomeIcon icon={faSearch} />
                     </button>
@@ -689,6 +689,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       }
                     }}
                     className={styles.volumeSlider}
+                    aria-label="Volume"
                   />
                 </div>
 
@@ -734,21 +735,21 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   className={`${styles.markBtn} ${styles.markInBtn}`}
                   disabled={!videoPath || !!videoError}
                 >
-                  <FontAwesomeIcon icon={faLocationPin} /> Mark In (
+                  <FontAwesomeIcon icon={faLocationPin} /> {t("app.video.markIn")} (
                   {keyBindings.markInKey.toUpperCase()})
                 </button>
 
                 <div className={styles.markInfo}>
                   <div className={styles.markTimes}>
                     <span>
-                      In:{" "}
+                      {t("app.video.markIn")}:{" "}
                       {markInTime !== null ? formatTime(markInTime) : "--:--"}
                     </span>
                     <span>
-                      Out:{" "}
+                      {t("app.video.markOut")}:{" "}
                       {markOutTime !== null ? formatTime(markOutTime) : "--:--"}
                     </span>
-                    <span>Duration: {getMarkedDuration()}</span>
+                    <span>{t("app.clips.creator.duration")}: {getMarkedDuration()}</span>
                   </div>
                 </div>
 
@@ -761,7 +762,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   className={`${styles.markBtn} ${styles.markOutBtn}`}
                   disabled={!videoPath || !!videoError}
                 >
-                  <FontAwesomeIcon icon={faLocationPin} /> Mark Out (
+                  <FontAwesomeIcon icon={faLocationPin} /> {t("app.video.markOut")} (
                   {keyBindings.markOutKey.toUpperCase()})
                 </button>
 
@@ -771,7 +772,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   className={`${styles.markBtn} ${styles.clearMarksBtn}`}
                   disabled={markInTime === null && markOutTime === null}
                 >
-                  <FontAwesomeIcon icon={faTrash} /> Clear (Esc)
+                  <FontAwesomeIcon icon={faTrash} /> {t("app.buttons.clearMarks")} (Esc)
                 </button>
               </div>
             </div>

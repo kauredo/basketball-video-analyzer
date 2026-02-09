@@ -310,9 +310,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-xl);
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-tertiary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .modalHeader h2 {
@@ -347,7 +350,7 @@
 }
 
 .modalBody {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-xl);
 }
 
 /* Header with Settings Button */
@@ -374,7 +377,7 @@
   gap: var(--spacing-sm);
   padding: var(--spacing-xs) var(--spacing-md);
   background: var(--color-primary);
-  color: white;
+  color: var(--text-white);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -436,6 +439,26 @@
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btn:focus-visible,
+.settingsButton:focus-visible,
+.selectVideoBtn:focus-visible,
+.getStartedBtn:focus-visible,
+.themeToggle:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.modalClose:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.resetButton:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-danger-light);
+  outline: none;
 }
 
 .selectVideoBtn,
@@ -592,17 +615,19 @@
 
 /* Danger Zone */
 .dangerZone {
-  margin-top: var(--spacing-xl);
-  padding: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
   border: 1px solid var(--color-danger);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-danger) 5%, transparent);
 }
 
 .dangerZone h3 {
   color: var(--color-danger);
-  font-size: var(--font-size-md);
-  margin: 0 0 var(--spacing-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 var(--spacing-md);
 }
 
 .resetButton {
@@ -622,25 +647,55 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Instructions Button */
-.instructionsButton {
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  transition: all var(--transition-fast);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: var(--spacing-lg);
-  width: fit-content;
+/* Settings Sections */
+.settingsSection + .settingsSection {
+  border-top: 1px solid var(--border-color);
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-xl);
 }
 
-.instructionsButton:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+.settingsSectionTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 var(--spacing-md);
+}
+
+.settingsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  min-height: var(--min-interactive-size);
+}
+
+.settingsRow + .settingsRow {
+  margin-top: var(--spacing-sm);
+}
+
+.settingsRow > span {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.themeToggle {
+  height: var(--button-height);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.themeToggle:hover {
+  background: var(--bg-quaternary);
+  border-color: var(--border-color-hover);
 }

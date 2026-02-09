@@ -1,6 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { ToastProvider } from "./contexts/ToastContext";
+import { ConfirmProvider } from "./contexts/ConfirmContext";
 import "./styles/variables.css";
 import "../i18n";
 
@@ -12,4 +14,10 @@ if (!container) {
 
 // Create root and render app
 const root = createRoot(container);
-root.render(<App />);
+root.render(
+  <ToastProvider>
+    <ConfirmProvider>
+      <App />
+    </ConfirmProvider>
+  </ToastProvider>
+);

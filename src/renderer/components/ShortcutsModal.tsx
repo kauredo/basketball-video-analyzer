@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faKeyboard } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ShortcutsModal.module.css";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 
 interface ShortcutsModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation();
+  const trapRef = useFocusTrap(isOpen);
 
   if (!isOpen) return null;
 
@@ -29,13 +31,21 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
   ];
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div
+      ref={trapRef}
+      className={styles.overlay}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="shortcuts-title"
+      onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+    >
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <div className={styles.header}>
-          <h3>
+          <h3 id="shortcuts-title">
             <FontAwesomeIcon icon={faKeyboard} /> {t("app.shortcuts.title")}
           </h3>
-          <button className={styles.closeButton} onClick={onClose}>
+          <button type="button" className={styles.closeButton} onClick={onClose} aria-label={t("app.buttons.close")}>
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>

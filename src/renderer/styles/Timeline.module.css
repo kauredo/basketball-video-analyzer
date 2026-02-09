@@ -239,7 +239,7 @@
 }
 
 .timeRange {
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
@@ -249,7 +249,7 @@
 }
 
 .duration {
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   font-weight: var(--font-weight-medium);
@@ -293,7 +293,7 @@
   height: 32px;
   background: var(--color-primary);
   border: none;
-  color: white;
+  color: var(--text-white);
   border-radius: var(--radius-round);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -307,6 +307,11 @@
   background: var(--color-primary-dark);
   transform: scale(1.1);
   box-shadow: var(--shadow-md);
+}
+
+.playBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 /* Right Panel: Visual Timeline */
@@ -339,7 +344,7 @@
   gap: var(--spacing-lg);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-family: var(--font-mono);
 }
 
 /* Timeline Ruler */
@@ -376,7 +381,7 @@
 .rulerLabel {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-family: var(--font-mono);
   margin-top: var(--spacing-xs);
   white-space: nowrap;
 }
@@ -533,7 +538,7 @@
   width: 12px;
   height: 12px;
   background: var(--color-danger);
-  border: 2px solid white;
+  border: 2px solid var(--text-white);
   border-radius: var(--radius-round);
   box-shadow: var(--shadow-md);
 }
@@ -724,15 +729,3 @@
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Update existing trackLabel to match sticky behavior if needed, or replace usage */
-.trackLabel {
-  /* Keep existing styles as fallback or base */
-  width: 160px;
-  min-width: 160px;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-}

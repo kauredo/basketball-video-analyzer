@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--bg-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,6 +63,11 @@
 .closeButton:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+.closeButton:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .content {

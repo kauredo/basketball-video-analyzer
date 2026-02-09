@@ -14,6 +14,8 @@ import {
 
 import { Clip, Category } from "../../types/global";
 
+const DEFAULT_CATEGORY_COLOR = "#4CAF50";
+
 interface TimelineProps {
   clips: Clip[];
   categories: Category[];
@@ -202,7 +204,7 @@ export const Timeline: React.FC<TimelineProps> = ({
 
   // Get category color for a clip (now works with single category per timeline clip)
   const getClipColor = (clip: TimelineClip): string => {
-    if (clip.category_ids.length === 0) return "#4CAF50";
+    if (clip.category_ids.length === 0) return DEFAULT_CATEGORY_COLOR;
 
     // Get all categories (including children) for lookup
     const allCategories: Category[] = [];
@@ -214,7 +216,7 @@ export const Timeline: React.FC<TimelineProps> = ({
     });
 
     const category = allCategories.find(c => c.id === clip.category_ids[0]);
-    return category?.color || "#4CAF50";
+    return category?.color || DEFAULT_CATEGORY_COLOR;
   };
 
   return (
@@ -240,6 +242,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                     e.stopPropagation();
                   }}
                   className={styles.searchInput}
+                  aria-label={t("app.timeline.search")}
                 />
               </div>
 
@@ -251,6 +254,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                   )
                 }
                 className={styles.categoryFilter}
+                aria-label={t("app.timeline.category")}
               >
                 <option value="">{t("app.timeline.allCategories")}</option>
                 {categories
@@ -283,11 +287,11 @@ export const Timeline: React.FC<TimelineProps> = ({
               <table className={styles.clipsTableElement}>
                 <thead>
                   <tr>
-                    <th>Category</th>
-                    <th>Title</th>
-                    <th>Time</th>
-                    <th>Duration</th>
-                    <th>Notes</th>
+                    <th>{t("app.timeline.category")}</th>
+                    <th>{t("app.timeline.clipTitle")}</th>
+                    <th>{t("app.timeline.time")}</th>
+                    <th>{t("app.timeline.durationHeader")}</th>
+                    <th>{t("app.timeline.notes")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -319,10 +323,10 @@ export const Timeline: React.FC<TimelineProps> = ({
                             <div className={styles.categoryContainer}>
                               <div
                                 className={styles.categoryIndicator}
-                                style={{ backgroundColor: "#4CAF50" }}
+                                style={{ backgroundColor: DEFAULT_CATEGORY_COLOR }}
                               />
                               <span className={styles.categoryName}>
-                                No Category
+                                {t("app.categories.noCategory")}
                               </span>
                             </div>
                           </td>
@@ -387,12 +391,12 @@ export const Timeline: React.FC<TimelineProps> = ({
                               <div
                                 className={styles.categoryIndicator}
                                 style={{
-                                  backgroundColor: category?.color || "#4CAF50",
+                                  backgroundColor: category?.color || DEFAULT_CATEGORY_COLOR,
                                 }}
                               />
                               <span className={styles.categoryName}>
                                 {category?.parent_id ? "└ " : ""}
-                                {category?.name || "Unknown Category"}
+                                {category?.name || t("app.categories.unknownCategory")}
                               </span>
                             </div>
                           </td>
@@ -462,7 +466,8 @@ export const Timeline: React.FC<TimelineProps> = ({
                 value={zoomLevel}
                 onChange={(e) => setZoomLevel(parseFloat(e.target.value))}
                 className={styles.zoomSlider}
-                title="Zoom Timeline"
+                title={t("app.video.zoomTimeline")}
+                aria-label={t("app.video.zoomTimeline")}
               />
               <FontAwesomeIcon icon={faMagnifyingGlassPlus} className={styles.zoomIcon} />
               <span className={styles.zoomValue}>{Math.round(zoomLevel * 100)}%</span>
@@ -560,7 +565,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                 <div className={styles.legendItem}>
                   <div
                     className={styles.legendColor}
-                    style={{ backgroundColor: "#ff6b6b" }}
+                    style={{ backgroundColor: "var(--color-danger)" }}
                   />
                   <span>{t("app.timeline.selectedClip")}</span>
                 </div>

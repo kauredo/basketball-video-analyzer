@@ -9,6 +9,7 @@
   --color-danger-dark: #d32f2f;
   --color-danger-light: #ef5350;
   --color-success: #4caf50;
+  --color-success-dark: #388e3c;
   --color-warning: #ff9800;
   --color-info: #2196f3;
 
@@ -79,6 +80,7 @@
   --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.4);
 
   /* Z-indices */
+  --z-toast: 2000;
   --z-modal: 1000;
   --z-overlay: 999;
   --z-popover: 200;
@@ -111,9 +113,11 @@
 /* Light theme */
 [data-theme="light"] {
   /* Colors */
-  --color-primary: #388e3c;
-  --color-primary-dark: #2e7d32;
-  --color-primary-light: #4caf50;
+  --color-primary: #2e7d32;
+  --color-primary-dark: #1b5e20;
+  --color-primary-light: #388e3c;
+
+  --color-success-dark: #1b5e20;
 
   /* Background Colors */
   --bg-main: #ffffff;
@@ -145,3 +149,13 @@
   --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Reduced motion: disable transforms and animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -59,6 +59,11 @@
   opacity: 0.5;
 }
 
+.button:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 /* Form Styles */
 .formGroup {
   display: flex;

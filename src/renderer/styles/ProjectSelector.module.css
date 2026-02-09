@@ -6,11 +6,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--bg-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
   backdrop-filter: blur(4px);
 }
 
@@ -64,6 +64,11 @@
 .modalClose:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+}
+
+.modalClose:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .modalBody {
@@ -186,7 +191,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-white);
   font-size: var(--font-size-lg);
   flex-shrink: 0;
 }
@@ -269,7 +274,14 @@
 .deleteBtn:hover {
   background: var(--color-danger);
   border-color: var(--color-danger);
-  color: white;
+  color: var(--text-white);
+}
+
+.createNewBtn:focus-visible,
+.projectCard:focus-visible,
+.deleteBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .emptyState {

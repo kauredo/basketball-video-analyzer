@@ -10,8 +10,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipCreator.module.css";
-import { useToast } from "../hooks/useToast";
-import { ToastContainer } from "./Toast";
+import { useToastContext } from "../contexts/ToastContext";
 
 interface Category {
   id: number;
@@ -39,9 +38,8 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   onClearMarks,
   currentProject,
 }) => {
-  const { t } = useTranslation();
-  const { toasts, removeToast, showError, showSuccess, showWarning } =
-    useToast();
+  const { t, i18n } = useTranslation();
+  const { showError, showSuccess, showWarning } = useToastContext();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [clipTitle, setClipTitle] = useState("");
@@ -148,7 +146,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   };
 
   const generateClipTitle = () => {
-    if (selectedCategories.length === 0) return "Untitled Clip";
+    if (selectedCategories.length === 0) return t("app.clips.creator.untitledClip");
 
     // Get all categories (including children) for proper name lookup
     const allCategories: Category[] = [];
@@ -164,7 +162,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       .map(cat => cat.name)
       .join(" + ");
 
-    const timestamp = new Date().toLocaleTimeString("en-US", {
+    const timestamp = new Date().toLocaleTimeString(i18n.language, {
       hour12: false,
       hour: "2-digit",
       minute: "2-digit",
@@ -185,7 +183,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     }
 
     if (!currentProject) {
-      showError("No project loaded. Please select a video first.");
+      showError(t("app.clips.creator.errorNoProject"));
       return;
     }
 
@@ -384,17 +382,17 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       {/* Clip Creator Header */}
       <div className={styles.clipCreatorHeader}>
         <h3>
-          <FontAwesomeIcon icon={faScissors} /> Create Clip
+          <FontAwesomeIcon icon={faScissors} /> {t("app.clips.creator.createClip")}
         </h3>
         {markInTime !== null && markOutTime !== null && (
-          <div className={styles.clipDuration}>Duration: {getDuration()}</div>
+          <div className={styles.clipDuration}>{t("app.clips.creator.duration")}: {getDuration()}</div>
         )}
       </div>
 
       {/* Category Selection */}
       <div className={styles.categorySelection}>
         <div className={styles.categoryHeader}>
-          <h4>Categories ({selectedCategories.length} selected)</h4>
+          <h4>{t("app.clips.creator.categories")} ({selectedCategories.length} {t("app.clips.creator.selected")})</h4>
           <div className={styles.categoryActions}>
             <button
               type="button"
@@ -414,7 +412,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
               disabled={isCreating}
               className={styles.selectAllBtn}
             >
-              <FontAwesomeIcon icon={faCheck} /> Select All
+              <FontAwesomeIcon icon={faCheck} /> {t("app.clips.creator.selectAll")}
             </button>
             <button
               type="button"
@@ -422,7 +420,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
               disabled={isCreating}
               className={styles.clearSelectionBtn}
             >
-              <FontAwesomeIcon icon={faTrash} /> Clear
+              <FontAwesomeIcon icon={faTrash} /> {t("app.clips.creator.clear")}
             </button>
           </div>
         </div>
@@ -448,7 +446,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                       ? parentCategory.color
                       : "transparent",
                     color: selectedCategories.includes(parentCategory.id)
-                      ? "#fff"
+                      ? "var(--text-white)"
                       : "var(--text-primary)",
                   }}
                 >
@@ -484,7 +482,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
                               ? subcategory.color
                               : "transparent",
                             color: selectedCategories.includes(subcategory.id)
-                              ? "#fff"
+                              ? "var(--text-white)"
                               : "var(--text-primary)",
                           }}
                         >
@@ -590,8 +588,6 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         </button>
       </div>
 
-      {/* Toast Notifications */}
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };

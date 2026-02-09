@@ -295,6 +295,11 @@
   transform: translateY(-1px);
 }
 
+.actionButton:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .actionButton.delete:hover {
   background: var(--color-danger);
 }
@@ -354,10 +359,16 @@
   box-shadow: var(--shadow-sm);
 }
 
+.folderBtn:focus-visible,
+.exportBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .exportBtn {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--text-white);
 }
 
 .exportBtn:hover:not(:disabled) {
@@ -435,6 +446,11 @@
   border-color: var(--border-color-hover);
   color: var(--text-primary);
   transform: translateY(-1px);
+}
+
+.filterBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .filterBtn.active {
@@ -588,6 +604,12 @@
   box-shadow: var(--shadow-sm);
 }
 
+.playBtn:focus-visible,
+.deleteBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .deleteBtn {
   min-height: var(--button-height);
   width: var(--button-height);
@@ -680,10 +702,15 @@
   color: var(--text-primary);
 }
 
+.sortButton:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
 .activeSort {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--text-white);
 }
 
 .activeSort:hover {

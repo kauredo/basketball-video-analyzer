@@ -9,7 +9,7 @@ interface LanguageSelectorProps {
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   className,
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const languages = [
     { code: "en", name: "English" },
@@ -22,10 +22,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   return (
     <div className={`${styles.languageSelector} ${className || ""}`}>
-      <label className={styles.label}>
-        {i18n.language === "en" ? "Language" : "Idioma"}:
+      <label className={styles.label} htmlFor="language-select">
+        {t("app.settings.language")}:
       </label>
       <select
+        id="language-select"
         value={i18n.language}
         onChange={(e) => handleLanguageChange(e.target.value)}
         className={styles.select}
