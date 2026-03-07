@@ -180,6 +180,10 @@
       "exportNoneWarning": "No clips were exported. This could be because:\n\n- The clip files may no longer exist in their original location\n- There might be permission issues\n- The export directory could not be created",
       "exportSuccess": "Successfully exported {{count}} clip(s) to {{dir}}",
       "exportErrorGeneric": "Error exporting clips: {{error}}",
+      "exportVideoFiles": "Video Files",
+      "exportCsvJson": "CSV / JSON",
+      "exportDataSuccess": "Exported {{count}} clip(s) data to {{path}}",
+      "exportDataError": "Error exporting clips data",
       "creator": {
         "title": "Clip Title",
         "titlePlaceholder": "Enter clip title (optional)",

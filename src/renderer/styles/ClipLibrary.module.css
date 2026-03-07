@@ -377,10 +377,63 @@
   box-shadow: var(--shadow-md);
 }
 
-.exportBtn:disabled {
+.exportBtn:disabled,
+.folderBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Export Dropdown */
+.exportDropdown {
+  position: relative;
+}
+
+.exportChevron {
+  font-size: var(--font-size-xs);
+  margin-left: var(--spacing-xs);
+}
+
+.exportMenu {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-dropdown);
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.exportMenuItem {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: background var(--transition-fast);
+  text-align: left;
+}
+
+.exportMenuItem:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.exportMenuItem:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.exportMenuItem:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Category Filter Section */

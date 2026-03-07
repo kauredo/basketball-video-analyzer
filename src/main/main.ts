@@ -987,3 +987,86 @@ ipcMain.handle("get-presets", () => {
 ipcMain.handle("delete-preset", (_event, presetName: string) => {
   return deletePreset(presetName);
 });
+
+// Export clips data as CSV or JSON
+ipcMain.handle(
+  "export-clips-data",
+  async (_event, projectId: number) => {
+    try {
+      const result = await dialog.showSaveDialog(mainWindow, {
+        title: "Export Clips Data",
+        defaultPath: path.join(app.getPath("documents"), "clips-export"),
+        filters: [
+          { name: "CSV", extensions: ["csv"] },
+          { name: "JSON", extensions: ["json"] },
+        ],
+      });
+
+      if (result.canceled || !result.filePath) {
+        return null;
+      }
+
+      const clips = getClips(projectId);
+      const categories = getCategories(projectId);
+      const categoryMap = new Map<number, string>();
+      categories.forEach(cat => categoryMap.set(cat.id!, cat.name));
+
+      const isCSV = result.filePath.endsWith(".csv");
+
+      if (isCSV) {
+        const header = "Title,Categories,Start Time,End Time,Duration,Notes,Created At";
+        const rows = clips.map(clip => {
+          let categoryNames: string[] = [];
+          try {
+            const ids = JSON.parse(clip.categories) as number[];
+            categoryNames = ids.map(id => categoryMap.get(id) || "Unknown");
+          } catch { /* empty */ }
+
+          const escapeCsv = (val: string) => {
+            if (val.includes(",") || val.includes('"') || val.includes("\n")) {
+              return `"${val.replace(/"/g, '""')}"`;
+            }
+            return val;
+          };
+
+          return [
+            escapeCsv(clip.title),
+            escapeCsv(categoryNames.join("; ")),
+            clip.start_time.toFixed(2),
+            clip.end_time.toFixed(2),
+            clip.duration.toFixed(2),
+            escapeCsv(clip.notes || ""),
+            clip.created_at || "",
+          ].join(",");
+        });
+
+        fs.writeFileSync(result.filePath, [header, ...rows].join("\n"), "utf-8");
+      } else {
+        const data = clips.map(clip => {
+          let categoryNames: string[] = [];
+          try {
+            const ids = JSON.parse(clip.categories) as number[];
+            categoryNames = ids.map(id => categoryMap.get(id) || "Unknown");
+          } catch { /* empty */ }
+
+          return {
+            title: clip.title,
+            categories: categoryNames,
+            start_time: clip.start_time,
+            end_time: clip.end_time,
+            duration: clip.duration,
+            notes: clip.notes || "",
+            created_at: clip.created_at || "",
+          };
+        });
+
+        fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), "utf-8");
+      }
+
+      return { filePath: result.filePath, count: clips.length };
+    } catch (error) {
+      console.error("Error exporting clips data:", error);
+      throw error;
+    }
+  }
+);

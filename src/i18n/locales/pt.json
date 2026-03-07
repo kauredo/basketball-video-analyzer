@@ -171,6 +171,10 @@
       "exportNoneWarning": "Nenhum clip foi exportado. Isto pode ser porque:\n\n- Os ficheiros de clip podem já não existir na localização original\n- Pode haver problemas de permissões\n- A pasta de exportação não pôde ser criada",
       "exportSuccess": "Exportados {{count}} clip(s) com sucesso para {{dir}}",
       "exportErrorGeneric": "Erro ao exportar clips: {{error}}",
+      "exportVideoFiles": "Ficheiros de Vídeo",
+      "exportCsvJson": "CSV / JSON",
+      "exportDataSuccess": "Dados de {{count}} clip(s) exportados para {{path}}",
+      "exportDataError": "Erro ao exportar dados dos clips",
       "creator": {
         "title": "Título do Clip",
         "titlePlaceholder": "Introduza o título do clip (opcional)",

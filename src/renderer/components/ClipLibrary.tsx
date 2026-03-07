@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -16,6 +16,9 @@ import {
   faSortUp,
   faSortDown,
   faSearch,
+  faChevronDown,
+  faTable,
+  faVideo as faVideoFile,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
 import { useToastContext } from "../contexts/ToastContext";
@@ -89,6 +92,20 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const [sortBy, setSortBy] = useState<"date" | "duration" | "title">(() => loadPref(STORAGE_KEYS.CLIP_SORT_BY, "date") as "date" | "duration" | "title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() => loadPref(STORAGE_KEYS.CLIP_SORT_ORDER, "desc") as "asc" | "desc");
   const [isExporting, setIsExporting] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close export menu on click outside
+  useEffect(() => {
+    if (!exportMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setExportMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [exportMenuOpen]);
 
   useEffect(() => {
     loadData();
@@ -334,6 +351,20 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
   };
 
+  const handleExportData = async () => {
+    if (!currentProject) return;
+
+    try {
+      const result = await window.electronAPI.exportClipsData(currentProject.id);
+      if (result) {
+        showSuccess(t("app.clips.exportDataSuccess", { count: result.count, path: result.filePath }));
+      }
+    } catch (error) {
+      console.error("Error exporting clips data:", error);
+      showError(t("app.clips.exportDataError"));
+    }
+  };
+
   const openClipFolder = async () => {
     try {
       await window.electronAPI.openClipFolder();
@@ -387,23 +418,57 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           >
             <FontAwesomeIcon icon={faFolder} /> {t("app.clips.openFolder")}
           </button>
-          <button
-            type="button"
-            onClick={selectedCategory ? handleExportCategory : handleExportAll}
-            disabled={isExporting || filteredClips.length === 0}
-            className={styles.exportBtn}
-          >
-            {isExporting ? (
-              <>
-                <FontAwesomeIcon icon={faSpinner} spin />{" "}
-                {t("app.clips.exportingClips")}
-              </>
-            ) : (
-              <>
-                <FontAwesomeIcon icon={faFileExport} /> {t("app.clips.export")}
-              </>
+          <div className={styles.exportDropdown} ref={exportMenuRef}>
+            <button
+              type="button"
+              onClick={() => setExportMenuOpen(prev => !prev)}
+              disabled={isExporting || clips.length === 0}
+              className={styles.exportBtn}
+              aria-expanded={exportMenuOpen}
+              aria-haspopup="true"
+            >
+              {isExporting ? (
+                <>
+                  <FontAwesomeIcon icon={faSpinner} spin />{" "}
+                  {t("app.clips.exportingClips")}
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faFileExport} /> {t("app.clips.export")}{" "}
+                  <FontAwesomeIcon icon={faChevronDown} className={styles.exportChevron} />
+                </>
+              )}
+            </button>
+            {exportMenuOpen && (
+              <div className={styles.exportMenu} role="menu">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={styles.exportMenuItem}
+                  disabled={filteredClips.length === 0}
+                  onClick={() => {
+                    setExportMenuOpen(false);
+                    selectedCategory ? handleExportCategory() : handleExportAll();
+                  }}
+                >
+                  <FontAwesomeIcon icon={faVideoFile} />
+                  {t("app.clips.exportVideoFiles")}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={styles.exportMenuItem}
+                  onClick={() => {
+                    setExportMenuOpen(false);
+                    handleExportData();
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTable} />
+                  {t("app.clips.exportCsvJson")}
+                </button>
+              </div>
             )}
-          </button>
+          </div>
         </div>
       </div>
 
