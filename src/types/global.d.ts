@@ -75,6 +75,9 @@ export interface ElectronAPI {
   loadPreset: (presetName: string) => Promise<Category[]>;
   getPresets: () => Promise<string[]>;
 
+  // Export clips data
+  exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
+
   // Clip operations
   getClips: (videoPath?: string) => Promise<any[]>;
   updateClip: (id: number, updates: any) => Promise<boolean>;

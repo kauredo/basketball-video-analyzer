@@ -71,6 +71,9 @@ export interface ElectronAPI {
   deleteClip: (id: number) => Promise<boolean>;
   getClipsByCategory: (categoryId: number) => Promise<any[]>;
 
+  // Export clips data
+  exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
+
   // Event listeners
   onClipProgress: (callback: (data: any) => void) => void;
   onClipCreated: (callback: (clip: any) => void) => void;
@@ -146,6 +149,10 @@ const electronAPI: ElectronAPI = {
   deleteClip: id => ipcRenderer.invoke("delete-clip", id),
   getClipsByCategory: categoryId =>
     ipcRenderer.invoke("get-clips-by-category", categoryId),
+
+  // Export clips data
+  exportClipsData: (projectId: number) =>
+    ipcRenderer.invoke("export-clips-data", projectId),
 
   // Event listeners
   onClipProgress: callback => {
