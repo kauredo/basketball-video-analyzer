@@ -2,3 +2,8 @@
 node_modules/
 out/
 dist/
+.claude/
+
+# Ignore CLAUDE.md everywhere except the root
+**/CLAUDE.md
+!/CLAUDE.md
