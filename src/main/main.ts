@@ -1011,7 +1011,11 @@ ipcMain.handle(
       const categoryMap = new Map<number, string>();
       categories.forEach(cat => categoryMap.set(cat.id!, cat.name));
 
-      const isCSV = result.filePath.endsWith(".csv");
+      const ext = path.extname(result.filePath).toLowerCase();
+      if (ext !== ".csv" && ext !== ".json") {
+        return null;
+      }
+      const isCSV = ext === ".csv";
 
       if (isCSV) {
         const header = "Title,Categories,Start Time,End Time,Duration,Notes,Created At";
@@ -1023,10 +1027,11 @@ ipcMain.handle(
           } catch { /* empty */ }
 
           const escapeCsv = (val: string) => {
-            if (val.includes(",") || val.includes('"') || val.includes("\n")) {
-              return `"${val.replace(/"/g, '""')}"`;
+            const safeVal = /^[=+\-@\t\r]/.test(val) ? `'${val}` : val;
+            if (/[,"\n\r]/.test(safeVal)) {
+              return `"${safeVal.replace(/"/g, '""')}"`;
             }
-            return val;
+            return safeVal;
           };
 
           return [

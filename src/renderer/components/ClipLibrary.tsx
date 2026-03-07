@@ -355,6 +355,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     if (!currentProject) return;
 
     try {
+      setIsExporting(true);
       const result = await window.electronAPI.exportClipsData(currentProject.id);
       if (result) {
         showSuccess(t("app.clips.exportDataSuccess", { count: result.count, path: result.filePath }));
@@ -362,6 +363,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     } catch (error) {
       console.error("Error exporting clips data:", error);
       showError(t("app.clips.exportDataError"));
+    } finally {
+      setIsExporting(false);
     }
   };
 
