@@ -3,6 +3,8 @@ name: Build Basketball Video Analyzer
 on:
   push:
     branches: [main, master]
+    tags-ignore:
+      - "v*"
   pull_request:
     branches: [main, master]
   workflow_dispatch:
