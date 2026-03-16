@@ -43,6 +43,7 @@ jobs:
           max_attempts: 3
           command: npm ci --verbose
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ELECTRON_CACHE: ~/.cache/electron
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
           npm_config_cache: ~/.npm

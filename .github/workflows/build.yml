@@ -62,6 +62,7 @@ jobs:
 
       - name: Install dependencies
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYTHON: ${{ github.workspace }}/python.exe
           GYP_MSVS_VERSION: "2019"
           npm_config_build_from_source: true
