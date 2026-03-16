@@ -43,10 +43,25 @@ jobs:
           max_attempts: 3
           command: npm ci --verbose
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          YOUTUBE_DL_SKIP_DOWNLOAD: "1"
           ELECTRON_CACHE: ~/.cache/electron
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
           npm_config_cache: ~/.npm
+
+      - name: Download yt-dlp binary
+        run: |
+          mkdir -p node_modules/youtube-dl-exec/bin
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" \
+              -o node_modules/youtube-dl-exec/bin/yt-dlp.exe
+          else
+            curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp" \
+              -o node_modules/youtube-dl-exec/bin/yt-dlp
+            chmod +x node_modules/youtube-dl-exec/bin/yt-dlp
+          fi
+        shell: bash
 
       - name: Build application
         run: npm run build

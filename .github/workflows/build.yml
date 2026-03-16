@@ -62,7 +62,7 @@ jobs:
 
       - name: Install dependencies
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          YOUTUBE_DL_SKIP_DOWNLOAD: "1"
           PYTHON: ${{ github.workspace }}/python.exe
           GYP_MSVS_VERSION: "2019"
           npm_config_build_from_source: true
@@ -73,6 +73,21 @@ jobs:
           npm install -g @electron/rebuild
           npm ci --omit=optional
           npm install --save-dev @electron-forge/maker-squirrel@7.2.0 @electron-forge/maker-zip@7.2.0 @electron-forge/maker-dmg@7.2.0
+
+      - name: Download yt-dlp binary
+        run: |
+          mkdir -p node_modules/youtube-dl-exec/bin
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" \
+              -o node_modules/youtube-dl-exec/bin/yt-dlp.exe
+          else
+            curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp" \
+              -o node_modules/youtube-dl-exec/bin/yt-dlp
+            chmod +x node_modules/youtube-dl-exec/bin/yt-dlp
+          fi
+        shell: bash
 
       # Rebuild native modules for the target platform
       - name: Rebuild native modules
