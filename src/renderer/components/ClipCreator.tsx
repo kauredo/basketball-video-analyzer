@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipCreator.module.css";
 import { useToastContext } from "../contexts/ToastContext";
+import { formatVideoTime } from "../utils/format";
 
 interface Category {
   id: number;
@@ -28,6 +29,8 @@ interface ClipCreatorProps {
   onClipCreated: () => void;
   onClearMarks: () => void;
   currentProject: any | null;
+  currentQuarter: string | null;
+  onQuarterChange: (quarter: string | null) => void;
 }
 
 export const ClipCreator: React.FC<ClipCreatorProps> = ({
@@ -37,6 +40,8 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   onClipCreated,
   onClearMarks,
   currentProject,
+  currentQuarter,
+  onQuarterChange,
 }) => {
   const { t, i18n } = useTranslation();
   const { showError, showSuccess, showWarning } = useToastContext();
@@ -157,18 +162,17 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       }
     });
 
-    const selectedCategoryNames = allCategories
+    const categoryNames = allCategories
       .filter(cat => selectedCategories.includes(cat.id))
       .map(cat => cat.name)
-      .join(" + ");
+      .join("_");
 
-    const timestamp = new Date().toLocaleTimeString(i18n.language, {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const videoTime = markInTime !== null ? formatVideoTime(markInTime) : "00:00";
 
-    return `${selectedCategoryNames} - ${timestamp}`;
+    if (currentQuarter) {
+      return `${currentQuarter}_${videoTime}_${categoryNames}`;
+    }
+    return `${videoTime}_${categoryNames}`;
   };
 
   const handleCreateClip = async () => {
@@ -387,6 +391,24 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         {markInTime !== null && markOutTime !== null && (
           <div className={styles.clipDuration}>{t("app.clips.creator.duration")}: {getDuration()}</div>
         )}
+      </div>
+
+      {/* Quarter Selector */}
+      <div className={styles.quarterSelector} role="group" aria-label={t("app.clips.creator.quarter")}>
+        <h4>{t("app.clips.creator.quarter")}</h4>
+        <div className={styles.quarterButtons}>
+          {["Q1", "Q2", "Q3", "Q4", "OT"].map(q => (
+            <button
+              key={q}
+              type="button"
+              className={`${styles.quarterBtn} ${currentQuarter === q ? styles.quarterBtnActive : ""}`}
+              onClick={() => onQuarterChange(currentQuarter === q ? null : q)}
+              aria-pressed={currentQuarter === q}
+            >
+              {q}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Category Selection */}

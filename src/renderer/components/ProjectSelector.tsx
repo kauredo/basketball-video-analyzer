@@ -9,8 +9,10 @@ import {
   faTrash,
   faFilm,
   faTimes,
+  faFileImport,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ProjectSelector.module.css";
+import { YouTubeImport } from "./YouTubeImport";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
@@ -30,6 +32,7 @@ interface ProjectSelectorProps {
   onClose: () => void;
   onSelectProject: (project: Project) => void;
   onCreateNew: () => void;
+  onLoadVideoByPath?: (filePath: string) => void;
 }
 
 export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
@@ -37,10 +40,11 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   onClose,
   onSelectProject,
   onCreateNew,
+  onLoadVideoByPath,
 }) => {
   const { t, i18n } = useTranslation();
   const trapRef = useFocusTrap(isOpen);
-  const { showError } = useToastContext();
+  const { showError, showSuccess } = useToastContext();
   const { confirm } = useConfirm();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -100,6 +104,22 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     }
   };
 
+  const handleImportSession = async () => {
+    try {
+      const result = await window.electronAPI.loadSession();
+      if (result?.success && result.project) {
+        showSuccess(t("app.projects.importSessionSuccess"));
+        onSelectProject(result.project);
+      }
+    } catch (error) {
+      console.error("Error importing session:", error);
+      const message = error instanceof Error && error.message === "INVALID_SESSION_FILE"
+        ? t("app.projects.importSessionInvalidFile")
+        : t("app.projects.importSessionError");
+      showError(message);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -142,7 +162,18 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                     <p>{t("app.projects.createNewDescription")}</p>
                   </div>
                 </button>
+                <button type="button" className={styles.secondaryActionBtn} onClick={handleImportSession}>
+                  <FontAwesomeIcon icon={faFileImport} />
+                  <div>
+                    <h3>{t("app.projects.importSession")}</h3>
+                    <p>{t("app.projects.importSessionDescription")}</p>
+                  </div>
+                </button>
               </div>
+
+              {onLoadVideoByPath && (
+                <YouTubeImport onVideoDownloaded={onLoadVideoByPath} />
+              )}
 
               {projects.length > 0 && (
                 <>

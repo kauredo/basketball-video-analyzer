@@ -19,6 +19,7 @@ import {
   faChevronDown,
   faTable,
   faVideo as faVideoFile,
+  faFloppyDisk,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
 import { useToastContext } from "../contexts/ToastContext";
@@ -368,6 +369,23 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
   };
 
+  const handleSaveSession = async () => {
+    if (!currentProject) return;
+
+    try {
+      setIsExporting(true);
+      const result = await window.electronAPI.saveSession(currentProject.id);
+      if (result) {
+        showSuccess(t("app.clips.saveSessionSuccess"));
+      }
+    } catch (error) {
+      console.error("Error saving session:", error);
+      showError(t("app.clips.saveSessionError"));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const openClipFolder = async () => {
     try {
       await window.electronAPI.openClipFolder();
@@ -468,6 +486,18 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 >
                   <FontAwesomeIcon icon={faTable} />
                   {t("app.clips.exportCsvJson")}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={styles.exportMenuItem}
+                  onClick={() => {
+                    setExportMenuOpen(false);
+                    handleSaveSession();
+                  }}
+                >
+                  <FontAwesomeIcon icon={faFloppyDisk} />
+                  {t("app.clips.saveSession")}
                 </button>
               </div>
             )}

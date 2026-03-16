@@ -35,6 +35,7 @@ interface VideoPlayerProps {
   onMarkIn: () => void;
   onMarkOut: () => void;
   onClearMarks: () => void;
+  onQuickTag?: (keyNumber: number) => void;
 }
 
 interface VideoPlayerRef {
@@ -76,6 +77,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onMarkIn,
       onMarkOut,
       onClearMarks,
+      onQuickTag,
     },
     ref
   ) => {
@@ -192,12 +194,15 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           } else {
             skipTime(-5);
           }
+        } else if (key >= "1" && key <= "9" && onQuickTag) {
+          e.preventDefault();
+          onQuickTag(parseInt(key, 10));
         }
       };
 
       document.addEventListener("keydown", handleKeyPress);
       return () => document.removeEventListener("keydown", handleKeyPress);
-    }, [onMarkIn, onMarkOut, onClearMarks, isPlaying, keyBindings]);
+    }, [onMarkIn, onMarkOut, onClearMarks, onQuickTag, isPlaying, keyBindings]);
 
     // Calculate frame duration (assuming 30fps)
     const frameDuration = 1 / 30;

@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu } from "electron";
 import path from "path";
 import fs from "fs";
+import { spawn } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import ffprobeStatic from "ffprobe-static";
@@ -21,6 +22,7 @@ import {
   getClipsByCategory,
   createProject,
   getProject,
+  getProjectById,
   getProjects,
   updateProjectLastOpened,
   deleteProject,
@@ -1075,3 +1077,267 @@ ipcMain.handle(
     }
   }
 );
+
+// Save analysis session as JSON
+ipcMain.handle("save-session", async (_event, projectId: number) => {
+  try {
+    const project = getProjectById(projectId);
+    if (!project) throw new Error("Project not found");
+
+    const clips = getClips(projectId);
+    const categories = getCategoriesHierarchical(projectId);
+
+    // Build category name map for resolving clip category IDs to names
+    const categoryMap = new Map<number, string>();
+    categories.forEach(cat => {
+      if (cat.id) categoryMap.set(cat.id, cat.name);
+      if (cat.children) {
+        cat.children.forEach((child: Category) => {
+          if (child.id) categoryMap.set(child.id, child.name);
+        });
+      }
+    });
+
+    // Build export data with names instead of IDs
+    const exportCategories = categories.flatMap(cat => {
+      const result = [{ name: cat.name, color: cat.color, description: cat.description || "", parentName: null as string | null }];
+      if (cat.children) {
+        cat.children.forEach((child: Category) => {
+          result.push({ name: child.name, color: child.color, description: child.description || "", parentName: cat.name });
+        });
+      }
+      return result;
+    });
+
+    const exportClips = clips.map(clip => {
+      let categoryNames: string[] = [];
+      try {
+        const ids = JSON.parse(clip.categories) as number[];
+        categoryNames = ids.map(id => categoryMap.get(id) || "Unknown");
+      } catch { /* empty */ }
+
+      return {
+        title: clip.title,
+        startTime: clip.start_time,
+        endTime: clip.end_time,
+        duration: clip.duration,
+        categories: categoryNames,
+        notes: clip.notes || "",
+      };
+    });
+
+    const sessionData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      project: {
+        name: project.name,
+        videoName: project.video_name,
+        description: project.description || "",
+      },
+      categories: exportCategories,
+      clips: exportClips,
+    };
+
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: "Save Analysis Session",
+      defaultPath: path.join(app.getPath("documents"), `${project.name.replace(/[^a-zA-Z0-9]/g, "_")}-session.json`),
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+
+    if (result.canceled || !result.filePath) return null;
+
+    fs.writeFileSync(result.filePath, JSON.stringify(sessionData, null, 2), "utf-8");
+    return { filePath: result.filePath, success: true };
+  } catch (error) {
+    console.error("Error saving session:", error);
+    throw error;
+  }
+});
+
+// Load analysis session from JSON
+ipcMain.handle("load-session", async () => {
+  try {
+    // Step 1: Pick session JSON file
+    const jsonResult = await dialog.showOpenDialog(mainWindow, {
+      title: "Load Analysis Session",
+      properties: ["openFile"],
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+
+    if (jsonResult.canceled || jsonResult.filePaths.length === 0) return null;
+
+    const jsonContent = fs.readFileSync(jsonResult.filePaths[0], "utf-8");
+    const sessionData = JSON.parse(jsonContent);
+
+    // Validate structure
+    if (!sessionData.version || !sessionData.project || !sessionData.categories || !sessionData.clips) {
+      throw new Error("INVALID_SESSION_FILE");
+    }
+
+    // Step 2: Pick video file
+    const videoResult = await dialog.showOpenDialog(mainWindow, {
+      title: "Select Video File for This Session",
+      properties: ["openFile"],
+      filters: [{ name: "Videos", extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"] }],
+    });
+
+    if (videoResult.canceled || videoResult.filePaths.length === 0) return null;
+
+    const videoPath = videoResult.filePaths[0];
+    const videoName = path.basename(videoPath);
+
+    // Step 3: Create project
+    const project = createProject({
+      name: sessionData.project.name,
+      video_path: videoPath,
+      video_name: videoName,
+      description: sessionData.project.description || undefined,
+    });
+
+    // Step 4: Create categories (two-pass: parents first, then children)
+    const categoryNameToId = new Map<string, number>();
+
+    // Pass 1: Parents
+    for (const cat of sessionData.categories) {
+      if (!cat.parentName) {
+        const created = createCategory({
+          name: cat.name,
+          color: cat.color,
+          description: cat.description || undefined,
+          project_id: project.id as number,
+        });
+        if (created.id) categoryNameToId.set(cat.name, created.id);
+      }
+    }
+
+    // Pass 2: Children
+    for (const cat of sessionData.categories) {
+      if (cat.parentName) {
+        const parentId = categoryNameToId.get(cat.parentName);
+        const created = createCategory({
+          name: cat.name,
+          color: cat.color,
+          description: cat.description || undefined,
+          parent_id: parentId,
+          project_id: project.id as number,
+        });
+        if (created.id) categoryNameToId.set(cat.name, created.id);
+      }
+    }
+
+    // Step 5: Create clip metadata
+    for (const clip of sessionData.clips) {
+      const categoryIds = clip.categories
+        .map((name: string) => categoryNameToId.get(name))
+        .filter((id: number | undefined): id is number => id !== undefined);
+
+      createClip({
+        project_id: project.id as number,
+        video_path: videoPath,
+        output_path: "",
+        thumbnail_path: "",
+        start_time: clip.startTime,
+        end_time: clip.endTime,
+        duration: clip.duration,
+        title: clip.title,
+        categories: JSON.stringify(categoryIds),
+        notes: clip.notes || undefined,
+      });
+    }
+
+    return { success: true, project };
+  } catch (error) {
+    console.error("Error loading session:", error);
+    throw error;
+  }
+});
+
+// Resolve bundled yt-dlp binary path (handles ASAR unpacking)
+const getYtdlpPath = (): string => {
+  const { YOUTUBE_DL_PATH } = require("youtube-dl-exec/src/constants");
+  return fixAsarPath(YOUTUBE_DL_PATH);
+};
+
+// Download YouTube video using bundled yt-dlp
+ipcMain.handle("download-youtube-video", async (_event, url: string) => {
+  // Validate YouTube URL
+  const ytRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)/;
+  if (!ytRegex.test(url)) {
+    throw new Error("INVALID_YOUTUBE_URL");
+  }
+
+  const downloadsDir = path.join(app.getPath("userData"), "downloads");
+  if (!fs.existsSync(downloadsDir)) {
+    fs.mkdirSync(downloadsDir, { recursive: true });
+  }
+
+  const ytdlpPath = getYtdlpPath();
+
+  return new Promise<{ filePath: string; fileName: string; success: boolean }>((resolve, reject) => {
+    let outputFilePath = "";
+
+    const ytdlp = spawn(ytdlpPath, [
+      "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+      "--merge-output-format", "mp4",
+      "-o", path.join(downloadsDir, "%(title)s.%(ext)s"),
+      "--no-playlist",
+      "--newline",
+      url,
+    ]);
+
+    ytdlp.stdout.on("data", (data: Buffer) => {
+      const line = data.toString();
+
+      // Parse progress
+      const progressMatch = line.match(/\[download\]\s+(\d+(?:\.\d+)?)%/);
+      if (progressMatch) {
+        const percent = parseFloat(progressMatch[1]);
+        mainWindow?.webContents.send("youtube-download-progress", {
+          percent,
+          status: "downloading",
+        });
+      }
+
+      // Capture output file path
+      const destMatch = line.match(/\[download\] Destination: (.+)/);
+      if (destMatch) {
+        outputFilePath = destMatch[1].trim();
+      }
+
+      const mergerMatch = line.match(/\[Merger\] Merging formats into "(.+)"/);
+      if (mergerMatch) {
+        outputFilePath = mergerMatch[1].trim();
+      }
+    });
+
+    ytdlp.stderr.on("data", (data: Buffer) => {
+      console.error("yt-dlp stderr:", data.toString());
+    });
+
+    ytdlp.on("close", (code) => {
+      if (code === 0 && outputFilePath) {
+        const fileName = path.basename(outputFilePath);
+        resolve({ filePath: outputFilePath, fileName, success: true });
+      } else if (code === 0) {
+        // Try to find the downloaded file
+        const files = fs.readdirSync(downloadsDir)
+          .filter(f => f.endsWith(".mp4"))
+          .map(f => ({ name: f, time: fs.statSync(path.join(downloadsDir, f)).mtimeMs }))
+          .sort((a, b) => b.time - a.time);
+
+        if (files.length > 0) {
+          const filePath = path.join(downloadsDir, files[0].name);
+          resolve({ filePath, fileName: files[0].name, success: true });
+        } else {
+          reject(new Error("DOWNLOAD_FAILED"));
+        }
+      } else {
+        reject(new Error("DOWNLOAD_FAILED"));
+      }
+    });
+
+    ytdlp.on("error", () => {
+      reject(new Error("DOWNLOAD_FAILED"));
+    });
+  });
+});

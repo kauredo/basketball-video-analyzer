@@ -397,12 +397,12 @@
 .exportMenu {
   position: absolute;
   top: calc(100% + var(--spacing-xs));
-  right: 0;
+  left: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  z-index: var(--z-dropdown);
+  z-index: var(--z-popover);
   min-width: 200px;
   overflow: hidden;
 }

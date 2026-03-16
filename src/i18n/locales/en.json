@@ -184,7 +184,13 @@
       "exportCsvJson": "CSV / JSON",
       "exportDataSuccess": "Exported {{count}} clip(s) data to {{path}}",
       "exportDataError": "Error exporting clips data",
+      "saveSession": "Save Session",
+      "saveSessionSuccess": "Analysis session saved successfully",
+      "saveSessionError": "Error saving analysis session",
+      "quickTagCreated": "Clip created: {{category}}",
+      "quickTagNoMarks": "Set mark in and mark out first",
       "creator": {
+        "quarter": "Quarter",
         "title": "Clip Title",
         "titlePlaceholder": "Enter clip title (optional)",
         "notes": "Notes",
@@ -280,7 +286,8 @@
       "seek5s": "Seek 5 seconds",
       "seek30s": "Seek 30 seconds",
       "seek1m": "Seek 1 minute",
-      "frameStep": "Frame-by-frame"
+      "frameStep": "Frame-by-frame",
+      "quickTag": "Quick tag (1-9)"
     },
     "library": {
       "searchPlaceholder": "Search clips..."
@@ -296,6 +303,18 @@
       "deleteProject": "Delete project",
       "confirmDelete": "Are you sure you want to delete the project \"{{name}}\"? This will also delete all associated clips.",
       "deleteError": "Error deleting project. Please try again.",
+      "importSession": "Import Session",
+      "importSessionDescription": "Load a saved analysis session",
+      "importSessionSuccess": "Analysis session imported successfully",
+      "importSessionError": "Error importing analysis session",
+      "importSessionInvalidFile": "Invalid session file. Please select a valid session JSON.",
+      "youtubeImport": "YouTube Import",
+      "youtubeUrlPlaceholder": "Paste a YouTube link...",
+      "youtubeDownload": "Download",
+      "youtubeDownloading": "Downloading...",
+      "youtubeDownloadError": "Couldn't download this video. YouTube may have changed something — try again later.",
+      "youtubeInvalidUrl": "That doesn't look like a YouTube link. Try pasting the full URL from your browser.",
+      "youtubeDisclaimer": "This relies on YouTube's service and may not always work.",
       "noProjectsYet": "No Projects Yet",
       "noProjectsDescription": "Create your first project to get started with video analysis.",
       "projectCount_one": "{{count}} project",

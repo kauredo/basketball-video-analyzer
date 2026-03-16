@@ -78,6 +78,14 @@ export interface ElectronAPI {
   // Export clips data
   exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
 
+  // Session operations
+  saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
+  loadSession: () => Promise<{ success: boolean; project: any } | null>;
+
+  // YouTube operations
+  downloadYoutubeVideo: (url: string) => Promise<{ filePath: string; fileName: string; success: boolean }>;
+  onYoutubeDownloadProgress: (callback: (data: { percent: number; status: string }) => void) => void;
+
   // Clip operations
   getClips: (videoPath?: string) => Promise<any[]>;
   updateClip: (id: number, updates: any) => Promise<boolean>;

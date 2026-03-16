@@ -5,6 +5,19 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-16
+
+### Added
+
+- **Quick Tag with Keyboard**: Press 1-9 to instantly create a clip tagged with the corresponding category (when mark in/out are set)
+- **Quarter Selector**: Select the current quarter (Q1-Q4/OT) in the clip creator for structured clip naming
+- **Video-Time Clip Naming**: Clips now use video playback time instead of wall clock time (e.g., `Q1_03:21_Pick_Roll`)
+- **Save/Load Analysis Sessions**: Export full project state (categories, clips, metadata) as JSON and reload on any machine
+- **YouTube Video Import**: Paste a YouTube URL to download and analyze game footage directly (bundled via youtube-dl-exec, no extra install needed)
+- **Import Session** button in project selector for loading saved session files
+
+---
+
 ## [1.0.0] - 2024-01-XX
 
 ### Added

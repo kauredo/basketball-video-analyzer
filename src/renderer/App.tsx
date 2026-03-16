@@ -39,6 +39,7 @@ import { useFocusTrap } from "./hooks/useFocusTrap";
 import { useToastContext } from "./contexts/ToastContext";
 import { useConfirm } from "./contexts/ConfirmContext";
 import { loadPref, savePref, STORAGE_KEYS } from "./utils/storage";
+import { formatVideoTime } from "./utils/format";
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
@@ -67,6 +68,7 @@ export const App: React.FC = () => {
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
   const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [currentQuarter, setCurrentQuarter] = useState<string | null>(null);
 
   const resizeRef = useRef<HTMLDivElement>(null);
   const sideResizeRef = useRef<HTMLDivElement>(null);
@@ -267,45 +269,46 @@ export const App: React.FC = () => {
     [sidePanelWidth],
   );
 
-  const handleSelectVideo = async () => {
+  const handleLoadVideoByPath = async (filePath: string) => {
     try {
       setIsLoading(true);
+      const videoName = filePath.split("/").pop() || filePath.split("\\").pop() || "Unknown Video";
+
+      // Check if a project already exists for this video
+      let project = await window.electronAPI.getProject(filePath);
+
+      if (!project) {
+        const projectName = videoName.replace(/\.[^/.]+$/, "");
+        project = await window.electronAPI.createProject({
+          name: projectName,
+          video_path: filePath,
+          video_name: videoName,
+          description: `Project for ${videoName}`,
+        });
+      } else {
+        await window.electronAPI.updateProjectLastOpened(project.id);
+      }
+
+      setCurrentProject(project);
+      setVideoPath(filePath);
+      setRefreshTrigger((prev) => prev + 1);
+      setShowProjectSelector(false);
+      setShowInstructions(false);
+    } catch (error) {
+      console.error("Error loading video:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectVideo = async () => {
+    try {
       const filePath = await window.electronAPI.selectVideoFile();
       if (filePath) {
-        const videoName = filePath.split("/").pop() || "Unknown Video";
-
-        // Check if a project already exists for this video
-        let project = await window.electronAPI.getProject(filePath);
-
-        if (!project) {
-          // Create a new project for this video
-          const timestamp = new Date()
-            .toISOString()
-            .slice(0, 19)
-            .replace("T", " ");
-          const projectName = videoName.replace(/\.[^/.]+$/, ""); // Remove extension
-
-          project = await window.electronAPI.createProject({
-            name: projectName,
-            video_path: filePath,
-            video_name: videoName,
-            description: `Project for ${videoName}`,
-          });
-        } else {
-          // Update last opened time for existing project
-          await window.electronAPI.updateProjectLastOpened(project.id);
-        }
-
-        setCurrentProject(project);
-        setVideoPath(filePath);
-        setRefreshTrigger((prev) => prev + 1);
-        setShowProjectSelector(false);
-        setShowInstructions(false);
+        await handleLoadVideoByPath(filePath);
       }
     } catch (error) {
       console.error("Error selecting video:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -362,6 +365,51 @@ export const App: React.FC = () => {
     setShowClipCreator(false);
     handleClearMarks();
   }, [handleClearMarks]);
+
+  const handleQuickTag = useCallback(
+    async (keyNumber: number) => {
+      if (markInTime === null || markOutTime === null) {
+        showError(t("app.clips.creator.errorMarkPoints"));
+        return;
+      }
+      if (!videoPath || !currentProject) return;
+
+      // Build flat list of leaf categories (children, or parents without children)
+      const leafCategories: Category[] = [];
+      categories.forEach(cat => {
+        if (cat.children && cat.children.length > 0) {
+          cat.children.forEach(child => leafCategories.push(child));
+        } else {
+          leafCategories.push(cat);
+        }
+      });
+
+      const category = leafCategories[keyNumber - 1];
+      if (!category || category.id === undefined) return;
+
+      // Generate title using video time
+      const videoTime = formatVideoTime(markInTime);
+      const title = currentQuarter
+        ? `${currentQuarter}_${videoTime}_${category.name}`
+        : `${videoTime}_${category.name}`;
+
+      try {
+        await window.electronAPI.cutVideoClip({
+          inputPath: videoPath,
+          startTime: markInTime,
+          endTime: markOutTime,
+          title,
+          categories: [category.id],
+          projectId: currentProject.id,
+        });
+        showSuccess(t("app.clips.quickTagCreated", { category: category.name }));
+      } catch (error) {
+        console.error("Error creating quick tag clip:", error);
+        showError(t("app.clips.creator.errorCreating"));
+      }
+    },
+    [markInTime, markOutTime, videoPath, currentProject, categories, currentQuarter, showSuccess, showError, t],
+  );
 
   const handleResetDatabase = async () => {
     if (await confirm({ message: t("app.settings.confirmReset"), danger: true })) {
@@ -458,6 +506,7 @@ export const App: React.FC = () => {
                 onMarkIn={handleMarkIn}
                 onMarkOut={handleMarkOut}
                 onClearMarks={handleClearMarks}
+                onQuickTag={handleQuickTag}
               />
             </div>
 
@@ -560,6 +609,8 @@ export const App: React.FC = () => {
                 onClipCreated={handleClipCreated}
                 onClearMarks={handleClearMarks}
                 currentProject={currentProject}
+                currentQuarter={currentQuarter}
+                onQuarterChange={setCurrentQuarter}
               />
             </div>
           </div>
@@ -667,6 +718,7 @@ export const App: React.FC = () => {
         onClose={() => setShowProjectSelector(false)}
         onSelectProject={handleSelectProject}
         onCreateNew={handleCreateNewProject}
+        onLoadVideoByPath={handleLoadVideoByPath}
       />
 
       {/* Shortcuts Modal */}

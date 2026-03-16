@@ -672,6 +672,16 @@ export const getProject = (videoPath: string): Project | null => {
   }
 };
 
+export const getProjectById = (id: number): Project | null => {
+  try {
+    const stmt = db.prepare("SELECT * FROM projects WHERE id = ?");
+    return (stmt.get(id) as Project) || null;
+  } catch (error) {
+    console.error("Error getting project by id:", error);
+    return null;
+  }
+};
+
 export const getProjects = (): Project[] => {
   try {
     const stmt = db.prepare("SELECT * FROM projects ORDER BY last_opened DESC");

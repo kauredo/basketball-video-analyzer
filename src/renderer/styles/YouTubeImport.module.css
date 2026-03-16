@@ -1,0 +1,127 @@
+@import "./variables.css";
+
+.youtubeSection {
+  margin: var(--spacing-md) 0 var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.youtubeSection h4 {
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.inputRow {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.urlInput {
+  flex: 1;
+  height: var(--input-height);
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: 0 var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.urlInput:hover {
+  border-color: var(--border-color-hover);
+}
+
+.urlInput:focus-visible {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.urlInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.urlInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.downloadBtn {
+  height: var(--button-height);
+  padding: 0 var(--spacing-lg);
+  background: var(--color-primary);
+  border: none;
+  color: var(--text-white);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.downloadBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.downloadBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.downloadBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.progressSection {
+  margin-top: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.progressBar {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-quaternary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm) inset;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width var(--transition-normal) ease;
+}
+
+.progressText {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+  text-align: right;
+}
+
+.errorText {
+  margin: var(--spacing-sm) 0 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+}
+
+.disclaimer {
+  margin: var(--spacing-sm) 0 0;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-relaxed);
+}

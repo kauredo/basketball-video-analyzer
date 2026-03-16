@@ -175,7 +175,13 @@
       "exportCsvJson": "CSV / JSON",
       "exportDataSuccess": "Dados de {{count}} clip(s) exportados para {{path}}",
       "exportDataError": "Erro ao exportar dados dos clips",
+      "saveSession": "Guardar Sessão",
+      "saveSessionSuccess": "Sessão de análise guardada com sucesso",
+      "saveSessionError": "Erro ao guardar sessão de análise",
+      "quickTagCreated": "Clip criado: {{category}}",
+      "quickTagNoMarks": "Defina os pontos de entrada e saída primeiro",
       "creator": {
+        "quarter": "Período",
         "title": "Título do Clip",
         "titlePlaceholder": "Introduza o título do clip (opcional)",
         "notes": "Notas",
@@ -271,7 +277,8 @@
       "seek5s": "Avançar/retroceder 5 segundos",
       "seek30s": "Avançar/retroceder 30 segundos",
       "seek1m": "Avançar/retroceder 1 minuto",
-      "frameStep": "Frame a frame"
+      "frameStep": "Frame a frame",
+      "quickTag": "Marcação rápida (1-9)"
     },
     "library": {
       "searchPlaceholder": "Pesquisar clips..."
@@ -287,6 +294,18 @@
       "deleteProject": "Eliminar projeto",
       "confirmDelete": "Tem a certeza que pretende eliminar o projeto \"{{name}}\"? Isto irá também eliminar todos os clips associados.",
       "deleteError": "Erro ao eliminar projeto. Por favor tente novamente.",
+      "importSession": "Importar Sessão",
+      "importSessionDescription": "Carregar uma sessão de análise guardada",
+      "importSessionSuccess": "Sessão de análise importada com sucesso",
+      "importSessionError": "Erro ao importar sessão de análise",
+      "importSessionInvalidFile": "Ficheiro de sessão inválido. Por favor selecione um JSON de sessão válido.",
+      "youtubeImport": "Importar do YouTube",
+      "youtubeUrlPlaceholder": "Cole um link do YouTube...",
+      "youtubeDownload": "Descarregar",
+      "youtubeDownloading": "A descarregar...",
+      "youtubeDownloadError": "Não foi possível descarregar este vídeo. O YouTube pode ter alterado algo — tente novamente mais tarde.",
+      "youtubeInvalidUrl": "Isto não parece um link do YouTube. Tente colar o URL completo do navegador.",
+      "youtubeDisclaimer": "Depende do serviço do YouTube e pode nem sempre funcionar.",
       "noProjectsYet": "Ainda Não Há Projetos",
       "noProjectsDescription": "Crie o seu primeiro projeto para começar a análise de vídeo.",
       "projectCount_one": "{{count}} projeto",
