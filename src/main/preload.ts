@@ -99,6 +99,9 @@ export interface ElectronAPI {
     value: string;
   }) => Promise<void>;
 
+  // Feedback
+  onOpenFeedback: (callback: () => void) => void;
+
   // Update operations
   onUpdateAvailable: (callback: (info: any) => void) => void;
   onUpdateDownloaded: (callback: (info: any) => void) => void;
@@ -197,6 +200,11 @@ const electronAPI: ElectronAPI = {
   // Settings operations
   getKeyBindings: () => ipcRenderer.invoke("getKeyBindings"),
   setKeyBinding: params => ipcRenderer.invoke("setKeyBinding", params),
+
+  // Feedback
+  onOpenFeedback: (callback: () => void) => {
+    ipcRenderer.on("open-feedback", () => callback());
+  },
 
   // Update operations
   onUpdateAvailable: (callback: (info: any) => void) => {

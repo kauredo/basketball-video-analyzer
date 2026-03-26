@@ -11,6 +11,7 @@ import {
   faShare,
   faTags,
   faScissors,
+  faCommentDots,
   faChevronLeft,
   faChevronRight,
   faCog,
@@ -34,6 +35,7 @@ import { InstructionsModal } from "./components/InstructionsModal";
 import { ProjectSelector } from "./components/ProjectSelector";
 import { KeyBindingEditor } from "./components/KeyBindingEditor";
 import { ShortcutsModal } from "./components/ShortcutsModal";
+import { FeedbackModal } from "./components/FeedbackModal";
 import { Clip, Category } from "../types/global";
 import { useFocusTrap } from "./hooks/useFocusTrap";
 import { useToastContext } from "./contexts/ToastContext";
@@ -58,6 +60,7 @@ export const App: React.FC = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [hasExistingProjects, setHasExistingProjects] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_WIDTH, 360));
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_COLLAPSED, true));
@@ -76,6 +79,7 @@ export const App: React.FC = () => {
   const videoPlayerRef = useRef<any>(null);
   const clipCreatorTrapRef = useFocusTrap(showClipCreator);
   const settingsTrapRef = useFocusTrap(showSettings);
+  const feedbackTrapRef = useFocusTrap(showFeedback);
 
   // Check for existing projects on startup
   useEffect(() => {
@@ -169,10 +173,15 @@ export const App: React.FC = () => {
       setUpdateDownloadProgress(null);
     });
 
+    window.electronAPI.onOpenFeedback(() => {
+      setShowFeedback(true);
+    });
+
     // Cleanup listeners on unmount
     return () => {
       window.electronAPI.removeAllListeners("download-progress");
       window.electronAPI.removeAllListeners("update-downloaded");
+      window.electronAPI.removeAllListeners("open-feedback");
     };
   }, []);
 
@@ -726,6 +735,39 @@ export const App: React.FC = () => {
         isOpen={showShortcuts}
         onClose={() => setShowShortcuts(false)}
       />
+
+      {/* Feedback Modal */}
+      {showFeedback && (
+        <div
+          ref={feedbackTrapRef}
+          className={styles.modal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="feedback-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowFeedback(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowFeedback(false); }}
+        >
+          <div className={styles.modalContent} style={{ maxWidth: 520 }}>
+            <div className={styles.modalHeader}>
+              <h2 id="feedback-title">
+                <FontAwesomeIcon icon={faCommentDots} />{" "}
+                {t("app.modals.feedback")}
+              </h2>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setShowFeedback(false)}
+                aria-label={t("app.buttons.close")}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <FeedbackModal onClose={() => setShowFeedback(false)} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -50,7 +50,8 @@
     },
     "modals": {
       "createClip": "Criar Clip",
-      "settings": "Definições"
+      "settings": "Definições",
+      "feedback": "Enviar Feedback"
     },
     "settings": {
       "language": "Idioma",
@@ -337,6 +338,28 @@
     "hints": {
       "markKeys": "Prima {{markIn}} para marcar o início de um clip, {{markOut}} para marcar o fim.",
       "firstClip": "Os seus clips aparecem aqui. Use categorias para os organizar."
+    },
+    "feedback": {
+      "type": "Que tipo de feedback?",
+      "types": {
+        "bug": "Erro",
+        "feature": "Funcionalidade",
+        "feedback": "Comentário"
+      },
+      "titleLabel": "Título",
+      "titlePlaceholder_bug": "O que correu mal?",
+      "titlePlaceholder_feature": "O que gostaria de ver?",
+      "titlePlaceholder_feedback": "O que tem em mente?",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder_bug": "O que aconteceu? O que esperava em vez disso?",
+      "descriptionPlaceholder_feature": "Como é que isto ajudaria o seu trabalho?",
+      "descriptionPlaceholder_feedback": "Conte-nos mais...",
+      "hint_bug": "Inclua os passos para reproduzir se possível — ajuda-nos a corrigir mais rápido.",
+      "systemInfoNote": "Informação do sistema incluída",
+      "submit": "Enviar",
+      "submitting": "A enviar...",
+      "submitSuccess": "Obrigado! O seu feedback foi enviado.",
+      "submitError": "Não foi possível enviar o feedback. Tente novamente mais tarde."
     }
   }
 }

@@ -156,6 +156,15 @@ const createMenu = (mainWindow: BrowserWindow): void => {
             ]
           : []),
         {
+          label: "Send Feedback...",
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.send("open-feedback");
+            }
+          },
+        },
+        { type: "separator" },
+        {
           label: "Learn More",
           click: async () => {
             await shell.openExternal(

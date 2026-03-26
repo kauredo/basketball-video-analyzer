@@ -108,6 +108,9 @@ export interface ElectronAPI {
     key: "markInKey" | "markOutKey",
     value: string,
   ) => Promise<void>;
+
+  // Feedback
+  onOpenFeedback: (callback: () => void) => void;
 }
 
 declare global {
