@@ -325,11 +325,46 @@ export const App: React.FC = () => {
     try {
       setIsLoading(true);
 
-      // Update last opened time
+      let videoPathToUse = project.video_path;
+      let projectToUse = project;
+
+      const existence = await window.electronAPI.checkPathsExist([
+        project.video_path,
+      ]);
+      if (!existence[project.video_path]) {
+        const relink = await confirm({
+          message: t("app.projects.videoMissingMessage", {
+            path: project.video_path,
+          }),
+          confirmLabel: t("app.projects.videoMissingLocate"),
+        });
+        if (!relink) {
+          return;
+        }
+        const newPath = await window.electronAPI.selectVideoFile();
+        if (!newPath) {
+          return;
+        }
+        const newName =
+          newPath.split("/").pop() || newPath.split("\\").pop() || newPath;
+        const ok = await window.electronAPI.updateProjectVideoPath(
+          project.id,
+          newPath,
+          newName,
+        );
+        if (!ok) {
+          showError(t("app.projects.videoRelinkError"));
+          return;
+        }
+        videoPathToUse = newPath;
+        projectToUse = { ...project, video_path: newPath, video_name: newName };
+        showSuccess(t("app.projects.videoRelinkSuccess"));
+      }
+
       await window.electronAPI.updateProjectLastOpened(project.id);
 
-      setCurrentProject(project);
-      setVideoPath(project.video_path);
+      setCurrentProject(projectToUse);
+      setVideoPath(videoPathToUse);
       setRefreshTrigger((prev) => prev + 1);
       setShowProjectSelector(false);
     } catch (error) {

@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import fs from "fs";
 import path from "path";
 import { app } from "electron";
 
@@ -66,9 +67,84 @@ export const setupDatabase = () => {
     migrateDatabase();
     createTables();
     insertDefaultCategories();
+    migrateClipPaths();
     console.log("Database setup complete");
   } catch (error) {
     console.error("Error setting up database:", error);
+  }
+};
+
+// Recovers clip files left behind by historical clips-dir migrations.
+// Old releases stored clips at:
+//   ~/Documents/Basketball Clip Cutter/clips/   (earliest)
+//   ~/Documents/Basketball Video Analyzer/clips/ (intermediate)
+// Current releases use userData/clips/. If a clip's stored path no longer
+// resolves, search those known locations by basename and update the row.
+// Pure pointer update — files are never moved.
+const migrateClipPaths = () => {
+  try {
+    const clips = db
+      .prepare("SELECT id, output_path, thumbnail_path FROM clips")
+      .all() as Array<{
+      id: number;
+      output_path: string;
+      thumbnail_path: string | null;
+    }>;
+
+    if (clips.length === 0) return;
+
+    const documentsDir = app.getPath("documents");
+    const userDataDir = app.getPath("userData");
+    const searchRoots = [
+      path.join(userDataDir, "clips"),
+      path.join(documentsDir, "Basketball Video Analyzer", "clips"),
+      path.join(documentsDir, "Basketball Clip Cutter", "clips"),
+    ];
+
+    const resolve = (storedPath: string | null | undefined): string | null => {
+      if (!storedPath) return null;
+      if (fs.existsSync(storedPath)) return storedPath;
+      const basename = path.basename(storedPath);
+      for (const root of searchRoots) {
+        const candidate = path.join(root, basename);
+        if (fs.existsSync(candidate)) return candidate;
+      }
+      return null;
+    };
+
+    const updateStmt = db.prepare(
+      "UPDATE clips SET output_path = ?, thumbnail_path = ? WHERE id = ?",
+    );
+
+    let recovered = 0;
+    const txn = db.transaction((rows: typeof clips) => {
+      for (const clip of rows) {
+        const newOutput = resolve(clip.output_path);
+        const newThumbnail = resolve(clip.thumbnail_path);
+
+        const outputChanged = newOutput && newOutput !== clip.output_path;
+        const thumbnailChanged =
+          newThumbnail && newThumbnail !== clip.thumbnail_path;
+
+        if (outputChanged || thumbnailChanged) {
+          updateStmt.run(
+            newOutput ?? clip.output_path,
+            newThumbnail ?? clip.thumbnail_path,
+            clip.id,
+          );
+          recovered++;
+        }
+      }
+    });
+    txn(clips);
+
+    if (recovered > 0) {
+      console.log(
+        `Recovered ${recovered} clip path(s) from older app versions`,
+      );
+    }
+  } catch (error) {
+    console.error("Error migrating clip paths:", error);
   }
 };
 
@@ -700,6 +776,22 @@ export const updateProjectLastOpened = (projectId: number): void => {
     stmt.run(projectId);
   } catch (error) {
     console.error("Error updating project last opened:", error);
+  }
+};
+
+export const updateProjectVideoPath = (
+  projectId: number,
+  newVideoPath: string,
+  newVideoName: string,
+): void => {
+  try {
+    const stmt = db.prepare(
+      "UPDATE projects SET video_path = ?, video_name = ? WHERE id = ?",
+    );
+    stmt.run(newVideoPath, newVideoName, projectId);
+  } catch (error) {
+    console.error("Error updating project video path:", error);
+    throw error;
   }
 };
 

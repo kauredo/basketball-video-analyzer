@@ -5,6 +5,13 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2026-04-28
+
+### Fixed
+
+- **Old projects with missing video files**: opening a project whose source video is no longer at its stored path now shows a "Locate video" dialog instead of a generic playback error. Project cards display a "Video missing" badge so coaches can spot affected projects at a glance.
+- **Clips left behind by historical clips-directory migrations**: on startup, the app now re-resolves clip and thumbnail paths from older locations (`Documents/Basketball Clip Cutter/clips/` and `Documents/Basketball Video Analyzer/clips/`) so previously-broken clips play again without manual intervention.
+
 ## [1.4.0] - 2026-03-16
 
 ### Added

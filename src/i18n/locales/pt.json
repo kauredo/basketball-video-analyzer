@@ -310,7 +310,13 @@
       "noProjectsYet": "Ainda Não Há Projetos",
       "noProjectsDescription": "Crie o seu primeiro projeto para começar a análise de vídeo.",
       "projectCount_one": "{{count}} projeto",
-      "projectCount_other": "{{count}} projetos"
+      "projectCount_other": "{{count}} projetos",
+      "videoMissingBadge": "Vídeo em falta",
+      "videoMissingTitle": "Ficheiro de vídeo não encontrado",
+      "videoMissingMessage": "O ficheiro de vídeo deste projeto já não se encontra em \"{{path}}\". Pretende localizá-lo?",
+      "videoMissingLocate": "Localizar vídeo",
+      "videoRelinkSuccess": "Vídeo atualizado com sucesso.",
+      "videoRelinkError": "Não foi possível atualizar o vídeo. Por favor tente novamente."
     },
     "timeline": {
       "title": "Linha do Tempo",

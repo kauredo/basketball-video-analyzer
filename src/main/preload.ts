@@ -51,7 +51,13 @@ export interface ElectronAPI {
   getProject: (videoPath: string) => Promise<any | null>;
   getProjects: () => Promise<any[]>;
   updateProjectLastOpened: (projectId: number) => Promise<boolean>;
+  updateProjectVideoPath: (
+    projectId: number,
+    newVideoPath: string,
+    newVideoName: string
+  ) => Promise<boolean>;
   deleteProject: (id: number) => Promise<boolean>;
+  checkPathsExist: (paths: string[]) => Promise<Record<string, boolean>>;
 
   // Category operations
   getCategories: (projectId: number) => Promise<any[]>;
@@ -135,7 +141,15 @@ const electronAPI: ElectronAPI = {
   getProjects: () => ipcRenderer.invoke("get-projects"),
   updateProjectLastOpened: projectId =>
     ipcRenderer.invoke("update-project-last-opened", projectId),
+  updateProjectVideoPath: (projectId, newVideoPath, newVideoName) =>
+    ipcRenderer.invoke(
+      "update-project-video-path",
+      projectId,
+      newVideoPath,
+      newVideoName
+    ),
   deleteProject: id => ipcRenderer.invoke("delete-project", id),
+  checkPathsExist: paths => ipcRenderer.invoke("check-paths-exist", paths),
 
   // Category operations
   getCategories: (projectId: number) =>

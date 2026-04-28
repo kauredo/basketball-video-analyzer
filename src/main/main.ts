@@ -25,6 +25,7 @@ import {
   getProjectById,
   getProjects,
   updateProjectLastOpened,
+  updateProjectVideoPath,
   deleteProject,
   Category,
   Clip,
@@ -346,6 +347,18 @@ ipcMain.handle("select-video-file", async () => {
     console.error("Error selecting video file:", error);
     return null;
   }
+});
+
+ipcMain.handle("check-paths-exist", async (_event, paths: string[]) => {
+  const result: Record<string, boolean> = {};
+  for (const p of paths) {
+    try {
+      result[p] = typeof p === "string" && p.length > 0 && fs.existsSync(p);
+    } catch {
+      result[p] = false;
+    }
+  }
+  return result;
 });
 
 ipcMain.handle(
@@ -844,6 +857,24 @@ ipcMain.handle(
       return true;
     } catch (error) {
       console.error("Error updating project last opened:", error);
+      return false;
+    }
+  }
+);
+
+ipcMain.handle(
+  "update-project-video-path",
+  async (
+    _event,
+    projectId: number,
+    newVideoPath: string,
+    newVideoName: string
+  ) => {
+    try {
+      updateProjectVideoPath(projectId, newVideoPath, newVideoName);
+      return true;
+    } catch (error) {
+      console.error("Error updating project video path:", error);
       return false;
     }
   }

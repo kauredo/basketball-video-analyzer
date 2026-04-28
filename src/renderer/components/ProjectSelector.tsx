@@ -10,6 +10,7 @@ import {
   faFilm,
   faTimes,
   faFileImport,
+  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ProjectSelector.module.css";
 import { YouTubeImport } from "./YouTubeImport";
@@ -48,6 +49,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   const { confirm } = useConfirm();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [missingPaths, setMissingPaths] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -65,6 +67,18 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
           new Date(b.last_opened).getTime() - new Date(a.last_opened).getTime(),
       );
       setProjects(sortedProjects);
+
+      const paths = sortedProjects.map((p: Project) => p.video_path);
+      if (paths.length > 0) {
+        const existence = await window.electronAPI.checkPathsExist(paths);
+        const missing: Record<string, boolean> = {};
+        for (const p of paths) {
+          if (!existence[p]) missing[p] = true;
+        }
+        setMissingPaths(missing);
+      } else {
+        setMissingPaths({});
+      }
     } catch (error) {
       console.error("Error loading projects:", error);
     } finally {
@@ -185,10 +199,14 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                   </div>
 
                   <div className={styles.projectsList}>
-                    {projects.map((project) => (
+                    {projects.map((project) => {
+                      const isMissing = !!missingPaths[project.video_path];
+                      return (
                       <div
                         key={project.id}
-                        className={styles.projectCard}
+                        className={`${styles.projectCard} ${
+                          isMissing ? styles.projectCardMissing : ""
+                        }`}
                         onClick={() => onSelectProject(project)}
                         role="button"
                         tabIndex={0}
@@ -203,7 +221,18 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                           <FontAwesomeIcon icon={faVideo} />
                         </div>
                         <div className={styles.projectInfo}>
-                          <h4 className={styles.projectName}>{project.name}</h4>
+                          <div className={styles.projectNameRow}>
+                            <h4 className={styles.projectName}>{project.name}</h4>
+                            {isMissing && (
+                              <span
+                                className={styles.missingBadge}
+                                title={t("app.projects.videoMissingTitle")}
+                              >
+                                <FontAwesomeIcon icon={faTriangleExclamation} />
+                                {t("app.projects.videoMissingBadge")}
+                              </span>
+                            )}
+                          </div>
                           <p className={styles.projectVideo}>
                             {project.video_name}
                           </p>
@@ -235,7 +264,8 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                           </button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               )}

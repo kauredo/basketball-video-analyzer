@@ -319,7 +319,13 @@
       "noProjectsYet": "No Projects Yet",
       "noProjectsDescription": "Create your first project to get started with video analysis.",
       "projectCount_one": "{{count}} project",
-      "projectCount_other": "{{count}} projects"
+      "projectCount_other": "{{count}} projects",
+      "videoMissingBadge": "Video missing",
+      "videoMissingTitle": "Video file not found",
+      "videoMissingMessage": "The video file for this project is no longer at \"{{path}}\". Would you like to locate it?",
+      "videoMissingLocate": "Locate video",
+      "videoRelinkSuccess": "Video file updated.",
+      "videoRelinkError": "Couldn't update the video. Please try again."
     },
     "timeline": {
       "title": "Timeline",
