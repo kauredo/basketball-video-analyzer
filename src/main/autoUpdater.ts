@@ -8,6 +8,8 @@ autoUpdater.logger = log;
 
 // Flag to prevent duplicate notifications during manual checks
 let isManualCheck = false;
+// Track active download so we only surface errors that interrupt one
+let isDownloading = false;
 
 export function setupAutoUpdater(mainWindow: BrowserWindow) {
   // Don't check for updates in development
@@ -40,6 +42,7 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
 
   autoUpdater.on("update-available", info => {
     log.info("Update available:", info);
+    isDownloading = true;
     mainWindow.webContents.send("update-available", info);
 
     // Only show automatic notification if this isn't a manual check
@@ -60,7 +63,14 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
 
   autoUpdater.on("error", err => {
     log.error("Error in auto-updater:", err);
-    mainWindow.webContents.send("update-error", err);
+    // Only surface to the renderer if a download was in progress and this
+    // isn't a manual check (manual checks already show their own dialog).
+    if (isDownloading && !isManualCheck) {
+      mainWindow.webContents.send("update-error", {
+        message: err?.message ?? String(err),
+      });
+    }
+    isDownloading = false;
   });
 
   let lastProgressNotification = 0;
@@ -79,6 +89,7 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
 
   autoUpdater.on("update-downloaded", info => {
     log.info("Update downloaded:", info);
+    isDownloading = false;
     mainWindow.webContents.send("update-downloaded", info);
 
     // Show dialog to restart and install

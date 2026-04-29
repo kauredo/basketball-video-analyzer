@@ -265,6 +265,9 @@
       "errorVideoFormat": "Formato de vídeo não suportado",
       "checkVideoFormat": "Verifique se o ficheiro de vídeo existe e está num formato suportado (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "A descarregar atualização... {{progress}}%",
+      "preparingUpdate": "A preparar download da atualização...",
+      "updateDownloaded": "Atualização {{version}} descarregada — pronta a instalar.",
+      "updateError": "Falha na atualização: {{message}}",
       "zoomTimeline": "Zoom da Linha do Tempo",
       "pathLabel": "Caminho:",
       "volumeLabel": "Volume"

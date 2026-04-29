@@ -162,15 +162,26 @@ export const App: React.FC = () => {
 
   // Listen for update download progress
   useEffect(() => {
+    window.electronAPI.onUpdateAvailable(() => {
+      setUpdateDownloadProgress(0);
+    });
+
     window.electronAPI.onDownloadProgress((progress) => {
       const percent = Math.floor(progress.percent);
       console.log(`Update download progress: ${percent}% (${progress.transferred}/${progress.total} bytes, ${progress.bytesPerSecond} bytes/sec)`);
       setUpdateDownloadProgress(percent);
     });
 
-    window.electronAPI.onUpdateDownloaded(() => {
+    window.electronAPI.onUpdateDownloaded((info) => {
       console.log("Update downloaded successfully!");
       setUpdateDownloadProgress(null);
+      showSuccess(t("app.video.updateDownloaded", { version: info?.version ?? "" }));
+    });
+
+    window.electronAPI.onUpdateError((err) => {
+      console.error("Update error:", err);
+      setUpdateDownloadProgress(null);
+      showError(t("app.video.updateError", { message: err?.message ?? "unknown error" }));
     });
 
     window.electronAPI.onOpenFeedback(() => {
@@ -179,11 +190,13 @@ export const App: React.FC = () => {
 
     // Cleanup listeners on unmount
     return () => {
+      window.electronAPI.removeAllListeners("update-available");
       window.electronAPI.removeAllListeners("download-progress");
       window.electronAPI.removeAllListeners("update-downloaded");
+      window.electronAPI.removeAllListeners("update-error");
       window.electronAPI.removeAllListeners("open-feedback");
     };
-  }, []);
+  }, [showSuccess, showError, t]);
 
   // Handle video seeking from timeline
   const handleTimeSeek = useCallback((time: number) => {
@@ -493,7 +506,10 @@ export const App: React.FC = () => {
         </h1>
         {updateDownloadProgress !== null && (
           <div className={styles.updateProgress}>
-            <FontAwesomeIcon icon={faDownload} spin /> {t("app.video.downloadingUpdate", { progress: updateDownloadProgress })}
+            <FontAwesomeIcon icon={faDownload} spin />{" "}
+            {updateDownloadProgress === 0
+              ? t("app.video.preparingUpdate")
+              : t("app.video.downloadingUpdate", { progress: updateDownloadProgress })}
           </div>
         )}
         <div className={styles.headerActions}>

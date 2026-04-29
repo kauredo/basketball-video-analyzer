@@ -5,6 +5,15 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2026-04-29
+
+### Fixed
+
+- **Auto-update visibility**: the "Update Available" dialog now triggers an immediate header progress strip ("Preparing update download…" → "Downloading update… NN%"), so it is clear the download is actually happening rather than silently stalling.
+- **Update completion feedback**: a success toast appears alongside the "Update Ready to Install" dialog when the download finishes, so the confirmation persists even if the modal is dismissed.
+- **Update failure feedback**: download failures (network drop, partial transfer) now surface as an error toast instead of being silent. Background/periodic check failures stay silent (log only) to avoid noise.
+- Auto-updater errors now serialize cleanly across IPC (previously the `message` field could be lost in transit between main and renderer).
+
 ## [1.5.1] - 2026-04-28
 
 ### Fixed

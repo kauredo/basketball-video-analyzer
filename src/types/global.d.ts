@@ -111,6 +111,19 @@ export interface ElectronAPI {
 
   // Feedback
   onOpenFeedback: (callback: () => void) => void;
+
+  // Update operations
+  onUpdateAvailable: (callback: (info: { version: string }) => void) => void;
+  onUpdateDownloaded: (callback: (info: { version: string }) => void) => void;
+  onUpdateError: (callback: (err: { message: string }) => void) => void;
+  onDownloadProgress: (
+    callback: (progress: {
+      bytesPerSecond: number;
+      percent: number;
+      transferred: number;
+      total: number;
+    }) => void,
+  ) => void;
 }
 
 declare global {

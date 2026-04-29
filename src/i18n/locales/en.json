@@ -274,6 +274,9 @@
       "errorVideoFormat": "Video format not supported",
       "checkVideoFormat": "Please check if the video file exists and is in a supported format (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Downloading update... {{progress}}%",
+      "preparingUpdate": "Preparing update download...",
+      "updateDownloaded": "Update {{version}} downloaded — ready to install.",
+      "updateError": "Update failed: {{message}}",
       "zoomTimeline": "Zoom Timeline",
       "pathLabel": "Path:",
       "volumeLabel": "Volume"
