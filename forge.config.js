@@ -1,5 +1,37 @@
+const path = require("path");
 const { FusesPlugin } = require("@electron-forge/plugin-fuses");
 const { FuseV1Options, FuseVersion } = require("@electron/fuses");
+
+const signMac = !!(
+  process.env.APPLE_TEAM_ID &&
+  process.env.APPLE_ID &&
+  process.env.APPLE_APP_SPECIFIC_PASSWORD
+);
+
+const osxSignConfig = signMac
+  ? {
+      optionsForFile: filePath =>
+        filePath.includes("Helper")
+          ? { hardenedRuntime: true }
+          : {
+              entitlements: path.join(
+                __dirname,
+                "build",
+                "entitlements.mac.plist"
+              ),
+              hardenedRuntime: true,
+            },
+    }
+  : false;
+
+const osxNotarizeConfig = signMac
+  ? {
+      tool: "notarytool",
+      appleId: process.env.APPLE_ID,
+      appleIdPassword: process.env.APPLE_APP_SPECIFIC_PASSWORD,
+      teamId: process.env.APPLE_TEAM_ID,
+    }
+  : false;
 
 module.exports = {
   packagerConfig: {
@@ -9,17 +41,10 @@ module.exports = {
     },
     name: "BasketballVideoAnalyzer",
     executableName: "basketball-video-analyzer",
-    appBundleId: "com.yourname.basketball-video-analyzer",
+    appBundleId: "com.kauredo.basketballvideoanalyzer",
     icon: "./assets/icon",
-    // Code signing disabled - users need to bypass Gatekeeper
-    osxSign: false,
-    osxNotarize: false,
-    // Allow unsigned apps on macOS for development
-    extendInfo: {
-      NSAppTransportSecurity: {
-        NSAllowsArbitraryLoads: true,
-      },
-    },
+    osxSign: osxSignConfig,
+    osxNotarize: osxNotarizeConfig,
     // Windows-specific options
     win32metadata: {
       CompanyName: "Basketball Video Analyzer Team",
@@ -107,75 +132,54 @@ module.exports = {
   // This is needed for electron-updater to work
   hooks: {
     postMake: async (forgeConfig, makeResults) => {
+      const crypto = require("crypto");
       const fs = require("fs");
       const path = require("path");
       const yaml = require("js-yaml");
 
-      let macMetadataGenerated = false;
-      let winMetadataGenerated = false;
-      let linuxMetadataGenerated = false;
+      const checksum = file => {
+        const buf = fs.readFileSync(file);
+        return {
+          sha512: crypto.createHash("sha512").update(buf).digest("base64"),
+          size: buf.length,
+        };
+      };
 
-      for (const result of makeResults) {
+      const writeYml = (ymlName, result) => {
         const outPath = path.dirname(result.artifacts[0]);
         const version = require("./package.json").version;
-
-        // Generate update metadata files for auto-updater (only once per platform)
-
-        // macOS: latest-mac.yml
-        if (process.platform === "darwin" && !macMetadataGenerated) {
-          const latestMac = {
-            version: version,
-            files: result.artifacts.map(artifact => ({
-              url: path.basename(artifact),
-              sha512: "", // Will be filled by GitHub
-            })),
-            path: result.artifacts[0] ? path.basename(result.artifacts[0]) : "",
-            sha512: "",
+        const files = result.artifacts.map(artifact => {
+          const { sha512, size } = checksum(artifact);
+          return { url: path.basename(artifact), sha512, size };
+        });
+        fs.writeFileSync(
+          path.join(outPath, ymlName),
+          yaml.dump({
+            version,
+            files,
+            path: files[0].url,
+            sha512: files[0].sha512,
             releaseDate: new Date().toISOString(),
-          };
-          fs.writeFileSync(
-            path.join(outPath, "latest-mac.yml"),
-            yaml.dump(latestMac)
-          );
-          macMetadataGenerated = true;
+          })
+        );
+      };
+
+      let macDone = false;
+      let winDone = false;
+      let linuxDone = false;
+
+      for (const result of makeResults) {
+        if (process.platform === "darwin" && !macDone) {
+          writeYml("latest-mac.yml", result);
+          macDone = true;
         }
-
-        // Windows: latest.yml
-        if (process.platform === "win32" && !winMetadataGenerated) {
-          const latestWin = {
-            version: version,
-            files: result.artifacts.map(artifact => ({
-              url: path.basename(artifact),
-              sha512: "", // Will be filled by GitHub
-            })),
-            path: result.artifacts[0] ? path.basename(result.artifacts[0]) : "",
-            sha512: "",
-            releaseDate: new Date().toISOString(),
-          };
-          fs.writeFileSync(
-            path.join(outPath, "latest.yml"),
-            yaml.dump(latestWin)
-          );
-          winMetadataGenerated = true;
+        if (process.platform === "win32" && !winDone) {
+          writeYml("latest.yml", result);
+          winDone = true;
         }
-
-        // Linux: latest-linux.yml
-        if (process.platform === "linux" && !linuxMetadataGenerated) {
-          const latestLinux = {
-            version: version,
-            files: result.artifacts.map(artifact => ({
-              url: path.basename(artifact),
-              sha512: "", // Will be filled by GitHub
-            })),
-            path: result.artifacts[0] ? path.basename(result.artifacts[0]) : "",
-            sha512: "",
-            releaseDate: new Date().toISOString(),
-          };
-          fs.writeFileSync(
-            path.join(outPath, "latest-linux.yml"),
-            yaml.dump(latestLinux)
-          );
-          linuxMetadataGenerated = true;
+        if (process.platform === "linux" && !linuxDone) {
+          writeYml("latest-linux.yml", result);
+          linuxDone = true;
         }
       }
     },

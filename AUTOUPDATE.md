@@ -132,23 +132,59 @@ Make sure your GitHub token:
 - Is set in environment: `export GITHUB_TOKEN="..."`
 - Is valid and not expired
 
-### "Code signing errors (macOS)"
+### macOS code signing + notarization
 
-For macOS auto-updates to work properly in production:
+Signing is **already wired up** in `forge.config.js` and `.github/workflows/release.yml`. It activates automatically whenever the `APPLE_TEAM_ID` env var is present (i.e. in CI when the secrets below are set). Local `npm run make` builds without those env vars stay unsigned, so nothing changes for day-to-day development.
 
-- App must be code-signed
-- Update `forge.config.js`:
-  ```javascript
-  osxSign: {
-    identity: "Developer ID Application: Your Name (TEAM_ID)"
-  },
-  osxNotarize: {
-    tool: "notarytool",
-    appleId: "your@email.com",
-    appleIdPassword: "@keychain:AC_PASSWORD",
-    teamId: "TEAM_ID"
-  }
-  ```
+To enable signed releases, do this **once**:
+
+#### 1. Create a "Developer ID Application" certificate
+
+In [Apple Developer → Certificates](https://developer.apple.com/account/resources/certificates), create a new certificate of type **Developer ID Application** (not "Mac App Distribution" — that's for the Mac App Store).
+
+- Generate a CSR from Keychain Access on your Mac (`Keychain Access → Certificate Assistant → Request a Certificate From a Certificate Authority`, save to disk).
+- Upload the CSR, download the resulting `.cer`, double-click to install it into your login keychain.
+
+#### 2. Export the certificate as `.p12`
+
+In Keychain Access, find "Developer ID Application: <Your Name> (TEAMID)" under "My Certificates". Right-click → **Export** → save as `.p12` with a strong password. Keep the password — you'll need it as `MACOS_CERTIFICATE_PWD`.
+
+#### 3. Generate an app-specific password
+
+At [appleid.apple.com](https://appleid.apple.com) → Sign-In and Security → App-Specific Passwords → generate one labelled e.g. "basketball-video-analyzer notarization". This is `APPLE_APP_SPECIFIC_PASSWORD`.
+
+#### 4. Find your Team ID
+
+[developer.apple.com/account](https://developer.apple.com/account) → Membership details → **Team ID** (10 chars, e.g. `A1B2C3D4E5`).
+
+#### 5. Add five GitHub secrets
+
+In the repo: Settings → Secrets and variables → Actions → New repository secret.
+
+| Secret | Value |
+| --- | --- |
+| `APPLE_ID` | Your Apple ID email |
+| `APPLE_APP_SPECIFIC_PASSWORD` | From step 3 |
+| `APPLE_TEAM_ID` | From step 4 |
+| `MACOS_CERTIFICATE` | Base64 of the `.p12` from step 2 (run `base64 -i cert.p12 \| pbcopy` and paste) |
+| `MACOS_CERTIFICATE_PWD` | The `.p12` password from step 2 |
+
+After that, every tag push (`v*`) produces a signed + notarized DMG, and Gatekeeper warnings go away for end users.
+
+#### Verifying locally (optional)
+
+Once you have the cert in your local keychain, you can produce a fully signed+notarized build locally:
+
+```bash
+export APPLE_ID="you@example.com"
+export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+export APPLE_TEAM_ID="A1B2C3D4E5"
+npm run make
+```
+
+Notarization takes 2–10 minutes; the build will block until Apple responds.
+
+> **Windows code signing is not configured.** Windows users will still see a SmartScreen warning on first run ("Don't run / More info → Run anyway"). Buying a code-signing cert (~$200+/yr) would remove this, but isn't currently set up.
 
 ## Testing Updates Locally
 

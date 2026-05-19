@@ -5,6 +5,13 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **macOS builds are now code-signed and notarized.** No more Gatekeeper "unidentified developer" warning on first launch.
+- **Bundle identifier changed** from `com.yourname.basketball-video-analyzer` to `com.kauredo.basketballvideoanalyzer`. macOS treats the new signed app as a separate identity from previous installs — auto-update will not replace the existing 1.5.2 app in place. **If you're upgrading from 1.5.2 or earlier on macOS, please re-download from the Releases page**; your projects, clips, and settings will carry over.
+
 ## [1.5.2] - 2026-04-29
 
 ### Fixed
