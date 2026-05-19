@@ -137,50 +137,45 @@ module.exports = {
       const path = require("path");
       const yaml = require("js-yaml");
 
-      const checksum = file => {
-        const buf = fs.readFileSync(file);
+      if (makeResults.length === 0) return;
+
+      const allArtifacts = makeResults.flatMap(r => r.artifacts);
+      const outPath = path.dirname(allArtifacts[0]);
+      const version = require("./package.json").version;
+
+      const files = allArtifacts.map(artifact => {
+        const buf = fs.readFileSync(artifact);
         return {
+          url: path.basename(artifact),
           sha512: crypto.createHash("sha512").update(buf).digest("base64"),
           size: buf.length,
         };
-      };
+      });
 
-      const writeYml = (ymlName, result) => {
-        const outPath = path.dirname(result.artifacts[0]);
-        const version = require("./package.json").version;
-        const files = result.artifacts.map(artifact => {
-          const { sha512, size } = checksum(artifact);
-          return { url: path.basename(artifact), sha512, size };
-        });
+      // electron-updater's macOS flow extracts the .zip in-place;
+      // Windows uses Setup.exe; Linux uses the .deb (when supported).
+      const pickPrimary = ext =>
+        files.find(f => f.url.toLowerCase().endsWith(ext.toLowerCase())) ||
+        files[0];
+
+      const writeYml = (ymlName, primary) =>
         fs.writeFileSync(
           path.join(outPath, ymlName),
           yaml.dump({
             version,
             files,
-            path: files[0].url,
-            sha512: files[0].sha512,
+            path: primary.url,
+            sha512: primary.sha512,
             releaseDate: new Date().toISOString(),
           })
         );
-      };
 
-      let macDone = false;
-      let winDone = false;
-      let linuxDone = false;
-
-      for (const result of makeResults) {
-        if (process.platform === "darwin" && !macDone) {
-          writeYml("latest-mac.yml", result);
-          macDone = true;
-        }
-        if (process.platform === "win32" && !winDone) {
-          writeYml("latest.yml", result);
-          winDone = true;
-        }
-        if (process.platform === "linux" && !linuxDone) {
-          writeYml("latest-linux.yml", result);
-          linuxDone = true;
-        }
+      if (process.platform === "darwin") {
+        writeYml("latest-mac.yml", pickPrimary(".zip"));
+      } else if (process.platform === "win32") {
+        writeYml("latest.yml", pickPrimary("Setup.exe"));
+      } else if (process.platform === "linux") {
+        writeYml("latest-linux.yml", pickPrimary(".deb"));
       }
     },
   },
