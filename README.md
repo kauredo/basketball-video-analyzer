@@ -14,36 +14,35 @@ A powerful desktop application designed specifically for basketball coaches and 
 
 ### 🚀 Quick Install (Recommended)
 
-**Download the latest version for your operating system:**
-
-#### Windows
-
-- **[Download Basketball Video Analyzer.exe](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/Basketball-Video-Analyzer-Setup.exe)** (Windows 10/11)
-- Run the installer and follow the setup wizard
-- The app will auto-update when new versions are available
+**Download the latest version for your operating system from the [latest release page](https://github.com/kauredo/basketball-video-analyzer/releases/latest):**
 
 #### macOS
 
-- **[Download Basketball Video Analyzer.dmg](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/Basketball-Video-Analyzer.dmg)** (macOS 10.15+)
-- Open the .dmg file and drag the app to Applications folder
-- Right-click and "Open" the first time (due to macOS security)
+- **[Download BasketballVideoAnalyzer.dmg](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/BasketballVideoAnalyzer.dmg)** (macOS 11+, Apple Silicon)
+- Open the .dmg and drag the app to Applications
+- On first launch, right-click the app → **Open** to bypass the Gatekeeper prompt (one time)
+
+#### Windows
+
+- Open the [latest release](https://github.com/kauredo/basketball-video-analyzer/releases/latest) and download `BasketballVideoAnalyzer-X.Y.Z.Setup.exe` from the Assets list
+- Run the installer; if SmartScreen blocks it, click **More info** → **Run anyway** (app is signed but not yet trusted by SmartScreen reputation)
+- The app will auto-update when new versions are available
 
 #### Linux
 
-**Ubuntu/Debian:**
+Open the [latest release](https://github.com/kauredo/basketball-video-analyzer/releases/latest) and download the package for your distro from the Assets list, then install:
 
-- **[Download .deb package](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/basketball-video-analyzer.deb)**
-- Install: `sudo dpkg -i basketball-video-analyzer.deb`
+**Ubuntu / Debian** (`.deb`):
 
-**Red Hat/Fedora:**
+```bash
+sudo dpkg -i basketball-video-analyzer_*_amd64.deb
+```
 
-- **[Download .rpm package](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/basketball-video-analyzer.rpm)**
-- Install: `sudo rpm -i basketball-video-analyzer.rpm`
+**Red Hat / Fedora** (`.rpm`):
 
-**Other Linux:**
-
-- **[Download .zip archive](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/basketball-video-analyzer-linux.zip)**
-- Extract and run the executable
+```bash
+sudo rpm -i basketball-video-analyzer-*.x86_64.rpm
+```
 
 ### 💻 System Requirements
 

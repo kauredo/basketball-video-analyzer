@@ -185,6 +185,10 @@ jobs:
           else
             : > release-body.md
           fi
+          # Don't ship the submission id file as a public release asset — it's
+          # already embedded in the body above and the upload step below would
+          # otherwise pick it up via the release-*/**/* glob.
+          rm -f release-macos-latest/notarization-submission-id.txt
           echo "Built release body:"
           cat release-body.md
 
