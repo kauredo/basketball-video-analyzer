@@ -8,6 +8,11 @@ const signMac = !!(
   process.env.APPLE_API_ISSUER
 );
 
+// CI sets SKIP_NOTARIZE=1 to defer notarization to a separate workflow step,
+// avoiding the multi-hour wait inside @electron/notarize when Apple's queue
+// is backlogged. Signing still happens during make.
+const notarizeMac = signMac && process.env.SKIP_NOTARIZE !== "1";
+
 const osxSignConfig = signMac
   ? {
       optionsForFile: filePath =>
@@ -24,7 +29,7 @@ const osxSignConfig = signMac
     }
   : false;
 
-const osxNotarizeConfig = signMac
+const osxNotarizeConfig = notarizeMac
   ? {
       tool: "notarytool",
       appleApiKey: process.env.APPLE_API_KEY_PATH,

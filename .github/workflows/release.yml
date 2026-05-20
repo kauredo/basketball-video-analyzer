@@ -18,16 +18,16 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
 
       - name: Cache Electron binaries
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/electron
@@ -93,18 +93,97 @@ jobs:
           EXISTING_KEYCHAINS=$(security list-keychain -d user | sed -e 's/[[:space:]]*"//g' -e 's/"$//g' | tr '\n' ' ')
           security list-keychain -d user -s "$KEYCHAIN_PATH" $EXISTING_KEYCHAINS
 
-      - name: Package application (macOS)
+      - name: Package application (macOS) — sign only, defer notarize
         if: matrix.os == 'macos-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          SKIP_NOTARIZE: "1"
         run: |
           P8_PATH="$RUNNER_TEMP/AuthKey.p8"
           echo "$APPLE_API_KEY_BASE64" | base64 -d > "$P8_PATH"
           echo "P8_PATH=$P8_PATH" >> "$GITHUB_ENV"
           APPLE_API_KEY_PATH="$P8_PATH" npm run make
+
+      - name: Notarize macOS DMG
+        if: matrix.os == 'macos-latest'
+        timeout-minutes: 35
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          set -e
+          DMG=$(find out/make -name "*.dmg" -type f | head -1)
+          [ -n "$DMG" ] || { echo "::error::No .dmg found under out/make"; exit 1; }
+          echo "Submitting $DMG to Apple notary (capped at 30m)..."
+          xcrun notarytool submit "$DMG" \
+            --key "$P8_PATH" \
+            --key-id "$APPLE_API_KEY_ID" \
+            --issuer "$APPLE_API_ISSUER" \
+            --wait --timeout 30m
+
+      - name: Staple notarization tickets
+        if: matrix.os == 'macos-latest'
+        run: |
+          set -e
+          DMG=$(find out/make -name "*.dmg" -type f | head -1)
+          APP=$(find out -name "BasketballVideoAnalyzer.app" -type d ! -path "*out/make*" | head -1)
+          ZIP=$(find out/make -name "*.zip" -type f | head -1)
+
+          echo "Stapling $DMG"
+          xcrun stapler staple "$DMG"
+
+          if [ -n "$APP" ] && [ -n "$ZIP" ]; then
+            echo "Stapling $APP and rebuilding $ZIP"
+            xcrun stapler staple "$APP"
+            ZIP_NAME=$(basename "$ZIP")
+            ZIP_DIR=$(dirname "$ZIP")
+            rm "$ZIP"
+            (cd "$(dirname "$APP")" && \
+              ditto -c -k --sequesterRsrc --keepParent \
+                "$(basename "$APP")" "$ZIP_DIR/$ZIP_NAME")
+          fi
+
+      - name: Regenerate latest-mac.yml after stapling
+        if: matrix.os == 'macos-latest'
+        run: |
+          cat > "$RUNNER_TEMP/regen-yml.js" <<'EOF'
+          const crypto = require("crypto");
+          const fs = require("fs");
+          const path = require("path");
+          const yaml = require("js-yaml");
+          const outDir = path.resolve("out/make");
+          const walk = dir =>
+            fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
+              const p = path.join(dir, e.name);
+              return e.isDirectory() ? walk(p) : [p];
+            });
+          const all = walk(outDir).filter(f => /\.(dmg|zip)$/.test(f));
+          const version = require(path.resolve("package.json")).version;
+          const files = all.map(a => {
+            const buf = fs.readFileSync(a);
+            return {
+              url: path.basename(a),
+              sha512: crypto.createHash("sha512").update(buf).digest("base64"),
+              size: buf.length,
+            };
+          });
+          const primary = files.find(f => f.url.endsWith(".zip")) || files[0];
+          fs.writeFileSync(
+            path.join(outDir, "latest-mac.yml"),
+            yaml.dump({
+              version,
+              files,
+              path: primary.url,
+              sha512: primary.sha512,
+              releaseDate: new Date().toISOString(),
+            })
+          );
+          console.log("latest-mac.yml regenerated with stapled artifact hashes");
+          EOF
+          node "$RUNNER_TEMP/regen-yml.js"
 
       - name: Clean up signing keychain
         if: always() && matrix.os == 'macos-latest'
