@@ -1,0 +1,188 @@
+name: Notarize and staple release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to notarize (e.g. v1.6.0). Leave blank to use the latest published release.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  staple:
+    runs-on: macos-latest
+    steps:
+      - name: Resolve release tag
+        id: tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG=$(gh release list -L 1 --repo "$GITHUB_REPOSITORY" --json tagName -q '.[0].tagName')
+          fi
+          [ -n "$TAG" ] || { echo "::error::No tag provided and no releases found"; exit 1; }
+          echo "Resolved tag: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Read notarization submission id from release body
+        id: sub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BODY=$(gh release view "${{ steps.tag.outputs.tag }}" \
+            --json body -q .body --repo "$GITHUB_REPOSITORY")
+          SUB_ID=$(echo "$BODY" \
+            | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' \
+            | head -1)
+          if [ -z "$SUB_ID" ]; then
+            echo "::error::No notarization submission id found in release body for ${{ steps.tag.outputs.tag }}"
+            exit 1
+          fi
+          echo "Submission id: $SUB_ID"
+          echo "id=$SUB_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir staging
+          gh release download "${{ steps.tag.outputs.tag }}" \
+            --pattern "*.dmg" --pattern "*.zip" \
+            --dir staging --repo "$GITHUB_REPOSITORY"
+          ls -la staging
+
+      - name: Write API key
+        env:
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          P8_PATH="$RUNNER_TEMP/AuthKey.p8"
+          echo "$APPLE_API_KEY_BASE64" | base64 -d > "$P8_PATH"
+          echo "P8_PATH=$P8_PATH" >> "$GITHUB_ENV"
+
+      - name: Wait for notarization to finish
+        timeout-minutes: 60
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          set -e
+          xcrun notarytool wait "${{ steps.sub.outputs.id }}" \
+            --key "$P8_PATH" \
+            --key-id "$APPLE_API_KEY_ID" \
+            --issuer "$APPLE_API_ISSUER" \
+            --timeout 55m
+          STATUS=$(xcrun notarytool info "${{ steps.sub.outputs.id }}" \
+            --key "$P8_PATH" \
+            --key-id "$APPLE_API_KEY_ID" \
+            --issuer "$APPLE_API_ISSUER" \
+            --output-format json | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
+          echo "Final status: $STATUS"
+          if [ "$STATUS" != "Accepted" ]; then
+            echo "::error::Notarization did not succeed (status=$STATUS); fetching log"
+            xcrun notarytool log "${{ steps.sub.outputs.id }}" \
+              --key "$P8_PATH" \
+              --key-id "$APPLE_API_KEY_ID" \
+              --issuer "$APPLE_API_ISSUER" || true
+            exit 1
+          fi
+
+      - name: Staple DMG and re-staple .app inside .zip
+        run: |
+          set -e
+          DMG=$(find staging -name "*.dmg" -type f | head -1)
+          ZIP=$(find staging -name "*.zip" -type f | head -1)
+
+          if [ -n "$DMG" ]; then
+            echo "Stapling $DMG"
+            xcrun stapler staple "$DMG"
+          fi
+
+          if [ -n "$ZIP" ]; then
+            WORK=$(mktemp -d)
+            ZIP_ABS=$(cd "$(dirname "$ZIP")" && pwd)/$(basename "$ZIP")
+            (cd "$WORK" && ditto -x -k "$ZIP_ABS" .)
+            APP=$(find "$WORK" -maxdepth 2 -name "*.app" -type d | head -1)
+            if [ -n "$APP" ]; then
+              echo "Stapling $APP"
+              xcrun stapler staple "$APP"
+              rm "$ZIP_ABS"
+              (cd "$WORK" && ditto -c -k --sequesterRsrc --keepParent \
+                "$(basename "$APP")" "$ZIP_ABS")
+            fi
+          fi
+
+      - name: Regenerate latest-mac.yml with stapled hashes
+        run: |
+          cat > "$RUNNER_TEMP/regen-yml.js" <<'EOF'
+          const crypto = require("crypto");
+          const fs = require("fs");
+          const path = require("path");
+          const stagingDir = path.resolve("staging");
+          const files = fs
+            .readdirSync(stagingDir)
+            .filter(f => /\.(dmg|zip)$/.test(f))
+            .map(f => {
+              const buf = fs.readFileSync(path.join(stagingDir, f));
+              return {
+                url: f,
+                sha512: crypto.createHash("sha512").update(buf).digest("base64"),
+                size: buf.length,
+              };
+            });
+          const primary = files.find(f => f.url.endsWith(".zip")) || files[0];
+          const version = process.env.RELEASE_TAG.replace(/^v/, "");
+          const lines = [
+            `version: ${version}`,
+            `files:`,
+            ...files.flatMap(f => [
+              `  - url: ${f.url}`,
+              `    sha512: >-`,
+              `      ${f.sha512}`,
+              `    size: ${f.size}`,
+            ]),
+            `path: ${primary.url}`,
+            `sha512: >-`,
+            `  ${primary.sha512}`,
+            `releaseDate: '${new Date().toISOString()}'`,
+            ``,
+          ];
+          fs.writeFileSync(path.join(stagingDir, "latest-mac.yml"), lines.join("\n"));
+          console.log(lines.join("\n"));
+          EOF
+          RELEASE_TAG="${{ steps.tag.outputs.tag }}" node "$RUNNER_TEMP/regen-yml.js"
+
+      - name: Replace release assets with stapled versions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd staging
+          for f in *.dmg *.zip latest-mac.yml; do
+            if [ -f "$f" ]; then
+              echo "Uploading $f (--clobber)"
+              gh release upload "${{ steps.tag.outputs.tag }}" "$f" \
+                --clobber --repo "$GITHUB_REPOSITORY"
+            fi
+          done
+
+      - name: Update release body
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BODY=$(gh release view "${{ steps.tag.outputs.tag }}" \
+            --json body -q .body --repo "$GITHUB_REPOSITORY")
+          UPDATED=$(echo "$BODY" | sed \
+            -e 's/⏳ macOS notarization pending/✅ macOS notarization complete/' \
+            -e 's/macOS artifacts are signed with a Developer ID certificate but \*\*not yet stapled\*\* — Apple.*$/macOS artifacts are signed, notarized, and stapled — no Gatekeeper prompt./' \
+            -e '/On first launch macOS users may see an/d' \
+            -e '/A re-released, stapled build will be published/d')
+          gh release edit "${{ steps.tag.outputs.tag }}" \
+            --notes "$UPDATED" --repo "$GITHUB_REPOSITORY"
+
+      - name: Cleanup
+        if: always()
+        run: rm -f "$P8_PATH"

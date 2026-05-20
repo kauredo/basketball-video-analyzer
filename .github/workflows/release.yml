@@ -107,9 +107,8 @@ jobs:
           echo "P8_PATH=$P8_PATH" >> "$GITHUB_ENV"
           APPLE_API_KEY_PATH="$P8_PATH" npm run make
 
-      - name: Notarize macOS DMG
+      - name: Submit macOS DMG for notarization (no wait)
         if: matrix.os == 'macos-latest'
-        timeout-minutes: 35
         env:
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
@@ -117,73 +116,17 @@ jobs:
           set -e
           DMG=$(find out/make -name "*.dmg" -type f | head -1)
           [ -n "$DMG" ] || { echo "::error::No .dmg found under out/make"; exit 1; }
-          echo "Submitting $DMG to Apple notary (capped at 30m)..."
-          xcrun notarytool submit "$DMG" \
+          echo "Submitting $DMG to Apple notary (async, won't block on result)..."
+          OUTPUT=$(xcrun notarytool submit "$DMG" \
             --key "$P8_PATH" \
             --key-id "$APPLE_API_KEY_ID" \
             --issuer "$APPLE_API_ISSUER" \
-            --wait --timeout 30m
-
-      - name: Staple notarization tickets
-        if: matrix.os == 'macos-latest'
-        run: |
-          set -e
-          DMG=$(find out/make -name "*.dmg" -type f | head -1)
-          APP=$(find out -name "BasketballVideoAnalyzer.app" -type d ! -path "*out/make*" | head -1)
-          ZIP=$(find out/make -name "*.zip" -type f | head -1)
-
-          echo "Stapling $DMG"
-          xcrun stapler staple "$DMG"
-
-          if [ -n "$APP" ] && [ -n "$ZIP" ]; then
-            echo "Stapling $APP and rebuilding $ZIP"
-            xcrun stapler staple "$APP"
-            ZIP_NAME=$(basename "$ZIP")
-            ZIP_DIR=$(dirname "$ZIP")
-            rm "$ZIP"
-            (cd "$(dirname "$APP")" && \
-              ditto -c -k --sequesterRsrc --keepParent \
-                "$(basename "$APP")" "$ZIP_DIR/$ZIP_NAME")
-          fi
-
-      - name: Regenerate latest-mac.yml after stapling
-        if: matrix.os == 'macos-latest'
-        run: |
-          cat > "$RUNNER_TEMP/regen-yml.js" <<'EOF'
-          const crypto = require("crypto");
-          const fs = require("fs");
-          const path = require("path");
-          const yaml = require("js-yaml");
-          const outDir = path.resolve("out/make");
-          const walk = dir =>
-            fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
-              const p = path.join(dir, e.name);
-              return e.isDirectory() ? walk(p) : [p];
-            });
-          const all = walk(outDir).filter(f => /\.(dmg|zip)$/.test(f));
-          const version = require(path.resolve("package.json")).version;
-          const files = all.map(a => {
-            const buf = fs.readFileSync(a);
-            return {
-              url: path.basename(a),
-              sha512: crypto.createHash("sha512").update(buf).digest("base64"),
-              size: buf.length,
-            };
-          });
-          const primary = files.find(f => f.url.endsWith(".zip")) || files[0];
-          fs.writeFileSync(
-            path.join(outDir, "latest-mac.yml"),
-            yaml.dump({
-              version,
-              files,
-              path: primary.url,
-              sha512: primary.sha512,
-              releaseDate: new Date().toISOString(),
-            })
-          );
-          console.log("latest-mac.yml regenerated with stapled artifact hashes");
-          EOF
-          node "$RUNNER_TEMP/regen-yml.js"
+            --no-wait)
+          echo "$OUTPUT"
+          SUBMISSION_ID=$(echo "$OUTPUT" | awk '/^[[:space:]]*id:/ {print $2; exit}')
+          [ -n "$SUBMISSION_ID" ] || { echo "::error::Could not parse submission ID"; exit 1; }
+          echo "Submission ID: $SUBMISSION_ID"
+          echo "$SUBMISSION_ID" > out/make/notarization-submission-id.txt
 
       - name: Clean up signing keychain
         if: always() && matrix.os == 'macos-latest'
@@ -225,12 +168,33 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
 
+      - name: Build release body with notarization status
+        id: body
+        run: |
+          SUB_ID=$(cat release-macos-latest/notarization-submission-id.txt 2>/dev/null | tr -d '[:space:]')
+          if [ -n "$SUB_ID" ]; then
+            cat > release-body.md <<EOF
+          ## ⏳ macOS notarization pending
+
+          macOS artifacts are signed with a Developer ID certificate but **not yet stapled** — Apple's notary service is running deep-scan analysis on this app. First-time submissions for a developer/app typically complete in 1–2 days; subsequent releases are usually fast.
+
+          On first launch macOS users may see an "unidentified developer" prompt. Right-click the app → **Open** to bypass (one time).
+
+          A re-released, stapled build will be published automatically when notarization completes. Notarization submission id: \`$SUB_ID\`.
+          EOF
+          else
+            : > release-body.md
+          fi
+          echo "Built release body:"
+          cat release-body.md
+
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             release-*/**/*
+          body_path: release-body.md
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

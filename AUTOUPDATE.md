@@ -190,6 +190,16 @@ npm run make
 
 Notarization typically completes in 2–10 minutes; the build will block until Apple responds.
 
+#### Two-phase release flow
+
+Apple does deep-scan analysis on first-time submissions for a developer or app — Apple DTS confirms this typically takes **1–2 days** for new apps before the system "recognises" them, after which submissions speed back up to 15-minute responses. To avoid blocking releases on that wait, the release pipeline splits notarization in two:
+
+1. **`release.yml` (on tag push `v*`)** — builds, signs, packages, submits to notary **without waiting**, then publishes the GitHub Release immediately with the unstapled artifacts. The release body contains a `⏳ macOS notarization pending` notice and the Apple submission id. End users can download and use the app right away (signed; macOS may show a one-time "unidentified developer" prompt that they bypass with right-click → Open).
+
+2. **`notarize.yml` (manual `workflow_dispatch`)** — run from the Actions tab after Apple completes notarization (typically 1–2 days for first-release, faster after). Reads the submission id from the release body, runs `notarytool wait`, then `stapler staple`s the `.dmg` and the `.app` inside the `.zip`, regenerates `latest-mac.yml` with the new hashes, and replaces the release assets in place. The release body updates to `✅ macOS notarization complete`.
+
+To run the second phase: Actions tab → **Notarize and staple release** → **Run workflow** → optionally enter a tag (defaults to the latest release).
+
 > **Windows code signing is not configured.** Windows users will still see a SmartScreen warning on first run ("Don't run / More info → Run anyway"). Buying a code-signing cert (~$200+/yr) would remove this, but isn't currently set up.
 
 ## Testing Updates Locally
