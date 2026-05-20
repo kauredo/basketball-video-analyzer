@@ -149,40 +149,46 @@ In [Apple Developer → Certificates](https://developer.apple.com/account/resour
 
 In Keychain Access, find "Developer ID Application: <Your Name> (TEAMID)" under "My Certificates". Right-click → **Export** → save as `.p12` with a strong password. Keep the password — you'll need it as `MACOS_CERTIFICATE_PWD`.
 
-#### 3. Generate an app-specific password
+#### 3. Generate an App Store Connect API key
 
-At [appleid.apple.com](https://appleid.apple.com) → Sign-In and Security → App-Specific Passwords → generate one labelled e.g. "basketball-video-analyzer notarization". This is `APPLE_APP_SPECIFIC_PASSWORD`.
+At [appstoreconnect.apple.com/access/integrations/api](https://appstoreconnect.apple.com/access/integrations/api):
 
-#### 4. Find your Team ID
+- Switch to the **Team Keys** tab (not "Individual Keys").
+- Click **+ Generate API Key**.
+- Name: e.g. `basketball-video-analyzer notarization`.
+- Access: **Developer** is sufficient for notarytool.
+- Click **Generate**, then **download the `.p8` file immediately** — Apple only lets you download it once.
+- Note the **Key ID** (10 chars, shown in the keys list).
+- Note the **Issuer ID** (UUID, shown at the top of the page).
 
-[developer.apple.com/account](https://developer.apple.com/account) → Membership details → **Team ID** (10 chars, e.g. `A1B2C3D4E5`).
+We use the API key instead of the older app-specific-password flow because notary submissions go through a more responsive endpoint that doesn't get stuck in the multi-hour queues we hit with the legacy path.
 
-#### 5. Add five GitHub secrets
+#### 4. Add four GitHub secrets
 
 In the repo: Settings → Secrets and variables → Actions → New repository secret.
 
 | Secret | Value |
 | --- | --- |
-| `APPLE_ID` | Your Apple ID email |
-| `APPLE_APP_SPECIFIC_PASSWORD` | From step 3 |
-| `APPLE_TEAM_ID` | From step 4 |
 | `MACOS_CERTIFICATE` | Base64 of the `.p12` from step 2 (run `base64 -i cert.p12 \| pbcopy` and paste) |
 | `MACOS_CERTIFICATE_PWD` | The `.p12` password from step 2 |
+| `APPLE_API_KEY` | Base64 of the `.p8` from step 3 (run `base64 -i AuthKey_XXXXXXXXXX.p8 \| pbcopy` and paste) |
+| `APPLE_API_KEY_ID` | The Key ID from step 3 (10 chars) |
+| `APPLE_API_ISSUER` | The Issuer ID from step 3 (UUID) |
 
 After that, every tag push (`v*`) produces a signed + notarized DMG, and Gatekeeper warnings go away for end users.
 
 #### Verifying locally (optional)
 
-Once you have the cert in your local keychain, you can produce a fully signed+notarized build locally:
+Once the cert is in your local keychain *and* you have the `.p8` saved somewhere safe, you can produce a fully signed+notarized build locally:
 
 ```bash
-export APPLE_ID="you@example.com"
-export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
-export APPLE_TEAM_ID="A1B2C3D4E5"
+export APPLE_API_KEY_PATH="/path/to/AuthKey_XXXXXXXXXX.p8"
+export APPLE_API_KEY_ID="XXXXXXXXXX"
+export APPLE_API_ISSUER="abcd1234-5678-90ab-cdef-1234567890ab"
 npm run make
 ```
 
-Notarization takes 2–10 minutes; the build will block until Apple responds.
+Notarization typically completes in 2–10 minutes; the build will block until Apple responds.
 
 > **Windows code signing is not configured.** Windows users will still see a SmartScreen warning on first run ("Don't run / More info → Run anyway"). Buying a code-signing cert (~$200+/yr) would remove this, but isn't currently set up.
 

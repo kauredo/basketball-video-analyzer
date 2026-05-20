@@ -3,9 +3,9 @@ const { FusesPlugin } = require("@electron-forge/plugin-fuses");
 const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 
 const signMac = !!(
-  process.env.APPLE_TEAM_ID &&
-  process.env.APPLE_ID &&
-  process.env.APPLE_APP_SPECIFIC_PASSWORD
+  process.env.APPLE_API_KEY_PATH &&
+  process.env.APPLE_API_KEY_ID &&
+  process.env.APPLE_API_ISSUER
 );
 
 const osxSignConfig = signMac
@@ -27,9 +27,9 @@ const osxSignConfig = signMac
 const osxNotarizeConfig = signMac
   ? {
       tool: "notarytool",
-      appleId: process.env.APPLE_ID,
-      appleIdPassword: process.env.APPLE_APP_SPECIFIC_PASSWORD,
-      teamId: process.env.APPLE_TEAM_ID,
+      appleApiKey: process.env.APPLE_API_KEY_PATH,
+      appleApiKeyId: process.env.APPLE_API_KEY_ID,
+      appleApiIssuer: process.env.APPLE_API_ISSUER,
     }
   : false;
 
