@@ -145,6 +145,7 @@
       "noClipsToExport": "Nenhum clip para exportar.",
       "exportingClips": "A exportar clips...",
       "filterByCategory": "Filtrar por categoria",
+      "filterByPlayer": "Filtrar por jogador",
       "totalClips": "clips",
       "totalDuration": "Duração Total",
       "avgDuration": "Duração Média",
@@ -225,6 +226,7 @@
         "untitledClip": "Clip Sem Título",
         "errorNoProject": "Nenhum projeto carregado. Por favor selecione um vídeo primeiro.",
         "selected": "selecionadas",
+        "players": "Jogadores",
         "selectAll": "Selecionar Todas",
         "clear": "Limpar"
       }
@@ -369,6 +371,42 @@
       "submitting": "A enviar...",
       "submitSuccess": "Obrigado! O seu feedback foi enviado.",
       "submitError": "Não foi possível enviar o feedback. Tente novamente mais tarde."
+    },
+    "present": {
+      "title": "Modo apresentação",
+      "present": "Apresentar",
+      "clipCounter": "Clip {{current}} de {{total}}",
+      "previous": "Clip anterior",
+      "next": "Clip seguinte",
+      "autoAdvance": "Avançar automaticamente para o próximo clip"
+    },
+    "stats": {
+      "title": "Estatísticas",
+      "stats": "Estatísticas",
+      "noData": "Ainda não há clips. Crie alguns clips para ver estatísticas.",
+      "totalClips": "Total de clips",
+      "totalDuration": "Duração total",
+      "avgDuration": "Duração média",
+      "categoriesUsed": "Categorias usadas",
+      "clipsByCategory": "Clips por categoria",
+      "distribution": "Clips ao longo do jogo",
+      "byQuarter": "Clips por período",
+      "noQuarter": "Sem período",
+      "clipsCountLabel": "{{count}} clips"
+    },
+    "players": {
+      "title": "Jogadores",
+      "name": "Nome",
+      "number": "Número",
+      "namePlaceholder": "Nome do jogador",
+      "numberPlaceholder": "Nº",
+      "add": "Adicionar",
+      "delete": "Eliminar jogador",
+      "empty": "Ainda não há jogadores. Adicione jogadores para os marcar nos clips.",
+      "confirmDelete": "Eliminar este jogador? Os clips mantêm as outras etiquetas.",
+      "errorCreating": "Não foi possível adicionar o jogador.",
+      "errorUpdating": "Não foi possível atualizar o jogador.",
+      "errorDeleting": "Não foi possível eliminar o jogador."
     }
   }
 }

@@ -23,6 +23,7 @@ import {
   faDownload,
   faSun,
   faMoon,
+  faChartColumn,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./styles/App.module.css";
 import { VideoPlayer } from "./components/VideoPlayer";
@@ -36,6 +37,8 @@ import { ProjectSelector } from "./components/ProjectSelector";
 import { KeyBindingEditor } from "./components/KeyBindingEditor";
 import { ShortcutsModal } from "./components/ShortcutsModal";
 import { FeedbackModal } from "./components/FeedbackModal";
+import { StatsDashboard } from "./components/StatsDashboard";
+import { PlayerManager } from "./components/PlayerManager";
 import { Clip, Category } from "../types/global";
 import { useFocusTrap } from "./hooks/useFocusTrap";
 import { useToastContext } from "./contexts/ToastContext";
@@ -61,6 +64,7 @@ export const App: React.FC = () => {
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   const [hasExistingProjects, setHasExistingProjects] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_WIDTH, 360));
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_COLLAPSED, true));
@@ -80,6 +84,7 @@ export const App: React.FC = () => {
   const clipCreatorTrapRef = useFocusTrap(showClipCreator);
   const settingsTrapRef = useFocusTrap(showSettings);
   const feedbackTrapRef = useFocusTrap(showFeedback);
+  const statsTrapRef = useFocusTrap(showStats);
 
   // Check for existing projects on startup
   useEffect(() => {
@@ -457,6 +462,7 @@ export const App: React.FC = () => {
           endTime: markOutTime,
           title,
           categories: [category.id],
+          quarter: currentQuarter,
           projectId: currentProject.id,
         });
         showSuccess(t("app.clips.quickTagCreated", { category: category.name }));
@@ -533,6 +539,15 @@ export const App: React.FC = () => {
               ? t("app.buttons.showBottomPanel")
               : t("app.buttons.hideBottomPanel")}
           </button>
+          {currentProject && (
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={() => setShowStats(true)}
+            >
+              <FontAwesomeIcon icon={faChartColumn} /> {t("app.stats.stats")}
+            </button>
+          )}
           <button
             type="button"
             className={styles.settingsButton}
@@ -739,6 +754,16 @@ export const App: React.FC = () => {
                 />
               </div>
 
+              {/* Players Section */}
+              {currentProject && (
+                <div className={styles.settingsSection}>
+                  <PlayerManager
+                    currentProject={currentProject}
+                    onPlayersChange={() => setRefreshTrigger((prev) => prev + 1)}
+                  />
+                </div>
+              )}
+
               {/* Danger Zone Section */}
               <div className={styles.settingsSection}>
                 <div className={styles.dangerZone}>
@@ -786,6 +811,42 @@ export const App: React.FC = () => {
         isOpen={showShortcuts}
         onClose={() => setShowShortcuts(false)}
       />
+
+      {/* Stats Dashboard Modal */}
+      {showStats && (
+        <div
+          ref={statsTrapRef}
+          className={styles.modal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stats-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowStats(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowStats(false); }}
+        >
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2 id="stats-title">
+                <FontAwesomeIcon icon={faChartColumn} /> {t("app.stats.title")}
+              </h2>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setShowStats(false)}
+                aria-label={t("app.buttons.close")}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <StatsDashboard
+                clips={clips}
+                categories={categories}
+                videoDuration={duration}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Feedback Modal */}
       {showFeedback && (

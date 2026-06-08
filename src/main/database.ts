@@ -36,6 +36,14 @@ export interface Project {
   last_opened?: string;
 }
 
+export interface Player {
+  id?: number;
+  name: string;
+  number?: string | null; // Jersey number, optional
+  project_id: number;
+  created_at?: string;
+}
+
 export interface Clip {
   id?: number;
   project_id: number;
@@ -47,6 +55,8 @@ export interface Clip {
   duration: number;
   title: string;
   categories: string; // JSON array of category IDs
+  players?: string; // JSON array of player IDs
+  quarter?: string | null;
   notes?: string;
   created_at?: string;
 }
@@ -66,6 +76,7 @@ export const setupDatabase = () => {
 
     migrateDatabase();
     createTables();
+    migrateClipColumns();
     insertDefaultCategories();
     migrateClipPaths();
     console.log("Database setup complete");
@@ -612,6 +623,18 @@ const createTables = () => {
     )
   `);
 
+  // Players table - for project-specific players
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS players (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      number TEXT,
+      project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(name, project_id)
+    )
+  `);
+
   // Clips table
   db.exec(`
     CREATE TABLE IF NOT EXISTS clips (
@@ -625,6 +648,8 @@ const createTables = () => {
       duration REAL NOT NULL,
       title TEXT NOT NULL,
       categories TEXT NOT NULL,
+      players TEXT DEFAULT '[]',
+      quarter TEXT,
       notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
@@ -638,9 +663,32 @@ const createTables = () => {
     CREATE INDEX IF NOT EXISTS idx_clips_video_path ON clips(video_path);
     CREATE INDEX IF NOT EXISTS idx_clips_categories ON clips(categories);
     CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
+    CREATE INDEX IF NOT EXISTS idx_players_project_id ON players(project_id);
   `);
 
   setupKeyBindingsTable();
+};
+
+// Idempotent migration: add players/quarter columns to pre-existing clips tables.
+// SQLite backfills existing rows with the column default ('[]' / NULL).
+const migrateClipColumns = () => {
+  try {
+    const columns = db.prepare("PRAGMA table_info(clips)").all() as Array<{
+      name: string;
+    }>;
+    const has = (name: string) => columns.some((col) => col.name === name);
+
+    if (!has("players")) {
+      db.exec("ALTER TABLE clips ADD COLUMN players TEXT DEFAULT '[]'");
+      console.log("Added players column to clips");
+    }
+    if (!has("quarter")) {
+      db.exec("ALTER TABLE clips ADD COLUMN quarter TEXT");
+      console.log("Added quarter column to clips");
+    }
+  } catch (error) {
+    console.error("Error migrating clip columns:", error);
+  }
 };
 
 const insertDefaultCategories = () => {
@@ -1030,6 +1078,76 @@ export const deleteCategory = (id: number): void => {
   }
 };
 
+// Player operations
+export const getPlayers = (projectId: number): Player[] => {
+  try {
+    const stmt = db.prepare(`
+      SELECT * FROM players
+      WHERE project_id = ?
+      ORDER BY name ASC
+    `);
+    return stmt.all(projectId) as Player[];
+  } catch (error) {
+    console.error("Error getting players:", error);
+    return [];
+  }
+};
+
+export const createPlayer = (
+  player: Omit<Player, "id" | "created_at">,
+): Player => {
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO players (name, number, project_id)
+      VALUES (?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      player.name,
+      player.number || null,
+      player.project_id,
+    );
+
+    return {
+      id: result.lastInsertRowid as number,
+      ...player,
+      created_at: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error creating player:", error);
+    throw error;
+  }
+};
+
+export const updatePlayer = (id: number, updates: Partial<Player>): void => {
+  try {
+    // Allowlist updatable columns: column names are interpolated into SQL,
+    // so they must never come from arbitrary caller keys.
+    const allowed: (keyof Player)[] = ["name", "number"];
+    const fields = allowed.filter((key) => key in updates);
+    if (fields.length === 0) return;
+
+    const setClause = fields.map((field) => `${field} = ?`).join(", ");
+    const values = fields.map((field) => updates[field]);
+
+    const stmt = db.prepare(`UPDATE players SET ${setClause} WHERE id = ?`);
+    stmt.run(...values, id);
+  } catch (error) {
+    console.error("Error updating player:", error);
+    throw error;
+  }
+};
+
+export const deletePlayer = (id: number): void => {
+  try {
+    const stmt = db.prepare("DELETE FROM players WHERE id = ?");
+    stmt.run(id);
+  } catch (error) {
+    console.error("Error deleting player:", error);
+    throw error;
+  }
+};
+
 // Clip operations
 export const getClips = (projectId?: number): Clip[] => {
   try {
@@ -1052,8 +1170,8 @@ export const getClips = (projectId?: number): Clip[] => {
 export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -1066,6 +1184,8 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
       clip.duration,
       clip.title,
       clip.categories,
+      clip.players || "[]",
+      clip.quarter || null,
       clip.notes || null,
     );
 

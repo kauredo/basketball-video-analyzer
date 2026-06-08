@@ -15,6 +15,7 @@
 
   /* Background Colors */
   --bg-main: #1a1a1a;
+  --bg-black: #000; /* cinema backdrop, theme-independent (Present mode) */
   --bg-primary: #1a1a1a;
   --bg-secondary: #2a2a2a;
   --bg-tertiary: #333;
@@ -49,6 +50,7 @@
   --radius-round: 100000px;
 
   /* Font Sizes */
+  --font-size-2xs: 0.7rem;
   --font-size-xs: 0.8rem;
   --font-size-sm: 0.9rem;
   --font-size-md: 1rem;
@@ -80,6 +82,7 @@
   --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.4);
 
   /* Z-indices */
+  --z-present: 2500;
   --z-toast: 2000;
   --z-modal: 1000;
   --z-overlay: 999;

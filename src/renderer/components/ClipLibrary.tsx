@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,35 +20,25 @@ import {
   faTable,
   faVideo as faVideoFile,
   faFloppyDisk,
+  faPlayCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { ContextualHint } from "./ContextualHint";
+import { PresentMode } from "./PresentMode";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
+import { formatVideoSrc } from "../utils/paths";
+import { Player } from "../../types/global";
 
-// Helper function to format file paths for img src
-const formatVideoSrc = (path: string): string => {
-  // Check if it's already a file URL
-  if (path.startsWith("file://")) {
-    return path;
+// Parse a clip's JSON player-ID array, tolerating malformed values.
+const parsePlayerIds = (playersJson?: string): number[] => {
+  try {
+    const ids = JSON.parse(playersJson || "[]");
+    return Array.isArray(ids) ? ids : [];
+  } catch {
+    return [];
   }
-
-  // For Windows paths (detected by drive letter pattern like C:\ or C:/)
-  if (/^[A-Za-z]:[\\/]/.test(path)) {
-    // Convert backslashes to forward slashes for URL format
-    const normalizedPath = path.replace(/\\/g, "/");
-    // Windows file URLs need three slashes
-    return `file:///${normalizedPath}`;
-  }
-
-  // For Unix-like paths (starting with /)
-  if (path.startsWith("/")) {
-    return `file://${path}`;
-  }
-
-  // Fallback - just prepend file://
-  return `file://${path}`;
 };
 
 interface Category {
@@ -70,6 +60,8 @@ interface Clip {
   duration: number;
   title: string;
   categories: string; // JSON array of category IDs
+  players?: string; // JSON array of player IDs
+  quarter?: string | null;
   notes?: string;
   created_at: string;
 }
@@ -88,12 +80,15 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const { confirm } = useConfirm();
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "duration" | "title">(() => loadPref(STORAGE_KEYS.CLIP_SORT_BY, "date") as "date" | "duration" | "title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() => loadPref(STORAGE_KEYS.CLIP_SORT_ORDER, "desc") as "asc" | "desc");
   const [isExporting, setIsExporting] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [showPresent, setShowPresent] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
   // Close export menu on click outside
@@ -116,54 +111,62 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     try {
       if (!currentProject) return;
 
-      const [clipsData, categoriesData] = await Promise.all([
+      const [clipsData, categoriesData, playersData] = await Promise.all([
         window.electronAPI.getClips(currentProject.id),
         window.electronAPI.getCategoriesHierarchical(currentProject.id),
+        window.electronAPI.getPlayers(currentProject.id),
       ]);
 
       setClips(clipsData);
       setCategories(categoriesData);
+      setPlayers(playersData);
     } catch (error) {
       console.error("Error loading data:", error);
     }
   };
 
-  const filteredClips = clips.filter(clip => {
-    const matchesSearch =
-      clip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      clip.notes?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredClips = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return clips.filter(clip => {
+      const matchesSearch =
+        clip.title.toLowerCase().includes(term) ||
+        clip.notes?.toLowerCase().includes(term);
 
-    let matchesCategory = true;
-    if (selectedCategory) {
-      try {
-        const clipCategories = JSON.parse(clip.categories || "[]");
-        matchesCategory = clipCategories.includes(selectedCategory);
-      } catch (e) {
-        matchesCategory = false;
+      let matchesCategory = true;
+      if (selectedCategory) {
+        try {
+          matchesCategory = JSON.parse(clip.categories || "[]").includes(selectedCategory);
+        } catch {
+          matchesCategory = false;
+        }
       }
-    }
 
-    return matchesSearch && matchesCategory;
-  });
+      const matchesPlayer = !selectedPlayer || parsePlayerIds(clip.players).includes(selectedPlayer);
 
-  const sortedClips = [...filteredClips].sort((a, b) => {
-    let comparison = 0;
-    switch (sortBy) {
-      case "date":
-        comparison =
-          new Date(b.created_at || 0).getTime() -
-          new Date(a.created_at || 0).getTime();
-        break;
-      case "duration":
-        comparison =
-          b.end_time - b.start_time - (a.end_time - a.start_time);
-        break;
-      case "title":
-        comparison = a.title.localeCompare(b.title);
-        break;
-    }
-    return sortOrder === "asc" ? -comparison : comparison;
-  });
+      return matchesSearch && matchesCategory && matchesPlayer;
+    });
+  }, [clips, searchTerm, selectedCategory, selectedPlayer]);
+
+  const sortedClips = useMemo(() => {
+    return [...filteredClips].sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case "date":
+          comparison =
+            new Date(b.created_at || 0).getTime() -
+            new Date(a.created_at || 0).getTime();
+          break;
+        case "duration":
+          comparison =
+            b.end_time - b.start_time - (a.end_time - a.start_time);
+          break;
+        case "title":
+          comparison = a.title.localeCompare(b.title);
+          break;
+      }
+      return sortOrder === "asc" ? -comparison : comparison;
+    });
+  }, [filteredClips, sortBy, sortOrder]);
 
   const toggleSort = (field: "date" | "duration" | "title") => {
     if (sortBy === field) {
@@ -434,6 +437,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         <div className={styles.libraryActions}>
           <button
             type="button"
+            onClick={() => setShowPresent(true)}
+            disabled={sortedClips.length === 0}
+            className={styles.presentBtn}
+          >
+            <FontAwesomeIcon icon={faPlayCircle} /> {t("app.present.present")}
+          </button>
+          <button
+            type="button"
             onClick={openClipFolder}
             className={styles.folderBtn}
           >
@@ -630,6 +641,42 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   })}
               </div>
             </div>
+
+            {/* Player Filter */}
+            {players.length > 0 && (
+              <div className={styles.categoryFilterSection}>
+                <h4>{t("app.clips.filterByPlayer")}</h4>
+                <div className={styles.filterButtons}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlayer(null)}
+                    className={`${styles.filterBtn} ${
+                      selectedPlayer === null ? styles.active : ""
+                    }`}
+                  >
+                    {t("app.clips.all")} ({clips.length})
+                  </button>
+                  {players.map(player => {
+                    const count = clips.filter(clip =>
+                      parsePlayerIds(clip.players).includes(player.id)
+                    ).length;
+                    return (
+                      <button
+                        type="button"
+                        key={player.id}
+                        onClick={() => setSelectedPlayer(player.id)}
+                        className={`${styles.filterBtn} ${
+                          selectedPlayer === player.id ? styles.active : ""
+                        }`}
+                      >
+                        {player.number ? `#${player.number} ` : ""}
+                        {player.name} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Stats */}
             <div className={styles.libraryStats}>
@@ -842,6 +889,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           </>
         )}
       </div>
+
+      {showPresent && sortedClips.length > 0 && (
+        <PresentMode
+          clips={sortedClips}
+          categories={categories}
+          onClose={() => setShowPresent(false)}
+        />
+      )}
     </div>
   );
 };

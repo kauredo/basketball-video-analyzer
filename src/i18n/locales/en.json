@@ -154,6 +154,7 @@
       "noClipsToExport": "No clips to export.",
       "exportingClips": "Exporting clips...",
       "filterByCategory": "Filter by category",
+      "filterByPlayer": "Filter by player",
       "totalClips": "clips",
       "totalDuration": "Total Duration",
       "avgDuration": "Avg Duration",
@@ -197,6 +198,7 @@
         "notes": "Notes",
         "notesPlaceholder": "Add notes for this clip (optional)",
         "categories": "Categories",
+        "players": "Players",
         "selectCategories": "Select categories for this clip",
         "duration": "Duration",
         "markInOut": "Mark In/Out",
@@ -378,6 +380,42 @@
       "submitting": "Sending...",
       "submitSuccess": "Thank you! Your feedback has been submitted.",
       "submitError": "Could not send feedback. Please try again later."
+    },
+    "present": {
+      "title": "Present mode",
+      "present": "Present",
+      "clipCounter": "Clip {{current}} of {{total}}",
+      "previous": "Previous clip",
+      "next": "Next clip",
+      "autoAdvance": "Auto-advance to next clip"
+    },
+    "stats": {
+      "title": "Statistics",
+      "stats": "Stats",
+      "noData": "No clips yet. Create some clips to see statistics.",
+      "totalClips": "Total clips",
+      "totalDuration": "Total duration",
+      "avgDuration": "Avg. duration",
+      "categoriesUsed": "Categories used",
+      "clipsByCategory": "Clips by category",
+      "distribution": "Clips across the game",
+      "byQuarter": "Clips by quarter",
+      "noQuarter": "No quarter",
+      "clipsCountLabel": "{{count}} clips"
+    },
+    "players": {
+      "title": "Players",
+      "name": "Name",
+      "number": "Number",
+      "namePlaceholder": "Player name",
+      "numberPlaceholder": "No.",
+      "add": "Add",
+      "delete": "Delete player",
+      "empty": "No players yet. Add players to tag them on clips.",
+      "confirmDelete": "Delete this player? Clips will keep their other tags.",
+      "errorCreating": "Could not add player.",
+      "errorUpdating": "Could not update player.",
+      "errorDeleting": "Could not delete player."
     }
   }
 }

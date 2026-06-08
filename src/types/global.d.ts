@@ -8,6 +8,14 @@ export interface Category {
   children?: Category[];
 }
 
+export interface Player {
+  id: number;
+  name: string;
+  number?: string | null;
+  project_id?: number;
+  created_at?: string;
+}
+
 export interface Clip {
   id: number;
   video_path: string;
@@ -18,6 +26,8 @@ export interface Clip {
   duration: number;
   title: string;
   categories: string; // JSON array of category IDs
+  players?: string; // JSON array of player IDs
+  quarter?: string | null;
   notes?: string;
   created_at: string;
 }
@@ -48,6 +58,8 @@ export interface ElectronAPI {
     endTime: number;
     title: string;
     categories: number[];
+    players?: number[];
+    quarter?: string | null;
     notes?: string;
     projectId: number;
   }) => Promise<any>;
@@ -74,6 +86,12 @@ export interface ElectronAPI {
   savePreset: (presetName: string, categories: Category[]) => Promise<boolean>;
   loadPreset: (presetName: string) => Promise<Category[]>;
   getPresets: () => Promise<string[]>;
+
+  // Player operations
+  getPlayers: (projectId: number) => Promise<Player[]>;
+  createPlayer: (player: Omit<Player, "id" | "created_at">) => Promise<Player>;
+  updatePlayer: (id: number, updates: Partial<Player>) => Promise<boolean>;
+  deletePlayer: (id: number) => Promise<boolean>;
 
   // Export clips data
   exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;

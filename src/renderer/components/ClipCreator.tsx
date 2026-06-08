@@ -8,10 +8,12 @@ import {
   faFilm,
   faCheck,
   faTrash,
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipCreator.module.css";
 import { useToastContext } from "../contexts/ToastContext";
 import { formatVideoTime } from "../utils/format";
+import { Player } from "../../types/global";
 
 interface Category {
   id: number;
@@ -47,6 +49,8 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   const { showError, showSuccess, showWarning } = useToastContext();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
   const [clipTitle, setClipTitle] = useState("");
   const [clipNotes, setClipNotes] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -60,6 +64,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   useEffect(() => {
     loadCategories();
+    loadPlayers();
 
     // Listen for clip progress
     window.electronAPI.onClipProgress(data => {
@@ -101,10 +106,21 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
     }
   };
 
+  const loadPlayers = async () => {
+    try {
+      if (!currentProject) return;
+      const result = await window.electronAPI.getPlayers(currentProject.id);
+      setPlayers(result);
+    } catch (error) {
+      console.error("Error loading players:", error);
+    }
+  };
+
   const resetForm = () => {
     setClipTitle("");
     setClipNotes("");
     setSelectedCategories([]);
+    setSelectedPlayers([]);
     setProgress(0);
     setRetryCount(0);
     setCurrentProcessId(null);
@@ -147,6 +163,14 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
+    );
+  };
+
+  const handlePlayerToggle = (playerId: number) => {
+    setSelectedPlayers(prev =>
+      prev.includes(playerId)
+        ? prev.filter(id => id !== playerId)
+        : [...prev, playerId]
     );
   };
 
@@ -259,6 +283,8 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         endTime: markOutTime!,
         title: title,
         categories: selectedCategories,
+        players: selectedPlayers,
+        quarter: currentQuarter,
         notes: clipNotes.trim() || undefined,
         projectId: currentProject.id,
       });
@@ -522,6 +548,31 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
             ))}
         </div>
       </div>
+
+      {/* Player Selection */}
+      {players.length > 0 && (
+        <div className={styles.playerSelection}>
+          <h4>
+            <FontAwesomeIcon icon={faUser} /> {t("app.clips.creator.players")} ({selectedPlayers.length} {t("app.clips.creator.selected")})
+          </h4>
+          <div className={styles.playerGrid}>
+            {players.map(player => (
+              <button
+                type="button"
+                key={player.id}
+                onClick={() => handlePlayerToggle(player.id)}
+                className={`${styles.playerBtn} ${
+                  selectedPlayers.includes(player.id) ? styles.playerBtnActive : ""
+                }`}
+                aria-pressed={selectedPlayers.includes(player.id)}
+              >
+                {player.number ? `#${player.number} ` : ""}
+                {player.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Clip Details */}
       <div className={styles.clipDetails}>

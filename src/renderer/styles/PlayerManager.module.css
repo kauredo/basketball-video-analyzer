@@ -1,0 +1,148 @@
+.playerManager {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.playerManager h3 {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.addForm {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.numberInput,
+.nameInput {
+  height: var(--button-height);
+  padding: 0 var(--spacing-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.numberInput {
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.nameInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.numberInput:focus-visible,
+.nameInput:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.addBtn {
+  height: var(--button-height);
+  padding: 0 var(--spacing-md);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: var(--text-white);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: background var(--transition-fast);
+}
+
+.addBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.emptyHint {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+.playerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.playerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.playerName {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playerNumber {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.iconBtn {
+  width: var(--button-height);
+  height: var(--button-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.iconBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}

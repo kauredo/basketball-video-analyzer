@@ -15,6 +15,11 @@ import {
   clearProjectCategories,
   updateCategory,
   deleteCategory,
+  getPlayers,
+  createPlayer,
+  updatePlayer,
+  deletePlayer,
+  Player,
   getClips,
   createClip,
   updateClip,
@@ -371,6 +376,8 @@ ipcMain.handle(
       endTime: number;
       title: string;
       categories: number[];
+      players?: number[];
+      quarter?: string | null;
       notes?: string;
       projectId: number;
     }
@@ -383,6 +390,8 @@ ipcMain.handle(
           endTime,
           title,
           categories,
+          players,
+          quarter,
           notes,
           projectId,
         } = params;
@@ -575,6 +584,8 @@ ipcMain.handle(
                     duration: duration,
                     title: title,
                     categories: JSON.stringify(categories),
+                    players: JSON.stringify(players || []),
+                    quarter: quarter || null,
                     notes: notes,
                   };
 
@@ -811,6 +822,51 @@ ipcMain.handle("delete-category", async (_event, id: number) => {
     return true;
   } catch (error) {
     console.error("Error deleting category:", error);
+    throw error;
+  }
+});
+
+// Player operations
+ipcMain.handle("get-players", async (_event, projectId: number) => {
+  try {
+    return getPlayers(projectId);
+  } catch (error) {
+    console.error("Error getting players:", error);
+    return [];
+  }
+});
+
+ipcMain.handle(
+  "create-player",
+  async (_event, player: Omit<Player, "id" | "created_at">) => {
+    try {
+      return createPlayer(player);
+    } catch (error) {
+      console.error("Error creating player:", error);
+      throw error;
+    }
+  }
+);
+
+ipcMain.handle(
+  "update-player",
+  async (_event, id: number, updates: Partial<Player>) => {
+    try {
+      updatePlayer(id, updates);
+      return true;
+    } catch (error) {
+      console.error("Error updating player:", error);
+      throw error;
+    }
+  }
+);
+
+ipcMain.handle("delete-player", async (_event, id: number) => {
+  try {
+    deletePlayer(id);
+    return true;
+  } catch (error) {
+    console.error("Error deleting player:", error);
     throw error;
   }
 });

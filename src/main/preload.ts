@@ -26,6 +26,8 @@ export interface ElectronAPI {
     endTime: number;
     title: string;
     categories: number[];
+    players?: number[];
+    quarter?: string | null;
     notes?: string;
     projectId: number;
   }) => Promise<any>;
@@ -70,6 +72,12 @@ export interface ElectronAPI {
   loadPreset: (presetName: string) => Promise<any[]>;
   getPresets: () => Promise<string[]>;
   deletePreset: (presetName: string) => Promise<boolean>;
+
+  // Player operations
+  getPlayers: (projectId: number) => Promise<any[]>;
+  createPlayer: (player: any) => Promise<any>;
+  updatePlayer: (id: number, updates: any) => Promise<boolean>;
+  deletePlayer: (id: number) => Promise<boolean>;
 
   // Clip operations
   getClips: (projectId?: number) => Promise<any[]>;
@@ -168,6 +176,14 @@ const electronAPI: ElectronAPI = {
   loadPreset: presetName => ipcRenderer.invoke("load-preset", presetName),
   getPresets: () => ipcRenderer.invoke("get-presets"),
   deletePreset: presetName => ipcRenderer.invoke("delete-preset", presetName),
+
+  // Player operations
+  getPlayers: (projectId: number) =>
+    ipcRenderer.invoke("get-players", projectId),
+  createPlayer: player => ipcRenderer.invoke("create-player", player),
+  updatePlayer: (id, updates) =>
+    ipcRenderer.invoke("update-player", id, updates),
+  deletePlayer: id => ipcRenderer.invoke("delete-player", id),
 
   // Clip operations
   getClips: projectId => ipcRenderer.invoke("get-clips", projectId),
