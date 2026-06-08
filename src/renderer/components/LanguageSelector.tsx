@@ -16,6 +16,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const languages = [
     { code: "en", name: "English" },
     { code: "pt", name: "Português (Portugal)" },
+    { code: "es", name: "Español" },
+    { code: "fr", name: "Français" },
+    { code: "de", name: "Deutsch" },
+    { code: "it", name: "Italiano" },
   ];
 
   const handleLanguageChange = (languageCode: string) => {
@@ -34,7 +38,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       </label>
       <select
         id="language-select"
-        value={i18n.language}
+        value={i18n.resolvedLanguage || i18n.language}
         onChange={(e) => handleLanguageChange(e.target.value)}
         className={styles.select}
       >
