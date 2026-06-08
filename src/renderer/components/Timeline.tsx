@@ -153,6 +153,18 @@ export const Timeline: React.FC<TimelineProps> = ({
 
   const clipsByCategory = organizeCategories(categories);
 
+  // Flattened hierarchical order (each parent followed by its children) so a
+  // clip's category rows in the list always sort parent-before-child.
+  const categoryOrder = new Map<number, number>();
+  categories
+    .filter(cat => !cat.parent_id)
+    .forEach(parent => {
+      categoryOrder.set(parent.id!, categoryOrder.size);
+      parent.children?.forEach(child =>
+        categoryOrder.set(child.id!, categoryOrder.size)
+      );
+    });
+
   // Format time for display
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -369,8 +381,13 @@ export const Timeline: React.FC<TimelineProps> = ({
                       }
                     });
 
-                    // Show once per category
-                    return clipCategoryIds.map((categoryId, index) => {
+                    // Show once per category, parent before its subcategories
+                    const sortedCategoryIds = [...clipCategoryIds].sort(
+                      (a, b) =>
+                        (categoryOrder.get(a) ?? Number.MAX_SAFE_INTEGER) -
+                        (categoryOrder.get(b) ?? Number.MAX_SAFE_INTEGER)
+                    );
+                    return sortedCategoryIds.map((categoryId, index) => {
                       const category = allCategories.find(
                         c => c.id === categoryId
                       );
@@ -395,7 +412,12 @@ export const Timeline: React.FC<TimelineProps> = ({
                                   backgroundColor: category?.color || DEFAULT_CATEGORY_COLOR,
                                 }}
                               />
-                              <span className={styles.categoryName}>
+                              <span
+                                className={`${styles.categoryName} ${
+                                  category?.parent_id ? styles.subcategoryName : ""
+                                }`}
+                                title={category?.name || t("app.categories.unknownCategory")}
+                              >
                                 {category?.parent_id ? "└ " : ""}
                                 {category?.name || t("app.categories.unknownCategory")}
                               </span>
