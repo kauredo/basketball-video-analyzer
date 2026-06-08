@@ -117,6 +117,58 @@
   background: var(--color-danger);
 }
 
+.annotationMarker {
+  position: absolute;
+  top: -22px;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: var(--text-white);
+  border-radius: var(--radius-round);
+  font-size: 9px;
+  cursor: pointer;
+  z-index: 3;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.annotationMarker:hover {
+  transform: translateX(-50%) scale(1.15);
+}
+
+.annotationDelete {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 14px;
+  height: 14px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-round);
+  background: var(--color-danger);
+  color: var(--text-white);
+  font-size: 8px;
+  cursor: pointer;
+}
+
+.annotationMarker:hover .annotationDelete,
+.annotationMarker:focus-within .annotationDelete {
+  display: flex;
+}
+
+.annotationMarker:focus-visible,
+.annotationDelete:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 .markIndicator:hover {
   transform: scaleX(2);
 }
@@ -338,6 +390,17 @@
 .speedButton:focus-visible {
   box-shadow: var(--focus-ring);
   outline: none;
+}
+
+.drawButtonActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-white);
+}
+
+.drawButtonActive:hover {
+  background: var(--color-primary-dark);
+  color: var(--text-white);
 }
 
 .speedValue {

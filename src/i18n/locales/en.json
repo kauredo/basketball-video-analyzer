@@ -240,6 +240,37 @@
         "clear": "Clear"
       }
     },
+    "telestration": {
+      "title": "Drawing tools",
+      "draw": "Draw on video",
+      "done": "Done drawing",
+      "undo": "Undo",
+      "clear": "Clear all",
+      "saveStill": "Save annotated image",
+      "savedStill": "Annotated image saved",
+      "saveStillError": "Could not save the annotated image",
+      "saveAnnotation": "Save drawing to this moment",
+      "savedAnnotation": "Drawing saved",
+      "saveAnnotationError": "Could not save the drawing",
+      "deletedAnnotation": "Drawing removed",
+      "deleteAnnotationError": "Could not remove the drawing",
+      "savedView": "Saved drawing",
+      "deleteView": "Remove saved drawing",
+      "textPlaceholder": "Type label…",
+      "tools": {
+        "pen": "Freehand",
+        "arrow": "Arrow",
+        "line": "Line",
+        "rect": "Rectangle",
+        "ellipse": "Circle",
+        "text": "Text"
+      },
+      "widths": {
+        "thin": "Thin",
+        "medium": "Medium",
+        "thick": "Thick"
+      }
+    },
     "video": {
       "noVideoSelected": "No video selected",
       "selectVideoPrompt": "Please select a video file to get started",

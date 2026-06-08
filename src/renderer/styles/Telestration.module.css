@@ -1,0 +1,167 @@
+.canvas {
+  position: absolute;
+  z-index: var(--z-popover);
+  touch-action: none;
+}
+
+.textInput {
+  position: absolute;
+  z-index: calc(var(--z-popover) + 1);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-sm);
+  font-weight: bold;
+  font-family: sans-serif;
+  line-height: 1.1;
+  padding: 2px 4px;
+  min-width: 120px;
+  outline: none;
+}
+
+.textInput::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: normal;
+}
+
+.toolbar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: calc(var(--z-popover) + 2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(8px);
+  max-width: calc(100% - 24px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.toolGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px;
+  background: var(--border-color);
+}
+
+.toolBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.toolBtn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.toolBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolBtnActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-white);
+}
+
+.toolBtnActive:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  color: var(--text-white);
+}
+
+.colorBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-round);
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px var(--border-color);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.colorBtn:hover {
+  transform: scale(1.1);
+}
+
+.colorBtnActive {
+  border-color: var(--text-white);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.widthBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.widthBtn:hover {
+  background: var(--bg-hover);
+}
+
+.widthBtnActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.widthDot {
+  display: block;
+  border-radius: var(--radius-round);
+  background: var(--text-secondary);
+}
+
+.widthBtnActive .widthDot {
+  background: var(--text-white);
+}
+
+.saveBtn {
+  color: var(--color-primary-light);
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: var(--text-white);
+}
+
+.closeBtn:hover:not(:disabled) {
+  background: var(--bg-quaternary);
+  color: var(--text-white);
+}
+
+.toolBtn:focus-visible,
+.colorBtn:focus-visible,
+.widthBtn:focus-visible,
+.textInput:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

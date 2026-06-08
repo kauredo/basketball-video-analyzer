@@ -44,6 +44,15 @@ export interface Player {
   created_at?: string;
 }
 
+export interface Annotation {
+  id?: number;
+  project_id: number;
+  video_path: string;
+  timestamp: number; // video seconds
+  data: string; // JSON-encoded shape list
+  created_at?: string;
+}
+
 export interface Clip {
   id?: number;
   project_id: number;
@@ -656,6 +665,20 @@ const createTables = () => {
     )
   `);
 
+  // Annotations table - saved telestration drawings tied to a moment in a
+  // source video. `data` is the JSON shape list; `timestamp` is video seconds.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS annotations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      video_path TEXT NOT NULL,
+      timestamp REAL NOT NULL,
+      data TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
+    )
+  `);
+
   // Create indexes
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_projects_video_path ON projects(video_path);
@@ -664,6 +687,7 @@ const createTables = () => {
     CREATE INDEX IF NOT EXISTS idx_clips_categories ON clips(categories);
     CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
     CREATE INDEX IF NOT EXISTS idx_players_project_id ON players(project_id);
+    CREATE INDEX IF NOT EXISTS idx_annotations_project_id ON annotations(project_id);
   `);
 
   setupKeyBindingsTable();
@@ -1144,6 +1168,61 @@ export const deletePlayer = (id: number): void => {
     stmt.run(id);
   } catch (error) {
     console.error("Error deleting player:", error);
+    throw error;
+  }
+};
+
+// Annotation operations (saved telestration drawings)
+export const getAnnotations = (
+  projectId: number,
+  videoPath: string,
+): Annotation[] => {
+  try {
+    const stmt = db.prepare(`
+      SELECT * FROM annotations
+      WHERE project_id = ? AND video_path = ?
+      ORDER BY timestamp ASC
+    `);
+    return stmt.all(projectId, videoPath) as Annotation[];
+  } catch (error) {
+    console.error("Error getting annotations:", error);
+    return [];
+  }
+};
+
+export const createAnnotation = (
+  annotation: Omit<Annotation, "id" | "created_at">,
+): Annotation => {
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO annotations (project_id, video_path, timestamp, data)
+      VALUES (?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      annotation.project_id,
+      annotation.video_path,
+      annotation.timestamp,
+      annotation.data,
+    );
+
+    return {
+      id: result.lastInsertRowid as number,
+      ...annotation,
+      created_at: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error creating annotation:", error);
+    throw error;
+  }
+};
+
+export const deleteAnnotation = (id: number): void => {
+  try {
+    const stmt = db.prepare("DELETE FROM annotations WHERE id = ?");
+    stmt.run(id);
+  } catch (error) {
+    console.error("Error deleting annotation:", error);
     throw error;
   }
 };

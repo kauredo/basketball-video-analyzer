@@ -240,6 +240,37 @@
         "clear": "Cancella"
       }
     },
+    "telestration": {
+      "title": "Strumenti di disegno",
+      "draw": "Disegna sul video",
+      "done": "Fine disegno",
+      "undo": "Annulla",
+      "clear": "Cancella tutto",
+      "saveStill": "Salva immagine annotata",
+      "savedStill": "Immagine annotata salvata",
+      "saveStillError": "Impossibile salvare l'immagine annotata",
+      "saveAnnotation": "Salva disegno in questo momento",
+      "savedAnnotation": "Disegno salvato",
+      "saveAnnotationError": "Impossibile salvare il disegno",
+      "deletedAnnotation": "Disegno rimosso",
+      "deleteAnnotationError": "Impossibile rimuovere il disegno",
+      "savedView": "Disegno salvato",
+      "deleteView": "Rimuovi disegno salvato",
+      "textPlaceholder": "Scrivi etichetta…",
+      "tools": {
+        "pen": "Mano libera",
+        "arrow": "Freccia",
+        "line": "Linea",
+        "rect": "Rettangolo",
+        "ellipse": "Cerchio",
+        "text": "Testo"
+      },
+      "widths": {
+        "thin": "Sottile",
+        "medium": "Medio",
+        "thick": "Spesso"
+      }
+    },
     "video": {
       "noVideoSelected": "Nessun video selezionato",
       "selectVideoPrompt": "Seleziona un file video per iniziare",

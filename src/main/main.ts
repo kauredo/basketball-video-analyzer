@@ -21,6 +21,10 @@ import {
   updatePlayer,
   deletePlayer,
   Player,
+  getAnnotations,
+  createAnnotation,
+  deleteAnnotation,
+  Annotation,
   getClips,
   createClip,
   updateClip,
@@ -516,6 +520,104 @@ ipcMain.handle("check-paths-exist", async (_event, paths: string[]) => {
   return result;
 });
 
+// Largest overlay PNG we'll accept from the renderer (decoded bytes). A 4K
+// drawing is well under this; the cap just bounds a malformed/oversized payload.
+const MAX_OVERLAY_BYTES = 64 * 1024 * 1024;
+const PNG_DATA_URL_PREFIX = "data:image/png;base64,";
+
+// Decode a base64 PNG data URL to a temp file and return its path. Rejects
+// anything that isn't a PNG data URL or exceeds the size cap.
+const writeOverlayToTemp = (overlayImage: string): string => {
+  if (!overlayImage.startsWith(PNG_DATA_URL_PREFIX)) {
+    throw new Error("ERROR_INVALID_OVERLAY");
+  }
+  const buffer = Buffer.from(
+    overlayImage.slice(PNG_DATA_URL_PREFIX.length),
+    "base64"
+  );
+  if (buffer.length === 0 || buffer.length > MAX_OVERLAY_BYTES) {
+    throw new Error("ERROR_INVALID_OVERLAY");
+  }
+  const overlayPath = path.join(
+    app.getPath("temp"),
+    `telestration-${uuidv4().slice(0, 8)}.png`
+  );
+  fs.writeFileSync(overlayPath, buffer);
+  return overlayPath;
+};
+
+// Best-effort removal of a temp file.
+const deleteTempFile = (filePath: string): void => {
+  try {
+    fs.unlinkSync(filePath);
+  } catch {
+    // best-effort temp cleanup
+  }
+};
+
+// Save a single annotated frame: extract the frame at `time` from the source
+// video and composite the drawing (a native-resolution transparent PNG) on top.
+// Compositing happens here via ffmpeg so the renderer never has to draw the
+// video onto a canvas (which would taint it and block toDataURL).
+ipcMain.handle(
+  "export-annotated-frame",
+  async (
+    _event,
+    params: { inputPath: string; time: number; overlayImage: string }
+  ) => {
+    const { inputPath, time, overlayImage } = params;
+    if (!Number.isFinite(time) || time < 0) {
+      throw new Error("ERROR_INVALID_TIME");
+    }
+    const normalizedInputPath = path.normalize(inputPath);
+
+    let resolvedInput = path.resolve(normalizedInputPath);
+    try {
+      resolvedInput = fs.realpathSync(resolvedInput);
+    } catch {
+      // Falls through to the existence check below.
+    }
+    if (!isAllowedMediaPath(resolvedInput) || !fs.existsSync(normalizedInputPath)) {
+      throw new Error("ERROR_FILE_NOT_FOUND");
+    }
+
+    const baseName = path
+      .basename(normalizedInputPath)
+      .replace(/\.[^/.]+$/, "");
+    const defaultName = `${baseName}_annotated_${Math.round(time)}s.png`;
+    const result = await dialog.showSaveDialog(mainWindow, {
+      defaultPath: path.join(app.getPath("documents"), defaultName),
+      filters: [
+        { name: "PNG Image", extensions: ["png"] },
+        { name: "JPEG Image", extensions: ["jpg", "jpeg"] },
+      ],
+    });
+    if (result.canceled || !result.filePath) return null;
+    const outputPath = result.filePath;
+
+    const overlayPath = writeOverlayToTemp(overlayImage);
+
+    return new Promise((resolve, reject) => {
+      ffmpeg(normalizedInputPath.replace(/\\/g, "/"))
+        .seekInput(time)
+        .input(overlayPath.replace(/\\/g, "/"))
+        .complexFilter(["[0:v][1:v]overlay=0:0[outv]"])
+        .outputOptions(["-map", "[outv]", "-frames:v", "1", "-y"])
+        .output(outputPath.replace(/\\/g, "/"))
+        .on("end", () => {
+          deleteTempFile(overlayPath);
+          resolve({ filePath: outputPath });
+        })
+        .on("error", err => {
+          deleteTempFile(overlayPath);
+          console.error("Error exporting annotated frame:", err);
+          reject(new Error("ERROR_EXPORT_FAILED"));
+        })
+        .run();
+    });
+  }
+);
+
 ipcMain.handle(
   "cut-video-clip",
   async (
@@ -530,6 +632,7 @@ ipcMain.handle(
       quarter?: string | null;
       notes?: string;
       projectId: number;
+      overlayImage?: string;
     }
   ) => {
     return new Promise((resolve, reject) => {
@@ -544,6 +647,7 @@ ipcMain.handle(
           quarter,
           notes,
           projectId,
+          overlayImage,
         } = params;
 
         // Use native path separators for file system operations
@@ -691,28 +795,54 @@ ipcMain.handle(
 
             // After thumbnail is created, create the clip
             console.log("Starting clip creation...");
+            // If the user drew over the frame, burn it into the clip. The
+            // overlay is a single native-resolution PNG; overlay's default
+            // eof_action=repeat keeps it visible for the whole clip.
+            let clipOverlayPath: string | null = null;
+            if (overlayImage) {
+              try {
+                clipOverlayPath = writeOverlayToTemp(overlayImage);
+              } catch (overlayError) {
+                // A bad overlay shouldn't fail the whole clip — just skip it.
+                console.error("Skipping clip overlay:", overlayError);
+              }
+            }
+            const cleanupClipOverlay = () => {
+              if (clipOverlayPath) deleteTempFile(clipOverlayPath);
+            };
+
+            const videoOutputOptions = [
+              "-y", // Overwrite output files
+              "-movflags",
+              "+faststart", // Optimize for web playback - allows video to start playing before fully downloaded
+              "-c:v",
+              "libx264", // Use H.264 codec for broad compatibility
+              "-preset",
+              "veryfast", // Best speed/quality balance (faster than medium with similar quality)
+              "-crf",
+              "23", // Constant Rate Factor: 18-28 range, 23 is good balance (lower = better quality)
+              "-c:a",
+              "aac", // Use AAC audio codec for broad compatibility
+              "-b:a",
+              "128k", // Audio bitrate - good quality for basketball commentary/court sounds
+              "-ar",
+              "44100", // Audio sample rate - standard for video
+            ];
+
             const clipCommand = ffmpeg(ffmpegInputPath);
 
+            clipCommand.setStartTime(startTime).setDuration(duration);
+
+            if (clipOverlayPath) {
+              clipCommand
+                .input(clipOverlayPath)
+                .complexFilter(["[0:v][1:v]overlay=0:0[outv]"])
+                .outputOptions(["-map", "[outv]", "-map", "0:a?", ...videoOutputOptions]);
+            } else {
+              clipCommand.outputOptions(videoOutputOptions);
+            }
+
             clipCommand
-              .setStartTime(startTime)
-              .setDuration(duration)
-              .outputOptions([
-                "-y", // Overwrite output files
-                "-movflags",
-                "+faststart", // Optimize for web playback - allows video to start playing before fully downloaded
-                "-c:v",
-                "libx264", // Use H.264 codec for broad compatibility
-                "-preset",
-                "veryfast", // Best speed/quality balance (faster than medium with similar quality)
-                "-crf",
-                "23", // Constant Rate Factor: 18-28 range, 23 is good balance (lower = better quality)
-                "-c:a",
-                "aac", // Use AAC audio codec for broad compatibility
-                "-b:a",
-                "128k", // Audio bitrate - good quality for basketball commentary/court sounds
-                "-ar",
-                "44100", // Audio sample rate - standard for video
-              ])
               .output(ffmpegOutputPath)
               .on("start", commandLine => {
                 console.log("Clip FFmpeg command:", commandLine);
@@ -721,6 +851,7 @@ ipcMain.handle(
               })
               .on("end", () => {
                 activeClipProcesses.delete(processId);
+                cleanupClipOverlay();
                 try {
                   console.log("Clip created successfully");
                   // Save clip to database with thumbnail path
@@ -754,6 +885,7 @@ ipcMain.handle(
               })
               .on("error", error => {
                 activeClipProcesses.delete(processId);
+                cleanupClipOverlay();
                 console.error("FFmpeg clip creation error:", error);
                 console.error("Error stack:", error.stack);
                 console.error("Input path:", normalizedInputPath);
@@ -1017,6 +1149,52 @@ ipcMain.handle("delete-player", async (_event, id: number) => {
     return true;
   } catch (error) {
     console.error("Error deleting player:", error);
+    throw error;
+  }
+});
+
+// Annotation operations (saved telestration drawings)
+ipcMain.handle(
+  "get-annotations",
+  async (_event, projectId: number, videoPath: string) => {
+    try {
+      return getAnnotations(projectId, videoPath);
+    } catch (error) {
+      console.error("Error getting annotations:", error);
+      return [];
+    }
+  }
+);
+
+ipcMain.handle(
+  "create-annotation",
+  async (_event, annotation: Omit<Annotation, "id" | "created_at">) => {
+    try {
+      // Only persist annotations against media the app is allowed to read,
+      // mirroring the validation on the media-serving paths.
+      let resolved = path.resolve(annotation.video_path);
+      try {
+        resolved = fs.realpathSync(resolved);
+      } catch {
+        // Non-existent path falls through to the allowlist check below.
+      }
+      if (!isAllowedMediaPath(resolved)) {
+        throw new Error("ERROR_FILE_NOT_FOUND");
+      }
+      return createAnnotation(annotation);
+    } catch (error) {
+      console.error("Error creating annotation:", error);
+      throw error;
+    }
+  }
+);
+
+ipcMain.handle("delete-annotation", async (_event, id: number) => {
+  try {
+    deleteAnnotation(id);
+    return true;
+  } catch (error) {
+    console.error("Error deleting annotation:", error);
     throw error;
   }
 });

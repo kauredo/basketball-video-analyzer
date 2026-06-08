@@ -240,6 +240,37 @@
         "clear": "Išvalyti"
       }
     },
+    "telestration": {
+      "title": "Piešimo įrankiai",
+      "draw": "Piešti ant vaizdo įrašo",
+      "done": "Baigti piešti",
+      "undo": "Atšaukti",
+      "clear": "Išvalyti viską",
+      "saveStill": "Išsaugoti pažymėtą vaizdą",
+      "savedStill": "Pažymėtas vaizdas išsaugotas",
+      "saveStillError": "Nepavyko išsaugoti pažymėto vaizdo",
+      "saveAnnotation": "Išsaugoti piešinį šiai akimirkai",
+      "savedAnnotation": "Piešinys išsaugotas",
+      "saveAnnotationError": "Nepavyko išsaugoti piešinio",
+      "deletedAnnotation": "Piešinys pašalintas",
+      "deleteAnnotationError": "Nepavyko pašalinti piešinio",
+      "savedView": "Išsaugotas piešinys",
+      "deleteView": "Pašalinti išsaugotą piešinį",
+      "textPlaceholder": "Įveskite užrašą…",
+      "tools": {
+        "pen": "Laisva ranka",
+        "arrow": "Rodyklė",
+        "line": "Linija",
+        "rect": "Stačiakampis",
+        "ellipse": "Apskritimas",
+        "text": "Tekstas"
+      },
+      "widths": {
+        "thin": "Plonas",
+        "medium": "Vidutinis",
+        "thick": "Storas"
+      }
+    },
     "video": {
       "noVideoSelected": "Vaizdo įrašas nepasirinktas",
       "selectVideoPrompt": "Pasirinkite vaizdo įrašo failą, kad pradėtumėte",

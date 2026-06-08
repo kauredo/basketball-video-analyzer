@@ -240,6 +240,37 @@
         "clear": "Obriši"
       }
     },
+    "telestration": {
+      "title": "Alatke za crtanje",
+      "draw": "Crtaj po videu",
+      "done": "Završi crtanje",
+      "undo": "Poništi",
+      "clear": "Obriši sve",
+      "saveStill": "Sačuvaj sliku sa oznakama",
+      "savedStill": "Slika sa oznakama je sačuvana",
+      "saveStillError": "Nije moguće sačuvati sliku sa oznakama",
+      "saveAnnotation": "Sačuvaj crtež za ovaj trenutak",
+      "savedAnnotation": "Crtež je sačuvan",
+      "saveAnnotationError": "Nije moguće sačuvati crtež",
+      "deletedAnnotation": "Crtež je uklonjen",
+      "deleteAnnotationError": "Nije moguće ukloniti crtež",
+      "savedView": "Sačuvani crtež",
+      "deleteView": "Ukloni sačuvani crtež",
+      "textPlaceholder": "Unesite oznaku…",
+      "tools": {
+        "pen": "Slobodnom rukom",
+        "arrow": "Strelica",
+        "line": "Linija",
+        "rect": "Pravougaonik",
+        "ellipse": "Krug",
+        "text": "Tekst"
+      },
+      "widths": {
+        "thin": "Tanko",
+        "medium": "Srednje",
+        "thick": "Debelo"
+      }
+    },
     "video": {
       "noVideoSelected": "Nijedan snimak nije izabran",
       "selectVideoPrompt": "Izaberite video fajl da biste počeli",

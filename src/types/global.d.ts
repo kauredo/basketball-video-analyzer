@@ -16,6 +16,15 @@ export interface Player {
   created_at?: string;
 }
 
+export interface Annotation {
+  id: number;
+  project_id: number;
+  video_path: string;
+  timestamp: number;
+  data: string; // JSON-encoded shape list
+  created_at?: string;
+}
+
 export interface Clip {
   id: number;
   video_path: string;
@@ -62,7 +71,13 @@ export interface ElectronAPI {
     quarter?: string | null;
     notes?: string;
     projectId: number;
+    overlayImage?: string;
   }) => Promise<any>;
+  exportAnnotatedFrame: (params: {
+    inputPath: string;
+    time: number;
+    overlayImage: string;
+  }) => Promise<{ filePath: string } | null>;
   openClipFolder: () => Promise<void>;
   playClip: (clipPath: string) => Promise<void>;
   exportClipsByCategory: (params: {
@@ -92,6 +107,19 @@ export interface ElectronAPI {
   createPlayer: (player: Omit<Player, "id" | "created_at">) => Promise<Player>;
   updatePlayer: (id: number, updates: Partial<Player>) => Promise<boolean>;
   deletePlayer: (id: number) => Promise<boolean>;
+
+  // Annotation operations (saved telestration drawings)
+  getAnnotations: (
+    projectId: number,
+    videoPath: string
+  ) => Promise<Annotation[]>;
+  createAnnotation: (annotation: {
+    project_id: number;
+    video_path: string;
+    timestamp: number;
+    data: string;
+  }) => Promise<Annotation>;
+  deleteAnnotation: (id: number) => Promise<boolean>;
 
   // Export clips data
   exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;

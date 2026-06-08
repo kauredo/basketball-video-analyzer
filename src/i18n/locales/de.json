@@ -240,6 +240,37 @@
         "clear": "Zurücksetzen"
       }
     },
+    "telestration": {
+      "title": "Zeichenwerkzeuge",
+      "draw": "Auf Video zeichnen",
+      "done": "Zeichnen beenden",
+      "undo": "Rückgängig",
+      "clear": "Alles löschen",
+      "saveStill": "Annotiertes Bild speichern",
+      "savedStill": "Annotiertes Bild gespeichert",
+      "saveStillError": "Annotiertes Bild konnte nicht gespeichert werden",
+      "saveAnnotation": "Zeichnung zu diesem Moment speichern",
+      "savedAnnotation": "Zeichnung gespeichert",
+      "saveAnnotationError": "Zeichnung konnte nicht gespeichert werden",
+      "deletedAnnotation": "Zeichnung entfernt",
+      "deleteAnnotationError": "Zeichnung konnte nicht entfernt werden",
+      "savedView": "Gespeicherte Zeichnung",
+      "deleteView": "Gespeicherte Zeichnung entfernen",
+      "textPlaceholder": "Beschriftung eingeben…",
+      "tools": {
+        "pen": "Freihand",
+        "arrow": "Pfeil",
+        "line": "Linie",
+        "rect": "Rechteck",
+        "ellipse": "Kreis",
+        "text": "Text"
+      },
+      "widths": {
+        "thin": "Dünn",
+        "medium": "Mittel",
+        "thick": "Dick"
+      }
+    },
     "video": {
       "noVideoSelected": "Kein Video ausgewählt",
       "selectVideoPrompt": "Bitte eine Videodatei auswählen, um zu beginnen",

@@ -30,7 +30,13 @@ export interface ElectronAPI {
     quarter?: string | null;
     notes?: string;
     projectId: number;
+    overlayImage?: string;
   }) => Promise<any>;
+  exportAnnotatedFrame: (params: {
+    inputPath: string;
+    time: number;
+    overlayImage: string;
+  }) => Promise<{ filePath: string } | null>;
   openClipFolder: () => Promise<void>;
   playClip: (clipPath: string) => Promise<void>;
   exportClipsByCategory: (params: {
@@ -78,6 +84,16 @@ export interface ElectronAPI {
   createPlayer: (player: any) => Promise<any>;
   updatePlayer: (id: number, updates: any) => Promise<boolean>;
   deletePlayer: (id: number) => Promise<boolean>;
+
+  // Annotation operations (saved telestration drawings)
+  getAnnotations: (projectId: number, videoPath: string) => Promise<any[]>;
+  createAnnotation: (annotation: {
+    project_id: number;
+    video_path: string;
+    timestamp: number;
+    data: string;
+  }) => Promise<any>;
+  deleteAnnotation: (id: number) => Promise<boolean>;
 
   // Clip operations
   getClips: (projectId?: number) => Promise<any[]>;
@@ -139,6 +155,8 @@ const electronAPI: ElectronAPI = {
   // Video operations
   selectVideoFile: () => ipcRenderer.invoke("select-video-file"),
   cutVideoClip: params => ipcRenderer.invoke("cut-video-clip", params),
+  exportAnnotatedFrame: params =>
+    ipcRenderer.invoke("export-annotated-frame", params),
   openClipFolder: () => ipcRenderer.invoke("open-clip-folder"),
   playClip: clipPath => ipcRenderer.invoke("play-clip", clipPath),
   exportClipsByCategory: params =>
@@ -184,6 +202,13 @@ const electronAPI: ElectronAPI = {
   updatePlayer: (id, updates) =>
     ipcRenderer.invoke("update-player", id, updates),
   deletePlayer: id => ipcRenderer.invoke("delete-player", id),
+
+  // Annotation operations
+  getAnnotations: (projectId: number, videoPath: string) =>
+    ipcRenderer.invoke("get-annotations", projectId, videoPath),
+  createAnnotation: annotation =>
+    ipcRenderer.invoke("create-annotation", annotation),
+  deleteAnnotation: id => ipcRenderer.invoke("delete-annotation", id),
 
   // Clip operations
   getClips: projectId => ipcRenderer.invoke("get-clips", projectId),

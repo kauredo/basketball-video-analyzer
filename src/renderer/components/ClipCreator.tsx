@@ -33,6 +33,7 @@ interface ClipCreatorProps {
   currentProject: any | null;
   currentQuarter: string | null;
   onQuarterChange: (quarter: string | null) => void;
+  getOverlay?: () => string | null;
 }
 
 export const ClipCreator: React.FC<ClipCreatorProps> = ({
@@ -44,6 +45,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   currentProject,
   currentQuarter,
   onQuarterChange,
+  getOverlay,
 }) => {
   const { t, i18n } = useTranslation();
   const { showError, showSuccess, showWarning } = useToastContext();
@@ -287,6 +289,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         quarter: currentQuarter,
         notes: clipNotes.trim() || undefined,
         projectId: currentProject.id,
+        overlayImage: getOverlay?.() ?? undefined,
       });
     } catch (error) {
       // Enhanced error logging for diagnostics

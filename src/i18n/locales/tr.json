@@ -240,6 +240,37 @@
         "clear": "Temizle"
       }
     },
+    "telestration": {
+      "title": "Çizim araçları",
+      "draw": "Video üzerine çiz",
+      "done": "Çizimi bitir",
+      "undo": "Geri al",
+      "clear": "Tümünü temizle",
+      "saveStill": "İşaretli görüntüyü kaydet",
+      "savedStill": "İşaretli görüntü kaydedildi",
+      "saveStillError": "İşaretli görüntü kaydedilemedi",
+      "saveAnnotation": "Çizimi bu ana kaydet",
+      "savedAnnotation": "Çizim kaydedildi",
+      "saveAnnotationError": "Çizim kaydedilemedi",
+      "deletedAnnotation": "Çizim kaldırıldı",
+      "deleteAnnotationError": "Çizim kaldırılamadı",
+      "savedView": "Kaydedilmiş çizim",
+      "deleteView": "Kaydedilmiş çizimi kaldır",
+      "textPlaceholder": "Etiket yaz…",
+      "tools": {
+        "pen": "Serbest çizim",
+        "arrow": "Ok",
+        "line": "Çizgi",
+        "rect": "Dikdörtgen",
+        "ellipse": "Daire",
+        "text": "Metin"
+      },
+      "widths": {
+        "thin": "İnce",
+        "medium": "Orta",
+        "thick": "Kalın"
+      }
+    },
     "video": {
       "noVideoSelected": "Video seçilmedi",
       "selectVideoPrompt": "Başlamak için lütfen bir video dosyası seçin",

@@ -2,6 +2,7 @@ import React, {
   useRef,
   useState,
   useEffect,
+  useCallback,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -22,13 +23,20 @@ import {
   faSearch,
   faClock,
   faGaugeHigh,
+  faPen,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/VideoPlayer.module.css";
 import { ContextualHint } from "./ContextualHint";
 import { formatVideoSrc } from "../utils/paths";
+import { TelestrationLayer } from "./TelestrationLayer";
+import { TelestrationShape, shapesToPngDataUrl } from "../utils/telestration";
+import { useToastContext } from "../contexts/ToastContext";
+import { Annotation } from "../../types/global";
 
 interface VideoPlayerProps {
   videoPath: string | null;
+  projectId?: number;
   onTimeUpdate: (currentTime: number) => void;
   onDurationChange: (duration: number) => void;
   markInTime: number | null;
@@ -41,12 +49,14 @@ interface VideoPlayerProps {
 
 interface VideoPlayerRef {
   seekTo: (time: number) => void;
+  getOverlay: () => string | null;
 }
 
 export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   (
     {
       videoPath,
+      projectId,
       onTimeUpdate,
       onDurationChange,
       markInTime,
@@ -59,8 +69,18 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     ref
   ) => {
     const { t } = useTranslation();
+    const { showSuccess, showError } = useToastContext();
     const videoRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const timeSearchInputRef = useRef<HTMLInputElement>(null);
+    const [drawMode, setDrawMode] = useState(false);
+    const [shapes, setShapes] = useState<TelestrationShape[]>([]);
+    const [savingStill, setSavingStill] = useState(false);
+    const [savedAnnotations, setSavedAnnotations] = useState<Annotation[]>([]);
+    // Mirror shapes into a ref so getOverlay() always reads the latest drawing
+    // regardless of how the imperative handle is memoized.
+    const shapesRef = useRef(shapes);
+    shapesRef.current = shapes;
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -83,6 +103,17 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           videoRef.current.currentTime = time;
           setCurrentTime(time);
         }
+      },
+      // Current drawing as a native-resolution transparent PNG data URL, or
+      // null if nothing is drawn. Used to burn annotations into exported clips.
+      getOverlay: (): string | null => {
+        const video = videoRef.current;
+        if (!video) return null;
+        return shapesToPngDataUrl(
+          shapesRef.current,
+          video.videoWidth,
+          video.videoHeight
+        );
       },
     }));
 
@@ -118,6 +149,104 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
+    const toggleDrawMode = () => {
+      setDrawMode(prev => {
+        const next = !prev;
+        if (next) pauseVideo();
+        return next;
+      });
+    };
+
+    const handleSaveStill = useCallback(async () => {
+      const video = videoRef.current;
+      if (!video || !videoPath) return;
+      const overlay = shapesToPngDataUrl(
+        shapes,
+        video.videoWidth,
+        video.videoHeight
+      );
+      if (!overlay) return;
+      setSavingStill(true);
+      try {
+        const result = await window.electronAPI.exportAnnotatedFrame({
+          inputPath: videoPath,
+          time: video.currentTime,
+          overlayImage: overlay,
+        });
+        if (result?.filePath) {
+          showSuccess(t("app.telestration.savedStill"));
+        }
+      } catch (error) {
+        console.error("Error saving annotated still:", error);
+        showError(t("app.telestration.saveStillError"));
+      } finally {
+        setSavingStill(false);
+      }
+    }, [shapes, videoPath, showSuccess, showError, t]);
+
+    const loadAnnotations = useCallback(async () => {
+      if (!projectId || !videoPath) {
+        setSavedAnnotations([]);
+        return;
+      }
+      try {
+        setSavedAnnotations(
+          await window.electronAPI.getAnnotations(projectId, videoPath)
+        );
+      } catch (error) {
+        console.error("Failed to load annotations:", error);
+      }
+    }, [projectId, videoPath]);
+
+    useEffect(() => {
+      loadAnnotations();
+    }, [loadAnnotations]);
+
+    const handleSaveAnnotation = useCallback(async () => {
+      if (!projectId || !videoPath || shapes.length === 0) return;
+      try {
+        await window.electronAPI.createAnnotation({
+          project_id: projectId,
+          video_path: videoPath,
+          timestamp: videoRef.current?.currentTime ?? 0,
+          data: JSON.stringify(shapes),
+        });
+        await loadAnnotations();
+        showSuccess(t("app.telestration.savedAnnotation"));
+      } catch (error) {
+        console.error("Failed to save annotation:", error);
+        showError(t("app.telestration.saveAnnotationError"));
+      }
+    }, [projectId, videoPath, shapes, loadAnnotations, showSuccess, showError, t]);
+
+    const openAnnotation = (annotation: Annotation) => {
+      try {
+        const parsed = JSON.parse(annotation.data);
+        if (!Array.isArray(parsed)) return;
+        if (videoRef.current) {
+          videoRef.current.pause();
+          videoRef.current.currentTime = annotation.timestamp;
+          setCurrentTime(annotation.timestamp);
+          setIsPlaying(false);
+        }
+        setShapes(parsed as TelestrationShape[]);
+        setDrawMode(true);
+      } catch (error) {
+        console.error("Failed to open annotation:", error);
+      }
+    };
+
+    const deleteAnnotationById = async (id: number) => {
+      try {
+        await window.electronAPI.deleteAnnotation(id);
+        await loadAnnotations();
+        showSuccess(t("app.telestration.deletedAnnotation"));
+      } catch (error) {
+        console.error("Failed to delete annotation:", error);
+        showError(t("app.telestration.deleteAnnotationError"));
+      }
+    };
+
     useEffect(() => {
       const handleKeyPress = (e: KeyboardEvent) => {
         // Ignore keyboard shortcuts when user is typing in an input field
@@ -127,6 +256,11 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           e.target instanceof HTMLButtonElement ||
           (e.target as HTMLElement)?.isContentEditable
         ) {
+          return;
+        }
+
+        // While drawing, the telestration layer owns the keyboard (Escape exits).
+        if (drawMode) {
           return;
         }
 
@@ -179,7 +313,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
       document.addEventListener("keydown", handleKeyPress);
       return () => document.removeEventListener("keydown", handleKeyPress);
-    }, [onMarkIn, onMarkOut, onClearMarks, onQuickTag, isPlaying, keyBindings]);
+    }, [onMarkIn, onMarkOut, onClearMarks, onQuickTag, isPlaying, keyBindings, drawMode]);
 
     // Calculate frame duration (assuming 30fps)
     const frameDuration = 1 / 30;
@@ -421,6 +555,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     return (
       <div className={styles.videoPlayer}>
         <div
+          ref={containerRef}
           className={styles.videoContainer}
           onMouseMove={() => {
             if (videoRef.current) {
@@ -458,6 +593,17 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               onClick={togglePlay}
             />
           )}
+          <TelestrationLayer
+            active={drawMode && !videoError}
+            videoRef={videoRef}
+            containerRef={containerRef}
+            shapes={shapes}
+            onShapesChange={setShapes}
+            onSaveStill={handleSaveStill}
+            onSaveAnnotation={projectId ? handleSaveAnnotation : undefined}
+            onClose={() => setDrawMode(false)}
+            saving={savingStill}
+          />
           <div className={styles.videoControls}>
             <div className={styles.progressContainer}>
               <div className={styles.progressTrack}>
@@ -511,6 +657,42 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     )}`}
                   />
                 )}
+                {duration > 0 &&
+                  savedAnnotations.map(annotation => (
+                    <div
+                      key={annotation.id}
+                      className={styles.annotationMarker}
+                      style={{
+                        left: `${(annotation.timestamp / duration) * 100}%`,
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => openAnnotation(annotation)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          openAnnotation(annotation);
+                        }
+                      }}
+                      title={`${t("app.telestration.savedView")}: ${formatTime(
+                        annotation.timestamp
+                      )}`}
+                    >
+                      <FontAwesomeIcon icon={faPen} />
+                      <button
+                        type="button"
+                        className={styles.annotationDelete}
+                        onClick={e => {
+                          e.stopPropagation();
+                          deleteAnnotationById(annotation.id);
+                        }}
+                        title={t("app.telestration.deleteView")}
+                        aria-label={t("app.telestration.deleteView")}
+                      >
+                        <FontAwesomeIcon icon={faXmark} />
+                      </button>
+                    </div>
+                  ))}
               </div>
             </div>
 
@@ -712,6 +894,19 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     </div>
                   )}
                 </div>
+
+                <button
+                  type="button"
+                  className={`${styles.speedButton} ${
+                    drawMode ? styles.drawButtonActive : ""
+                  }`}
+                  onClick={toggleDrawMode}
+                  title={t("app.telestration.draw")}
+                  aria-label={t("app.telestration.draw")}
+                  aria-pressed={drawMode}
+                >
+                  <FontAwesomeIcon icon={faPen} />
+                </button>
               </div>
 
               {showFirstVideoHint && (

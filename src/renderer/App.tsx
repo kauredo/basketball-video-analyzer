@@ -464,6 +464,7 @@ export const App: React.FC = () => {
           categories: [category.id],
           quarter: currentQuarter,
           projectId: currentProject.id,
+          overlayImage: videoPlayerRef.current?.getOverlay() ?? undefined,
         });
         showSuccess(t("app.clips.quickTagCreated", { category: category.name }));
       } catch (error) {
@@ -574,6 +575,7 @@ export const App: React.FC = () => {
               <VideoPlayer
                 ref={videoPlayerRef}
                 videoPath={videoPath}
+                projectId={currentProject?.id}
                 onTimeUpdate={setCurrentTime}
                 onDurationChange={setDuration}
                 markInTime={markInTime}
@@ -686,6 +688,7 @@ export const App: React.FC = () => {
                 currentProject={currentProject}
                 currentQuarter={currentQuarter}
                 onQuarterChange={setCurrentQuarter}
+                getOverlay={() => videoPlayerRef.current?.getOverlay() ?? null}
               />
             </div>
           </div>

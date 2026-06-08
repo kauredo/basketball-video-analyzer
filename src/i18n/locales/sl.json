@@ -240,6 +240,37 @@
         "clear": "Počisti"
       }
     },
+    "telestration": {
+      "title": "Orodja za risanje",
+      "draw": "Riši po videu",
+      "done": "Končaj risanje",
+      "undo": "Razveljavi",
+      "clear": "Počisti vse",
+      "saveStill": "Shrani označeno sliko",
+      "savedStill": "Označena slika je shranjena",
+      "saveStillError": "Označene slike ni bilo mogoče shraniti",
+      "saveAnnotation": "Shrani risbo na ta trenutek",
+      "savedAnnotation": "Risba je shranjena",
+      "saveAnnotationError": "Risbe ni bilo mogoče shraniti",
+      "deletedAnnotation": "Risba je odstranjena",
+      "deleteAnnotationError": "Risbe ni bilo mogoče odstraniti",
+      "savedView": "Shranjena risba",
+      "deleteView": "Odstrani shranjeno risbo",
+      "textPlaceholder": "Vnesi oznako…",
+      "tools": {
+        "pen": "Prostoročno",
+        "arrow": "Puščica",
+        "line": "Črta",
+        "rect": "Pravokotnik",
+        "ellipse": "Krog",
+        "text": "Besedilo"
+      },
+      "widths": {
+        "thin": "Tanka",
+        "medium": "Srednja",
+        "thick": "Debela"
+      }
+    },
     "video": {
       "noVideoSelected": "Noben video ni izbran",
       "selectVideoPrompt": "Za začetek izberite video datoteko",
