@@ -76,7 +76,7 @@ function drawArrowHead(
 }
 
 /** Draw a single shape onto a context sized to (w, h) pixels. */
-export function drawShape(
+function drawShape(
   ctx: CanvasRenderingContext2D,
   shape: TelestrationShape,
   w: number,

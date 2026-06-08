@@ -7,7 +7,7 @@
 .textInput {
   position: absolute;
   z-index: calc(var(--z-popover) + 1);
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.55);
   border: 1px dashed rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-sm);
   font-weight: bold;
@@ -16,6 +16,8 @@
   padding: 2px 4px;
   min-width: 120px;
   outline: none;
+  /* Keep the typed label legible over any frame, whatever colour is chosen. */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .textInput::placeholder {
