@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, Menu } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol, net } from "electron";
 import path from "path";
+import { pathToFileURL } from "url";
 import fs from "fs";
 import { spawn } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
@@ -44,6 +45,17 @@ import {
   getPresets,
   deletePreset,
 } from "./database";
+
+// Custom scheme used to serve local media (clips, thumbnails, source video)
+// to the renderer without disabling webSecurity. Must be registered before
+// the app is ready.
+const MEDIA_SCHEME = "clip-media";
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: MEDIA_SCHEME,
+    privileges: { secure: true, standard: true, supportFetchAPI: true, stream: true, bypassCSP: true },
+  },
+]);
 
 // Helper function to fix ASAR unpacked paths
 const fixAsarPath = (binaryPath: string): string => {
@@ -194,7 +206,6 @@ const createWindow = (): void => {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
-      webSecurity: false,
     },
     titleBarStyle: "default",
     show: false,
@@ -223,6 +234,29 @@ const createWindow = (): void => {
 
 app.whenReady().then(() => {
   setupDatabase();
+
+  // Serve local media through the validated custom scheme. Forwarding request
+  // headers (notably Range) lets <video> seek correctly.
+  protocol.handle(MEDIA_SCHEME, (request) => {
+    try {
+      const requested = new URL(request.url).searchParams.get("path");
+      if (!requested) {
+        return new Response("Missing path", { status: 400 });
+      }
+      const resolved = path.resolve(requested);
+      if (!isAllowedMediaPath(resolved)) {
+        console.warn("Blocked media request for disallowed path:", resolved);
+        return new Response("Forbidden", { status: 403 });
+      }
+      return net.fetch(pathToFileURL(resolved).toString(), {
+        headers: request.headers,
+      });
+    } catch (error) {
+      console.error("Error serving media:", error);
+      return new Response("Internal error", { status: 500 });
+    }
+  });
+
   createWindow();
 
   app.on("activate", () => {
@@ -244,6 +278,29 @@ const getClipsDirectory = () => {
   const userDataDir = app.getPath("userData");
   const clipsDir = path.join(userDataDir, "clips");
   return clipsDir;
+};
+
+const getDownloadsDirectory = () => path.join(app.getPath("userData"), "downloads");
+
+// Only serve files the app legitimately references: generated clips/thumbnails
+// (clips dir), downloaded videos (downloads dir), or a source video registered
+// as a project. Anything else is rejected to prevent arbitrary file reads.
+const isAllowedMediaPath = (resolved: string): boolean => {
+  const within = (dir: string) => {
+    const base = path.resolve(dir);
+    return resolved === base || resolved.startsWith(base + path.sep);
+  };
+  if (within(getClipsDirectory()) || within(getDownloadsDirectory())) {
+    return true;
+  }
+  try {
+    return getProjects().some(
+      (project) => path.resolve(project.video_path) === resolved,
+    );
+  } catch (error) {
+    console.error("Error validating media path:", error);
+    return false;
+  }
 };
 
 // Pre-flight system checks

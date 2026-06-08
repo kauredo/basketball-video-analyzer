@@ -1,16 +1,11 @@
-// Convert a local filesystem path into a file:// URL usable as a media src.
-export const formatVideoSrc = (path: string): string => {
-  if (path.startsWith("file://")) {
-    return path;
-  }
-  // Windows paths (drive letter, e.g. C:\ or C:/)
-  if (/^[A-Za-z]:[\\/]/.test(path)) {
-    const normalizedPath = path.replace(/\\/g, "/");
-    return `file:///${normalizedPath}`;
-  }
-  // Unix-like absolute paths
-  if (path.startsWith("/")) {
-    return `file://${path}`;
-  }
-  return `file://${path}`;
+// Build a media URL for a local filesystem path. Local media is served by the
+// main process through the privileged "clip-media" scheme (see main.ts) so the
+// renderer can keep webSecurity enabled instead of loading raw file:// URLs.
+export const formatVideoSrc = (filePath: string): string => {
+  if (!filePath) return "";
+  // Tolerate paths that were already stored as file:// URLs.
+  const normalized = filePath.startsWith("file://")
+    ? decodeURIComponent(filePath.replace(/^file:\/\/\/?/, "/"))
+    : filePath;
+  return `clip-media://media/?path=${encodeURIComponent(normalized)}`;
 };
