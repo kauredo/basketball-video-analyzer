@@ -73,6 +73,8 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
 }) => {
   const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textInputRef = useRef<HTMLInputElement | null>(null);
+  const measureCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const [rect, setRect] = useState<VideoContentRect | null>(null);
   const [tool, setTool] = useState<TelestrationTool>("arrow");
   const [color, setColor] = useState(TELESTRATION_COLORS[0].hex);
@@ -81,6 +83,12 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   const [textDraft, setTextDraft] = useState<{ at: NormPoint; value: string } | null>(
     null
   );
+  // Dragging an existing label: the shape id and the grab offset (label anchor
+  // minus pointer), both in normalized coords.
+  const [dragging, setDragging] = useState<{ id: string; dx: number; dy: number } | null>(
+    null
+  );
+  const [overLabel, setOverLabel] = useState(false);
 
   // Keep the canvas aligned to the painted video rectangle (object-fit: contain).
   const measure = useCallback(() => {
@@ -126,6 +134,13 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     renderShapes(ctx, all, rect.width, rect.height);
   }, [shapes, draft, rect]);
 
+  // Focus the label input as soon as it appears (autoFocus is unreliable when
+  // the input mounts mid-interaction).
+  const placingText = textDraft !== null;
+  useEffect(() => {
+    if (placingText) textInputRef.current?.focus();
+  }, [placingText]);
+
   const toNorm = useCallback(
     (clientX: number, clientY: number): NormPoint => {
       const canvas = canvasRef.current;
@@ -139,9 +154,52 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     []
   );
 
+  // Topmost text label whose box contains the point, or null. Lets you grab a
+  // label to move it instead of placing/drawing.
+  const hitTestLabel = (p: NormPoint): string | null => {
+    if (!rect) return null;
+    if (!measureCtxRef.current) {
+      measureCtxRef.current = document.createElement("canvas").getContext("2d");
+    }
+    const ctx = measureCtxRef.current;
+    if (!ctx) return null;
+    const { width: w, height: h } = rect;
+    const pxX = p.x * w;
+    const pxY = p.y * h;
+    for (let i = shapes.length - 1; i >= 0; i--) {
+      const s = shapes[i];
+      if (s.tool !== "text" || !s.text || !s.at) continue;
+      const fontPx = Math.max(8, (s.fontFrac ?? DEFAULT_TEXT_FRAC) * h);
+      ctx.font = `bold ${fontPx}px sans-serif`;
+      const textW = ctx.measureText(s.text).width;
+      const pad = fontPx * 0.25;
+      const x0 = s.at.x * w;
+      const y0 = s.at.y * h;
+      if (
+        pxX >= x0 - pad &&
+        pxX <= x0 + textW + pad &&
+        pxY >= y0 - pad &&
+        pxY <= y0 + fontPx + pad
+      ) {
+        return s.id;
+      }
+    }
+    return null;
+  };
+
   const handlePointerDown = (e: React.PointerEvent) => {
     if (textDraft) return; // committing text; ignore canvas presses
     const p = toNorm(e.clientX, e.clientY);
+    // Grabbing an existing label to move it takes priority over any tool.
+    const hitId = hitTestLabel(p);
+    if (hitId) {
+      const shape = shapes.find(s => s.id === hitId);
+      if (shape?.at) {
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        setDragging({ id: hitId, dx: shape.at.x - p.x, dy: shape.at.y - p.y });
+        return;
+      }
+    }
     if (tool === "text") {
       setTextDraft({ at: p, value: "" });
       return;
@@ -155,8 +213,23 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!draft) return;
     const p = toNorm(e.clientX, e.clientY);
+    if (dragging) {
+      onShapesChange(
+        shapes.map(s =>
+          s.id === dragging.id
+            ? { ...s, at: { x: clamp01(p.x + dragging.dx), y: clamp01(p.y + dragging.dy) } }
+            : s
+        )
+      );
+      return;
+    }
+    if (!draft) {
+      // Idle hover: show a move cursor over a grabbable label.
+      const over = hitTestLabel(p) !== null;
+      if (over !== overLabel) setOverLabel(over);
+      return;
+    }
     if (draft.tool === "pen") {
       setDraft({ ...draft, points: [...(draft.points ?? []), p] });
     } else {
@@ -165,6 +238,10 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   };
 
   const commitDraft = () => {
+    if (dragging) {
+      setDragging(null);
+      return;
+    }
     if (!draft) return;
     const valid =
       draft.tool === "pen"
@@ -212,9 +289,12 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      // Escape belongs to the drawing layer while it's open: dismiss an
+      // in-progress text label first, otherwise exit draw mode. Stop it here
+      // so it doesn't also clear the video's in/out marks.
+      e.stopPropagation();
       if (textDraft) {
         setTextDraft(null);
-        e.stopPropagation();
         return;
       }
       onClose();
@@ -247,8 +327,15 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
           top: rect.top,
           width: rect.width,
           height: rect.height,
-          cursor: tool === "text" ? "text" : "crosshair",
+          cursor: dragging
+            ? "grabbing"
+            : overLabel
+              ? "move"
+              : tool === "text"
+                ? "text"
+                : "crosshair",
         }}
+        onMouseDown={e => e.preventDefault()}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={commitDraft}
@@ -257,7 +344,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
 
       {textPx && (
         <input
-          autoFocus
+          ref={textInputRef}
           type="text"
           className={styles.textInput}
           style={{

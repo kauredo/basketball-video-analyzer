@@ -259,11 +259,6 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           return;
         }
 
-        // While drawing, the telestration layer owns the keyboard (Escape exits).
-        if (drawMode) {
-          return;
-        }
-
         const key = e.key.toLowerCase();
 
         if (key === keyBindings.markInKey) {
@@ -313,7 +308,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
       document.addEventListener("keydown", handleKeyPress);
       return () => document.removeEventListener("keydown", handleKeyPress);
-    }, [onMarkIn, onMarkOut, onClearMarks, onQuickTag, isPlaying, keyBindings, drawMode]);
+    }, [onMarkIn, onMarkOut, onClearMarks, onQuickTag, isPlaying, keyBindings]);
 
     // Calculate frame duration (assuming 30fps)
     const frameDuration = 1 / 30;
