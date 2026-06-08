@@ -20,6 +20,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     { code: "fr", name: "Français" },
     { code: "de", name: "Deutsch" },
     { code: "it", name: "Italiano" },
+    { code: "sl", name: "Slovenščina" },
+    { code: "sr", name: "Srpski" },
+    { code: "lt", name: "Lietuvių" },
+    { code: "tr", name: "Türkçe" },
+    { code: "el", name: "Ελληνικά" },
   ];
 
   const handleLanguageChange = (languageCode: string) => {
