@@ -335,6 +335,7 @@
 }
 
 .folderBtn,
+.presentBtn,
 .exportBtn {
   height: var(--button-height);
   background: var(--bg-tertiary);
@@ -352,7 +353,8 @@
   white-space: nowrap;
 }
 
-.folderBtn:hover {
+.folderBtn:hover,
+.presentBtn:hover:not(:disabled) {
   background: var(--bg-quaternary);
   border-color: var(--border-color-hover);
   transform: translateY(-1px);
@@ -360,9 +362,16 @@
 }
 
 .folderBtn:focus-visible,
+.presentBtn:focus-visible,
 .exportBtn:focus-visible {
   box-shadow: var(--focus-ring);
   outline: none;
+}
+
+.presentBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .exportBtn {

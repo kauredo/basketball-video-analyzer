@@ -1,0 +1,163 @@
+.presentMode {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-present);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-black);
+}
+
+.videoWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video {
+  max-width: 100%;
+  max-height: 100%;
+  outline: none;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-round);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--text-white);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.closeBtn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.closeBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Bottom gradient overlay holding clip info + transport controls */
+.overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 48px 24px 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85),
+    rgba(0, 0, 0, 0)
+  );
+  pointer-events: none;
+}
+
+.overlay > * {
+  pointer-events: auto;
+}
+
+.clipInfo {
+  min-width: 0;
+}
+
+.counter {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-primary-light);
+  margin-bottom: 4px;
+}
+
+.clipTitle {
+  margin: 0 0 8px;
+  color: var(--text-white);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clipCategories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.categoryTag {
+  padding: 2px 10px;
+  border-radius: var(--radius-round);
+  color: var(--text-white);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.controlBtn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-round);
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-white);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.controlBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.controlBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.controlBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.playBtn {
+  width: 60px;
+  height: 60px;
+  background: var(--color-primary);
+  font-size: var(--font-size-lg);
+}
+
+.playBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.toggleActive {
+  background: var(--color-primary);
+}
+
+.toggleActive:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
