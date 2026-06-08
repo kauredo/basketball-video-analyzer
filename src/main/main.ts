@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol, net } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
-import { pathToFileURL } from "url";
 import fs from "fs";
+import { Readable } from "stream";
 import { spawn } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
@@ -242,6 +242,26 @@ const getClipsDirectory = () => path.join(app.getPath("userData"), "clips");
 
 const getDownloadsDirectory = () => path.join(app.getPath("userData"), "downloads");
 
+// Content types for media served over the custom scheme.
+const MEDIA_CONTENT_TYPES: Record<string, string> = {
+  ".mp4": "video/mp4",
+  ".m4v": "video/x-m4v",
+  ".webm": "video/webm",
+  ".mov": "video/quicktime",
+  ".mkv": "video/x-matroska",
+  ".avi": "video/x-msvideo",
+  ".wmv": "video/x-ms-wmv",
+  ".flv": "video/x-flv",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+};
+const mediaContentType = (filePath: string): string =>
+  MEDIA_CONTENT_TYPES[path.extname(filePath).toLowerCase()] ||
+  "application/octet-stream";
+
 // Resolved real paths already cleared for serving, cached so scrubbing a source
 // video (which fires many Range requests) doesn't re-query the DB each time.
 const allowedMediaPaths = new Set<string>();
@@ -289,7 +309,10 @@ const isAllowedMediaPath = (resolved: string): boolean => {
 app.whenReady().then(() => {
   setupDatabase();
 
-  // Serve local media through the validated custom scheme.
+  // Serve local media through the validated custom scheme. We handle Range
+  // requests explicitly (206 + Content-Range) so <video> can seek — Electron's
+  // net.fetch on file:// does not reliably honour Range, which made scrubbing
+  // snap back to the start.
   protocol.handle(MEDIA_SCHEME, (request) => {
     try {
       const requested = new URL(request.url).searchParams.get("path");
@@ -301,19 +324,57 @@ app.whenReady().then(() => {
       try {
         resolved = fs.realpathSync(resolved);
       } catch {
-        // File may not exist; keep the resolved path and let net.fetch 404.
+        // File may not exist; the statSync below will 404.
       }
       if (!isAllowedMediaPath(resolved)) {
         console.warn("Blocked media request for disallowed path:", resolved);
         return new Response("Forbidden", { status: 403 });
       }
-      // Forward only Range (so <video> can seek); never pass arbitrary
-      // renderer-controlled headers through to the fetch.
-      const range = request.headers.get("range");
-      return net.fetch(
-        pathToFileURL(resolved).toString(),
-        range ? { headers: { Range: range } } : {},
+
+      let size: number;
+      try {
+        size = fs.statSync(resolved).size;
+      } catch {
+        return new Response("Not found", { status: 404 });
+      }
+      const contentType = mediaContentType(resolved);
+
+      const toBody = (stream: fs.ReadStream) =>
+        Readable.toWeb(stream) as unknown as ReadableStream;
+
+      const rangeMatch = /^bytes=(\d*)-(\d*)$/.exec(
+        (request.headers.get("range") || "").trim(),
       );
+      if (rangeMatch) {
+        let start = rangeMatch[1] ? parseInt(rangeMatch[1], 10) : 0;
+        let end = rangeMatch[2] ? parseInt(rangeMatch[2], 10) : size - 1;
+        if (Number.isNaN(start)) start = 0;
+        if (Number.isNaN(end) || end >= size) end = size - 1;
+        if (start > end || start >= size) {
+          return new Response("Range Not Satisfiable", {
+            status: 416,
+            headers: { "Content-Range": `bytes */${size}` },
+          });
+        }
+        return new Response(toBody(fs.createReadStream(resolved, { start, end })), {
+          status: 206,
+          headers: {
+            "Content-Type": contentType,
+            "Content-Length": String(end - start + 1),
+            "Content-Range": `bytes ${start}-${end}/${size}`,
+            "Accept-Ranges": "bytes",
+          },
+        });
+      }
+
+      return new Response(toBody(fs.createReadStream(resolved)), {
+        status: 200,
+        headers: {
+          "Content-Type": contentType,
+          "Content-Length": String(size),
+          "Accept-Ranges": "bytes",
+        },
+      });
     } catch (error) {
       console.error("Error serving media:", error);
       return new Response("Internal error", { status: 500 });
