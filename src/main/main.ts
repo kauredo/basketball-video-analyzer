@@ -45,15 +45,20 @@ import {
   getPresets,
   deletePreset,
 } from "./database";
+import { MEDIA_SCHEME } from "../shared/media";
 
-// Custom scheme used to serve local media (clips, thumbnails, source video)
-// to the renderer without disabling webSecurity. Must be registered before
-// the app is ready.
-const MEDIA_SCHEME = "clip-media";
+// Register the custom media scheme before the app is ready. Privileged so the
+// renderer can load it while webSecurity is on, but it must NOT bypass CSP — it
+// only serves media bytes.
 protocol.registerSchemesAsPrivileged([
   {
     scheme: MEDIA_SCHEME,
-    privileges: { secure: true, standard: true, supportFetchAPI: true, stream: true, bypassCSP: true },
+    privileges: {
+      secure: true,
+      standard: true,
+      supportFetchAPI: true,
+      stream: true,
+    },
   },
 ]);
 
@@ -232,25 +237,83 @@ const createWindow = (): void => {
   createMenu(mainWindow);
 };
 
+// Get clips directory in app's userData folder (always accessible, no perms).
+const getClipsDirectory = () => path.join(app.getPath("userData"), "clips");
+
+const getDownloadsDirectory = () => path.join(app.getPath("userData"), "downloads");
+
+// Resolved real paths already cleared for serving, cached so scrubbing a source
+// video (which fires many Range requests) doesn't re-query the DB each time.
+const allowedMediaPaths = new Set<string>();
+
+// Only serve files the app legitimately references: generated clips/thumbnails
+// (clips dir), downloaded videos (downloads dir), or a source video registered
+// as a project. Everything else is rejected to prevent arbitrary file reads.
+// `resolved` is expected to already be a realpath (symlinks resolved).
+const isAllowedMediaPath = (resolved: string): boolean => {
+  if (allowedMediaPaths.has(resolved)) return true;
+
+  // Compare against the real path of each base dir so a symlinked userData
+  // (or /var -> /private/var on macOS) doesn't cause false negatives.
+  const realDir = (dir: string) => {
+    try {
+      return fs.realpathSync(path.resolve(dir));
+    } catch {
+      return path.resolve(dir);
+    }
+  };
+  const within = (dir: string) => {
+    const base = realDir(dir);
+    return resolved === base || resolved.startsWith(base + path.sep);
+  };
+
+  let allowed = within(getClipsDirectory()) || within(getDownloadsDirectory());
+  if (!allowed) {
+    try {
+      allowed = getProjects().some((project) => {
+        try {
+          return fs.realpathSync(path.resolve(project.video_path)) === resolved;
+        } catch {
+          return path.resolve(project.video_path) === resolved;
+        }
+      });
+    } catch (error) {
+      console.error("Error validating media path:", error);
+      return false;
+    }
+  }
+  if (allowed) allowedMediaPaths.add(resolved);
+  return allowed;
+};
+
 app.whenReady().then(() => {
   setupDatabase();
 
-  // Serve local media through the validated custom scheme. Forwarding request
-  // headers (notably Range) lets <video> seek correctly.
+  // Serve local media through the validated custom scheme.
   protocol.handle(MEDIA_SCHEME, (request) => {
     try {
       const requested = new URL(request.url).searchParams.get("path");
       if (!requested) {
         return new Response("Missing path", { status: 400 });
       }
-      const resolved = path.resolve(requested);
+      // Resolve symlinks so a link planted inside an allowed dir can't escape it.
+      let resolved = path.resolve(requested);
+      try {
+        resolved = fs.realpathSync(resolved);
+      } catch {
+        // File may not exist; keep the resolved path and let net.fetch 404.
+      }
       if (!isAllowedMediaPath(resolved)) {
         console.warn("Blocked media request for disallowed path:", resolved);
         return new Response("Forbidden", { status: 403 });
       }
-      return net.fetch(pathToFileURL(resolved).toString(), {
-        headers: request.headers,
-      });
+      // Forward only Range (so <video> can seek); never pass arbitrary
+      // renderer-controlled headers through to the fetch.
+      const range = request.headers.get("range");
+      return net.fetch(
+        pathToFileURL(resolved).toString(),
+        range ? { headers: { Range: range } } : {},
+      );
     } catch (error) {
       console.error("Error serving media:", error);
       return new Response("Internal error", { status: 500 });
@@ -271,37 +334,6 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
-
-// Get clips directory in app's userData folder
-const getClipsDirectory = () => {
-  // Use userData folder - always accessible, no permissions needed
-  const userDataDir = app.getPath("userData");
-  const clipsDir = path.join(userDataDir, "clips");
-  return clipsDir;
-};
-
-const getDownloadsDirectory = () => path.join(app.getPath("userData"), "downloads");
-
-// Only serve files the app legitimately references: generated clips/thumbnails
-// (clips dir), downloaded videos (downloads dir), or a source video registered
-// as a project. Anything else is rejected to prevent arbitrary file reads.
-const isAllowedMediaPath = (resolved: string): boolean => {
-  const within = (dir: string) => {
-    const base = path.resolve(dir);
-    return resolved === base || resolved.startsWith(base + path.sep);
-  };
-  if (within(getClipsDirectory()) || within(getDownloadsDirectory())) {
-    return true;
-  }
-  try {
-    return getProjects().some(
-      (project) => path.resolve(project.video_path) === resolved,
-    );
-  } catch (error) {
-    console.error("Error validating media path:", error);
-    return false;
-  }
-};
 
 // Pre-flight system checks
 ipcMain.handle("system-check", async () => {

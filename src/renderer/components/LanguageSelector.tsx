@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import styles from "../styles/LanguageSelector.module.css";
 import { useToastContext } from "../contexts/ToastContext";
+import { SUPPORTED_LANGUAGES } from "../../i18n";
 
 interface LanguageSelectorProps {
   className?: string;
@@ -13,19 +14,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const { t, i18n } = useTranslation();
   const { showSuccess } = useToastContext();
 
-  const languages = [
-    { code: "en", name: "English" },
-    { code: "pt", name: "Português (Portugal)" },
-    { code: "es", name: "Español" },
-    { code: "fr", name: "Français" },
-    { code: "de", name: "Deutsch" },
-    { code: "it", name: "Italiano" },
-    { code: "sl", name: "Slovenščina" },
-    { code: "sr", name: "Srpski" },
-    { code: "lt", name: "Lietuvių" },
-    { code: "tr", name: "Türkçe" },
-    { code: "el", name: "Ελληνικά" },
-  ];
+  const languages = SUPPORTED_LANGUAGES.map(({ code, name }) => ({ code, name }));
 
   const handleLanguageChange = (languageCode: string) => {
     const lang = languages.find(l => l.code === languageCode);
@@ -43,7 +32,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       </label>
       <select
         id="language-select"
-        value={i18n.resolvedLanguage || i18n.language}
+        value={i18n.resolvedLanguage || i18n.language?.split("-")[0] || "en"}
         onChange={(e) => handleLanguageChange(e.target.value)}
         className={styles.select}
       >

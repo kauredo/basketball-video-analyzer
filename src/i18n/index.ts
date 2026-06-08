@@ -13,41 +13,26 @@ import lt from "./locales/lt.json";
 import tr from "./locales/tr.json";
 import el from "./locales/el.json";
 
-const resources = {
-  en: {
-    translation: en,
-  },
-  pt: {
-    translation: pt,
-  },
-  es: {
-    translation: es,
-  },
-  fr: {
-    translation: fr,
-  },
-  de: {
-    translation: de,
-  },
-  it: {
-    translation: it,
-  },
-  sl: {
-    translation: sl,
-  },
-  sr: {
-    translation: sr,
-  },
-  lt: {
-    translation: lt,
-  },
-  tr: {
-    translation: tr,
-  },
-  el: {
-    translation: el,
-  },
-};
+// Single source of truth for supported languages. Both the i18next `resources`
+// and the LanguageSelector dropdown derive from this, so adding a locale is a
+// one-line change here.
+export const SUPPORTED_LANGUAGES = [
+  { code: "en", name: "English", translation: en },
+  { code: "pt", name: "Português (Portugal)", translation: pt },
+  { code: "es", name: "Español", translation: es },
+  { code: "fr", name: "Français", translation: fr },
+  { code: "de", name: "Deutsch", translation: de },
+  { code: "it", name: "Italiano", translation: it },
+  { code: "sl", name: "Slovenščina", translation: sl },
+  { code: "sr", name: "Srpski", translation: sr },
+  { code: "lt", name: "Lietuvių", translation: lt },
+  { code: "tr", name: "Türkçe", translation: tr },
+  { code: "el", name: "Ελληνικά", translation: el },
+] as const;
+
+const resources = Object.fromEntries(
+  SUPPORTED_LANGUAGES.map((lang) => [lang.code, { translation: lang.translation }]),
+);
 
 i18n
   .use(LanguageDetector)
