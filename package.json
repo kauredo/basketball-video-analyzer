@@ -1,6 +1,6 @@
 {
   "name": "basketball-video-analyzer",
-  "version": "1.5.6",
+  "version": "1.6.0",
   "description": "Desktop app for cutting and categorizing basketball video clips for team scouting",
   "main": "dist/main/main.js",
   "scripts": {

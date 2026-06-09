@@ -5,6 +5,25 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-06-09
+
+### Added
+
+- **Telestration** — draw arrows, lines, shapes, freehand, and text labels over a paused frame. Save an annotated still, pin a drawing to a moment on the timeline, or burn it into an exported clip. Drag labels to reposition them.
+- **Present mode** — filter clips and play them back to back in fullscreen.
+- **Player tagging** — add a roster, tag who's in each clip, and filter by player.
+- **Stats dashboard** — clip breakdowns by category and by quarter.
+- **9 new languages** — Spanish, French, German, Italian, Slovenian, Serbian, Lithuanian, Turkish, and Greek (11 total, alongside English and Portuguese).
+
+### Changed
+
+- Local media (source video, clips, thumbnails) is now served through a validated `clip-media://` protocol with `webSecurity` enabled, replacing the insecure `webSecurity: false`.
+
+### Fixed
+
+- Timeline seeking no longer snaps back to the start of the video.
+- The timeline panel scrolls vertically, and subcategory rows are tidier in the clips list.
+
 ## [1.5.6] - 2026-05-20
 
 ### Changed
