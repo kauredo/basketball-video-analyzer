@@ -8,6 +8,8 @@
 
 A powerful desktop application designed specifically for basketball coaches and analysts to cut, categorize, and organize video clips across multiple projects with reusable preset templates.
 
+**Website & downloads:** [basketballvideoanalyzer.com](https://basketballvideoanalyzer.com) — free basketball video breakdown software for coaches, with guides on film breakdown, scouting, and using it as a free Hudl alternative.
+
 ![App Screenshot](screenshot.png)
 
 ## 📥 Installation
