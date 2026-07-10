@@ -70,7 +70,11 @@
       "lightMode": "Modalità chiara",
       "languageChanged": "Lingua cambiata in {{language}}",
       "themeChanged": "Passato a {{mode}}",
-      "showInstructions": "Mostra la guida rapida"
+      "showInstructions": "Mostra la guida rapida",
+      "about": "Informazioni",
+      "version": "Versione {{version}}",
+      "viewOnGithub": "Vedi su GitHub",
+      "supportProject": "Sostieni questo progetto"
     },
     "categories": {
       "title": "Gestisci categorie",
@@ -463,6 +467,9 @@
       "errorCreating": "Impossibile aggiungere il giocatore.",
       "errorUpdating": "Impossibile aggiornare il giocatore.",
       "errorDeleting": "Impossibile eliminare il giocatore."
+    },
+    "donation": {
+      "nudge": "Hai esportato più di {{count}} clip con questa app gratuita. Se ti fa risparmiare tempo, trovi un link per offrire un caffè in Impostazioni → Informazioni."
     }
   }
 }

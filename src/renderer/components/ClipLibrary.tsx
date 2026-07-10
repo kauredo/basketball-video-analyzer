@@ -29,6 +29,7 @@ import { useConfirm } from "../contexts/ConfirmContext";
 import { ContextualHint } from "./ContextualHint";
 import { PresentMode } from "./PresentMode";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
+import { DONATION_NUDGE_THRESHOLD } from "../utils/constants";
 import { formatVideoSrc } from "../utils/paths";
 import { Player } from "../../types/global";
 
@@ -77,8 +78,25 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   currentProject,
 }) => {
   const { t } = useTranslation();
-  const { showSuccess, showError, showWarning } = useToastContext();
+  const { showSuccess, showError, showWarning, showInfo } = useToastContext();
   const { confirm } = useConfirm();
+
+  // Track total clips exported; nudge once toward supporting the project after
+  // the user has clearly gotten value from it. Never blocks anything.
+  const recordExportedClips = (count: number) => {
+    const total = loadPref(STORAGE_KEYS.EXPORTED_CLIPS_TOTAL, 0) + count;
+    savePref(STORAGE_KEYS.EXPORTED_CLIPS_TOTAL, total);
+    if (
+      total >= DONATION_NUDGE_THRESHOLD &&
+      !loadPref(STORAGE_KEYS.DONATION_NUDGE_SHOWN, false)
+    ) {
+      savePref(STORAGE_KEYS.DONATION_NUDGE_SHOWN, true);
+      showInfo(
+        t("app.donation.nudge", { count: DONATION_NUDGE_THRESHOLD }),
+        12000
+      );
+    }
+  };
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -272,6 +290,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         showWarning(t("app.clips.exportNoneWarning"));
       } else {
         showSuccess(t("app.clips.exportSuccess", { count: result.count, dir: result.exportDir }));
+        recordExportedClips(result.count);
       }
     } catch (error) {
       console.error("Error exporting clips:", error);
@@ -347,6 +366,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         showWarning(t("app.clips.exportNoneWarning"));
       } else {
         showSuccess(t("app.clips.exportSuccess", { count: result.count, dir: result.exportDir }));
+        recordExportedClips(result.count);
       }
     } catch (error) {
       console.error("Error exporting clips:", error);

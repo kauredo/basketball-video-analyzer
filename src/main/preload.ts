@@ -106,6 +106,8 @@ export interface ElectronAPI {
   // Export clips data
   exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
   exportClipsXml: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
+  openExternal: (url: string) => Promise<boolean>;
+  getAppVersion: () => Promise<string>;
 
   // Session operations
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
@@ -225,6 +227,8 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.invoke("export-clips-data", projectId),
   exportClipsXml: (projectId: number) =>
     ipcRenderer.invoke("export-clips-xml", projectId),
+  openExternal: (url: string) => ipcRenderer.invoke("open-external", url),
+  getAppVersion: () => ipcRenderer.invoke("get-app-version"),
 
   // Session operations
   saveSession: (projectId: number) =>

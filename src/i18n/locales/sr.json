@@ -70,7 +70,11 @@
       "lightMode": "Svetli režim",
       "languageChanged": "Jezik promenjen na {{language}}",
       "themeChanged": "Prebačeno na {{mode}}",
-      "showInstructions": "Prikaži vodič za brzi početak"
+      "showInstructions": "Prikaži vodič za brzi početak",
+      "about": "O programu",
+      "version": "Verzija {{version}}",
+      "viewOnGithub": "Prikaži na GitHubu",
+      "supportProject": "Podrži ovaj projekat"
     },
     "categories": {
       "title": "Upravljanje kategorijama",
@@ -463,6 +467,9 @@
       "errorCreating": "Nije moguće dodati igrača.",
       "errorUpdating": "Nije moguće ažurirati igrača.",
       "errorDeleting": "Nije moguće obrisati igrača."
+    },
+    "donation": {
+      "nudge": "Izvezli ste više od {{count}} klipova sa ovom besplatnom aplikacijom. Ako vam štedi vreme, link za kafu se nalazi u Podešavanja → O programu."
     }
   }
 }

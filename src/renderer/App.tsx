@@ -24,8 +24,11 @@ import {
   faSun,
   faMoon,
   faChartColumn,
+  faHeart,
+  faCode,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./styles/App.module.css";
+import { DONATION_URL, GITHUB_URL } from "./utils/constants";
 import { VideoPlayer } from "./components/VideoPlayer";
 import { CategoryManager } from "./components/CategoryManager";
 import { ClipCreator } from "./components/ClipCreator";
@@ -60,6 +63,7 @@ export const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [appVersion, setAppVersion] = useState("");
   const [showInstructions, setShowInstructions] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -85,6 +89,10 @@ export const App: React.FC = () => {
   const settingsTrapRef = useFocusTrap(showSettings);
   const feedbackTrapRef = useFocusTrap(showFeedback);
   const statsTrapRef = useFocusTrap(showStats);
+
+  useEffect(() => {
+    window.electronAPI.getAppVersion().then(setAppVersion).catch(() => {});
+  }, []);
 
   // Check for existing projects on startup
   useEffect(() => {
@@ -779,6 +787,32 @@ export const App: React.FC = () => {
                   />
                 </div>
               )}
+
+              {/* About Section */}
+              <div className={styles.settingsSection}>
+                <h3 className={styles.settingsSectionTitle}>
+                  {t("app.settings.about")}
+                </h3>
+                <div className={styles.settingsRow}>
+                  <span>{t("app.settings.version", { version: appVersion })}</span>
+                </div>
+                <div className={styles.settingsRow}>
+                  <button
+                    type="button"
+                    className={styles.themeToggle}
+                    onClick={() => window.electronAPI.openExternal(GITHUB_URL)}
+                  >
+                    <FontAwesomeIcon icon={faCode} /> {t("app.settings.viewOnGithub")}
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.themeToggle}
+                    onClick={() => window.electronAPI.openExternal(DONATION_URL)}
+                  >
+                    <FontAwesomeIcon icon={faHeart} /> {t("app.settings.supportProject")}
+                  </button>
+                </div>
+              </div>
 
               {/* Danger Zone Section */}
               <div className={styles.settingsSection}>

@@ -2,9 +2,9 @@
 
 **Professional video analysis tool for basketball coaches and teams**
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/github/v/release/kauredo/basketball-video-analyzer)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
-![License](https://img.shields.io/badge/license-Free%20for%20Teams-green.svg)
+![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
 
 A powerful desktop application designed specifically for basketball coaches and analysts to cut, categorize, and organize video clips across multiple projects with reusable preset templates.
 
@@ -337,6 +337,15 @@ Having issues? We're here to help:
 - **🐛 Bug Reports**: [Create an issue on GitHub](https://github.com/kauredo/basketball-video-analyzer/issues)
 - **💡 Feature Requests**: [Suggest new features](https://github.com/kauredo/basketball-video-analyzer/issues)
 - **📧 Email Support**: contact@basketballvideoanalyzer.com
+
+## ❤️ Support the Project
+
+Basketball Video Analyzer is free and open source, built and maintained by one
+person. If it saves you time on film nights, you can support development:
+
+- **[Buy me a coffee](https://ko-fi.com/kauredo)** — one-off, no account needed
+- **Star the repo** — helps other coaches find it
+- **[Report bugs and request features](https://github.com/kauredo/basketball-video-analyzer/issues)**
 
 ## 🤝 Contributing
 

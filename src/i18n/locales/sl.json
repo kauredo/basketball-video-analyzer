@@ -70,7 +70,11 @@
       "lightMode": "Svetli način",
       "languageChanged": "Jezik spremenjen na {{language}}",
       "themeChanged": "Preklopljeno na {{mode}}",
-      "showInstructions": "Prikaži vodnik za hitri začetek"
+      "showInstructions": "Prikaži vodnik za hitri začetek",
+      "about": "O programu",
+      "version": "Različica {{version}}",
+      "viewOnGithub": "Ogled na GitHubu",
+      "supportProject": "Podpri ta projekt"
     },
     "categories": {
       "title": "Upravljanje kategorij",
@@ -463,6 +467,9 @@
       "errorCreating": "Igralca ni bilo mogoče dodati.",
       "errorUpdating": "Igralca ni bilo mogoče posodobiti.",
       "errorDeleting": "Igralca ni bilo mogoče izbrisati."
+    },
+    "donation": {
+      "nudge": "S to brezplačno aplikacijo ste izvozili več kot {{count}} posnetkov. Če vam prihrani čas, je povezava za kavo na voljo v Nastavitve → O programu."
     }
   }
 }

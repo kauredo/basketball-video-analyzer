@@ -70,7 +70,11 @@
       "lightMode": "Açık Mod",
       "languageChanged": "Dil {{language}} olarak değiştirildi",
       "themeChanged": "{{mode}} moduna geçildi",
-      "showInstructions": "Hızlı başlangıç kılavuzunu göster"
+      "showInstructions": "Hızlı başlangıç kılavuzunu göster",
+      "about": "Hakkında",
+      "version": "Sürüm {{version}}",
+      "viewOnGithub": "GitHub'da görüntüle",
+      "supportProject": "Bu projeyi destekle"
     },
     "categories": {
       "title": "Kategorileri Yönet",
@@ -463,6 +467,9 @@
       "errorCreating": "Oyuncu eklenemedi.",
       "errorUpdating": "Oyuncu güncellenemedi.",
       "errorDeleting": "Oyuncu silinemedi."
+    },
+    "donation": {
+      "nudge": "Bu ücretsiz uygulamayla {{count}}+ klip dışa aktardınız. Zaman kazandırıyorsa, Ayarlar → Hakkında bölümünde bir kahve bağlantısı var."
     }
   }
 }

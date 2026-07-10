@@ -1390,6 +1390,23 @@ ipcMain.handle("getKeyBindings", async () => {
   return getKeyBindings();
 });
 
+const ALLOWED_EXTERNAL_URLS = [
+  "https://github.com/kauredo/basketball-video-analyzer",
+  "https://basketballvideoanalyzer.com",
+  "https://ko-fi.com/kauredo",
+];
+
+ipcMain.handle("open-external", async (_event, url: string) => {
+  const ok = ALLOWED_EXTERNAL_URLS.some(
+    allowed => url === allowed || url.startsWith(allowed + "/")
+  );
+  if (!ok) throw new Error("URL not allowed");
+  await shell.openExternal(url);
+  return true;
+});
+
+ipcMain.handle("get-app-version", () => app.getVersion());
+
 ipcMain.handle(
   "setKeyBinding",
   async (_, { key, value }: { key: keyof KeyBindings; value: string }) => {
