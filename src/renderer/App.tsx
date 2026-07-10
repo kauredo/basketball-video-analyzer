@@ -742,6 +742,19 @@ export const App: React.FC = () => {
                       : t("app.settings.lightMode")}
                   </button>
                 </div>
+                <div className={styles.settingsRow}>
+                  <button
+                    type="button"
+                    className={styles.themeToggle}
+                    onClick={() => {
+                      setShowSettings(false);
+                      setShowInstructions(true);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faQuestionCircle} />{" "}
+                    {t("app.settings.showInstructions")}
+                  </button>
+                </div>
               </div>
 
               {/* Key Bindings Section */}
@@ -788,7 +801,7 @@ export const App: React.FC = () => {
 
       {/* Instructions Modal - only show for first-time users with no projects */}
       <InstructionsModal
-        isOpen={!hasExistingProjects && !videoPath && showInstructions}
+        isOpen={showInstructions}
         onClose={() => {
           setShowInstructions(false);
           savePref(STORAGE_KEYS.ONBOARDING_COMPLETE, true);

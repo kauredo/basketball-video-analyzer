@@ -914,6 +914,15 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 />
               )}
 
+              {markInTime !== null && markOutTime === null && (
+                <ContextualHint
+                  hintId="first-mark-out"
+                  message={t("app.hints.markOutNext", {
+                    markOut: keyBindings.markOutKey.toUpperCase(),
+                  })}
+                />
+              )}
+
               <div className={styles.markControls}>
                 <button
                   type="button"

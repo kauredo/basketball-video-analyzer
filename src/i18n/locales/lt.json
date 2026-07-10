@@ -69,7 +69,8 @@
       "darkMode": "Tamsus režimas",
       "lightMode": "Šviesus režimas",
       "languageChanged": "Kalba pakeista į {{language}}",
-      "themeChanged": "Perjungta į {{mode}}"
+      "themeChanged": "Perjungta į {{mode}}",
+      "showInstructions": "Rodyti greitos pradžios vadovą"
     },
     "categories": {
       "title": "Tvarkyti kategorijas",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "Filtruotuose klipuose kategorijų nerasta.",
       "noProjectLoaded": "Projektas neįkeltas",
       "selectVideoToStart": "Pasirinkite vaizdo įrašo failą, kad pradėtumėte kurti projekto klipus.",
-      "startCuttingClips": "Pradėkite karpyti klipus iš vaizdo įrašo ir kurkite biblioteką",
+      "startCuttingClips": "Paleiskite vaizdo įrašą ir paspauskite Z epizodo pradžioje, M pabaigoje. Pasirinkite kategoriją ir klipas išsaugomas automatiškai.",
       "createClipsInCategory": "Sukurkite klipų su šia kategorija, kad jie čia atsirastų",
       "sharingClips": "Dalijimasis klipais",
       "exportCategoryClips": "Eksportuokite visus „{{category}}“ klipus dalintis su komanda",
@@ -384,11 +385,14 @@
       "legend": "Legenda",
       "selectedClip": "Pasirinktas klipas",
       "currentPosition": "Dabartinė padėtis",
-      "noClipsGuidance": "Pažymėkite pradžios ir pabaigos taškus vaizdo įraše, kad sukurtumėte pirmąjį klipą."
+      "noClipsGuidance": "Grojant vaizdo įrašui paspauskite Z, kad pažymėtumėte klipo pradžią, tada M, kad jį užbaigtumėte."
     },
     "hints": {
       "markKeys": "Paspauskite {{markIn}}, kad pažymėtumėte klipo pradžią, ir {{markOut}}, kad pažymėtumėte pabaigą.",
-      "firstClip": "Jūsų klipai rodomi čia. Naudokite kategorijas jiems tvarkyti."
+      "firstClip": "Jūsų klipai rodomi čia. Naudokite kategorijas jiems tvarkyti.",
+      "dismiss": "Atmesti patarimą",
+      "markOutNext": "Pradžia pažymėta. Dabar paspauskite {{markOut}} ten, kur baigiasi epizodas, kad sukurtumėte klipą.",
+      "firstExport": "Dabar turite keletą klipų. Naudokite mygtuką Eksportuoti viršuje, kad išsaugotumėte juos kategorijų aplankuose."
     },
     "feedback": {
       "type": "Kokio tipo atsiliepimas?",

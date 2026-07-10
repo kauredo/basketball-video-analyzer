@@ -69,7 +69,8 @@
       "darkMode": "Mode sombre",
       "lightMode": "Mode clair",
       "languageChanged": "Langue changée en {{language}}",
-      "themeChanged": "Basculé en {{mode}}"
+      "themeChanged": "Basculé en {{mode}}",
+      "showInstructions": "Afficher le guide de démarrage rapide"
     },
     "categories": {
       "title": "Gérer les catégories",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "Aucune catégorie trouvée dans les clips filtrés.",
       "noProjectLoaded": "Aucun projet chargé",
       "selectVideoToStart": "Sélectionnez un fichier vidéo pour commencer à créer des clips pour un projet.",
-      "startCuttingClips": "Commencez à découper des clips de votre vidéo pour constituer votre bibliothèque",
+      "startCuttingClips": "Lisez la vidéo et appuyez sur Z au début d'une action, M à la fin. Choisissez une catégorie et le clip s'enregistre tout seul.",
       "createClipsInCategory": "Créez des clips avec cette catégorie pour les voir ici",
       "sharingClips": "Partage des clips",
       "exportCategoryClips": "Exportez tous les clips « {{category}} » pour les partager avec votre équipe",
@@ -384,11 +385,14 @@
       "legend": "Légende",
       "selectedClip": "Clip sélectionné",
       "currentPosition": "Position actuelle",
-      "noClipsGuidance": "Marquez les points d'entrée/sortie sur la vidéo pour créer votre premier clip."
+      "noClipsGuidance": "Appuyez sur Z pendant la lecture de la vidéo pour marquer le début d'un clip, puis M pour le terminer."
     },
     "hints": {
       "markKeys": "Appuyez sur {{markIn}} pour marquer le début d'un clip, {{markOut}} pour marquer la fin.",
-      "firstClip": "Vos clips apparaissent ici. Utilisez les catégories pour les organiser."
+      "firstClip": "Vos clips apparaissent ici. Utilisez les catégories pour les organiser.",
+      "dismiss": "Ignorer l'astuce",
+      "markOutNext": "Début marqué. Appuyez maintenant sur {{markOut}} à la fin de l'action pour créer le clip.",
+      "firstExport": "Vous avez maintenant quelques clips. Utilisez le bouton Exporter ci-dessus pour les enregistrer dans des dossiers par catégorie."
     },
     "feedback": {
       "type": "Quel type de retour ?",

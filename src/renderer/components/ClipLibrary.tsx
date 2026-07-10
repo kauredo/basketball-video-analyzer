@@ -759,6 +759,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
               />
             )}
 
+            {/* Nudge toward exporting once a few clips exist */}
+            {clips.length >= 3 && (
+              <ContextualHint
+                hintId="first-export"
+                message={t("app.hints.firstExport")}
+              />
+            )}
+
             {/* Clips Grid */}
             <div className={styles.clipsGrid}>
               {sortedClips.length === 0 ? (

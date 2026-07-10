@@ -69,7 +69,8 @@
       "darkMode": "Tamni režim",
       "lightMode": "Svetli režim",
       "languageChanged": "Jezik promenjen na {{language}}",
-      "themeChanged": "Prebačeno na {{mode}}"
+      "themeChanged": "Prebačeno na {{mode}}",
+      "showInstructions": "Prikaži vodič za brzi početak"
     },
     "categories": {
       "title": "Upravljanje kategorijama",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "Nema kategorija u filtriranim klipovima.",
       "noProjectLoaded": "Nije učitan projekat",
       "selectVideoToStart": "Izaberite video fajl da počnete sa pravljenjem klipova za projekat.",
-      "startCuttingClips": "Počnite da sečete klipove iz snimka da izgradite svoju biblioteku",
+      "startCuttingClips": "Pustite snimak i pritisnite Z na početku akcije, M na kraju. Izaberite kategoriju i klip se sam čuva.",
       "createClipsInCategory": "Napravite klipove sa ovom kategorijom da biste ih videli ovde",
       "sharingClips": "Deljenje klipova",
       "exportCategoryClips": "Izvezite sve klipove iz kategorije „{{category}}“ da ih podelite sa timom",
@@ -384,11 +385,14 @@
       "legend": "Legenda",
       "selectedClip": "Izabrani klip",
       "currentPosition": "Trenutna pozicija",
-      "noClipsGuidance": "Postavite početnu/završnu tačku na snimku da napravite prvi klip."
+      "noClipsGuidance": "Pritisnite Z dok se snimak reprodukuje da označite početak klipa, a zatim M da ga završite."
     },
     "hints": {
       "markKeys": "Pritisnite {{markIn}} da označite početak klipa, {{markOut}} da označite kraj.",
-      "firstClip": "Vaši klipovi se pojavljuju ovde. Koristite kategorije da ih organizujete."
+      "firstClip": "Vaši klipovi se pojavljuju ovde. Koristite kategorije da ih organizujete.",
+      "dismiss": "Odbaci savet",
+      "markOutNext": "Početak označen. Sada pritisnite {{markOut}} tamo gde se akcija završava da napravite klip.",
+      "firstExport": "Sada imate nekoliko klipova. Koristite dugme Izvezi iznad da ih sačuvate u fascikle po kategorijama."
     },
     "feedback": {
       "type": "Kakva povratna informacija?",

@@ -69,7 +69,8 @@
       "darkMode": "Modo oscuro",
       "lightMode": "Modo claro",
       "languageChanged": "Idioma cambiado a {{language}}",
-      "themeChanged": "Cambiado a {{mode}}"
+      "themeChanged": "Cambiado a {{mode}}",
+      "showInstructions": "Mostrar guía de inicio rápido"
     },
     "categories": {
       "title": "Gestionar categorías",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "No se han encontrado categorías en los clips filtrados.",
       "noProjectLoaded": "Ningún proyecto cargado",
       "selectVideoToStart": "Selecciona un archivo de vídeo para empezar a crear clips de un proyecto.",
-      "startCuttingClips": "Empieza a cortar clips de tu vídeo para crear tu biblioteca",
+      "startCuttingClips": "Reproduce el vídeo y pulsa Z al inicio de una jugada y M al final. Elige una categoría y el clip se guarda solo.",
       "createClipsInCategory": "Crea clips con esta categoría para verlos aquí",
       "sharingClips": "Compartir clips",
       "exportCategoryClips": "Exporta todos los clips de \"{{category}}\" para compartirlos con tu equipo",
@@ -384,11 +385,14 @@
       "legend": "Leyenda",
       "selectedClip": "Clip seleccionado",
       "currentPosition": "Posición actual",
-      "noClipsGuidance": "Marca los puntos de inicio y fin en el vídeo para crear tu primer clip."
+      "noClipsGuidance": "Pulsa Z mientras se reproduce el vídeo para marcar el inicio de un clip y M para terminarlo."
     },
     "hints": {
       "markKeys": "Pulsa {{markIn}} para marcar el inicio de un clip y {{markOut}} para marcar el fin.",
-      "firstClip": "Tus clips aparecen aquí. Usa las categorías para organizarlos."
+      "firstClip": "Tus clips aparecen aquí. Usa las categorías para organizarlos.",
+      "dismiss": "Descartar sugerencia",
+      "markOutNext": "Inicio marcado. Ahora pulsa {{markOut}} donde termina la jugada para crear el clip.",
+      "firstExport": "Ya tienes algunos clips. Usa el botón Exportar de arriba para guardarlos en carpetas por categoría."
     },
     "feedback": {
       "type": "¿Qué tipo de comentario?",

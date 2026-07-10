@@ -69,7 +69,8 @@
       "darkMode": "Modalità scura",
       "lightMode": "Modalità chiara",
       "languageChanged": "Lingua cambiata in {{language}}",
-      "themeChanged": "Passato a {{mode}}"
+      "themeChanged": "Passato a {{mode}}",
+      "showInstructions": "Mostra la guida rapida"
     },
     "categories": {
       "title": "Gestisci categorie",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "Nessuna categoria trovata nelle clip filtrate.",
       "noProjectLoaded": "Nessun progetto caricato",
       "selectVideoToStart": "Seleziona un file video per iniziare a creare clip per un progetto.",
-      "startCuttingClips": "Inizia a tagliare clip dal tuo video per costruire la libreria",
+      "startCuttingClips": "Riproduci il video e premi Z all'inizio di un'azione, M alla fine. Scegli una categoria e la clip si salva da sola.",
       "createClipsInCategory": "Crea clip con questa categoria per vederle qui",
       "sharingClips": "Condivisione clip",
       "exportCategoryClips": "Esporta tutte le clip \"{{category}}\" per condividerle con la squadra",
@@ -384,11 +385,14 @@
       "legend": "Legenda",
       "selectedClip": "Clip selezionata",
       "currentPosition": "Posizione attuale",
-      "noClipsGuidance": "Segna i punti di inizio/fine sul video per creare la tua prima clip."
+      "noClipsGuidance": "Premi Z mentre il video è in riproduzione per segnare l'inizio di una clip, poi M per terminarla."
     },
     "hints": {
       "markKeys": "Premi {{markIn}} per segnare l'inizio di una clip, {{markOut}} per segnare la fine.",
-      "firstClip": "Le tue clip appaiono qui. Usa le categorie per organizzarle."
+      "firstClip": "Le tue clip appaiono qui. Usa le categorie per organizzarle.",
+      "dismiss": "Ignora suggerimento",
+      "markOutNext": "Inizio segnato. Ora premi {{markOut}} dove finisce l'azione per creare la clip.",
+      "firstExport": "Ora hai alcune clip. Usa il pulsante Esporta qui sopra per salvarle in cartelle per categoria."
     },
     "feedback": {
       "type": "Che tipo di feedback?",
