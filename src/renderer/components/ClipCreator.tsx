@@ -457,7 +457,9 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         >
           <FontAwesomeIcon icon={faLocationPin} />{" "}
           {t("app.clips.creator.shotLocation")}
-          {courtPos && ` ✓`}
+          {courtPos && (
+            <span className={styles.selectedIndicator}> ✓</span>
+          )}
         </button>
         {showCourtPicker && (
           <div className={styles.courtPicker}>
