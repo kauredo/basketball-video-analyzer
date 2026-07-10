@@ -244,6 +244,7 @@
     "telestration": {
       "title": "Drawing tools",
       "draw": "Draw on video",
+      "replayToggle": "Show saved drawings during playback",
       "done": "Done drawing",
       "undo": "Undo",
       "clear": "Clear all",

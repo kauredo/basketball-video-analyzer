@@ -244,6 +244,7 @@
     "telestration": {
       "title": "Orodja za risanje",
       "draw": "Riši po videu",
+      "replayToggle": "Prikaži shranjene risbe med predvajanjem",
       "done": "Končaj risanje",
       "undo": "Razveljavi",
       "clear": "Počisti vse",

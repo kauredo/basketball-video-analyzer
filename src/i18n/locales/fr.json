@@ -244,6 +244,7 @@
     "telestration": {
       "title": "Outils de dessin",
       "draw": "Dessiner sur la vidéo",
+      "replayToggle": "Afficher les dessins enregistrés pendant la lecture",
       "done": "Terminer le dessin",
       "undo": "Annuler",
       "clear": "Tout effacer",

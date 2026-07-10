@@ -244,6 +244,7 @@
     "telestration": {
       "title": "Piešimo įrankiai",
       "draw": "Piešti ant vaizdo įrašo",
+      "replayToggle": "Rodyti išsaugotus piešinius atkūrimo metu",
       "done": "Baigti piešti",
       "undo": "Atšaukti",
       "clear": "Išvalyti viską",

@@ -244,6 +244,7 @@
     "telestration": {
       "title": "Strumenti di disegno",
       "draw": "Disegna sul video",
+      "replayToggle": "Mostra i disegni salvati durante la riproduzione",
       "done": "Fine disegno",
       "undo": "Annulla",
       "clear": "Cancella tutto",

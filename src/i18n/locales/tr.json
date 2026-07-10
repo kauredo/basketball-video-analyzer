@@ -244,6 +244,7 @@
     "telestration": {
       "title": "Çizim araçları",
       "draw": "Video üzerine çiz",
+      "replayToggle": "Oynatma sırasında kaydedilmiş çizimleri göster",
       "done": "Çizimi bitir",
       "undo": "Geri al",
       "clear": "Tümünü temizle",

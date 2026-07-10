@@ -244,6 +244,7 @@
     "telestration": {
       "title": "Alatke za crtanje",
       "draw": "Crtaj po videu",
+      "replayToggle": "Prikaži sačuvane crteže tokom reprodukcije",
       "done": "Završi crtanje",
       "undo": "Poništi",
       "clear": "Obriši sve",

@@ -244,6 +244,7 @@
     "telestration": {
       "title": "Herramientas de dibujo",
       "draw": "Dibujar sobre el vídeo",
+      "replayToggle": "Mostrar dibujos guardados durante la reproducción",
       "done": "Finalizar dibujo",
       "undo": "Deshacer",
       "clear": "Borrar todo",

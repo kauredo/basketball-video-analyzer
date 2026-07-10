@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   CLIP_SORT_BY: "clipSortBy",
   CLIP_SORT_ORDER: "clipSortOrder",
   ONBOARDING_COMPLETE: "onboardingComplete",
+  ANNOTATION_REPLAY: "annotationReplay",
 } as const;
 
 export function loadPref<T>(key: string, fallback: T): T {
