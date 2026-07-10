@@ -70,7 +70,11 @@
       "lightMode": "Light Mode",
       "languageChanged": "Language changed to {{language}}",
       "themeChanged": "Switched to {{mode}}",
-      "showInstructions": "Show quick start guide"
+      "showInstructions": "Show quick start guide",
+      "about": "About",
+      "version": "Version {{version}}",
+      "viewOnGithub": "View on GitHub",
+      "supportProject": "Support this project"
     },
     "categories": {
       "title": "Manage Categories",
@@ -463,6 +467,9 @@
       "errorCreating": "Could not add player.",
       "errorUpdating": "Could not update player.",
       "errorDeleting": "Could not delete player."
+    },
+    "donation": {
+      "nudge": "You've exported {{count}}+ clips with this free app. If it saves you time, there's a coffee link in Settings → About."
     }
   }
 }

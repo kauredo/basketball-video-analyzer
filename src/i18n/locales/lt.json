@@ -70,7 +70,11 @@
       "lightMode": "Šviesus režimas",
       "languageChanged": "Kalba pakeista į {{language}}",
       "themeChanged": "Perjungta į {{mode}}",
-      "showInstructions": "Rodyti greitos pradžios vadovą"
+      "showInstructions": "Rodyti greitos pradžios vadovą",
+      "about": "Apie",
+      "version": "Versija {{version}}",
+      "viewOnGithub": "Peržiūrėti GitHub",
+      "supportProject": "Paremti šį projektą"
     },
     "categories": {
       "title": "Tvarkyti kategorijas",
@@ -463,6 +467,9 @@
       "errorCreating": "Nepavyko pridėti žaidėjo.",
       "errorUpdating": "Nepavyko atnaujinti žaidėjo.",
       "errorDeleting": "Nepavyko ištrinti žaidėjo."
+    },
+    "donation": {
+      "nudge": "Su šia nemokama programa eksportavote daugiau nei {{count}} klipų. Jei ji taupo jūsų laiką, nuorodą kavai rasite Nustatymai → Apie."
     }
   }
 }

@@ -70,7 +70,11 @@
       "lightMode": "Heller Modus",
       "languageChanged": "Sprache geändert zu {{language}}",
       "themeChanged": "Gewechselt zu {{mode}}",
-      "showInstructions": "Schnellstart-Anleitung anzeigen"
+      "showInstructions": "Schnellstart-Anleitung anzeigen",
+      "about": "Über",
+      "version": "Version {{version}}",
+      "viewOnGithub": "Auf GitHub ansehen",
+      "supportProject": "Dieses Projekt unterstützen"
     },
     "categories": {
       "title": "Kategorien verwalten",
@@ -463,6 +467,9 @@
       "errorCreating": "Spieler konnte nicht hinzugefügt werden.",
       "errorUpdating": "Spieler konnte nicht aktualisiert werden.",
       "errorDeleting": "Spieler konnte nicht gelöscht werden."
+    },
+    "donation": {
+      "nudge": "Du hast mit dieser kostenlosen App bereits über {{count}} Clips exportiert. Wenn sie dir Zeit spart, findest du unter Einstellungen → Über einen Link für einen Kaffee."
     }
   }
 }

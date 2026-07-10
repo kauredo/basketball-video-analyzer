@@ -70,7 +70,11 @@
       "lightMode": "Mode clair",
       "languageChanged": "Langue changée en {{language}}",
       "themeChanged": "Basculé en {{mode}}",
-      "showInstructions": "Afficher le guide de démarrage rapide"
+      "showInstructions": "Afficher le guide de démarrage rapide",
+      "about": "À propos",
+      "version": "Version {{version}}",
+      "viewOnGithub": "Voir sur GitHub",
+      "supportProject": "Soutenir ce projet"
     },
     "categories": {
       "title": "Gérer les catégories",
@@ -463,6 +467,9 @@
       "errorCreating": "Impossible d'ajouter le joueur.",
       "errorUpdating": "Impossible de mettre à jour le joueur.",
       "errorDeleting": "Impossible de supprimer le joueur."
+    },
+    "donation": {
+      "nudge": "Vous avez exporté plus de {{count}} clips avec cette application gratuite. Si elle vous fait gagner du temps, un lien pour offrir un café se trouve dans Réglages → À propos."
     }
   }
 }
