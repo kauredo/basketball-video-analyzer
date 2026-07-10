@@ -1436,6 +1436,9 @@ ipcMain.handle(
       const categories = getCategories(projectId);
       const categoryMap = new Map<number, string>();
       categories.forEach(cat => categoryMap.set(cat.id!, cat.name));
+      const players = getPlayers(projectId);
+      const playerMap = new Map<number, string>();
+      players.forEach(p => playerMap.set(p.id!, p.name));
 
       const ext = path.extname(result.filePath).toLowerCase();
       if (ext !== ".csv" && ext !== ".json") {
@@ -1444,12 +1447,18 @@ ipcMain.handle(
       const isCSV = ext === ".csv";
 
       if (isCSV) {
-        const header = "Title,Categories,Start Time,End Time,Duration,Notes,Created At";
+        const header = "Title,Categories,Players,Quarter,Start Time,End Time,Duration,Notes,Created At";
         const rows = clips.map(clip => {
           let categoryNames: string[] = [];
           try {
             const ids = JSON.parse(clip.categories) as number[];
             categoryNames = ids.map(id => categoryMap.get(id) || "Unknown");
+          } catch { /* empty */ }
+
+          let playerNames: string[] = [];
+          try {
+            const ids = JSON.parse(clip.players || "[]") as number[];
+            playerNames = ids.map(id => playerMap.get(id) || "Unknown");
           } catch { /* empty */ }
 
           const escapeCsv = (val: string) => {
@@ -1463,6 +1472,8 @@ ipcMain.handle(
           return [
             escapeCsv(clip.title),
             escapeCsv(categoryNames.join("; ")),
+            escapeCsv(playerNames.join("; ")),
+            escapeCsv(clip.quarter || ""),
             clip.start_time.toFixed(2),
             clip.end_time.toFixed(2),
             clip.duration.toFixed(2),
@@ -1480,9 +1491,17 @@ ipcMain.handle(
             categoryNames = ids.map(id => categoryMap.get(id) || "Unknown");
           } catch { /* empty */ }
 
+          let playerNames: string[] = [];
+          try {
+            const ids = JSON.parse(clip.players || "[]") as number[];
+            playerNames = ids.map(id => playerMap.get(id) || "Unknown");
+          } catch { /* empty */ }
+
           return {
             title: clip.title,
             categories: categoryNames,
+            players: playerNames,
+            quarter: clip.quarter || null,
             start_time: clip.start_time,
             end_time: clip.end_time,
             duration: clip.duration,
@@ -1533,11 +1552,25 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
       return result;
     });
 
+    const projectPlayers = getPlayers(projectId);
+    const playerMap = new Map<number, string>();
+    projectPlayers.forEach(p => {
+      if (p.id) playerMap.set(p.id, p.name);
+    });
+
     const exportClips = clips.map(clip => {
       let categoryNames: string[] = [];
       try {
         const ids = JSON.parse(clip.categories) as number[];
         categoryNames = ids.map(id => categoryMap.get(id) || "Unknown");
+      } catch { /* empty */ }
+
+      let playerNames: string[] = [];
+      try {
+        const ids = JSON.parse(clip.players || "[]") as number[];
+        playerNames = ids
+          .map(id => playerMap.get(id))
+          .filter((n): n is string => Boolean(n));
       } catch { /* empty */ }
 
       return {
@@ -1546,18 +1579,24 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
         endTime: clip.end_time,
         duration: clip.duration,
         categories: categoryNames,
+        players: playerNames,
+        quarter: clip.quarter || null,
         notes: clip.notes || "",
       };
     });
 
     const sessionData = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       project: {
         name: project.name,
         videoName: project.video_name,
         description: project.description || "",
       },
+      players: projectPlayers.map(p => ({
+        name: p.name,
+        number: p.number || "",
+      })),
       categories: exportCategories,
       clips: exportClips,
     };
@@ -1649,11 +1688,30 @@ ipcMain.handle("load-session", async () => {
       }
     }
 
+    // Step 4b: Create players (v2 sessions only) and map names to new IDs
+    const playerNameToId = new Map<string, number>();
+    if (Array.isArray(sessionData.players)) {
+      for (const p of sessionData.players) {
+        const created = createPlayer({
+          name: p.name,
+          number: p.number || null,
+          project_id: project.id as number,
+        });
+        if (created.id) playerNameToId.set(p.name, created.id);
+      }
+    }
+
     // Step 5: Create clip metadata
     for (const clip of sessionData.clips) {
       const categoryIds = clip.categories
         .map((name: string) => categoryNameToId.get(name))
         .filter((id: number | undefined): id is number => id !== undefined);
+
+      const playerIds = Array.isArray(clip.players)
+        ? clip.players
+            .map((name: string) => playerNameToId.get(name))
+            .filter((id: number | undefined): id is number => id !== undefined)
+        : [];
 
       createClip({
         project_id: project.id as number,
@@ -1665,6 +1723,8 @@ ipcMain.handle("load-session", async () => {
         duration: clip.duration,
         title: clip.title,
         categories: JSON.stringify(categoryIds),
+        players: JSON.stringify(playerIds),
+        quarter: clip.quarter ?? null,
         notes: clip.notes || undefined,
       });
     }
