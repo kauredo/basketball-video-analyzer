@@ -9,6 +9,12 @@ const API = `https://api.github.com/repos/${OWNER}/${REPO}/releases?per_page=100
 
 const classify = name => {
   const n = name.toLowerCase();
+  // Auto-updater manifests and metadata (RELEASES, latest*.yml, *.blockmap) are
+  // fetched every few hours by every install, not user downloads. Bucket them
+  // all as "other" first, before the platform checks — otherwise latest.yml /
+  // latest-mac.yml fall through to "other" while latest-linux.yml matches the
+  // /linux/ check and inflates the Linux count, skewing the platform split.
+  if (n === "releases" || n.endsWith(".yml") || n.endsWith(".blockmap")) return "other";
   if (/\.(exe|nupkg|msi)$/.test(n) || /win32|windows|setup/.test(n)) return "windows";
   if (/\.dmg$/.test(n) || (/\.zip$/.test(n) && /darwin|mac/.test(n))) return "mac";
   if (/\.(deb|rpm|appimage)$/.test(n) || /linux/.test(n)) return "linux";
