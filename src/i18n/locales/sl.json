@@ -188,6 +188,7 @@
       "exportDataSuccess": "Izvoženi podatki za {{count}} posnetkov v {{path}}",
       "exportDataError": "Napaka pri izvozu podatkov posnetkov",
       "saveSession": "Shrani sejo",
+      "exportSportscode": "Izvozi XML Sportscode",
       "saveSessionSuccess": "Analitska seja je bila uspešno shranjena",
       "saveSessionError": "Napaka pri shranjevanju analitske seje",
       "quickTagCreated": "Posnetek ustvarjen: {{category}}",

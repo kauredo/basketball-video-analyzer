@@ -188,6 +188,7 @@
       "exportDataSuccess": "Izvezeno {{count}} klip(ova) podataka u {{path}}",
       "exportDataError": "Greška pri izvozu podataka o klipovima",
       "saveSession": "Sačuvaj sesiju",
+      "exportSportscode": "Izvezi Sportscode XML",
       "saveSessionSuccess": "Analitička sesija uspešno sačuvana",
       "saveSessionError": "Greška pri čuvanju analitičke sesije",
       "quickTagCreated": "Klip napravljen: {{category}}",

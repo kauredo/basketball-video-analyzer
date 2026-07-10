@@ -188,6 +188,7 @@
       "exportDataSuccess": "Eksportuoti {{count}} klipų duomenys į {{path}}",
       "exportDataError": "Klaida eksportuojant klipų duomenis",
       "saveSession": "Išsaugoti sesiją",
+      "exportSportscode": "Eksportuoti Sportscode XML",
       "saveSessionSuccess": "Analizės sesija sėkmingai išsaugota",
       "saveSessionError": "Klaida išsaugant analizės sesiją",
       "quickTagCreated": "Klipas sukurtas: {{category}}",

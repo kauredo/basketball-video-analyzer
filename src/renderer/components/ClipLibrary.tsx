@@ -20,6 +20,7 @@ import {
   faTable,
   faVideo as faVideoFile,
   faFloppyDisk,
+  faFileCode,
   faPlayCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
@@ -372,6 +373,23 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
   };
 
+  const handleExportXml = async () => {
+    if (!currentProject) return;
+
+    try {
+      setIsExporting(true);
+      const result = await window.electronAPI.exportClipsXml(currentProject.id);
+      if (result) {
+        showSuccess(t("app.clips.exportDataSuccess", { count: result.count, path: result.filePath }));
+      }
+    } catch (error) {
+      console.error("Error exporting Sportscode XML:", error);
+      showError(t("app.clips.exportDataError"));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleSaveSession = async () => {
     if (!currentProject) return;
 
@@ -509,6 +527,18 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 >
                   <FontAwesomeIcon icon={faFloppyDisk} />
                   {t("app.clips.saveSession")}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={styles.exportMenuItem}
+                  onClick={() => {
+                    setExportMenuOpen(false);
+                    handleExportXml();
+                  }}
+                >
+                  <FontAwesomeIcon icon={faFileCode} />
+                  {t("app.clips.exportSportscode")}
                 </button>
               </div>
             )}

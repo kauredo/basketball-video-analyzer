@@ -188,6 +188,7 @@
       "exportDataSuccess": "Se han exportado los datos de {{count}} clip(s) a {{path}}",
       "exportDataError": "Error al exportar los datos de los clips",
       "saveSession": "Guardar sesión",
+      "exportSportscode": "Exportar XML de Sportscode",
       "saveSessionSuccess": "Sesión de análisis guardada correctamente",
       "saveSessionError": "Error al guardar la sesión de análisis",
       "quickTagCreated": "Clip creado: {{category}}",
