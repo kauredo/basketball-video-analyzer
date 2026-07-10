@@ -193,6 +193,8 @@
       "quickTagCreated": "Clip created: {{category}}",
       "quickTagNoMarks": "Set mark in and mark out first",
       "creator": {
+        "shotLocation": "Shot location (optional)",
+        "clearLocation": "Clear location",
         "quarter": "Quarter",
         "title": "Clip Title",
         "titlePlaceholder": "Enter clip title (optional)",
@@ -426,6 +428,14 @@
       "autoAdvance": "Auto-advance to next clip"
     },
     "stats": {
+      "tabOverview": "Overview",
+      "tabShotChart": "Shot chart",
+      "filterPlayer": "Player",
+      "filterQuarter": "Quarter",
+      "filterCategory": "Category",
+      "allOption": "All",
+      "unlocatedCount": "{{count}} clip(s) have no location",
+      "noLocatedClips": "No clips with a shot location yet. Set one in the clip editor.",
       "title": "Statistics",
       "stats": "Stats",
       "noData": "No clips yet. Create some clips to see statistics.",

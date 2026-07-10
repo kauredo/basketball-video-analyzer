@@ -193,6 +193,8 @@
       "quickTagCreated": "Clip erstellt: {{category}}",
       "quickTagNoMarks": "Zuerst Anfang und Ende setzen",
       "creator": {
+        "shotLocation": "Wurfposition (optional)",
+        "clearLocation": "Position löschen",
         "quarter": "Viertel",
         "title": "Clip-Titel",
         "titlePlaceholder": "Clip-Titel eingeben (optional)",
@@ -426,6 +428,14 @@
       "autoAdvance": "Automatisch zum nächsten Clip"
     },
     "stats": {
+      "tabOverview": "Übersicht",
+      "tabShotChart": "Wurfkarte",
+      "filterPlayer": "Spieler",
+      "filterQuarter": "Viertel",
+      "filterCategory": "Kategorie",
+      "allOption": "Alle",
+      "unlocatedCount": "{{count}} Clip(s) ohne Position",
+      "noLocatedClips": "Noch keine Clips mit Wurfposition. Lege eine im Clip-Editor fest.",
       "title": "Statistik",
       "stats": "Statistik",
       "noData": "Noch keine Clips. Erstelle Clips, um Statistiken zu sehen.",

@@ -184,6 +184,8 @@
       "quickTagCreated": "Clip criado: {{category}}",
       "quickTagNoMarks": "Defina os pontos de entrada e saída primeiro",
       "creator": {
+        "shotLocation": "Localização do lançamento (opcional)",
+        "clearLocation": "Limpar localização",
         "quarter": "Período",
         "title": "Título do Clip",
         "titlePlaceholder": "Introduza o título do clip (opcional)",
@@ -417,6 +419,14 @@
       "autoAdvance": "Avançar automaticamente para o próximo clip"
     },
     "stats": {
+      "tabOverview": "Resumo",
+      "tabShotChart": "Mapa de lançamentos",
+      "filterPlayer": "Jogador",
+      "filterQuarter": "Período",
+      "filterCategory": "Categoria",
+      "allOption": "Todos",
+      "unlocatedCount": "{{count}} clipe(s) sem localização",
+      "noLocatedClips": "Ainda não há clipes com localização. Defina-a no editor de clipes.",
       "title": "Estatísticas",
       "stats": "Estatísticas",
       "noData": "Ainda não há clips. Crie alguns clips para ver estatísticas.",

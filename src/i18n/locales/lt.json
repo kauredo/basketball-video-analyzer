@@ -193,6 +193,8 @@
       "quickTagCreated": "Klipas sukurtas: {{category}}",
       "quickTagNoMarks": "Pirma pažymėkite pradžią ir pabaigą",
       "creator": {
+        "shotLocation": "Metimo vieta (nebūtina)",
+        "clearLocation": "Išvalyti vietą",
         "quarter": "Kėlinys",
         "title": "Klipo pavadinimas",
         "titlePlaceholder": "Įveskite klipo pavadinimą (nebūtina)",
@@ -426,6 +428,14 @@
       "autoAdvance": "Automatiškai pereiti prie kito klipo"
     },
     "stats": {
+      "tabOverview": "Apžvalga",
+      "tabShotChart": "Metimų žemėlapis",
+      "filterPlayer": "Žaidėjas",
+      "filterQuarter": "Kėlinys",
+      "filterCategory": "Kategorija",
+      "allOption": "Visi",
+      "unlocatedCount": "{{count}} klipų be vietos",
+      "noLocatedClips": "Dar nėra klipų su metimo vieta. Nustatykite ją klipų redaktoriuje.",
       "title": "Statistika",
       "stats": "Statistika",
       "noData": "Klipų dar nėra. Sukurkite klipų, kad pamatytumėte statistiką.",

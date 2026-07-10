@@ -434,3 +434,57 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
 }
+
+.courtSection {
+  margin-bottom: var(--spacing-md);
+}
+
+.courtToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.courtToggle:hover {
+  border-color: var(--border-color-hover);
+}
+
+.courtToggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.courtPicker {
+  margin-top: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.courtClear {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.courtClear:hover {
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
+}
+
+.courtClear:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

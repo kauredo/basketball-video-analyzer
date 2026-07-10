@@ -193,6 +193,8 @@
       "quickTagCreated": "Posnetek ustvarjen: {{category}}",
       "quickTagNoMarks": "Najprej nastavite začetno in končno oznako",
       "creator": {
+        "shotLocation": "Lokacija meta (neobvezno)",
+        "clearLocation": "Počisti lokacijo",
         "quarter": "Četrtina",
         "title": "Naslov posnetka",
         "titlePlaceholder": "Vnesite naslov posnetka (neobvezno)",
@@ -426,6 +428,14 @@
       "autoAdvance": "Samodejni prehod na naslednji posnetek"
     },
     "stats": {
+      "tabOverview": "Pregled",
+      "tabShotChart": "Zemljevid metov",
+      "filterPlayer": "Igralec",
+      "filterQuarter": "Četrtina",
+      "filterCategory": "Kategorija",
+      "allOption": "Vse",
+      "unlocatedCount": "{{count}} posnetkov brez lokacije",
+      "noLocatedClips": "Še ni posnetkov z lokacijo meta. Nastavite jo v urejevalniku posnetkov.",
       "title": "Statistika",
       "stats": "Statistika",
       "noData": "Še ni posnetkov. Ustvarite posnetke za ogled statistike.",

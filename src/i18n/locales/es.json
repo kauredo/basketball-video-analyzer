@@ -193,6 +193,8 @@
       "quickTagCreated": "Clip creado: {{category}}",
       "quickTagNoMarks": "Marca primero el inicio y el fin",
       "creator": {
+        "shotLocation": "Ubicación del tiro (opcional)",
+        "clearLocation": "Borrar ubicación",
         "quarter": "Cuarto",
         "title": "Título del clip",
         "titlePlaceholder": "Introduce el título del clip (opcional)",
@@ -426,6 +428,14 @@
       "autoAdvance": "Avanzar automáticamente al siguiente clip"
     },
     "stats": {
+      "tabOverview": "Resumen",
+      "tabShotChart": "Mapa de tiros",
+      "filterPlayer": "Jugador",
+      "filterQuarter": "Cuarto",
+      "filterCategory": "Categoría",
+      "allOption": "Todos",
+      "unlocatedCount": "{{count}} clip(s) sin ubicación",
+      "noLocatedClips": "Aún no hay clips con ubicación de tiro. Defínela en el editor de clips.",
       "title": "Estadísticas",
       "stats": "Estadísticas",
       "noData": "Aún no hay clips. Crea algunos clips para ver las estadísticas.",

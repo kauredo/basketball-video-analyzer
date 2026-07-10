@@ -1,0 +1,31 @@
+.court {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.court[role="button"] {
+  cursor: crosshair;
+}
+
+.lines {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 2;
+}
+
+.lines rect,
+.lines circle {
+  fill: none;
+}
+
+.marker circle {
+  fill: var(--color-primary);
+  fill-opacity: 0.25;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+}
+
+.marker line {
+  stroke: var(--color-primary);
+  stroke-width: 2;
+}
