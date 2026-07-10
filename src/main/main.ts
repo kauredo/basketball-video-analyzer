@@ -1527,6 +1527,112 @@ ipcMain.handle(
   }
 );
 
+// Export clips as a Sportscode-compatible timeline XML
+ipcMain.handle("export-clips-xml", async (_event, projectId: number) => {
+  try {
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: "Export Sportscode XML",
+      defaultPath: path.join(
+        app.getPath("documents"),
+        `${(getProjectById(projectId)?.name || "clips").replace(/[^a-zA-Z0-9]/g, "_")}-sportscode.xml`
+      ),
+      filters: [{ name: "XML", extensions: ["xml"] }],
+    });
+
+    if (result.canceled || !result.filePath) return null;
+
+    const clips = getClips(projectId);
+    const categories = getCategories(projectId);
+    const categoryName = new Map<number, string>();
+    const categoryColor = new Map<number, string>();
+    categories.forEach(cat => {
+      if (cat.id) {
+        categoryName.set(cat.id, cat.name);
+        categoryColor.set(cat.id, cat.color);
+      }
+    });
+    const players = getPlayers(projectId);
+    const playerLabel = new Map<number, string>();
+    players.forEach(p => {
+      if (p.id) playerLabel.set(p.id, p.number ? `${p.number} ${p.name}` : p.name);
+    });
+
+    const escapeXml = (s: string) =>
+      s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+
+    // Sportscode uses 16-bit colour channels (0-65535).
+    const hexTo16 = (hex: string) => {
+      const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || "");
+      if (!m) return { r: 32896, g: 32896, b: 32896 };
+      const ch = (i: number) => Math.round(parseInt(m[1].slice(i, i + 2), 16) * 257);
+      return { r: ch(0), g: ch(2), b: ch(4) };
+    };
+
+    const parseIds = (json: string): number[] => {
+      try {
+        const ids = JSON.parse(json);
+        return Array.isArray(ids) ? ids : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const label = (group: string, text: string) =>
+      `      <label>\n        <group>${escapeXml(group)}</group>\n        <text>${escapeXml(text)}</text>\n      </label>`;
+
+    // one <row> per distinct code, in first-appearance order
+    const rowColors = new Map<string, { r: number; g: number; b: number }>();
+    const instances: string[] = [];
+    let id = 1;
+
+    for (const clip of clips) {
+      const catIds = parseIds(clip.categories);
+      const code = catIds.length ? categoryName.get(catIds[0]) || "Untagged" : "Untagged";
+      if (!rowColors.has(code)) {
+        const hex = catIds.length ? categoryColor.get(catIds[0]) || "" : "";
+        rowColors.set(code, hexTo16(hex));
+      }
+
+      const labels: string[] = [];
+      catIds.slice(1).forEach(cid => {
+        const n = categoryName.get(cid);
+        if (n) labels.push(label("Category", n));
+      });
+      parseIds(clip.players || "[]").forEach(pid => {
+        const p = playerLabel.get(pid);
+        if (p) labels.push(label("Player", p));
+      });
+      if (clip.quarter) labels.push(label("Quarter", clip.quarter));
+      if (clip.notes && clip.notes.trim()) labels.push(label("Note", clip.notes.trim()));
+
+      instances.push(
+        `    <instance>\n      <ID>${id}</ID>\n      <start>${clip.start_time.toFixed(2)}</start>\n      <end>${clip.end_time.toFixed(2)}</end>\n      <code>${escapeXml(code)}</code>${labels.length ? "\n" + labels.join("\n") : ""}\n    </instance>`
+      );
+      id++;
+    }
+
+    const rows = [...rowColors.entries()]
+      .map(
+        ([code, c]) =>
+          `    <row>\n      <code>${escapeXml(code)}</code>\n      <R>${c.r}</R>\n      <G>${c.g}</G>\n      <B>${c.b}</B>\n    </row>`
+      )
+      .join("\n");
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<file>\n  <ALL_INSTANCES>\n${instances.join("\n")}\n  </ALL_INSTANCES>\n  <ROWS>\n${rows}\n  </ROWS>\n</file>\n`;
+
+    fs.writeFileSync(result.filePath, xml, "utf-8");
+    return { filePath: result.filePath, count: clips.length };
+  } catch (error) {
+    console.error("Error exporting Sportscode XML:", error);
+    throw error;
+  }
+});
+
 // Save analysis session as JSON
 ipcMain.handle("save-session", async (_event, projectId: number) => {
   try {

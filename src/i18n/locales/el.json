@@ -188,6 +188,7 @@
       "exportDataSuccess": "Εξήχθησαν δεδομένα {{count}} κλιπ στο {{path}}",
       "exportDataError": "Σφάλμα κατά την εξαγωγή των δεδομένων κλιπ",
       "saveSession": "Αποθήκευση συνεδρίας",
+      "exportSportscode": "Εξαγωγή XML Sportscode",
       "saveSessionSuccess": "Η συνεδρία ανάλυσης αποθηκεύτηκε με επιτυχία",
       "saveSessionError": "Σφάλμα κατά την αποθήκευση της συνεδρίας ανάλυσης",
       "quickTagCreated": "Δημιουργήθηκε κλιπ: {{category}}",

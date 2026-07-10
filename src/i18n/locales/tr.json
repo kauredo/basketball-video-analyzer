@@ -188,6 +188,7 @@
       "exportDataSuccess": "{{count}} klip verisi {{path}} konumuna aktarıldı",
       "exportDataError": "Klip verileri dışa aktarılırken hata oluştu",
       "saveSession": "Oturumu Kaydet",
+      "exportSportscode": "Sportscode XML dışa aktar",
       "saveSessionSuccess": "Analiz oturumu başarıyla kaydedildi",
       "saveSessionError": "Analiz oturumu kaydedilirken hata oluştu",
       "quickTagCreated": "Klip oluşturuldu: {{category}}",
