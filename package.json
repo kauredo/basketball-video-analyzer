@@ -16,7 +16,8 @@
     "publish": "electron-forge publish",
     "dist": "npm run build && npm run make:all",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
-    "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f"
+    "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f",
+    "stats:downloads": "node scripts/download-stats.mjs"
   },
   "keywords": [
     "basketball",
