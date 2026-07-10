@@ -69,7 +69,8 @@
       "darkMode": "Temni način",
       "lightMode": "Svetli način",
       "languageChanged": "Jezik spremenjen na {{language}}",
-      "themeChanged": "Preklopljeno na {{mode}}"
+      "themeChanged": "Preklopljeno na {{mode}}",
+      "showInstructions": "Prikaži vodnik za hitri začetek"
     },
     "categories": {
       "title": "Upravljanje kategorij",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "V filtriranih posnetkih ni najdenih kategorij.",
       "noProjectLoaded": "Noben projekt ni naložen",
       "selectVideoToStart": "Izberite video datoteko za začetek ustvarjanja posnetkov za projekt.",
-      "startCuttingClips": "Začnite rezati posnetke iz videa za gradnjo knjižnice",
+      "startCuttingClips": "Predvajajte video in pritisnite Z na začetku akcije ter M na koncu. Izberite kategorijo in posnetek se shrani sam.",
       "createClipsInCategory": "Ustvarite posnetke s to kategorijo, da se prikažejo tukaj",
       "sharingClips": "Deljenje posnetkov",
       "exportCategoryClips": "Izvozi vse posnetke »{{category}}« za deljenje z ekipo",
@@ -384,11 +385,14 @@
       "legend": "Legenda",
       "selectedClip": "Izbrani posnetek",
       "currentPosition": "Trenutni položaj",
-      "noClipsGuidance": "Na videu označite začetno in končno točko za ustvarjanje prvega posnetka."
+      "noClipsGuidance": "Med predvajanjem videa pritisnite Z za označitev začetka posnetka in nato M za konec."
     },
     "hints": {
       "markKeys": "Pritisnite {{markIn}} za označitev začetka posnetka in {{markOut}} za konec.",
-      "firstClip": "Vaši posnetki se pojavijo tukaj. Za urejanje uporabite kategorije."
+      "firstClip": "Vaši posnetki se pojavijo tukaj. Za urejanje uporabite kategorije.",
+      "dismiss": "Opusti namig",
+      "markOutNext": "Začetek označen. Zdaj pritisnite {{markOut}}, kjer se akcija konča, da ustvarite posnetek.",
+      "firstExport": "Zdaj imate nekaj posnetkov. Uporabite gumb Izvozi zgoraj, da jih shranite v mape po kategorijah."
     },
     "feedback": {
       "type": "Kakšna povratna informacija?",

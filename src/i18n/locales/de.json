@@ -69,7 +69,8 @@
       "darkMode": "Dunkler Modus",
       "lightMode": "Heller Modus",
       "languageChanged": "Sprache geändert zu {{language}}",
-      "themeChanged": "Gewechselt zu {{mode}}"
+      "themeChanged": "Gewechselt zu {{mode}}",
+      "showInstructions": "Schnellstart-Anleitung anzeigen"
     },
     "categories": {
       "title": "Kategorien verwalten",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "In den gefilterten Clips wurden keine Kategorien gefunden.",
       "noProjectLoaded": "Kein Projekt geladen",
       "selectVideoToStart": "Wähle eine Videodatei aus, um Clips für ein Projekt zu erstellen.",
-      "startCuttingClips": "Schneide Clips aus deinem Video, um deine Bibliothek aufzubauen",
+      "startCuttingClips": "Spiele das Video ab und drücke Z am Anfang einer Aktion, M am Ende. Wähle eine Kategorie und der Clip speichert sich von selbst.",
       "createClipsInCategory": "Erstelle Clips mit dieser Kategorie, um sie hier zu sehen",
       "sharingClips": "Clips teilen",
       "exportCategoryClips": "Alle Clips der Kategorie „{{category}}“ exportieren und mit dem Team teilen",
@@ -384,11 +385,14 @@
       "legend": "Legende",
       "selectedClip": "Ausgewählter Clip",
       "currentPosition": "Aktuelle Position",
-      "noClipsGuidance": "Setze Anfang und Ende im Video, um deinen ersten Clip zu erstellen."
+      "noClipsGuidance": "Drücke Z während der Wiedergabe, um den Anfang eines Clips zu markieren, dann M, um ihn zu beenden."
     },
     "hints": {
       "markKeys": "Drücke {{markIn}}, um den Anfang eines Clips zu markieren, und {{markOut}} für das Ende.",
-      "firstClip": "Deine Clips erscheinen hier. Nutze Kategorien, um sie zu organisieren."
+      "firstClip": "Deine Clips erscheinen hier. Nutze Kategorien, um sie zu organisieren.",
+      "dismiss": "Hinweis ausblenden",
+      "markOutNext": "Anfang markiert. Drücke jetzt {{markOut}} am Ende der Aktion, um den Clip zu erstellen.",
+      "firstExport": "Du hast jetzt ein paar Clips. Nutze die Schaltfläche Exportieren oben, um sie in Kategorieordner zu speichern."
     },
     "feedback": {
       "type": "Welche Art von Feedback?",

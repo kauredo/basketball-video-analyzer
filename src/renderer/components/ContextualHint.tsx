@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLightbulb, faTimes } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ContextualHint.module.css";
@@ -12,6 +13,7 @@ export const ContextualHint: React.FC<ContextualHintProps> = ({
   hintId,
   message,
 }) => {
+  const { t } = useTranslation();
   const storageKey = `hint-dismissed-${hintId}`;
   const [dismissed, setDismissed] = useState(() => {
     try {
@@ -40,7 +42,7 @@ export const ContextualHint: React.FC<ContextualHintProps> = ({
         type="button"
         className={styles.dismiss}
         onClick={handleDismiss}
-        aria-label="Dismiss hint"
+        aria-label={t("app.hints.dismiss")}
       >
         <FontAwesomeIcon icon={faTimes} />
       </button>

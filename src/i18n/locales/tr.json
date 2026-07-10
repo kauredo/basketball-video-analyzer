@@ -69,7 +69,8 @@
       "darkMode": "Koyu Mod",
       "lightMode": "Açık Mod",
       "languageChanged": "Dil {{language}} olarak değiştirildi",
-      "themeChanged": "{{mode}} moduna geçildi"
+      "themeChanged": "{{mode}} moduna geçildi",
+      "showInstructions": "Hızlı başlangıç kılavuzunu göster"
     },
     "categories": {
       "title": "Kategorileri Yönet",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "Filtrelenen kliplerde kategori bulunamadı.",
       "noProjectLoaded": "Proje Yüklü Değil",
       "selectVideoToStart": "Bir proje için klip oluşturmaya başlamak üzere bir video dosyası seçin.",
-      "startCuttingClips": "Kütüphanenizi oluşturmak için videonuzdan klip kesmeye başlayın",
+      "startCuttingClips": "Videoyu oynatın ve bir oyunun başında Z, sonunda M tuşuna basın. Bir kategori seçin, klip kendini kaydeder.",
       "createClipsInCategory": "Bu kategoriyle klip oluşturun, burada görüneceklerdir",
       "sharingClips": "Klipleri Paylaşma",
       "exportCategoryClips": "Takımınızla paylaşmak için tüm \"{{category}}\" kliplerini dışa aktarın",
@@ -384,11 +385,14 @@
       "legend": "Açıklama",
       "selectedClip": "Seçili Klip",
       "currentPosition": "Geçerli Konum",
-      "noClipsGuidance": "İlk klibinizi oluşturmak için videoda başlangıç/bitiş noktalarını işaretleyin."
+      "noClipsGuidance": "Klibin başlangıcını işaretlemek için video oynarken Z tuşuna, ardından bitirmek için M tuşuna basın."
     },
     "hints": {
       "markKeys": "Klibin başını işaretlemek için {{markIn}}, sonunu işaretlemek için {{markOut}} tuşuna basın.",
-      "firstClip": "Klipleriniz burada görünür. Onları düzenlemek için kategorileri kullanın."
+      "firstClip": "Klipleriniz burada görünür. Onları düzenlemek için kategorileri kullanın.",
+      "dismiss": "İpucunu kapat",
+      "markOutNext": "Başlangıç işaretlendi. Şimdi klibi oluşturmak için oyunun bittiği yerde {{markOut}} tuşuna basın.",
+      "firstExport": "Artık birkaç klibiniz var. Bunları kategori klasörlerine kaydetmek için yukarıdaki Dışa Aktar düğmesini kullanın."
     },
     "feedback": {
       "type": "Ne tür bir geri bildirim?",

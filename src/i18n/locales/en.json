@@ -69,7 +69,8 @@
       "darkMode": "Dark Mode",
       "lightMode": "Light Mode",
       "languageChanged": "Language changed to {{language}}",
-      "themeChanged": "Switched to {{mode}}"
+      "themeChanged": "Switched to {{mode}}",
+      "showInstructions": "Show quick start guide"
     },
     "categories": {
       "title": "Manage Categories",
@@ -165,7 +166,7 @@
       "noCategoriesInClips": "No categories found in the filtered clips.",
       "noProjectLoaded": "No Project Loaded",
       "selectVideoToStart": "Select a video file to start creating clips for a project.",
-      "startCuttingClips": "Start cutting clips from your video to build your library",
+      "startCuttingClips": "Play the video and press Z at the start of a play, M at the end. Pick a category and the clip saves itself.",
       "createClipsInCategory": "Create clips with this category to see them here",
       "sharingClips": "Sharing Clips",
       "exportCategoryClips": "Export all \"{{category}}\" clips to share with your team",
@@ -384,11 +385,14 @@
       "legend": "Legend",
       "selectedClip": "Selected Clip",
       "currentPosition": "Current Position",
-      "noClipsGuidance": "Mark in/out points on the video to create your first clip."
+      "noClipsGuidance": "Press Z while the video plays to mark the start of a clip, then M to finish it."
     },
     "hints": {
       "markKeys": "Press {{markIn}} to mark the start of a clip, {{markOut}} to mark the end.",
-      "firstClip": "Your clips appear here. Use categories to organize them."
+      "firstClip": "Your clips appear here. Use categories to organize them.",
+      "dismiss": "Dismiss hint",
+      "markOutNext": "Start marked. Now press {{markOut}} where the play ends to create the clip.",
+      "firstExport": "You have a few clips now. Use the Export button above to save them into category folders."
     },
     "feedback": {
       "type": "What kind of feedback?",

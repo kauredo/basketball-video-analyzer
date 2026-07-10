@@ -69,7 +69,8 @@
       "darkMode": "Modo Escuro",
       "lightMode": "Modo Claro",
       "languageChanged": "Idioma alterado para {{language}}",
-      "themeChanged": "Alterado para {{mode}}"
+      "themeChanged": "Alterado para {{mode}}",
+      "showInstructions": "Mostrar guia de introdução"
     },
     "categories": {
       "title": "Gerir Categorias",
@@ -156,7 +157,7 @@
       "noCategoriesInClips": "Nenhuma categoria encontrada nos clips filtrados.",
       "noProjectLoaded": "Nenhum Projeto Carregado",
       "selectVideoToStart": "Selecione um ficheiro de vídeo para começar a criar clips para um projeto.",
-      "startCuttingClips": "Comece a cortar clips do seu vídeo para construir a sua biblioteca",
+      "startCuttingClips": "Reproduza o vídeo e prima Z no início de uma jogada e M no fim. Escolha uma categoria e o clipe fica guardado.",
       "createClipsInCategory": "Crie clips com esta categoria para os ver aqui",
       "sharingClips": "Partilhar Clips",
       "exportCategoryClips": "Exportar todos os clips de \"{{category}}\" para partilhar com a sua equipa",
@@ -375,11 +376,14 @@
       "legend": "Legenda",
       "selectedClip": "Clip Selecionado",
       "currentPosition": "Posição Atual",
-      "noClipsGuidance": "Marque pontos de entrada/saída no vídeo para criar o seu primeiro clip."
+      "noClipsGuidance": "Prima Z durante a reprodução para marcar o início de um clipe e M para o terminar."
     },
     "hints": {
       "markKeys": "Prima {{markIn}} para marcar o início de um clip, {{markOut}} para marcar o fim.",
-      "firstClip": "Os seus clips aparecem aqui. Use categorias para os organizar."
+      "firstClip": "Os seus clips aparecem aqui. Use categorias para os organizar.",
+      "dismiss": "Dispensar dica",
+      "markOutNext": "Início marcado. Agora prima {{markOut}} onde a jogada termina para criar o clipe.",
+      "firstExport": "Já tem alguns clipes. Use o botão Exportar acima para os guardar em pastas por categoria."
     },
     "feedback": {
       "type": "Que tipo de feedback?",
