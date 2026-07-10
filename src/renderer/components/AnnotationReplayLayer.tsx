@@ -6,6 +6,7 @@ import {
   getVideoContentRect,
   VideoContentRect,
 } from "../utils/telestration";
+import styles from "../styles/AnnotationReplayLayer.module.css";
 
 // How long a saved drawing stays on screen once playback reaches its timestamp.
 const REPLAY_DISPLAY_SECONDS = 4;
@@ -117,13 +118,12 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
     <canvas
       ref={canvasRef}
       aria-hidden
+      className={styles.canvas}
       style={{
-        position: "absolute",
         left: rect.left,
         top: rect.top,
         width: rect.width,
         height: rect.height,
-        pointerEvents: "none",
       }}
     />
   );

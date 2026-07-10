@@ -1,0 +1,8 @@
+/* Read-only overlay that redraws saved drawings during playback. It sits above
+   the video but below the interactive TelestrationLayer (which uses
+   --z-popover); the two are never visible at once, and this one never takes
+   pointer input. */
+.canvas {
+  position: absolute;
+  pointer-events: none;
+}
