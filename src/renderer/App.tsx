@@ -858,6 +858,7 @@ export const App: React.FC = () => {
                 clips={clips}
                 categories={categories}
                 videoDuration={duration}
+                projectId={currentProject?.id}
               />
             </div>
           </div>

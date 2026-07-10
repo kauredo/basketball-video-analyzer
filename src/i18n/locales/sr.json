@@ -193,6 +193,8 @@
       "quickTagCreated": "Klip napravljen: {{category}}",
       "quickTagNoMarks": "Prvo postavite početnu i završnu tačku",
       "creator": {
+        "shotLocation": "Lokacija šuta (opciono)",
+        "clearLocation": "Obriši lokaciju",
         "quarter": "Četvrtina",
         "title": "Naziv klipa",
         "titlePlaceholder": "Unesite naziv klipa (opciono)",
@@ -244,6 +246,7 @@
     "telestration": {
       "title": "Alatke za crtanje",
       "draw": "Crtaj po videu",
+      "replayToggle": "Prikaži sačuvane crteže tokom reprodukcije",
       "done": "Završi crtanje",
       "undo": "Poništi",
       "clear": "Obriši sve",
@@ -425,6 +428,14 @@
       "autoAdvance": "Automatski pređi na sledeći klip"
     },
     "stats": {
+      "tabOverview": "Pregled",
+      "tabShotChart": "Mapa šuteva",
+      "filterPlayer": "Igrač",
+      "filterQuarter": "Četvrtina",
+      "filterCategory": "Kategorija",
+      "allOption": "Sve",
+      "unlocatedCount": "{{count}} klipova bez lokacije",
+      "noLocatedClips": "Još nema klipova sa lokacijom šuta. Podesite je u uređivaču klipova.",
       "title": "Statistika",
       "stats": "Statistika",
       "noData": "Još nema klipova. Napravite klipove da vidite statistiku.",

@@ -193,6 +193,8 @@
       "quickTagCreated": "Clip créé : {{category}}",
       "quickTagNoMarks": "Définissez d'abord le point d'entrée et de sortie",
       "creator": {
+        "shotLocation": "Emplacement du tir (facultatif)",
+        "clearLocation": "Effacer l'emplacement",
         "quarter": "Quart-temps",
         "title": "Titre du clip",
         "titlePlaceholder": "Saisissez le titre du clip (facultatif)",
@@ -244,6 +246,7 @@
     "telestration": {
       "title": "Outils de dessin",
       "draw": "Dessiner sur la vidéo",
+      "replayToggle": "Afficher les dessins enregistrés pendant la lecture",
       "done": "Terminer le dessin",
       "undo": "Annuler",
       "clear": "Tout effacer",
@@ -425,6 +428,14 @@
       "autoAdvance": "Passer automatiquement au clip suivant"
     },
     "stats": {
+      "tabOverview": "Aperçu",
+      "tabShotChart": "Carte des tirs",
+      "filterPlayer": "Joueur",
+      "filterQuarter": "Quart-temps",
+      "filterCategory": "Catégorie",
+      "allOption": "Tous",
+      "unlocatedCount": "{{count}} clip(s) sans emplacement",
+      "noLocatedClips": "Aucun clip avec emplacement de tir pour le moment. Définissez-le dans l'éditeur de clips.",
       "title": "Statistiques",
       "stats": "Stats",
       "noData": "Aucun clip pour le moment. Créez des clips pour voir les statistiques.",

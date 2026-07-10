@@ -25,13 +25,16 @@ import {
   faGaugeHigh,
   faPen,
   faXmark,
+  faClapperboard,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/VideoPlayer.module.css";
 import { ContextualHint } from "./ContextualHint";
+import { AnnotationReplayLayer } from "./AnnotationReplayLayer";
 import { formatVideoSrc } from "../utils/paths";
 import { TelestrationLayer } from "./TelestrationLayer";
 import { TelestrationShape, shapesToPngDataUrl } from "../utils/telestration";
 import { useToastContext } from "../contexts/ToastContext";
+import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 import { Annotation } from "../../types/global";
 
 interface VideoPlayerProps {
@@ -92,6 +95,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       markOutKey: "m",
     });
     const [videoError, setVideoError] = useState<string | null>(null);
+    const [replayEnabled, setReplayEnabled] = useState(() =>
+      loadPref(STORAGE_KEYS.ANNOTATION_REPLAY, true)
+    );
     const [timeSearchValue, setTimeSearchValue] = useState("");
     const [timeSearchError, setTimeSearchError] = useState<string | null>(null);
     const [showFirstVideoHint, setShowFirstVideoHint] = useState(false);
@@ -588,6 +594,13 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               onClick={togglePlay}
             />
           )}
+          <AnnotationReplayLayer
+            videoRef={videoRef}
+            containerRef={containerRef}
+            annotations={savedAnnotations}
+            currentTime={currentTime}
+            enabled={replayEnabled && !drawMode && !videoError}
+          />
           <TelestrationLayer
             active={drawMode && !videoError}
             videoRef={videoRef}
@@ -889,6 +902,25 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     </div>
                   )}
                 </div>
+
+                <button
+                  type="button"
+                  className={`${styles.speedButton} ${
+                    replayEnabled ? styles.drawButtonActive : ""
+                  }`}
+                  onClick={() => {
+                    setReplayEnabled(prev => {
+                      const next = !prev;
+                      savePref(STORAGE_KEYS.ANNOTATION_REPLAY, next);
+                      return next;
+                    });
+                  }}
+                  title={t("app.telestration.replayToggle")}
+                  aria-label={t("app.telestration.replayToggle")}
+                  aria-pressed={replayEnabled}
+                >
+                  <FontAwesomeIcon icon={faClapperboard} />
+                </button>
 
                 <button
                   type="button"

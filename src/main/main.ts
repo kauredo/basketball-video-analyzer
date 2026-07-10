@@ -630,6 +630,8 @@ ipcMain.handle(
       categories: number[];
       players?: number[];
       quarter?: string | null;
+      courtX?: number | null;
+      courtY?: number | null;
       notes?: string;
       projectId: number;
       overlayImage?: string;
@@ -645,6 +647,8 @@ ipcMain.handle(
           categories,
           players,
           quarter,
+          courtX,
+          courtY,
           notes,
           projectId,
           overlayImage,
@@ -867,6 +871,8 @@ ipcMain.handle(
                     categories: JSON.stringify(categories),
                     players: JSON.stringify(players || []),
                     quarter: quarter || null,
+                    court_x: courtX ?? null,
+                    court_y: courtY ?? null,
                     notes: notes,
                   };
 

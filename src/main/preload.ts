@@ -28,6 +28,8 @@ export interface ElectronAPI {
     categories: number[];
     players?: number[];
     quarter?: string | null;
+    courtX?: number | null;
+    courtY?: number | null;
     notes?: string;
     projectId: number;
     overlayImage?: string;

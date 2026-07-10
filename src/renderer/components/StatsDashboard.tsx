@@ -1,14 +1,16 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilm, faClock, faStopwatch, faTags } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/StatsDashboard.module.css";
-import { Clip, Category } from "../../types/global";
+import { Court, COURT_VB_W, COURT_VB_H } from "./Court";
+import { Clip, Category, Player } from "../../types/global";
 
 interface StatsDashboardProps {
   clips: Clip[];
   categories: Category[];
   videoDuration: number;
+  projectId?: number;
 }
 
 const NUM_BUCKETS = 8;
@@ -16,6 +18,15 @@ const NUM_BUCKETS = 8;
 const parseCategoryIds = (clip: Clip): number[] => {
   try {
     const ids = JSON.parse(clip.categories);
+    return Array.isArray(ids) ? ids : [];
+  } catch {
+    return [];
+  }
+};
+
+const parsePlayerIds = (clip: Clip): number[] => {
+  try {
+    const ids = JSON.parse(clip.players || "[]");
     return Array.isArray(ids) ? ids : [];
   } catch {
     return [];
@@ -38,8 +49,28 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   clips,
   categories,
   videoDuration,
+  projectId,
 }) => {
   const { t } = useTranslation();
+  const [tab, setTab] = useState<"overview" | "shotChart">("overview");
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [filterPlayer, setFilterPlayer] = useState<number | "all">("all");
+  const [filterQuarter, setFilterQuarter] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<number | "all">("all");
+
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    window.electronAPI
+      .getPlayers(projectId)
+      .then(p => {
+        if (!cancelled) setPlayers(p);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId]);
 
   // Flatten hierarchical categories into a single lookup-friendly list
   const flatCategories = useMemo(() => {
@@ -135,6 +166,48 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     return { buckets, maxBucket, span };
   }, [clips, videoDuration]);
 
+  const catColorMap = useMemo(() => {
+    const m = new Map<number, string>();
+    flatCategories.forEach(c => {
+      if (c.id != null) m.set(c.id, c.color);
+    });
+    return m;
+  }, [flatCategories]);
+
+  const locatedClips = useMemo(
+    () => clips.filter(c => c.court_x != null && c.court_y != null),
+    [clips]
+  );
+
+  const chartClips = useMemo(
+    () =>
+      locatedClips.filter(c => {
+        if (filterQuarter !== "all" && (c.quarter || "") !== filterQuarter)
+          return false;
+        if (
+          filterCategory !== "all" &&
+          !parseCategoryIds(c).includes(filterCategory)
+        )
+          return false;
+        if (filterPlayer !== "all" && !parsePlayerIds(c).includes(filterPlayer))
+          return false;
+        return true;
+      }),
+    [locatedClips, filterQuarter, filterCategory, filterPlayer]
+  );
+
+  const chartQuarters = useMemo(() => {
+    const set = new Set<string>();
+    clips.forEach(c => {
+      if (c.quarter) set.add(c.quarter);
+    });
+    const canonical = ["Q1", "Q2", "Q3", "Q4", "OT"];
+    return [
+      ...canonical.filter(q => set.has(q)),
+      ...[...set].filter(q => !canonical.includes(q)),
+    ];
+  }, [clips]);
+
   if (clips.length === 0) {
     return (
       <div className={styles.emptyState}>
@@ -153,6 +226,29 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 
   return (
     <div className={styles.dashboard}>
+      <div className={styles.tabBar} role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "overview"}
+          className={`${styles.tab} ${tab === "overview" ? styles.tabActive : ""}`}
+          onClick={() => setTab("overview")}
+        >
+          {t("app.stats.tabOverview")}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "shotChart"}
+          className={`${styles.tab} ${tab === "shotChart" ? styles.tabActive : ""}`}
+          onClick={() => setTab("shotChart")}
+        >
+          {t("app.stats.tabShotChart")}
+        </button>
+      </div>
+
+      {tab === "overview" ? (
+        <>
       {/* Summary cards */}
       <div className={styles.summaryGrid}>
         {summaryCards.map(card => (
@@ -234,6 +330,102 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           ))}
         </div>
       </section>
+        </>
+      ) : (
+        <div className={styles.shotChart}>
+          <div className={styles.chartFilters}>
+            <label className={styles.chartFilter}>
+              <span>{t("app.stats.filterPlayer")}</span>
+              <select
+                value={String(filterPlayer)}
+                onChange={e =>
+                  setFilterPlayer(
+                    e.target.value === "all" ? "all" : Number(e.target.value)
+                  )
+                }
+              >
+                <option value="all">{t("app.stats.allOption")}</option>
+                {players.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.number ? `${p.number} ${p.name}` : p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={styles.chartFilter}>
+              <span>{t("app.stats.filterQuarter")}</span>
+              <select
+                value={filterQuarter}
+                onChange={e => setFilterQuarter(e.target.value)}
+              >
+                <option value="all">{t("app.stats.allOption")}</option>
+                {chartQuarters.map(q => (
+                  <option key={q} value={q}>
+                    {q}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={styles.chartFilter}>
+              <span>{t("app.stats.filterCategory")}</span>
+              <select
+                value={String(filterCategory)}
+                onChange={e =>
+                  setFilterCategory(
+                    e.target.value === "all" ? "all" : Number(e.target.value)
+                  )
+                }
+              >
+                <option value="all">{t("app.stats.allOption")}</option>
+                {flatCategories.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {locatedClips.length === 0 ? (
+            <div className={styles.emptyState}>
+              <FontAwesomeIcon icon={faFilm} />
+              <p>{t("app.stats.noLocatedClips")}</p>
+            </div>
+          ) : (
+            <div className={styles.courtWrap}>
+              <Court>
+                {chartClips.map(c => {
+                  const firstCat = parseCategoryIds(c)[0];
+                  const color =
+                    (firstCat != null && catColorMap.get(firstCat)) ||
+                    "var(--color-primary)";
+                  return (
+                    <circle
+                      key={c.id}
+                      cx={(c.court_x as number) * COURT_VB_W}
+                      cy={(c.court_y as number) * COURT_VB_H}
+                      r={8}
+                      fill={color}
+                      fillOpacity={0.85}
+                      stroke="var(--bg-main)"
+                      strokeWidth={1}
+                    >
+                      <title>{c.title}</title>
+                    </circle>
+                  );
+                })}
+              </Court>
+              {clips.length - locatedClips.length > 0 && (
+                <p className={styles.unlocatedNote}>
+                  {t("app.stats.unlocatedCount", {
+                    count: clips.length - locatedClips.length,
+                  })}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

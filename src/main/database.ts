@@ -66,6 +66,8 @@ export interface Clip {
   categories: string; // JSON array of category IDs
   players?: string; // JSON array of player IDs
   quarter?: string | null;
+  court_x?: number | null; // normalized 0-1, baseline at top; null = no location
+  court_y?: number | null;
   notes?: string;
   created_at?: string;
 }
@@ -659,6 +661,8 @@ const createTables = () => {
       categories TEXT NOT NULL,
       players TEXT DEFAULT '[]',
       quarter TEXT,
+      court_x REAL,
+      court_y REAL,
       notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
@@ -709,6 +713,14 @@ const migrateClipColumns = () => {
     if (!has("quarter")) {
       db.exec("ALTER TABLE clips ADD COLUMN quarter TEXT");
       console.log("Added quarter column to clips");
+    }
+    if (!has("court_x")) {
+      db.exec("ALTER TABLE clips ADD COLUMN court_x REAL");
+      console.log("Added court_x column to clips");
+    }
+    if (!has("court_y")) {
+      db.exec("ALTER TABLE clips ADD COLUMN court_y REAL");
+      console.log("Added court_y column to clips");
     }
   } catch (error) {
     console.error("Error migrating clip columns:", error);
@@ -1249,8 +1261,8 @@ export const getClips = (projectId?: number): Clip[] => {
 export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -1265,6 +1277,8 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
       clip.categories,
       clip.players || "[]",
       clip.quarter || null,
+      clip.court_x ?? null,
+      clip.court_y ?? null,
       clip.notes || null,
     );
 

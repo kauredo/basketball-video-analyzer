@@ -37,6 +37,8 @@ export interface Clip {
   categories: string; // JSON array of category IDs
   players?: string; // JSON array of player IDs
   quarter?: string | null;
+  court_x?: number | null; // normalized 0-1, baseline at top; null = no location
+  court_y?: number | null;
   notes?: string;
   created_at: string;
 }
@@ -69,6 +71,8 @@ export interface ElectronAPI {
     categories: number[];
     players?: number[];
     quarter?: string | null;
+    courtX?: number | null;
+    courtY?: number | null;
     notes?: string;
     projectId: number;
     overlayImage?: string;

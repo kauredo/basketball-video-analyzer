@@ -13,6 +13,7 @@ import {
 import styles from "../styles/ClipCreator.module.css";
 import { useToastContext } from "../contexts/ToastContext";
 import { formatVideoTime } from "../utils/format";
+import { Court } from "./Court";
 import { Player } from "../../types/global";
 
 interface Category {
@@ -51,6 +52,10 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   const { showError, showSuccess, showWarning } = useToastContext();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [courtPos, setCourtPos] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [showCourtPicker, setShowCourtPicker] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
   const [clipTitle, setClipTitle] = useState("");
@@ -287,6 +292,8 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         categories: selectedCategories,
         players: selectedPlayers,
         quarter: currentQuarter,
+        courtX: courtPos?.x ?? null,
+        courtY: courtPos?.y ?? null,
         notes: clipNotes.trim() || undefined,
         projectId: currentProject.id,
         overlayImage: getOverlay?.() ?? undefined,
@@ -438,6 +445,36 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Shot Location (optional) */}
+      <div className={styles.courtSection}>
+        <button
+          type="button"
+          className={styles.courtToggle}
+          onClick={() => setShowCourtPicker(prev => !prev)}
+          aria-expanded={showCourtPicker}
+        >
+          <FontAwesomeIcon icon={faLocationPin} />{" "}
+          {t("app.clips.creator.shotLocation")}
+          {courtPos && (
+            <span className={styles.selectedIndicator}> ✓</span>
+          )}
+        </button>
+        {showCourtPicker && (
+          <div className={styles.courtPicker}>
+            <Court marker={courtPos} onSelect={setCourtPos} />
+            {courtPos && (
+              <button
+                type="button"
+                className={styles.courtClear}
+                onClick={() => setCourtPos(null)}
+              >
+                {t("app.clips.creator.clearLocation")}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Category Selection */}

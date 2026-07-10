@@ -193,6 +193,8 @@
       "quickTagCreated": "Klip oluşturuldu: {{category}}",
       "quickTagNoMarks": "Önce başlangıç ve bitiş noktalarını işaretleyin",
       "creator": {
+        "shotLocation": "Şut konumu (isteğe bağlı)",
+        "clearLocation": "Konumu temizle",
         "quarter": "Periyot",
         "title": "Klip Başlığı",
         "titlePlaceholder": "Klip başlığını girin (isteğe bağlı)",
@@ -244,6 +246,7 @@
     "telestration": {
       "title": "Çizim araçları",
       "draw": "Video üzerine çiz",
+      "replayToggle": "Oynatma sırasında kaydedilmiş çizimleri göster",
       "done": "Çizimi bitir",
       "undo": "Geri al",
       "clear": "Tümünü temizle",
@@ -425,6 +428,14 @@
       "autoAdvance": "Sonraki klibe otomatik geç"
     },
     "stats": {
+      "tabOverview": "Genel bakış",
+      "tabShotChart": "Şut haritası",
+      "filterPlayer": "Oyuncu",
+      "filterQuarter": "Periyot",
+      "filterCategory": "Kategori",
+      "allOption": "Tümü",
+      "unlocatedCount": "{{count}} klip konumsuz",
+      "noLocatedClips": "Henüz şut konumu olan klip yok. Klip düzenleyicide bir konum belirleyin.",
       "title": "İstatistikler",
       "stats": "İstatistik",
       "noData": "Henüz klip yok. İstatistikleri görmek için klip oluşturun.",
