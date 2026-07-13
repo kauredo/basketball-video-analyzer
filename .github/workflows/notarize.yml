@@ -1,6 +1,13 @@
 name: Notarize and staple release
 
 on:
+  # Auto-run after the Release workflow publishes, so notarization + stapling
+  # happen without a manual trigger. The release itself never waits on Apple —
+  # it publishes async, and this staples ~90s later once notarization lands.
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       tag:
@@ -14,14 +21,22 @@ permissions:
 jobs:
   staple:
     runs-on: macos-latest
+    # On auto-chain, only staple when the Release build actually succeeded.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Resolve release tag
         id: tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISPATCH_TAG: ${{ inputs.tag }}
+          # When auto-chained, the Release run was triggered by a tag push, so
+          # head_branch is that tag (e.g. v1.7.1).
+          RUN_TAG: ${{ github.event.workflow_run.head_branch }}
         run: |
-          if [ -n "${{ inputs.tag }}" ]; then
-            TAG="${{ inputs.tag }}"
+          if [ -n "$DISPATCH_TAG" ]; then
+            TAG="$DISPATCH_TAG"
+          elif [ -n "$RUN_TAG" ]; then
+            TAG="$RUN_TAG"
           else
             TAG=$(gh release list -L 1 --repo "$GITHUB_REPOSITORY" --json tagName -q '.[0].tagName')
           fi
