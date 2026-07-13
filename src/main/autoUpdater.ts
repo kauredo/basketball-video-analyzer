@@ -1,118 +1,113 @@
-import { autoUpdater } from "electron-updater";
-import { BrowserWindow, dialog } from "electron";
+import { autoUpdater, dialog, BrowserWindow } from "electron";
+import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 import log from "electron-log";
 
 // Configure logging
 log.transports.file.level = "info";
-autoUpdater.logger = log;
 
-// Flag to prevent duplicate notifications during manual checks
+// update.electronjs.org drives Squirrel updates on Windows and macOS, which is
+// how this app is packaged (electron-forge maker-squirrel + the macOS .zip).
+// Linux (deb/rpm) has no Squirrel updater, so auto-update is intentionally
+// skipped there — those users update via their package manager or a manual
+// download. This replaces electron-updater, which needs an NSIS build and an
+// app-update.yml that electron-forge never produces (hence the ENOENT on
+// Windows and silently-broken updates on macOS).
+const AUTO_UPDATE_SUPPORTED =
+  process.platform === "win32" || process.platform === "darwin";
+
+let updatesStarted = false;
 let isManualCheck = false;
-// Track active download so we only surface errors that interrupt one
-let isDownloading = false;
 
 export function setupAutoUpdater(mainWindow: BrowserWindow) {
-  // Don't check for updates in development
   if (process.env.NODE_ENV === "development") {
     console.log("Auto-updater disabled in development");
     return;
   }
+  if (!AUTO_UPDATE_SUPPORTED) {
+    log.info(`Auto-update not supported on platform ${process.platform}`);
+    return;
+  }
 
-  // Configure update server
-  autoUpdater.setFeedURL({
-    provider: "github",
-    owner: "kauredo",
-    repo: "basketball-video-analyzer",
+  updateElectronApp({
+    updateSource: {
+      type: UpdateSourceType.ElectronPublicUpdateService,
+      repo: "kauredo/basketball-video-analyzer",
+    },
+    updateInterval: "6 hours",
+    logger: log,
+    // We drive our own restart dialog in the update-downloaded handler below,
+    // so update-electron-app must not attach its own.
+    notifyUser: false,
+  });
+  updatesStarted = true;
+
+  // Electron's built-in Squirrel updater emits these. Note: Squirrel has no
+  // download-progress event, so there is no live percentage to show.
+  autoUpdater.on("update-available", () => {
+    log.info("Update available; downloading in background");
+    // Show this on both automatic and manual checks — otherwise a manual
+    // "Check for Updates" that finds one just goes silent until the download
+    // finishes minutes later.
+    isManualCheck = false;
+    dialog.showMessageBox(mainWindow, {
+      type: "info",
+      title: "Update Available",
+      message:
+        "A new version is available and is downloading in the background. You'll be asked to restart when it's ready.",
+      buttons: ["OK"],
+    });
   });
 
-  // Check for updates on startup (after a delay)
-  setTimeout(() => {
-    autoUpdater.checkForUpdatesAndNotify();
-  }, 3000);
-
-  // Check for updates every 6 hours
-  setInterval(() => {
-    autoUpdater.checkForUpdatesAndNotify();
-  }, 6 * 60 * 60 * 1000);
-
-  // Event handlers
-  autoUpdater.on("checking-for-update", () => {
-    log.info("Checking for update...");
-  });
-
-  autoUpdater.on("update-available", info => {
-    log.info("Update available:", info);
-    isDownloading = true;
-    mainWindow.webContents.send("update-available", info);
-
-    // Only show automatic notification if this isn't a manual check
-    // (manual checks have their own notification flow)
-    if (!isManualCheck) {
+  autoUpdater.on("update-not-available", () => {
+    log.info("No update available");
+    if (isManualCheck) {
+      isManualCheck = false;
       dialog.showMessageBox(mainWindow, {
         type: "info",
-        title: "Update Available",
-        message: `Version ${info.version} is available and will download in the background. You'll be notified when it's ready to install.`,
+        title: "No Updates Available",
+        message: "You're already running the latest version!",
         buttons: ["OK"],
       });
     }
   });
 
-  autoUpdater.on("update-not-available", info => {
-    log.info("Update not available:", info);
-  });
+  autoUpdater.on(
+    "update-downloaded",
+    (_event, _releaseNotes, releaseName) => {
+      log.info("Update downloaded:", releaseName);
+      isManualCheck = false;
+      mainWindow.webContents.send("update-downloaded", {
+        version: releaseName,
+      });
+      dialog
+        .showMessageBox(mainWindow, {
+          type: "info",
+          title: "Update Ready to Install",
+          message: `Version ${releaseName ?? ""} has been downloaded and is ready to install.\n\nRestart now to finish updating? If you choose "Install Later", it will be applied the next time you open the app.`,
+          buttons: ["Restart Now", "Install Later"],
+          defaultId: 0,
+          cancelId: 1,
+        })
+        .then(result => {
+          if (result.response === 0) {
+            autoUpdater.quitAndInstall();
+          }
+        });
+    }
+  );
 
   autoUpdater.on("error", err => {
-    log.error("Error in auto-updater:", err);
-    // Only surface to the renderer if a download was in progress and this
-    // isn't a manual check (manual checks already show their own dialog).
-    if (isDownloading && !isManualCheck) {
+    log.error("Auto-updater error:", err);
+    if (isManualCheck) {
+      isManualCheck = false;
       mainWindow.webContents.send("update-error", {
         message: err?.message ?? String(err),
       });
     }
-    isDownloading = false;
-  });
-
-  let lastProgressNotification = 0;
-  autoUpdater.on("download-progress", progressObj => {
-    const percent = Math.floor(progressObj.percent);
-    const logMessage = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${percent}% (${progressObj.transferred}/${progressObj.total})`;
-    log.info(logMessage);
-    mainWindow.webContents.send("download-progress", progressObj);
-
-    // Show progress notification every 25% to avoid spam
-    if (percent >= lastProgressNotification + 25 && percent < 100) {
-      lastProgressNotification = percent;
-      log.info(`Update download progress: ${percent}%`);
-    }
-  });
-
-  autoUpdater.on("update-downloaded", info => {
-    log.info("Update downloaded:", info);
-    isDownloading = false;
-    mainWindow.webContents.send("update-downloaded", info);
-
-    // Show dialog to restart and install
-    dialog
-      .showMessageBox(mainWindow, {
-        type: "info",
-        title: "Update Ready to Install",
-        message: `Version ${info.version} has been downloaded and is ready to install.\n\nWould you like to restart now to complete the update?\n\nNote: If you choose "Later", the update will be installed the next time you start the app.`,
-        buttons: ["Restart Now", "Install Later"],
-        defaultId: 0,
-        cancelId: 1,
-      })
-      .then(result => {
-        if (result.response === 0) {
-          // Quit and install immediately
-          autoUpdater.quitAndInstall();
-        }
-        // If user clicks "Install Later", the update will install on next app launch automatically
-      });
   });
 }
 
-// Manual check for updates (can be triggered from menu)
+// Manual check triggered from the app menu.
 export function checkForUpdates(mainWindow: BrowserWindow) {
   if (process.env.NODE_ENV === "development") {
     dialog.showMessageBox(mainWindow, {
@@ -122,68 +117,31 @@ export function checkForUpdates(mainWindow: BrowserWindow) {
     });
     return;
   }
+  if (!AUTO_UPDATE_SUPPORTED || !updatesStarted) {
+    dialog.showMessageBox(mainWindow, {
+      type: "info",
+      title: "Updates",
+      message:
+        "Automatic updates aren't available on this platform. Please download the latest version from the website.",
+      buttons: ["OK"],
+    });
+    return;
+  }
 
-  // Set flag to prevent duplicate notifications
   isManualCheck = true;
-
-  // Show checking message
   dialog.showMessageBox(mainWindow, {
     type: "info",
     title: "Checking for Updates",
     message: "Checking for updates...",
     buttons: ["OK"],
   });
-
-  // Set up one-time listeners for this manual check
-  const onUpdateAvailable = (info: any) => {
-    dialog.showMessageBox(mainWindow, {
-      type: "info",
-      title: "Update Available",
-      message: `A new version ${info.version} is available! It will download in the background.`,
-      buttons: ["OK"],
-    });
-    autoUpdater.off("update-available", onUpdateAvailable);
-    autoUpdater.off("update-not-available", onUpdateNotAvailable);
-    autoUpdater.off("error", onError);
-    isManualCheck = false;
-  };
-
-  const onUpdateNotAvailable = () => {
-    dialog.showMessageBox(mainWindow, {
-      type: "info",
-      title: "No Updates Available",
-      message: "You're already running the latest version!",
-      buttons: ["OK"],
-    });
-    autoUpdater.off("update-available", onUpdateAvailable);
-    autoUpdater.off("update-not-available", onUpdateNotAvailable);
-    autoUpdater.off("error", onError);
-    isManualCheck = false;
-  };
-
-  const onError = (err: Error) => {
-    dialog.showMessageBox(mainWindow, {
-      type: "error",
-      title: "Update Check Failed",
-      message: `Failed to check for updates: ${err.message}`,
-      buttons: ["OK"],
-    });
-    autoUpdater.off("update-available", onUpdateAvailable);
-    autoUpdater.off("update-not-available", onUpdateNotAvailable);
-    autoUpdater.off("error", onError);
-    isManualCheck = false;
-  };
-
-  autoUpdater.once("update-available", onUpdateAvailable);
-  autoUpdater.once("update-not-available", onUpdateNotAvailable);
-  autoUpdater.once("error", onError);
-
-  autoUpdater.checkForUpdates().catch(err => {
-    // Fallback error handling
+  try {
+    autoUpdater.checkForUpdates();
+  } catch (err) {
     isManualCheck = false;
     dialog.showErrorBox(
       "Update Check Failed",
-      "Failed to check for updates: " + err.message
+      "Failed to check for updates: " + (err as Error)?.message
     );
-  });
+  }
 }

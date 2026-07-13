@@ -1,6 +1,6 @@
 {
   "name": "basketball-video-analyzer",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "Desktop app for cutting and categorizing basketball video clips for team scouting",
   "main": "dist/main/main.js",
   "scripts": {
@@ -87,7 +87,6 @@
     "better-sqlite3": "^9.2.2",
     "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
-    "electron-updater": "^6.6.2",
     "ffmpeg-static": "^5.2.0",
     "ffprobe-static": "3.1.0",
     "fluent-ffmpeg": "^2.1.2",
@@ -98,6 +97,7 @@
     "react-dom": "^18.2.0",
     "react-i18next": "^15.5.3",
     "react-resizable": "^3.0.5",
+    "update-electron-app": "^3.3.0",
     "uuid": "^9.0.0",
     "youtube-dl-exec": "^3.1.3"
   },

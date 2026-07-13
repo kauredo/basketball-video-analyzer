@@ -20,7 +20,6 @@ import {
   faQuestionCircle,
   faLayerGroup,
   faList,
-  faDownload,
   faSun,
   faMoon,
   faChartColumn,
@@ -79,7 +78,6 @@ export const App: React.FC = () => {
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
-  const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [currentQuarter, setCurrentQuarter] = useState<string | null>(null);
 
@@ -126,15 +124,13 @@ export const App: React.FC = () => {
         const hasProjects = projects && projects.length > 0;
         setHasExistingProjects(hasProjects);
 
-        // Show project selector if there are existing projects and no video is loaded
-        if (hasProjects && !videoPath) {
+        // Always open the Select Project panel when no video is loaded — new
+        // users included. It's the only entry point for creating a project,
+        // importing from YouTube, or loading a saved session. It used to open
+        // only when projects already existed, so a first-time user landed on
+        // the empty screen with no way to reach it.
+        if (!videoPath) {
           setShowProjectSelector(true);
-        } else if (!hasProjects && !videoPath) {
-          // Show instructions modal only on true first launch
-          const hasSeenWelcome = loadPref(STORAGE_KEYS.ONBOARDING_COMPLETE, false);
-          if (!hasSeenWelcome) {
-            setShowInstructions(true);
-          }
         }
       } catch (error) {
         console.error("Error checking existing projects:", error);
@@ -204,27 +200,16 @@ export const App: React.FC = () => {
     savePref(STORAGE_KEYS.BOTTOM_PANEL_COLLAPSED, isBottomPanelCollapsed);
   }, [isBottomPanelCollapsed]);
 
-  // Listen for update download progress
+  // Listen for update lifecycle events. Squirrel reports no download progress,
+  // so there's no percentage — just the final downloaded/error signals.
   useEffect(() => {
-    window.electronAPI.onUpdateAvailable(() => {
-      setUpdateDownloadProgress(0);
-    });
-
-    window.electronAPI.onDownloadProgress((progress) => {
-      const percent = Math.floor(progress.percent);
-      console.log(`Update download progress: ${percent}% (${progress.transferred}/${progress.total} bytes, ${progress.bytesPerSecond} bytes/sec)`);
-      setUpdateDownloadProgress(percent);
-    });
-
     window.electronAPI.onUpdateDownloaded((info) => {
       console.log("Update downloaded successfully!");
-      setUpdateDownloadProgress(null);
       showSuccess(t("app.video.updateDownloaded", { version: info?.version ?? "" }));
     });
 
     window.electronAPI.onUpdateError((err) => {
       console.error("Update error:", err);
-      setUpdateDownloadProgress(null);
       showError(t("app.video.updateError", { message: err?.message ?? "unknown error" }));
     });
 
@@ -234,8 +219,6 @@ export const App: React.FC = () => {
 
     // Cleanup listeners on unmount
     return () => {
-      window.electronAPI.removeAllListeners("update-available");
-      window.electronAPI.removeAllListeners("download-progress");
       window.electronAPI.removeAllListeners("update-downloaded");
       window.electronAPI.removeAllListeners("update-error");
       window.electronAPI.removeAllListeners("open-feedback");
@@ -556,15 +539,16 @@ export const App: React.FC = () => {
         <h1 className={styles.title}>
           <FontAwesomeIcon icon={faBasketball} /> {t("app.title")}
         </h1>
-        {updateDownloadProgress !== null && (
-          <div className={styles.updateProgress}>
-            <FontAwesomeIcon icon={faDownload} spin />{" "}
-            {updateDownloadProgress === 0
-              ? t("app.video.preparingUpdate")
-              : t("app.video.downloadingUpdate", { progress: updateDownloadProgress })}
-          </div>
-        )}
         <div className={styles.headerActions}>
+          <button
+            type="button"
+            className={styles.btn}
+            onClick={() => setShowProjectSelector(true)}
+            title={t("app.projects.selectProject")}
+          >
+            <FontAwesomeIcon icon={faFolderOpen} />{" "}
+            {t("app.projects.selectProject")}
+          </button>
           <button
             type="button"
             className={styles.btn}
@@ -870,15 +854,13 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Instructions Modal - only show for first-time users with no projects */}
+      {/* Instructions Modal — opened manually from Settings */}
       <InstructionsModal
         isOpen={showInstructions}
         onClose={() => {
           setShowInstructions(false);
-          savePref(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
         }}
         onSelectVideo={() => {
-          savePref(STORAGE_KEYS.ONBOARDING_COMPLETE, true);
           handleSelectVideo();
         }}
         showSelectVideoButton={true}

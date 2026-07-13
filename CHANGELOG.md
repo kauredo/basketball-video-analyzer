@@ -5,6 +5,13 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.2] - 2026-07-13
+
+### Fixed
+
+- **Windows and macOS auto-updates now work.** The app used electron-updater, which is incompatible with how it's packaged (Squirrel), so update checks failed outright on Windows and silently on macOS. It now uses update-electron-app (via update.electronjs.org), which matches the actual builds. This fix only takes effect once you're on 1.7.2 — please update to 1.7.2 manually one last time, and future updates will install on their own. (Linux still updates by manual download.)
+- **New users can now reach the Select Project panel.** It only opened when projects already existed, so a first-time user landed on an empty screen with no way to create a project, import from YouTube, or load a saved session. It now opens on startup for everyone, and a new "Select Project" button in the header opens it at any time.
+
 ## [1.7.1] - 2026-07-13
 
 ### Fixed

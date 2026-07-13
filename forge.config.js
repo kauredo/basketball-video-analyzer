@@ -134,7 +134,9 @@ module.exports = {
       },
     },
   ],
-  // This is needed for electron-updater to work
+  // Legacy: generates latest*.yml update manifests. The app now updates via
+  // update-electron-app (update.electronjs.org), which reads GitHub releases
+  // directly and ignores these files — kept for now, harmless, remove later.
   hooks: {
     postMake: async (forgeConfig, makeResults) => {
       const crypto = require("crypto");

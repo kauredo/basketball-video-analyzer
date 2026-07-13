@@ -52,6 +52,14 @@ import {
 } from "./database";
 import { MEDIA_SCHEME } from "../shared/media";
 
+// Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
+// runs Squirrel launches the app with a --squirrel-* flag; this creates or
+// removes shortcuts and quits immediately so the operation completes cleanly.
+// Required for auto-updates to apply correctly on Windows. No-op elsewhere.
+if (require("electron-squirrel-startup")) {
+  app.quit();
+}
+
 // Register the custom media scheme before the app is ready. Privileged so the
 // renderer can load it while webSecurity is on, but it must NOT bypass CSP — it
 // only serves media bytes.

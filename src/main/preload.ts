@@ -144,17 +144,8 @@ export interface ElectronAPI {
   onOpenFeedback: (callback: () => void) => void;
 
   // Update operations
-  onUpdateAvailable: (callback: (info: any) => void) => void;
   onUpdateDownloaded: (callback: (info: any) => void) => void;
   onUpdateError: (callback: (err: { message: string }) => void) => void;
-  onDownloadProgress: (
-    callback: (progress: {
-      bytesPerSecond: number;
-      percent: number;
-      transferred: number;
-      total: number;
-    }) => void
-  ) => void;
 }
 
 const electronAPI: ElectronAPI = {
@@ -279,26 +270,11 @@ const electronAPI: ElectronAPI = {
   },
 
   // Update operations
-  onUpdateAvailable: (callback: (info: any) => void) => {
-    ipcRenderer.on("update-available", (_event, info) => callback(info));
-  },
   onUpdateDownloaded: (callback: (info: any) => void) => {
     ipcRenderer.on("update-downloaded", (_event, info) => callback(info));
   },
   onUpdateError: (callback: (err: { message: string }) => void) => {
     ipcRenderer.on("update-error", (_event, err) => callback(err));
-  },
-  onDownloadProgress: (
-    callback: (progress: {
-      bytesPerSecond: number;
-      percent: number;
-      transferred: number;
-      total: number;
-    }) => void
-  ) => {
-    ipcRenderer.on("download-progress", (_event, progress) =>
-      callback(progress)
-    );
   },
 };
 
