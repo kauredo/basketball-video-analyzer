@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
 import {
   setupDatabase,
+  getDbStatus,
   getCategories,
   getCategoriesHierarchical,
   createCategory,
@@ -1238,6 +1239,10 @@ ipcMain.handle("get-projects", async () => {
     return [];
   }
 });
+
+// Lets the renderer distinguish a real "no projects yet" state from a fatal
+// database failure, so a broken DB shows an error instead of a blank window.
+ipcMain.handle("get-db-status", async () => getDbStatus());
 
 ipcMain.handle(
   "update-project-last-opened",

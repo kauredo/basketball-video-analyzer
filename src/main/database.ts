@@ -2,8 +2,27 @@ import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 import { app } from "electron";
+import log from "electron-log";
 
 let db: Database.Database;
+
+// Captures a fatal database-init failure so the renderer can surface it
+// instead of silently treating a broken DB as "zero projects" (which used to
+// leave the window blank with no Select Project panel and no error).
+let dbInitError: string | null = null;
+let dbPathUsed = "";
+
+export const getDbStatus = (): {
+  ok: boolean;
+  error: string | null;
+  dbPath: string;
+  logPath: string;
+} => ({
+  ok: dbInitError === null,
+  error: dbInitError,
+  dbPath: dbPathUsed,
+  logPath: path.join(app.getPath("logs"), "main.log"),
+});
 
 export interface Category {
   id?: number;
@@ -80,6 +99,7 @@ export interface KeyBindings {
 export const setupDatabase = () => {
   try {
     const dbPath = path.join(app.getPath("userData"), "clip-cutter.db");
+    dbPathUsed = dbPath;
     console.log("Database path:", dbPath);
 
     db = new Database(dbPath);
@@ -90,8 +110,14 @@ export const setupDatabase = () => {
     migrateClipColumns();
     insertDefaultCategories();
     migrateClipPaths();
+    dbInitError = null;
     console.log("Database setup complete");
   } catch (error) {
+    dbInitError =
+      error instanceof Error ? error.message : String(error);
+    // Persist to the log file (console output is invisible in a packaged app),
+    // so a user hitting this can send us the full error/stack.
+    log.error("Error setting up database:", error);
     console.error("Error setting up database:", error);
   }
 };

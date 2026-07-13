@@ -5,6 +5,20 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-07-13
+
+### Fixed
+
+- The app no longer starts to a blank window when its database fails to load. Previously a database failure looked identical to "no projects yet" — the Select Project panel silently never appeared. The app now shows a clear error and keeps the Select Project panel reachable, and the underlying error is written to the log file.
+
+## [1.7.0] - 2026-07-10
+
+### Added
+
+- **Shot chart** — mark where each shot was taken on the court and see it plotted in the stats dashboard.
+- **First-run onboarding** — inline hints, actionable empty states, and a guide you can reopen any time.
+- **Donation surfaces** — support the project from the About screen, with a one-time nudge.
+
 ## [1.6.0] - 2026-06-09
 
 ### Added

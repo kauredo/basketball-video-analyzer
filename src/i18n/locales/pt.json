@@ -1,6 +1,11 @@
 {
   "app": {
     "title": "Editor de Vídeos de Basquetebol",
+    "startup": {
+      "dbFailed": "A aplicação não conseguiu abrir a base de dados, por isso os teus projetos não podem ser carregados. Erro: {{error}}. Ficheiro de registo: {{logPath}}",
+      "checkFailed": "Ocorreu um problema ao iniciar a aplicação. Erro: {{error}}",
+      "apiUnavailable": "A aplicação não iniciou corretamente (ponte interna indisponível). Por favor reinstala a versão mais recente."
+    },
     "buttons": {
       "getStarted": "Começar - Selecionar Vídeo",
       "selectVideo": "Selecionar Vídeo",

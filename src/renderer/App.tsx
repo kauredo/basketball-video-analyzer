@@ -26,6 +26,7 @@ import {
   faChartColumn,
   faHeart,
   faCode,
+  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./styles/App.module.css";
 import { DONATION_URL, GITHUB_URL } from "./utils/constants";
@@ -66,6 +67,7 @@ export const App: React.FC = () => {
   const [appVersion, setAppVersion] = useState("");
   const [showInstructions, setShowInstructions] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [startupError, setStartupError] = useState<string | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -97,7 +99,29 @@ export const App: React.FC = () => {
   // Check for existing projects on startup
   useEffect(() => {
     const checkExistingProjects = async () => {
+      // If the preload bridge never loaded, nothing below can work — surface it
+      // instead of silently leaving the window blank.
+      if (!window.electronAPI) {
+        setStartupError(t("app.startup.apiUnavailable"));
+        setShowProjectSelector(true);
+        return;
+      }
       try {
+        // A fatal database failure used to look identical to "zero projects":
+        // getProjects() returned [], so no panel showed and no error appeared.
+        // Detect it explicitly and keep the Select Project panel reachable.
+        const dbStatus = await window.electronAPI.getDbStatus?.();
+        if (dbStatus && !dbStatus.ok) {
+          setStartupError(
+            t("app.startup.dbFailed", {
+              error: dbStatus.error ?? "unknown error",
+              logPath: dbStatus.logPath ?? "",
+            }),
+          );
+          setShowProjectSelector(true);
+          return;
+        }
+
         const projects = await window.electronAPI.getProjects();
         const hasProjects = projects && projects.length > 0;
         setHasExistingProjects(hasProjects);
@@ -114,11 +138,18 @@ export const App: React.FC = () => {
         }
       } catch (error) {
         console.error("Error checking existing projects:", error);
+        setStartupError(
+          t("app.startup.checkFailed", {
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+        // Never dead-end: keep the panel reachable even if the check threw.
+        setShowProjectSelector(true);
       }
     };
 
     checkExistingProjects();
-  }, [videoPath]);
+  }, [videoPath, t]);
 
   // Load clips and categories when refresh trigger changes
   useEffect(() => {
@@ -515,6 +546,12 @@ export const App: React.FC = () => {
 
   return (
     <div className={styles.app}>
+      {startupError && (
+        <div className={styles.startupError} role="alert">
+          <FontAwesomeIcon icon={faTriangleExclamation} />
+          <span>{startupError}</span>
+        </div>
+      )}
       <header className={styles.appHeader}>
         <h1 className={styles.title}>
           <FontAwesomeIcon icon={faBasketball} /> {t("app.title")}

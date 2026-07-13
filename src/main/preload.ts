@@ -60,6 +60,12 @@ export interface ElectronAPI {
   }) => Promise<any>;
   getProject: (videoPath: string) => Promise<any | null>;
   getProjects: () => Promise<any[]>;
+  getDbStatus: () => Promise<{
+    ok: boolean;
+    error: string | null;
+    dbPath: string;
+    logPath: string;
+  }>;
   updateProjectLastOpened: (projectId: number) => Promise<boolean>;
   updateProjectVideoPath: (
     projectId: number,
@@ -171,6 +177,7 @@ const electronAPI: ElectronAPI = {
   createProject: project => ipcRenderer.invoke("create-project", project),
   getProject: videoPath => ipcRenderer.invoke("get-project", videoPath),
   getProjects: () => ipcRenderer.invoke("get-projects"),
+  getDbStatus: () => ipcRenderer.invoke("get-db-status"),
   updateProjectLastOpened: projectId =>
     ipcRenderer.invoke("update-project-last-opened", projectId),
   updateProjectVideoPath: (projectId, newVideoPath, newVideoName) =>

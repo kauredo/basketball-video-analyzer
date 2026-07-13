@@ -1,6 +1,11 @@
 {
   "app": {
     "title": "Basketball Video Analyzer",
+    "startup": {
+      "dbFailed": "The app couldn't open its database, so your projects can't be loaded. Error: {{error}}. Log file: {{logPath}}",
+      "checkFailed": "Something went wrong while starting the app. Error: {{error}}",
+      "apiUnavailable": "The app failed to start correctly (internal bridge unavailable). Please reinstall the latest version."
+    },
     "buttons": {
       "getStarted": "Get Started - Select Video",
       "selectVideo": "Select Video",
