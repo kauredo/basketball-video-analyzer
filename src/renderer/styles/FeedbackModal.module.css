@@ -116,7 +116,7 @@
 
 .charCount {
   font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   text-align: right;
   margin-top: 2px;
 }
@@ -140,7 +140,7 @@
 
 .systemInfo {
   font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   padding: var(--spacing-xs) 0;
 }
 
