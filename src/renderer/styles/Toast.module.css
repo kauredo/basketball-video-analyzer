@@ -2,11 +2,12 @@
 
 .toastContainer {
   position: fixed;
-  top: var(--spacing-lg);
+  bottom: var(--spacing-lg);
   right: var(--spacing-lg);
   z-index: var(--z-toast);
   display: flex;
-  flex-direction: column;
+  /* Newest nearest the corner, older ones stacking away from it. */
+  flex-direction: column-reverse;
   gap: var(--spacing-sm);
   pointer-events: none;
 }
