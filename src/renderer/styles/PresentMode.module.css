@@ -1,4 +1,7 @@
 .presentMode {
+  /* Always a black backdrop, so the ring takes the bright face in
+     either theme rather than the theme's own. */
+  --focus-ring-color: var(--color-accent-on-dark);
   position: fixed;
   inset: 0;
   z-index: var(--z-present);

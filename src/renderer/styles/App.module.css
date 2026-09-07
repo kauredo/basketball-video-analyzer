@@ -519,8 +519,8 @@
 }
 
 .resetButton:focus-visible {
-  box-shadow: 0 0 0 2px var(--color-danger-light);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .selectVideoBtn,

@@ -534,7 +534,8 @@
 
 .timeSearchInput:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-light);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .timeSearchIcon {
