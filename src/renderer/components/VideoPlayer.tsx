@@ -936,7 +936,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </button>
               </div>
 
-              {showFirstVideoHint && (
+              {showFirstVideoHint && markInTime === null && (
                 <ContextualHint
                   hintId="first-video"
                   message={t("app.hints.markKeys", {
