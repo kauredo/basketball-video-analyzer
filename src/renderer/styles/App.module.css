@@ -351,7 +351,11 @@
   width: 90%;
   max-width: var(--container-max-width);
   max-height: 90vh;
-  overflow-y: auto;
+  /* The shell does not scroll. The body does, so the header stays pinned at the
+     top and a modal's primary action can pin itself to the bottom. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   position: relative;
   animation: modalFadeIn var(--transition-normal) ease;
   border: 1px solid var(--border-color);
@@ -413,6 +417,11 @@
 
 .modalBody {
   padding: var(--spacing-lg) var(--spacing-xl);
+  overflow-y: auto;
+  flex: 1 1 auto;
+  /* Required: without it the flex item refuses to shrink and any pinned
+     footer is pushed off screen again. */
+  min-height: 0;
 }
 
 /* Header with Settings Button */
