@@ -419,15 +419,13 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   return (
     <div className={styles.clipCreator}>
-      {/* Clip Creator Header */}
-      <div className={styles.clipCreatorHeader}>
-        <h3>
-          <FontAwesomeIcon icon={faScissors} /> {t("app.clips.creator.createClip")}
-        </h3>
-        {markInTime !== null && markOutTime !== null && (
+      {/* The title lives in the modal chrome, which is also the dialog's
+          aria-labelledby target. Only the duration belongs here. */}
+      {markInTime !== null && markOutTime !== null && (
+        <div className={styles.clipCreatorHeader}>
           <div className={styles.clipDuration}>{t("app.clips.creator.duration")}: {getDuration()}</div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Quarter Selector */}
       <div className={styles.quarterSelector} role="group" aria-label={t("app.clips.creator.quarter")}>
