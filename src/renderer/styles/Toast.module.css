@@ -37,7 +37,7 @@
 }
 
 .toast.success {
-  background: rgba(76, 175, 80, 0.9);
+  background: rgba(var(--color-success-rgb), 0.9);
   color: var(--text-white);
   border-left: 4px solid var(--color-success-dark);
 }
