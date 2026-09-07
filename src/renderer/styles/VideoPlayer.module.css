@@ -586,6 +586,10 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   outline: none;
   width: 140px;
+  /* Yields with its container rather than overflowing it. The container can be
+     squeezed to its 140px floor, which is less than this field plus the icon
+     and the button need. */
+  min-width: 0;
   font-family: var(--font-mono);
 }
 
