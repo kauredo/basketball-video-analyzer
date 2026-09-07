@@ -775,5 +775,10 @@
 }
 
 .markerShape2 {
-  box-shadow: inset 0 0 0 2px var(--bg-secondary);
+  /* outline, not box-shadow: .selectedClip sets its own box-shadow and would
+     replace this one, so selecting a clip removed the very signal that tells
+     its lane apart. A negative offset draws the ring inside without affecting
+     layout. */
+  outline: 2px solid var(--bg-secondary);
+  outline-offset: -2px;
 }

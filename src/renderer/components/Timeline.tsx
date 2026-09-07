@@ -14,7 +14,10 @@ import {
 
 import { Clip, Category } from "../../types/global";
 
-const DEFAULT_CATEGORY_COLOR = "#4CAF50";
+// A category with no colour of its own. Deliberately a neutral: it reads as
+// unset rather than impersonating a real category. The old #4CAF50 sat dE 7.4
+// from Transition in the new palette and failed 3:1 on the light theme.
+const DEFAULT_CATEGORY_COLOR = "#7F7F7F";
 
 interface TimelineProps {
   clips: Clip[];
