@@ -49,8 +49,8 @@
 }
 
 .editToggleBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .categoryList {
@@ -156,7 +156,7 @@
 .editBtn:hover {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
@@ -171,8 +171,8 @@
 
 .editBtn:focus-visible,
 .deleteBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Improved category editing form */
@@ -230,8 +230,8 @@
 
 .editInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .editInput:hover {
@@ -303,8 +303,8 @@
 .categoryNameInput:focus,
 .categoryDescriptionInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
   background: var(--bg-quaternary);
 }
 
@@ -370,8 +370,8 @@
 }
 
 .colorOption:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .editActions {
@@ -402,7 +402,7 @@
 .saveBtn,
 .createCategoryBtn {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .saveBtn:hover,
@@ -414,8 +414,8 @@
 
 .saveBtn:focus-visible,
 .createCategoryBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .cancelBtn {
@@ -433,8 +433,8 @@
 }
 
 .cancelBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .presetManager {
@@ -484,8 +484,8 @@
 
 .presetNameInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
   background: var(--bg-quaternary);
 }
 
@@ -637,8 +637,8 @@
 }
 
 .addSubBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Subcategory form styles */
@@ -679,8 +679,8 @@
 .subcategoryNameInput:focus,
 .subcategoryDescriptionInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .createSubcategoryBtn {
@@ -712,8 +712,8 @@
 }
 
 .createSubcategoryBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .saveBtn {
@@ -739,8 +739,8 @@
 }
 
 .saveBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .cancelBtn {

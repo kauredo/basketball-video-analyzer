@@ -38,8 +38,8 @@
 
 .urlInput:focus-visible {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .urlInput::placeholder {
@@ -79,8 +79,8 @@
 }
 
 .downloadBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .progressSection {

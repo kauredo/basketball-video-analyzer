@@ -8,8 +8,16 @@
   <style>
     body {
       margin: 0;
-      font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+      /* This block paints before the bundle injects variables.css, so the
+         platform stack stands in for one frame. */
+      font-family: var(
+        --font-body,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Roboto",
+        sans-serif
+      );
       background: var(--bg-primary);
       color: var(--text-primary);
       overflow: hidden;

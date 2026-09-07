@@ -78,8 +78,8 @@
 .clipTitleInput:focus,
 .clipNotesInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .creationProgress {
@@ -140,7 +140,7 @@
 
 .createClipBtn {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .createClipBtn:hover:not(:disabled) {
@@ -176,8 +176,8 @@
 
 .createClipBtn:focus-visible,
 .cancelBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Quarter Selector */
@@ -228,8 +228,8 @@
 }
 
 .quarterBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Player Selection */
@@ -284,8 +284,8 @@
 }
 
 .playerBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Category Selection */
@@ -339,7 +339,7 @@
 .selectAllBtn:hover:not(:disabled) {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   transform: translateY(-1px);
 }
 
@@ -359,8 +359,8 @@
 
 .selectAllBtn:focus-visible,
 .clearSelectionBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .categoryGrid {
@@ -414,8 +414,8 @@
 }
 
 .categoryBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .categoryBtn.selected {
@@ -457,8 +457,8 @@
 }
 
 .courtToggle:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .courtPicker {
@@ -485,6 +485,6 @@
 }
 
 .courtClear:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }

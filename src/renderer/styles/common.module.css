@@ -20,7 +20,7 @@
 
 .buttonPrimary {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   box-shadow: var(--shadow-sm);
 }
 
@@ -60,8 +60,8 @@
 }
 
 .button:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Form Styles */
@@ -103,13 +103,13 @@
 
 .input:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-primary-light);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .input.editing {
   background-color: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   border-color: var(--color-primary);
 }
 
@@ -133,8 +133,8 @@
 
 .textarea:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-primary-light);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Layout Utilities */

@@ -46,8 +46,8 @@
 }
 
 .typeButton:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Type-specific selected states */
@@ -86,8 +86,8 @@
 
 .titleInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .descriptionInput {
@@ -110,13 +110,13 @@
 
 .descriptionInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .charCount {
   font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   text-align: right;
   margin-top: 2px;
 }
@@ -140,7 +140,7 @@
 
 .systemInfo {
   font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   padding: var(--spacing-xs) 0;
 }
 
@@ -168,8 +168,8 @@
 }
 
 .cancelBtn:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .submitBtn {
@@ -193,8 +193,8 @@
 }
 
 .submitBtn:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .submitBtn:disabled {

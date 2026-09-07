@@ -67,8 +67,8 @@
 }
 
 .modalClose:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .modalBody {
@@ -174,8 +174,8 @@
 }
 
 .secondaryActionBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .sectionHeader {
@@ -361,8 +361,8 @@
 .createNewBtn:focus-visible,
 .projectCard:focus-visible,
 .deleteBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .emptyState {

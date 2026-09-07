@@ -26,6 +26,7 @@
 
 .title {
   color: var(--text-primary);
+  font-family: var(--font-display);
 }
 
 .mainContent {
@@ -507,19 +508,19 @@
 .selectVideoBtn:focus-visible,
 .getStartedBtn:focus-visible,
 .themeToggle:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .modalClose:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
   border-color: var(--color-primary);
 }
 
 .resetButton:focus-visible {
-  box-shadow: 0 0 0 2px var(--color-danger-light);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .selectVideoBtn,
@@ -540,7 +541,7 @@
 
 .selectVideoBtn {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .selectVideoBtn:hover {
@@ -551,7 +552,7 @@
 .getStartedBtn {
   height: calc(var(--button-height) * 1.5);
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   padding: 0 var(--spacing-xl);
   border-radius: var(--radius-lg);
   font-size: var(--font-size-md);

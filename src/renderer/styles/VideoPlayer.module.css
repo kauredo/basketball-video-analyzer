@@ -60,7 +60,7 @@
 
 .progressTrack {
   height: 8px;
-  background: var(--bg-tertiary);
+  background: var(--scrub-track);
   border-radius: var(--radius-md);
   position: relative;
   cursor: pointer;
@@ -114,7 +114,7 @@
 }
 
 .markOut {
-  background: var(--color-danger);
+  background: var(--color-primary-dark);
 }
 
 .annotationMarker {
@@ -165,8 +165,8 @@
 
 .annotationMarker:focus-visible,
 .annotationDelete:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .markIndicator:hover {
@@ -235,8 +235,8 @@
 .playButton:focus-visible,
 .skipButton:focus-visible,
 .frameButton:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .skipText {
@@ -278,7 +278,7 @@
 }
 
 .markOutBtn {
-  background: var(--color-danger);
+  background: var(--color-primary-dark);
   color: var(--text-white);
 }
 
@@ -304,8 +304,8 @@
 }
 
 .markBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .markInfo {
@@ -388,8 +388,8 @@
 }
 
 .speedButton:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .drawButtonActive {
@@ -443,8 +443,8 @@
 }
 
 .speedOption:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .activeSpeed {
@@ -534,7 +534,8 @@
 
 .timeSearchInput:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-light);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .timeSearchIcon {
@@ -591,8 +592,8 @@
 }
 
 .timeSearchButton:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .timeSearchErrorMessage {
