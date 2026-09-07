@@ -7,6 +7,9 @@
   --color-primary-dark: #075450;
   /* The accent on surfaces that are dark whatever the theme (over video). */
   --color-accent-on-dark: #3ed0c2;
+  /* The scrub track needs its own value. --bg-tertiary read 1.38:1 against the
+     transport row, under the 3.0 bar for identifying a control. */
+  --scrub-track: #6a6a6a;
   --color-danger: #f44336;
   --color-danger-dark: #d32f2f;
   --color-danger-light: #ef5350;
@@ -133,6 +136,8 @@
   --focus-ring-color: var(--color-primary);
 
   /* Accent carries over from :root: white reads 5.26:1 on it in either theme. */
+  --scrub-track: #8e8e8e;
+
   --color-success: #1b5e20;
   --color-success-rgb: 27, 94, 32;
   --color-success-dark: #14481a;
