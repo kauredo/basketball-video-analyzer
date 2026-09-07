@@ -110,7 +110,7 @@
 }
 
 .markIn {
-  background: var(--color-success);
+  background: var(--color-primary);
 }
 
 .markOut {
@@ -273,7 +273,7 @@
 }
 
 .markInBtn {
-  background: var(--color-success);
+  background: var(--color-primary);
   color: var(--text-white);
 }
 

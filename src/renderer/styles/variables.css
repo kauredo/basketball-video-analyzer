@@ -8,8 +8,9 @@
   --color-danger: #f44336;
   --color-danger-dark: #d32f2f;
   --color-danger-light: #ef5350;
-  --color-success: #4caf50;
-  --color-success-dark: #388e3c;
+  --color-success: #2e7d32;
+  --color-success-rgb: 46, 125, 50;
+  --color-success-dark: #1b5e20;
   --color-warning: #ff9800;
   --color-info: #2196f3;
 
@@ -120,7 +121,9 @@
   --color-primary-dark: #1b5e20;
   --color-primary-light: #388e3c;
 
-  --color-success-dark: #1b5e20;
+  --color-success: #1b5e20;
+  --color-success-rgb: 27, 94, 32;
+  --color-success-dark: #14481a;
 
   /* Background Colors */
   --bg-main: #ffffff;

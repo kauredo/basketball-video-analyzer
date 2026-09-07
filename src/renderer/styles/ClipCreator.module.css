@@ -337,8 +337,8 @@
 }
 
 .selectAllBtn:hover:not(:disabled) {
-  background: var(--color-success);
-  border-color: var(--color-success);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: var(--text-primary);
   transform: translateY(-1px);
 }
