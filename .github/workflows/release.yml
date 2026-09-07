@@ -202,3 +202,12 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The marketing site is a static Astro build that reads the latest release
+      # from the GitHub API at build time, so it advertises whatever version was
+      # current when it was last built. Ping its deploy hook so a release also
+      # refreshes the download button. Guarded: a repo without the secret skips
+      # this rather than failing the release over a website concern.
+      - name: Rebuild the marketing site
+        if: ${{ startsWith(github.ref, 'refs/tags/') && secrets.WEBSITE_DEPLOY_HOOK != '' }}
+        run: curl -fsS -X POST "${{ secrets.WEBSITE_DEPLOY_HOOK }}"
