@@ -106,15 +106,17 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
         tally.set(id, cur);
       });
     });
+    // Keep every category, at zero when it has no clips. Absence and zero are
+    // different facts, and for a scouting tool the zero is often the finding.
     const rows = flatCategories
-      .filter(cat => cat.id !== undefined && tally.has(cat.id))
+      .filter(cat => cat.id !== undefined)
       .map(cat => ({
         id: cat.id!,
         name: cat.name,
         color: cat.color,
-        ...tally.get(cat.id!)!,
+        ...(tally.get(cat.id!) ?? { count: 0, duration: 0 }),
       }))
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
     const maxCount = rows.reduce((max, r) => Math.max(max, r.count), 0);
     return { rows, maxCount };
   }, [flatCategories, clips]);
@@ -131,9 +133,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
         noQuarter += 1;
       }
     });
-    const rows = order
-      .filter(q => counts.has(q))
-      .map(q => ({ label: q, count: counts.get(q)! }));
+    const rows = order.map(q => ({ label: q, count: counts.get(q) ?? 0 }));
     // Any custom quarter values not in the canonical order, sorted for stability
     Array.from(counts.keys())
       .filter(q => !order.includes(q))
