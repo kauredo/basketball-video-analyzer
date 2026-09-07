@@ -80,7 +80,7 @@
   display: inline-block;
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
-  color: var(--color-primary-light);
+  color: var(--color-accent-on-dark);
   margin-bottom: 4px;
 }
 

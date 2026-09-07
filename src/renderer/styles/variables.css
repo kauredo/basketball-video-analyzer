@@ -2,9 +2,15 @@
 :root,
 [data-theme="dark"] {
   /* Colors */
-  --color-primary: #4caf50;
-  --color-primary-dark: #45a049;
-  --color-primary-light: #66bb6a;
+  /* Teal is the one accent, and it has one job: the clip being cut right now.
+     It sits well clear of the orange band the category presets own, so "act
+     here" can never be read as "this is an offensive possession". */
+  --color-primary: #0a6e68;
+  --color-primary-dark: #075450;
+  --color-primary-light: #0f8f85;
+  /* The accent on a surface that is dark whatever the theme: Present mode and
+     the telestration toolbar both sit over video. */
+  --color-accent-on-dark: #3ed0c2;
   --color-danger: #f44336;
   --color-danger-dark: #d32f2f;
   --color-danger-light: #ef5350;
@@ -117,10 +123,8 @@
 /* Light theme */
 [data-theme="light"] {
   /* Colors */
-  --color-primary: #2e7d32;
-  --color-primary-dark: #1b5e20;
-  --color-primary-light: #388e3c;
-
+  /* The accent carries over from :root unchanged. White reads at 6.10:1 on it
+     in either theme, so the app and the site share one button colour. */
   --color-success: #1b5e20;
   --color-success-rgb: 27, 94, 32;
   --color-success-dark: #14481a;
