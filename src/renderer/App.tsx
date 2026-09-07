@@ -250,22 +250,23 @@ export const App: React.FC = () => {
 
       const startY = e.pageY;
       const startHeight = bottomPanelHeight;
+      // What the user dragged to, which is not the same as what got rendered:
+      // the panel can be shrunk below this by flex when the window is short,
+      // and persisting the rendered height ratcheted the preference down.
+      let draggedHeight = startHeight;
 
       const handleMouseMove = (e: MouseEvent) => {
         if (!isResizing.current) return;
 
         const deltaY = startY - e.pageY; // Inverted for bottom-to-top resize
         const newHeight = Math.min(Math.max(200, startHeight + deltaY), 600);
+        draggedHeight = newHeight;
         setBottomPanelHeight(newHeight);
       };
 
       const handleMouseUp = () => {
         isResizing.current = false;
-        // Save final height on mouseup
-        const finalEl = resizeRef.current;
-        if (finalEl) {
-          savePref(STORAGE_KEYS.BOTTOM_PANEL_HEIGHT, finalEl.clientHeight || bottomPanelHeight);
-        }
+        savePref(STORAGE_KEYS.BOTTOM_PANEL_HEIGHT, draggedHeight);
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = "";

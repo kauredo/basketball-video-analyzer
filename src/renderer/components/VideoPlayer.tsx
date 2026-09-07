@@ -92,6 +92,30 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [playbackRate, setPlaybackRate] = useState(1);
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showVolumeMenu, setShowVolumeMenu] = useState(false);
+
+  // Both transport popovers dismiss on Escape and on a click outside them.
+  useEffect(() => {
+    if (!showSpeedMenu && !showVolumeMenu) return;
+    const close = () => {
+      setShowSpeedMenu(false);
+      setShowVolumeMenu(false);
+    };
+    const onPointerDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t.closest(`.${styles.speedControl}`) && !t.closest(`.${styles.volumeControl}`)) {
+        close();
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [showSpeedMenu, showVolumeMenu]);
     const [keyBindings, setKeyBindings] = useState({
       markInKey: "z",
       markOutKey: "m",
@@ -853,7 +877,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   <button
                     type="button"
                     className={styles.speedButton}
-                    onClick={() => setShowVolumeMenu(!showVolumeMenu)}
+                    onClick={() => {
+                      setShowSpeedMenu(false);
+                      setShowVolumeMenu(!showVolumeMenu);
+                    }}
                     title={t("app.video.volumeLabel")}
                     aria-label={t("app.video.volumeLabel")}
                     aria-expanded={showVolumeMenu}
@@ -888,7 +915,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   <button
                     type="button"
                     className={styles.speedButton}
-                    onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                    onClick={() => {
+                      setShowVolumeMenu(false);
+                      setShowSpeedMenu(!showSpeedMenu);
+                    }}
                     title={t("app.video.playbackSpeed")}
                   >
                     <FontAwesomeIcon icon={faGaugeHigh} />
