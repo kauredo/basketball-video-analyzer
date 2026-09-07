@@ -10,6 +10,19 @@
   /* The scrub track needs its own value. --bg-tertiary read 1.38:1 against the
      transport row, under the 3.0 bar for identifying a control. */
   --scrub-track: #6a6a6a;
+
+  /* The workspace's vertical floors. These live together because the section
+     floor is derived from the other two, and deriving it by hand one file away
+     is how it goes stale: if the transport grows a control or a locale makes it
+     wrap taller, --video-controls-max only has to change here. */
+  --video-min-height: 140px;
+  --video-controls-max: 320px;
+  --video-section-min-height: calc(
+    var(--video-min-height) + var(--video-controls-max)
+  );
+  /* Independent of --video-min-height despite matching it today: this is how
+     far the clip list may be squeezed, not how tall the film must be. */
+  --bottom-panel-min-height: 140px;
   --color-danger: #f44336;
   --color-danger-dark: #d32f2f;
   --color-danger-light: #ef5350;

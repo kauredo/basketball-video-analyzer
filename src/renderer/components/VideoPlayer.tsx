@@ -7,6 +7,7 @@ import React, {
   useImperativeHandle,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { useDismissableMenu } from "../hooks/useDismissableMenu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlay,
@@ -93,29 +94,19 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showVolumeMenu, setShowVolumeMenu] = useState(false);
 
-  // Both transport popovers dismiss on Escape and on a click outside them.
-  useEffect(() => {
-    if (!showSpeedMenu && !showVolumeMenu) return;
-    const close = () => {
+  const speedControlRef = useRef<HTMLDivElement>(null);
+  const volumeControlRef = useRef<HTMLDivElement>(null);
+
+  // Refs rather than class-name lookups: a CSS-module hash is a styling
+  // identifier and nothing ties its shape to this behaviour.
+  useDismissableMenu(
+    showSpeedMenu || showVolumeMenu,
+    useCallback(() => {
       setShowSpeedMenu(false);
       setShowVolumeMenu(false);
-    };
-    const onPointerDown = (e: MouseEvent) => {
-      const t = e.target as HTMLElement;
-      if (!t.closest(`.${styles.speedControl}`) && !t.closest(`.${styles.volumeControl}`)) {
-        close();
-      }
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown, true);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown, true);
-    };
-  }, [showSpeedMenu, showVolumeMenu]);
+    }, []),
+    [speedControlRef, volumeControlRef],
+  );
     const [keyBindings, setKeyBindings] = useState({
       markInKey: "z",
       markOutKey: "m",
@@ -873,7 +864,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   )}
                 </div>
 
-                <div className={styles.volumeControl}>
+                <div className={styles.volumeControl} ref={volumeControlRef}>
                   <button
                     type="button"
                     className={styles.speedButton}
@@ -911,7 +902,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   )}
                 </div>
 
-                <div className={styles.speedControl}>
+                <div className={styles.speedControl} ref={speedControlRef}>
                   <button
                     type="button"
                     className={styles.speedButton}
