@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -108,7 +109,10 @@ export const PresentMode: React.FC<PresentModeProps> = ({
     return null;
   }
 
-  return (
+  // The clip library sets container-type: inline-size, which makes it the
+  // containing block for fixed descendants. Portal to body so inset: 0
+  // resolves against the viewport instead of the side panel.
+  return createPortal(
     <div
       className={styles.presentMode}
       role="dialog"
@@ -202,6 +206,7 @@ export const PresentMode: React.FC<PresentModeProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
