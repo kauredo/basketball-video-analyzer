@@ -105,6 +105,9 @@
   --input-height: 36px;
   --button-height: 36px;
   --input-padding: var(--spacing-sm) var(--spacing-md);
+  /* Load-bearing: a modal's scrolling body uses this as its vertical padding,
+     and a sticky footer inside it cancels exactly this much to sit flush. */
+  --modal-body-padding-y: var(--spacing-lg);
 
   /* Widths */
   --sidebar-width: 320px;

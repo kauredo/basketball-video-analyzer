@@ -285,28 +285,26 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       </section>
 
       {/* Clips by quarter */}
-      {byQuarter.rows.length > 0 && (
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>{t("app.stats.byQuarter")}</h3>
-          <div className={styles.barList}>
-            {byQuarter.rows.map(row => (
-              <div key={row.label} className={styles.barRow}>
-                <span className={styles.barLabel} title={row.label}>{row.label}</span>
-                <div className={styles.barTrack}>
-                  <div
-                    className={styles.barFill}
-                    style={{
-                      width: `${byQuarter.maxCount > 0 ? (row.count / byQuarter.maxCount) * 100 : 0}%`,
-                      backgroundColor: "var(--color-primary)",
-                    }}
-                  />
-                </div>
-                <span className={styles.barValue}>{row.count}</span>
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>{t("app.stats.byQuarter")}</h3>
+        <div className={styles.barList}>
+          {byQuarter.rows.map(row => (
+            <div key={row.label} className={styles.barRow}>
+              <span className={styles.barLabel} title={row.label}>{row.label}</span>
+              <div className={styles.barTrack}>
+                <div
+                  className={styles.barFill}
+                  style={{
+                    width: `${byQuarter.maxCount > 0 ? (row.count / byQuarter.maxCount) * 100 : 0}%`,
+                    backgroundColor: "var(--color-primary)",
+                  }}
+                />
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+              <span className={styles.barValue}>{row.count}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Distribution across the game */}
       <section className={styles.section}>
