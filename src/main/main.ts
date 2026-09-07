@@ -220,10 +220,12 @@ const createWindow = (): void => {
   mainWindow = new BrowserWindow({
     height: 1000,
     width: 1600,
-    // The workspace stacks a film pane, five control bands and two panels.
-    // Below this it cannot lay out without starving one of them.
+    // The workspace stacks a film pane, control bands and two panels. Below
+    // 1280 wide the header title wraps and its buttons spill out of the 60px
+    // bar over the video; below 700 tall the film pane hits its floor and the
+    // clip list is squeezed to its own.
     minHeight: 700,
-    minWidth: 1000,
+    minWidth: 1280,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
