@@ -1,8 +1,9 @@
 @import "./variables.css";
 
 .clipCreator {
-  height: 100%;
-  overflow-y: auto;
+  /* No overflow of its own. The modal body is the scroll container, and a
+     second one nested inside it gave the sticky action row nothing to stick
+     against. */
   max-width: var(--container-max-width);
   margin: 0 auto;
   padding: var(--spacing-lg);
@@ -117,6 +118,16 @@
 .clipCreationActions {
   display: flex;
   gap: var(--spacing-md);
+  /* The commit action for the app's central task. It pins to the bottom of the
+     modal's scroll area so it is reachable without scrolling past the category
+     tree and the player list. */
+  position: sticky;
+  bottom: calc(var(--spacing-lg) * -1);
+  z-index: 1;
+  background: var(--bg-secondary);
+  padding: var(--spacing-md) 0;
+  margin-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
 }
 
 .createClipBtn,
