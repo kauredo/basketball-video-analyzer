@@ -114,7 +114,7 @@
 }
 
 .markOut {
-  background: var(--color-danger);
+  background: var(--color-primary-dark);
 }
 
 .annotationMarker {
@@ -278,7 +278,7 @@
 }
 
 .markOutBtn {
-  background: var(--color-danger);
+  background: var(--color-primary-dark);
   color: var(--text-white);
 }
 
