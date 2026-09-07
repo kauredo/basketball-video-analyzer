@@ -220,6 +220,10 @@ const createWindow = (): void => {
   mainWindow = new BrowserWindow({
     height: 1000,
     width: 1600,
+    // The workspace stacks a film pane, five control bands and two panels.
+    // Below this it cannot lay out without starving one of them.
+    minHeight: 700,
+    minWidth: 1000,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

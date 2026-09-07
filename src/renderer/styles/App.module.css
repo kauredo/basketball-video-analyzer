@@ -63,6 +63,12 @@
   position: relative;
   height: 100%;
   overflow: hidden;
+  /* An explicit floor is required here, not min-height: auto. A flex item's
+     automatic minimum size is zero when it sets overflow: hidden, which this
+     does, so the film pane gave way until it was 0px tall at a 700px window.
+     460px is the worst-case control block (321px, transport wrapped) plus the
+     film's own 140px minimum. The clip list yields instead: it can shrink. */
+  min-height: 460px;
 }
 
 /* Side Panel Styles - for clips library */
@@ -114,9 +120,12 @@
   width: 100%;
   position: relative;
   transition: height 0.2s ease;
-  min-height: 200px;
+  /* The clip list yields before the film does. It used to be flex-shrink: 0
+     with a 200px floor, which is why a short window squeezed the video to
+     nothing instead of squeezing the panel. */
+  min-height: 140px;
   max-height: 600px;
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
 
 .bottomPanelCollapsed {
