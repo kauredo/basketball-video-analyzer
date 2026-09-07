@@ -156,7 +156,7 @@
 .editBtn:hover {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
@@ -402,7 +402,7 @@
 .saveBtn,
 .createCategoryBtn {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .saveBtn:hover,

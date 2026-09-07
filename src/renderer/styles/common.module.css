@@ -20,7 +20,7 @@
 
 .buttonPrimary {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   box-shadow: var(--shadow-sm);
 }
 
@@ -109,7 +109,7 @@
 
 .input.editing {
   background-color: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   border-color: var(--color-primary);
 }
 

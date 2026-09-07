@@ -541,7 +541,7 @@
 
 .selectVideoBtn {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .selectVideoBtn:hover {
@@ -552,7 +552,7 @@
 .getStartedBtn {
   height: calc(var(--button-height) * 1.5);
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   padding: 0 var(--spacing-xl);
   border-radius: var(--radius-lg);
   font-size: var(--font-size-md);

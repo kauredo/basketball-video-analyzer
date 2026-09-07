@@ -140,7 +140,7 @@
 
 .createClipBtn {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .createClipBtn:hover:not(:disabled) {
@@ -339,7 +339,7 @@
 .selectAllBtn:hover:not(:disabled) {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
   transform: translateY(-1px);
 }
 

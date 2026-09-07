@@ -24,8 +24,7 @@
   border-color: var(--color-primary);
 }
 
-.select:focus {
-  outline: none;
+.select:focus-visible {
   border-color: var(--color-primary);
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;

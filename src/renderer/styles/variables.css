@@ -2,14 +2,11 @@
 :root,
 [data-theme="dark"] {
   /* Colors */
-  /* Teal is the one accent, and it has one job: the clip being cut right now.
-     It sits well clear of the orange band the category presets own, so "act
-     here" can never be read as "this is an offensive possession". */
+  /* The one accent. Clear of the orange band the category presets own. */
   --color-primary: #0b7972;
   --color-primary-dark: #075450;
   --color-primary-light: #0f8f85;
-  /* The accent on a surface that is dark whatever the theme: Present mode and
-     the telestration toolbar both sit over video. */
+  /* The accent on surfaces that are dark whatever the theme (over video). */
   --color-accent-on-dark: #3ed0c2;
   --color-danger: #f44336;
   --color-danger-dark: #d32f2f;
@@ -122,10 +119,8 @@
   --focus-ring-width: 2px;
   --focus-ring-within: 0 0 0 2px var(--color-primary);
 
-  /* Typefaces. Plex Sans carries interface text rather than Space Grotesk,
-     because Space Grotesk has no Greek and el.json needs it. Space Grotesk is
-     for display only. Every fallback stack is real, so a missing font file
-     degrades instead of breaking. */
+  /* Typefaces. Plex Sans carries interface text, not Space Grotesk, which has
+     no Greek and el.json needs it. Space Grotesk is display only. */
   --font-display: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
   --font-body: "IBM Plex Sans Variable", "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "Monaco", "Menlo", "Ubuntu Mono", monospace;
@@ -138,8 +133,7 @@
      grounds only. */
   --focus-ring-color: var(--color-primary);
 
-  /* The accent carries over from :root unchanged. White reads at 6.10:1 on it
-     in either theme, so the app and the site share one button colour. */
+  /* Accent carries over from :root: white reads 5.26:1 on it in either theme. */
   --color-success: #1b5e20;
   --color-success-rgb: 27, 94, 32;
   --color-success-dark: #14481a;
