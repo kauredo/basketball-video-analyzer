@@ -112,8 +112,14 @@
   --container-max-width: 1200px;
   --min-interactive-size: 44px;
 
-  /* Focus Styles */
-  --focus-ring: 0 0 0 2px var(--color-primary-light);
+  /* Focus Styles.
+     outline, not box-shadow: forced-colors mode on Windows drops shadows, and
+     keyboard users there lost the ring entirely.
+     Worth knowing when testing: an Electron window that does not hold OS focus
+     matches no :focus-visible at all, so the ring reads as missing when the
+     window is simply not focused. */
+  --focus-ring-color: var(--color-accent-on-dark);
+  --focus-ring-width: 2px;
   --focus-ring-within: 0 0 0 2px var(--color-primary);
 
   /* Typefaces. Plex Sans carries interface text rather than Space Grotesk,
@@ -128,6 +134,10 @@
 /* Light theme */
 [data-theme="light"] {
   /* Colors */
+  /* On paper the ring takes the accent itself; the bright face is for dark
+     grounds only. */
+  --focus-ring-color: var(--color-primary);
+
   /* The accent carries over from :root unchanged. White reads at 6.10:1 on it
      in either theme, so the app and the site share one button colour. */
   --color-success: #1b5e20;

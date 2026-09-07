@@ -60,8 +60,8 @@
 }
 
 .button:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Form Styles */

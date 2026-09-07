@@ -122,8 +122,8 @@
 
 .searchInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .categoryFilter {
@@ -141,8 +141,8 @@
 
 .categoryFilter:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Clips Table */
@@ -331,8 +331,8 @@
 }
 
 .playBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Right Panel: Visual Timeline */

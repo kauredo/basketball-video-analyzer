@@ -43,8 +43,8 @@
 
 .numberInput:focus-visible,
 .nameInput:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
   border-color: var(--color-primary);
 }
 
@@ -75,8 +75,8 @@
 }
 
 .addBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .emptyHint {
@@ -143,6 +143,6 @@
 }
 
 .iconBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
