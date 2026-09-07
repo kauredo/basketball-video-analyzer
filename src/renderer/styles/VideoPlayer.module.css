@@ -176,7 +176,12 @@
 .controlsRow {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
+  /* wrap is kept so nothing is ever clipped at a small window. The row fits on
+     one line at the common widths because the controls below are sized to fit,
+     not because wrapping is disabled: a flex line break is decided from each
+     item's hypothetical size before any shrinking, so flex-shrink alone cannot
+     prevent a second row. */
   flex-wrap: wrap;
 }
 
@@ -330,10 +335,28 @@
 }
 
 .volumeControl {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
   margin-left: auto;
+}
+
+/* The slider lives in a popover so the transport fits on one row when the side
+   panel is open. Mirrors .speedMenu. */
+.volumeMenu {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-popover);
 }
 
 .volumeSlider {
@@ -514,7 +537,15 @@
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-xs);
-  min-width: 200px;
+  /* 180px is what keeps the whole transport on one row with the side panel
+     open. A fixed 200px min-width here is what made it wrap. */
+  flex: 0 1 180px;
+  min-width: 140px;
+}
+
+.timeSearchContainer > * {
+  min-width: 0;
+  width: 100%;
 }
 
 .timeSearchInput {
