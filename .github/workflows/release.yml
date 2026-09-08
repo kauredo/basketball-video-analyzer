@@ -206,8 +206,25 @@ jobs:
       # The marketing site is a static Astro build that reads the latest release
       # from the GitHub API at build time, so it advertises whatever version was
       # current when it was last built. Ping its deploy hook so a release also
-      # refreshes the download button. Guarded: a repo without the secret skips
-      # this rather than failing the release over a website concern.
+      # refreshes the download button.
+      #
+      # The empty-secret guard is in the script, not in `if:`, and it has to be.
+      # GitHub's context-availability table gives jobs.<job_id>.steps.if
+      # github, needs, strategy, matrix, job, runner, env, vars, steps, inputs,
+      # and `secrets` is the one context every other steps.* row carries and
+      # this one does not. Naming it here does not evaluate false, it makes the
+      # whole file invalid, so every run of this workflow fails before a job is
+      # created and the tag produces no release at all.
+      #
+      # Passing the URL through env rather than interpolating it into the
+      # command also keeps it out of the process list.
       - name: Rebuild the marketing site
-        if: ${{ startsWith(github.ref, 'refs/tags/') && secrets.WEBSITE_DEPLOY_HOOK != '' }}
-        run: curl -fsS -X POST "${{ secrets.WEBSITE_DEPLOY_HOOK }}"
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          DEPLOY_HOOK: ${{ secrets.WEBSITE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "WEBSITE_DEPLOY_HOOK is not set; skipping the site rebuild."
+            exit 0
+          fi
+          curl -fsS -X POST "$DEPLOY_HOOK"
