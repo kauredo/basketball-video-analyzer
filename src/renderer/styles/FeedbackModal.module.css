@@ -65,7 +65,7 @@
 
 .typeButton.selectedFeedback {
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
   background: color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 

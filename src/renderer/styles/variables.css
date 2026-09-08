@@ -7,6 +7,12 @@
   --color-primary-dark: #075450;
   /* The accent on surfaces that are dark whatever the theme (over video). */
   --color-accent-on-dark: #3ed0c2;
+  /* The accent has the same two jobs the semantic colours do. #0b7972 is tuned
+     to carry white, which makes it too dark to be read ON the app's grounds:
+     3.50:1 on --bg-primary down to 2.78:1 on --bg-quaternary. Anything drawing
+     the accent as text takes this instead. Found by sweeping the rendered app;
+     the player numbers in the clip list were the visible case. */
+  --color-accent-ink: #3ed0c2; /* 7.66:1 on --bg-quaternary */
   /* The workspace's vertical floors. These live together because the section
      floor is derived from the other two, and deriving it by hand one file away
      is how it goes stale: if the transport grows a control or a locale makes it
@@ -25,44 +31,59 @@
      which pushes it the opposite way. Holding them in one token is what left
      white on #f44336 at 3.68:1 and #ff9800 text at 1.63:1 on light paper.
      The -ink values are measured against --bg-quaternary, the lightest ground
-     in the dark theme and the darkest in the light one. */
+     in the dark theme and the darkest in the light one. The dark figures rose
+     when the grounds went graphite; they are recorded, not retuned, because
+     brighter than the bar is not a defect. */
   --color-danger: #d32f2f; /* white reads 4.98:1 */
   --color-danger-dark: #c62828; /* its hover face, 5.62:1 */
-  --color-danger-ink: #ef9a9a; /* 4.53:1 on --bg-quaternary */
+  --color-danger-ink: #ef9a9a; /* 6.79:1 on --bg-quaternary */
   --color-success: #2e7d32;
   --color-success-rgb: 46, 125, 50;
   --color-success-dark: #1b5e20;
   --color-warning: #ff9800; /* border and rail only, never behind text */
-  --color-warning-ink: #ffb74d; /* 5.63:1 on --bg-quaternary */
+  --color-warning-ink: #ffb74d; /* 8.45:1 on --bg-quaternary */
   --color-info: #2196f3; /* border and rail only, never behind text */
-  --color-info-ink: #4fc3f7; /* 4.86:1 on --bg-quaternary */
+  --color-info-ink: #4fc3f7; /* 7.30:1 on --bg-quaternary */
 
   /* Progress and scrub tracks. --bg-tertiary reads 1.38:1 against the
      transport row and 1.14:1 against a stats card, both under the 3.0 bar for
      identifying a control. The transport draws it as a fill, the stats bars as
      a 1px outline; either way this is the value that states a track's extent. */
-  --track: #787878; /* 3.25:1 on --bg-secondary */
+  --track: #7a7386; /* 3.79:1 on --bg-secondary */
 
-  /* Background Colors */
-  --bg-main: #1a1a1a;
+  /* Background Colors. Graphite with a faint plum cast, from plan 027's
+     direction, so the app's dark is not a blue-black and not the site's paper
+     inverted. Four grounds: the app, the chrome that holds controls, the wells
+     inside those controls, and the lightest surface, which is the one every
+     ink value below is measured against.
+     --bg-quaternary is derived rather than given: the direction names three
+     grounds and two rule weights, and the fourth ground is the worst case for
+     contrast, so it could not be guessed. #2a2733 is the lightest value that
+     still lets --text-secondary clear 4.5:1, at 5.75. */
+  --bg-main: #151319;
   --bg-black: #000; /* cinema backdrop, theme-independent (Present mode) */
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2a2a2a;
-  --bg-tertiary: #333;
-  --bg-quaternary: #444;
+  --bg-primary: #151319;
+  --bg-secondary: #1c1a21;
+  --bg-tertiary: #232028;
+  --bg-quaternary: #2a2733;
   --bg-overlay: rgba(0, 0, 0, 0.75);
   --bg-hover: rgba(255, 255, 255, 0.05);
 
   /* Border Colors */
-  --border-color: #444;
-  --border-color-light: #555;
-  --border-color-hover: #666;
+  --border-color: #2c2834;
+  --border-color-light: #443e51;
+  --border-color-hover: #56506a;
 
-  /* Text Colors */
-  --text-primary: #ffffff;
-  --text-secondary: #ccc;
-  --text-tertiary: #aaa;
-  --text-muted: #666;
+  /* Text Colors. tx, tx-2 and tx-3 from the direction, except that its tx-3
+     #756d83 does not clear AA on the grounds it was drawn for: 3.26:1 on
+     --bg-tertiary and 2.97:1 on --bg-quaternary. --text-tertiary is #9a93ab,
+     the nearest value on the same hue that clears 4.5 everywhere (4.97 on the
+     worst ground). #756d83 survives as --text-muted, which marks disabled
+     controls rather than carrying text anyone has to read. */
+  --text-primary: #ede9f2;
+  --text-secondary: #a79fb4;
+  --text-tertiary: #9a93ab;
+  --text-muted: #756d83;
   --text-contrast: #000;
   --text-white: #ffffff;
 
@@ -169,6 +190,7 @@
 
   /* The fills carry over; only the inks flip, because paper moves them the
      other way. Measured against --bg-quaternary #e0e0e0. */
+  --color-accent-ink: #075450; /* 6.03:1 on --bg-quaternary */
   --color-danger-ink: #b3261e; /* 4.95:1 */
   --color-warning-ink: #a04100; /* 4.89:1 */
   --color-info-ink: #1257a8; /* 5.38:1 */
@@ -194,7 +216,11 @@
   /* Text Colors */
   --text-primary: #212121;
   --text-secondary: #616161;
-  --text-tertiary: #757575;
+  /* #757575 was the Material step and does not clear AA on this theme's own
+     grounds: 4.23:1 on --bg-secondary, 3.97:1 on --bg-tertiary, 3.49:1 on
+     --bg-quaternary. Found by sweeping the rendered app, not by reading the
+     file. #5f5f5f clears everywhere, worst case 4.84 on --bg-quaternary. */
+  --text-tertiary: #5f5f5f;
   --text-muted: #9e9e9e;
   --text-contrast: #ffffff;
   --text-white: #ffffff;

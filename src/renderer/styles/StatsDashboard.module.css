@@ -24,7 +24,7 @@
 }
 
 .summaryIcon {
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
   font-size: var(--font-size-lg);
   margin-bottom: 4px;
 }
@@ -194,7 +194,7 @@
 }
 
 .tabActive {
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
   border-bottom-color: var(--color-primary);
 }
 

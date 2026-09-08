@@ -572,7 +572,7 @@
 
 .loadPresetBtn:hover {
   background: none;
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
   transform: none;
   box-shadow: none;
   border: none;
@@ -851,7 +851,7 @@
 
 .loadPresetBtn:hover {
   background: var(--bg-tertiary);
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
 }
 
 .deletePresetBtn {
