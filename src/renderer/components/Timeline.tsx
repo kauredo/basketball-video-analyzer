@@ -14,7 +14,10 @@ import {
 
 import { Clip, Category } from "../../types/global";
 
-const DEFAULT_CATEGORY_COLOR = "#4CAF50";
+// A category with no colour of its own. Deliberately a neutral: it reads as
+// unset rather than impersonating a real category. The old #4CAF50 sat dE 7.4
+// from Transition in the new palette and failed 3:1 on the light theme.
+const DEFAULT_CATEGORY_COLOR = "#7F7F7F";
 
 interface TimelineProps {
   clips: Clip[];
@@ -516,11 +519,13 @@ export const Timeline: React.FC<TimelineProps> = ({
 
               {/* Timeline Tracks */}
               <div className={styles.timelineTracks}>
-                {clipsByCategory.map(({ category, clips: categoryClips }) => (
+                {clipsByCategory.map(({ category, clips: categoryClips }, trackIndex) => (
                   <div key={category.id} className={styles.timelineTrack}>
                     <div className={styles.trackLabelSticky}>
                       <div
-                        className={styles.trackColorIndicator}
+                        className={`${styles.trackColorIndicator} ${
+                          styles[`markerShape${trackIndex % 3}`]
+                        }`}
                         style={{ backgroundColor: category.color }}
                       />
                       <span
@@ -549,8 +554,8 @@ export const Timeline: React.FC<TimelineProps> = ({
                         <div
                           key={clip.id}
                           className={`${styles.timelineClip} ${
-                            selectedClip?.id === clip.id ? styles.selectedClip : ""
-                          }`}
+                            styles[`markerShape${trackIndex % 3}`]
+                          } ${selectedClip?.id === clip.id ? styles.selectedClip : ""}`}
                           style={{
                             left: `${clip.startPercentage}%`,
                             width: `${clip.widthPercentage}%`,

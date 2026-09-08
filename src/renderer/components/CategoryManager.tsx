@@ -16,24 +16,30 @@ import { useConfirm } from "../contexts/ConfirmContext";
 
 import { Category } from "../../types/global";
 
-const DEFAULT_CATEGORY_COLOR = "#4CAF50";
+// A category with no colour of its own. Deliberately a neutral: it reads as
+// unset rather than impersonating a real category. The old #4CAF50 sat dE 7.4
+// from Transition in the new palette and failed 3:1 on the light theme.
+const DEFAULT_CATEGORY_COLOR = "#7F7F7F";
 
+// Kept in step with the Basketball preset seeded in src/main/database.ts.
+// Every pair is at least CIE76 dE 23.7 apart, clears 3:1 on both theme
+// backgrounds, and sits 25 or more from the action and danger colours.
 const colorPresets: Array<{ hex: string; name: string }> = [
-  { hex: "#4CAF50", name: "Green" },
-  { hex: "#2196F3", name: "Blue" },
-  { hex: "#FF9800", name: "Orange" },
-  { hex: "#f44336", name: "Red" },
-  { hex: "#9C27B0", name: "Purple" },
-  { hex: "#00BCD4", name: "Cyan" },
-  { hex: "#8BC34A", name: "Light Green" },
-  { hex: "#FFC107", name: "Amber" },
-  { hex: "#E91E63", name: "Pink" },
-  { hex: "#795548", name: "Brown" },
-  { hex: "#607D8B", name: "Blue Grey" },
-  { hex: "#FF5722", name: "Deep Orange" },
-  { hex: "#3F51B5", name: "Indigo" },
-  { hex: "#009688", name: "Teal" },
-  { hex: "#CDDC39", name: "Lime" },
+  { hex: "#B15F43", name: "Terracotta" },
+  { hex: "#A94EBC", name: "Violet" },
+  { hex: "#3B7B9B", name: "Steel blue" },
+  { hex: "#5D7E30", name: "Olive" },
+  { hex: "#BC4E85", name: "Raspberry" },
+  { hex: "#4075BF", name: "Blue" },
+  { hex: "#1C9C71", name: "Jade" },
+  { hex: "#826BC7", name: "Periwinkle" },
+  { hex: "#947538", name: "Bronze" },
+  { hex: "#3B9B3B", name: "Green" },
+  { hex: "#A144E4", name: "Purple" },
+  { hex: "#D06125", name: "Burnt orange" },
+  { hex: "#D4355D", name: "Crimson" },
+  { hex: "#D926BB", name: "Magenta" },
+  { hex: "#8F8F14", name: "Citron" },
 ];
 
 interface CategoryManagerProps {

@@ -754,3 +754,31 @@
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
+
+/* A second signal on every lane, so the tracks stay separable without colour.
+   Category colour cannot carry fifteen categories for a colourblind user: with
+   each swatch also clearing 3:1 on both theme backgrounds, the lightness range
+   is pinned and only seven colours stay distinguishable. Shape covers the rest.
+   Three variants cycle by track index, and a lane's dot matches its markers. */
+.markerShape0 {
+  /* solid */
+}
+
+.markerShape1 {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 36%,
+    rgba(255, 255, 255, 0.9) 36%,
+    rgba(255, 255, 255, 0.9) 64%,
+    transparent 64%
+  );
+}
+
+.markerShape2 {
+  /* outline, not box-shadow: .selectedClip sets its own box-shadow and would
+     replace this one, so selecting a clip removed the very signal that tells
+     its lane apart. A negative offset draws the ring inside without affecting
+     layout. */
+  outline: 2px solid var(--bg-secondary);
+  outline-offset: -2px;
+}
