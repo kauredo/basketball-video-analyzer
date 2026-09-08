@@ -32,7 +32,7 @@
 
 .buttonDanger {
   background: var(--color-danger);
-  color: var(--text-primary);
+  color: var(--text-white);
   box-shadow: var(--shadow-sm);
 }
 

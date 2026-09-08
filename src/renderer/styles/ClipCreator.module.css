@@ -357,7 +357,7 @@
 .clearSelectionBtn:hover:not(:disabled) {
   background: var(--color-danger);
   border-color: var(--color-danger);
-  color: var(--text-primary);
+  color: var(--text-white);
   transform: translateY(-1px);
 }
 
