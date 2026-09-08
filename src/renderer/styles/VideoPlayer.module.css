@@ -19,7 +19,10 @@
   justify-content: center;
   background: var(--bg-main);
   overflow: hidden;
-  min-height: 0;
+  /* The film never gets squeezed to nothing. With min-height: 0 the control
+     block could take the whole section and leave the video at 0px, which is
+     what happened at a 680px window. */
+  min-height: var(--video-min-height);
 }
 
 .videoElement {
@@ -583,6 +586,10 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   outline: none;
   width: 140px;
+  /* Yields with its container rather than overflowing it. The container can be
+     squeezed to its 140px floor, which is less than this field plus the icon
+     and the button need. */
+  min-width: 0;
   font-family: var(--font-mono);
 }
 
