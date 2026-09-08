@@ -33,13 +33,15 @@ import { ContextualHint } from "./ContextualHint";
 import { PresentMode } from "./PresentMode";
 import { ClipTable } from "./ClipTable";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
-import { DONATION_NUDGE_THRESHOLD } from "../utils/constants";
+import {
+  CLIP_STATUSES,
+  DONATION_NUDGE_THRESHOLD,
+  statusLabelKey,
+} from "../utils/constants";
 import { formatVideoSrc } from "../utils/paths";
 import { Player, ClipStatus } from "../../types/global";
 import { inkOn } from "../utils/contrast";
 import { withCause } from "../utils/errors";
-
-const CLIP_STATUSES: ClipStatus[] = ["keep", "cut", "review"];
 
 // Parse a clip's JSON player-ID array, tolerating malformed values.
 const parsePlayerIds = (playersJson?: string): number[] => {
@@ -874,7 +876,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                         selectedStatus === status ? styles.active : ""
                       }`}
                     >
-                      {t(`app.clips.table.status${status[0].toUpperCase()}${status.slice(1)}`)} ({count})
+                      {t(statusLabelKey(status))} ({count})
                     </button>
                   );
                 })}

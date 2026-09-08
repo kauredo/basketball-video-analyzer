@@ -19,13 +19,12 @@ import { useDismissableMenu } from "../hooks/useDismissableMenu";
 import { formatVideoTime } from "../utils/format";
 import { inkOn } from "../utils/contrast";
 import { ClipStatus } from "../../types/global";
+import { CLIP_STATUSES, statusLabelKey } from "../utils/constants";
 // Type-only, so this never becomes a runtime cycle with the component that
 // renders this one.
 import type { Clip, Category } from "./ClipLibrary";
 
 type SortField = "date" | "duration" | "title";
-
-const STATUSES: ClipStatus[] = ["keep", "cut", "review"];
 
 /** A clip's id list, tolerating a malformed value the same way the cards do. */
 const parseIds = (json?: string): number[] => {
@@ -37,7 +36,7 @@ const parseIds = (json?: string): number[] => {
   }
 };
 
-export interface ClipTableProps {
+interface ClipTableProps {
   /** Already filtered and sorted by ClipLibrary. */
   clips: Clip[];
   /** Hierarchical, as getCategoriesHierarchical returns them. */
@@ -74,11 +73,19 @@ export const ClipTable: React.FC<ClipTableProps> = ({
   } | null>(null);
   const [draft, setDraft] = useState("");
   const [categoryEditFor, setCategoryEditFor] = useState<number | null>(null);
+  // The open popover's working set. Reading the clip prop instead would mean
+  // every toggle computes its new list from whatever the last completed write
+  // left there, so a second checkbox ticked before the first write returns
+  // sends a list that never contained the first one.
+  const [categoryDraft, setCategoryDraft] = useState<number[]>([]);
 
   const selectAllRef = useRef<HTMLInputElement>(null);
   const categoryPopoverRef = useRef<HTMLDivElement>(null);
-  // Anchor for shift-click range selection.
-  const lastClickedIndex = useRef<number | null>(null);
+  // Anchor for shift-click range selection, held as a clip id rather than a
+  // position. A filter, a sort or a bulk delete reorders or shortens `clips`
+  // under a stored index, which then points at a different clip or past the
+  // end of the array.
+  const lastClickedId = useRef<number | null>(null);
 
   useDismissableMenu(
     categoryEditFor !== null,
@@ -126,15 +133,22 @@ export const ClipTable: React.FC<ClipTableProps> = ({
 
   const toggleAll = () => {
     setSelected(allSelected ? new Set() : new Set(clips.map(c => c.id)));
-    lastClickedIndex.current = null;
+    lastClickedId.current = null;
   };
 
   const toggleRow = (index: number, event: React.MouseEvent) => {
     const clip = clips[index];
+    // Resolved against the current array, so both ends of the range are real
+    // indices. An anchor whose clip has been filtered away or deleted comes
+    // back as -1 and the click falls through to a plain toggle.
+    const anchor =
+      lastClickedId.current === null
+        ? -1
+        : clips.findIndex(c => c.id === lastClickedId.current);
+
     setSelected(prev => {
       const next = new Set(prev);
-      const anchor = lastClickedIndex.current;
-      if (event.shiftKey && anchor !== null) {
+      if (event.shiftKey && anchor !== -1) {
         const [from, to] = anchor < index ? [anchor, index] : [index, anchor];
         const selecting = !prev.has(clip.id);
         for (let i = from; i <= to; i++) {
@@ -147,7 +161,7 @@ export const ClipTable: React.FC<ClipTableProps> = ({
       else next.add(clip.id);
       return next;
     });
-    lastClickedIndex.current = index;
+    lastClickedId.current = clip.id;
   };
 
   const startEdit = (clip: Clip, field: "title" | "notes") => {
@@ -180,11 +194,20 @@ export const ClipTable: React.FC<ClipTableProps> = ({
     }
   };
 
+  const openCategoryEditor = (clip: Clip) => {
+    if (categoryEditFor === clip.id) {
+      setCategoryEditFor(null);
+      return;
+    }
+    setCategoryEditFor(clip.id);
+    setCategoryDraft(parseIds(clip.categories));
+  };
+
   const toggleClipCategory = (clip: Clip, categoryId: number) => {
-    const ids = parseIds(clip.categories);
-    const next = ids.includes(categoryId)
-      ? ids.filter(id => id !== categoryId)
-      : [...ids, categoryId];
+    const next = categoryDraft.includes(categoryId)
+      ? categoryDraft.filter(id => id !== categoryId)
+      : [...categoryDraft, categoryId];
+    setCategoryDraft(next);
     void onUpdate(clip.id, { categories: JSON.stringify(next) });
   };
 
@@ -264,9 +287,9 @@ export const ClipTable: React.FC<ClipTableProps> = ({
           >
             <option value="">{t("app.clips.table.bulkStatus")}</option>
             <option value="none">{t("app.clips.table.statusNone")}</option>
-            {STATUSES.map(status => (
+            {CLIP_STATUSES.map(status => (
               <option key={status} value={status}>
-                {t(`app.clips.table.status${status[0].toUpperCase()}${status.slice(1)}`)}
+                {t(statusLabelKey(status))}
               </option>
             ))}
           </select>
@@ -389,11 +412,7 @@ export const ClipTable: React.FC<ClipTableProps> = ({
                     <button
                       type="button"
                       className={`${styles.cellButton} ${styles.pickerButton}`}
-                      onClick={() =>
-                        setCategoryEditFor(
-                          categoryEditFor === clip.id ? null : clip.id,
-                        )
-                      }
+                      onClick={() => openCategoryEditor(clip)}
                       aria-label={t("app.clips.table.editCategories")}
                       aria-expanded={categoryEditFor === clip.id}
                       aria-haspopup="true"
@@ -435,7 +454,7 @@ export const ClipTable: React.FC<ClipTableProps> = ({
                           >
                             <input
                               type="checkbox"
-                              checked={ids.includes(category.id)}
+                              checked={categoryDraft.includes(category.id)}
                               onChange={() =>
                                 toggleClipCategory(clip, category.id)
                               }
@@ -501,9 +520,9 @@ export const ClipTable: React.FC<ClipTableProps> = ({
                       <option value="">
                         {t("app.clips.table.statusNone")}
                       </option>
-                      {STATUSES.map(status => (
+                      {CLIP_STATUSES.map(status => (
                         <option key={status} value={status}>
-                          {t(`app.clips.table.status${status[0].toUpperCase()}${status.slice(1)}`)}
+                          {t(statusLabelKey(status))}
                         </option>
                       ))}
                     </select>
