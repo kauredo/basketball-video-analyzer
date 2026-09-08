@@ -15,6 +15,8 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.shortcuts.toggleBottomPanel",
+      "app.shortcuts.toggleSidePanel",
       "app.startup.apiUnavailable",
       "app.startup.checkFailed",
       "app.startup.dbFailed",
@@ -357,7 +359,9 @@
       "seek30s": "Naviguer de 30 secondes",
       "seek1m": "Naviguer d'1 minute",
       "frameStep": "Image par image",
-      "quickTag": "Étiquetage rapide (1-9)"
+      "quickTag": "Étiquetage rapide (1-9)",
+      "toggleSidePanel": "Afficher ou masquer le panneau latéral",
+      "toggleBottomPanel": "Afficher ou masquer la liste des clips"
     },
     "library": {
       "searchPlaceholder": "Rechercher des clips..."

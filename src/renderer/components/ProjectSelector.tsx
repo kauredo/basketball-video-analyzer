@@ -17,6 +17,7 @@ import { YouTubeImport } from "./YouTubeImport";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
+import { withCause } from "../utils/errors";
 
 interface Project {
   id: number;
@@ -113,7 +114,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
         loadProjects();
       } catch (error) {
         console.error("Error deleting project:", error);
-        showError(t("app.projects.deleteError"));
+        showError(withCause(t("app.projects.deleteError"), error));
       }
     }
   };

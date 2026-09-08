@@ -196,6 +196,35 @@ export const App: React.FC = () => {
     savePref(STORAGE_KEYS.SIDE_PANEL_COLLAPSED, isSidePanelCollapsed);
   }, [isSidePanelCollapsed]);
 
+  // Keyboard access to the two panels. The layout is draggable and the video
+  // takes the space one-for-one, so collapsing the clip list is how a coach
+  // gets the film big: 323px of video at the default 300px panel, 623px with
+  // it collapsed, at a 900px window. Until now that needed a drag to the
+  // toolbar. Final Cut binds its equivalents to Control-Command-2 for the
+  // timeline and Command-` for the sidebar; digits are the closer fit here
+  // because 1 is already the side panel's button and 2 the bottom one.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+      if (e.key === "1") {
+        e.preventDefault();
+        setIsSidePanelCollapsed(v => !v);
+      } else if (e.key === "2") {
+        e.preventDefault();
+        setIsBottomPanelCollapsed(v => !v);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
   useEffect(() => {
     savePref(STORAGE_KEYS.BOTTOM_PANEL_COLLAPSED, isBottomPanelCollapsed);
   }, [isBottomPanelCollapsed]);

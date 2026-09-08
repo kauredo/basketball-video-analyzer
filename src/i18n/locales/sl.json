@@ -15,6 +15,8 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.shortcuts.toggleBottomPanel",
+      "app.shortcuts.toggleSidePanel",
       "app.startup.apiUnavailable",
       "app.startup.checkFailed",
       "app.startup.dbFailed",
@@ -356,7 +358,9 @@
       "seek30s": "Pomik 30 sekund",
       "seek1m": "Pomik 1 minuto",
       "frameStep": "Sličico za sličico",
-      "quickTag": "Hitro označevanje (1–9)"
+      "quickTag": "Hitro označevanje (1–9)",
+      "toggleSidePanel": "Prikaži ali skrij stranski pult",
+      "toggleBottomPanel": "Prikaži ali skrij seznam posnetkov"
     },
     "library": {
       "searchPlaceholder": "Išči posnetke ..."

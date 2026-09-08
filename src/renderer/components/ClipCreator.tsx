@@ -15,6 +15,7 @@ import { useToastContext } from "../contexts/ToastContext";
 import { formatVideoTime } from "../utils/format";
 import { Court } from "./Court";
 import { Player } from "../../types/global";
+import { withCause } from "../utils/errors";
 
 interface Category {
   id: number;
@@ -145,11 +146,16 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           setCurrentProcessId(null);
           showWarning(t("app.clips.creator.clipCreationCancelled"));
         } else {
-          showError(t("app.clips.creator.clipCancellationFailed"));
+          // The main process reports a refusal as { success: false, reason },
+          // not as a throw, so the cause is on the result rather than in a
+          // catch.
+          showError(
+            withCause(t("app.clips.creator.clipCancellationFailed"), result.reason)
+          );
         }
       } catch (error) {
         console.error("Error cancelling clip creation:", error);
-        showError(t("app.clips.creator.clipCancellationFailed"));
+        showError(withCause(t("app.clips.creator.clipCancellationFailed"), error));
       }
     }
   };
@@ -269,7 +275,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       }
     } catch (error) {
       console.error("System check failed:", error);
-      showError(t("app.clips.creator.systemCheck.error_system_check_failed"));
+      showError(withCause(t("app.clips.creator.systemCheck.error_system_check_failed"), error));
       return;
     }
 

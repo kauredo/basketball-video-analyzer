@@ -6,6 +6,7 @@ import styles from "../styles/PlayerManager.module.css";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { Player } from "../../types/global";
+import { withCause } from "../utils/errors";
 
 interface PlayerManagerProps {
   currentProject: any | null;
@@ -55,7 +56,7 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({
       onPlayersChange?.();
     } catch (error) {
       console.error("Error creating player:", error);
-      showError(t("app.players.errorCreating"));
+      showError(withCause(t("app.players.errorCreating"), error));
     }
   };
 
@@ -84,7 +85,7 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({
       onPlayersChange?.();
     } catch (error) {
       console.error("Error updating player:", error);
-      showError(t("app.players.errorUpdating"));
+      showError(withCause(t("app.players.errorUpdating"), error));
     }
   };
 
@@ -98,7 +99,7 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({
       onPlayersChange?.();
     } catch (error) {
       console.error("Error deleting player:", error);
-      showError(t("app.players.errorDeleting"));
+      showError(withCause(t("app.players.errorDeleting"), error));
     }
   };
 
