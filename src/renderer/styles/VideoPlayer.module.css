@@ -179,7 +179,13 @@
 .controlsRow {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  /* Measured at 1440x691 with the side panel open: 931px of controls in 1048px
+     of row. At spacing-sm the fourteen gaps come to 112px, so the line needed
+     1043 of 1048 and broke on five pixels of slack. spacing-xs is 4px, which
+     takes the gaps to 56 and the line to 988, leaving 60px. At 1280 with the
+     panel open there are only 888px and it still wraps, which is correct: the
+     controls do not fit there and wrapping beats clipping. */
+  gap: var(--spacing-xs);
   /* wrap is kept so nothing is ever clipped at a small window. The row fits on
      one line at the common widths because the controls below are sized to fit,
      not because wrapping is disabled: a flex line break is decided from each
