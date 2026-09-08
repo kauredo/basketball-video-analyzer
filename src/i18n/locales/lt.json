@@ -1,6 +1,6 @@
 {
   "_machineTranslated": {
-    "date": "2026-09-07",
+    "date": "2026-09-08",
     "reviewed": false,
     "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
     "keys": [
@@ -15,6 +15,9 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.startup.apiUnavailable",
+      "app.startup.checkFailed",
+      "app.startup.dbFailed",
       "app.video.markInPoint",
       "app.video.markOutPoint",
       "app.video.previousNextFrame"
@@ -23,7 +26,7 @@
   "app": {
     "title": "Basketball Video Analyzer",
     "buttons": {
-      "getStarted": "Pradėti – pasirinkti vaizdo įrašą",
+      "getStarted": "Pasirinkite vaizdo įrašą, kad pradėtumėte",
       "selectVideo": "Pasirinkti vaizdo įrašą",
       "settings": "Nustatymai",
       "showSidePanel": "Rodyti šoninį skydelį",
@@ -79,10 +82,10 @@
       "keyBindings": "Klavišų priskyrimai",
       "markInKey": "Pradžios žymėjimo klavišas",
       "markOutKey": "Pabaigos žymėjimo klavišas",
-      "keyBindingSaved": "Klavišo priskyrimas sėkmingai išsaugotas",
+      "keyBindingSaved": "Klavišo priskyrimas išsaugotas",
       "dangerZone": "Pavojinga zona",
       "confirmReset": "Ar tikrai? Bus ištrinti visi klipai ir kategorijos atstatytos į numatytąsias. Šio veiksmo atšaukti negalima.",
-      "resetSuccess": "Duomenų bazė sėkmingai atstatyta",
+      "resetSuccess": "Duomenų bazė atstatyta",
       "resetError": "Klaida atstatant duomenų bazę",
       "pressAnyKey": "Paspauskite bet kurį klavišą...",
       "theme": "Tema",
@@ -108,9 +111,9 @@
       "errorCreating": "Klaida kuriant kategoriją. Toks pavadinimas gali jau egzistuoti.",
       "errorUpdating": "Klaida atnaujinant kategoriją. Toks pavadinimas gali jau egzistuoti.",
       "errorDeleting": "Klaida trinant kategoriją.",
-      "categoryCreated": "Kategorija sėkmingai sukurta",
-      "categoryUpdated": "Kategorija sėkmingai atnaujinta",
-      "categoryDeleted": "Kategorija sėkmingai ištrinta",
+      "categoryCreated": "Kategorija sukurta",
+      "categoryUpdated": "Kategorija atnaujinta",
+      "categoryDeleted": "Kategorija ištrinta",
       "editCategory": "Redaguoti kategoriją",
       "categoryName": "Kategorijos pavadinimas",
       "color": "Spalva",
@@ -141,9 +144,9 @@
         "deleteTooltip": "Visam laikui ištrinti „{{presetName}}“ šabloną",
         "noPresetsYet": "Šablonų dar nėra",
         "createFirstPreset": "Sukurkite pirmąjį šabloną sudarydami kategorijas viršuje ir išsaugokite jas aprašomuoju pavadinimu.",
-        "saveSuccess": "Šablonas sėkmingai išsaugotas! Dabar galite jį įkelti bet kuriame projekte.",
-        "loadSuccess": "Šablonas sėkmingai įkeltas!",
-        "deleteSuccess": "Šablonas sėkmingai ištrintas!",
+        "saveSuccess": "Šablonas išsaugotas Dabar galite jį įkelti bet kuriame projekte.",
+        "loadSuccess": "Šablonas įkeltas",
+        "deleteSuccess": "Šablonas ištrintas",
         "saveFailed": "Nepavyko išsaugoti šablono",
         "loadFailed": "Nepavyko įkelti šablono",
         "deleteFailed": "Nepavyko ištrinti šablono",
@@ -167,7 +170,7 @@
       "export": "Eksportuoti klipus",
       "deleteClip": "Ištrinti klipą",
       "confirmDelete": "Ar tikrai norite ištrinti šį klipą?",
-      "exportSuccess": "Sėkmingai eksportuota {{count}} klipų į {{dir}}",
+      "exportSuccess": "Eksportuota {{count}} klipų į {{dir}}",
       "exportError": "Klaida eksportuojant klipus",
       "clipsSummary": "{{count}} klipų • {{video}}",
       "noClipsYet": "Klipų dar nėra",
@@ -248,7 +251,7 @@
         "errorInvalidTime": "Neteisingos laiko reikšmės. Pažymėkite teisingus pradžios ir pabaigos taškus.",
         "errorInvalidTitle": "Neteisingas klipo pavadinimas. Įveskite tinkamą pavadinimą.",
         "errorNoCategories": "Nepasirinkta nė viena kategorija. Pasirinkite bent vieną kategoriją.",
-        "clipCreatedSuccess": "Klipas sėkmingai sukurtas!",
+        "clipCreatedSuccess": "Klipas sukurtas",
         "retryingClipCreation": "Bandoma sukurti klipą iš naujo... Bandymas {{attempt}}/{{maxRetries}} (laukiama {{delay}} s)",
         "errorAfterRetries": "Nepavyko sukurti klipo po kelių bandymų: {{translationKey}}",
         "systemCheck": {
@@ -332,12 +335,12 @@
       "previousNextFrame": "Pereiti vienu kadru",
       "errorVideoAborted": "Vaizdo įrašo įkėlimas nutrauktas",
       "errorVideoNetwork": "Tinklo klaida įkeliant vaizdo įrašą",
-      "errorVideoDecoding": "Vaizdo įrašo dekodavimo klaida – formatas gali būti nepalaikomas",
+      "errorVideoDecoding": "Nepavyko dekoduoti vaizdo įrašo. Formatas gali būti nepalaikomas.",
       "errorVideoFormat": "Vaizdo įrašo formatas nepalaikomas",
       "checkVideoFormat": "Patikrinkite, ar vaizdo įrašo failas egzistuoja ir yra palaikomo formato (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Atsisiunčiamas atnaujinimas... {{progress}}%",
       "preparingUpdate": "Ruošiamasi atsisiųsti atnaujinimą...",
-      "updateDownloaded": "Atnaujinimas {{version}} atsisiųstas – paruošta įdiegti.",
+      "updateDownloaded": "Atnaujinimas {{version}} atsisiųstas. Paruošta įdiegti.",
       "updateError": "Atnaujinimas nepavyko: {{message}}",
       "zoomTimeline": "Priartinti laiko juostą",
       "pathLabel": "Kelias:",
@@ -378,7 +381,7 @@
       "youtubeUrlPlaceholder": "Įklijuokite „YouTube“ nuorodą...",
       "youtubeDownload": "Atsisiųsti",
       "youtubeDownloading": "Atsisiunčiama...",
-      "youtubeDownloadError": "Nepavyko atsisiųsti šio vaizdo įrašo. „YouTube“ galėjo ką nors pakeisti – bandykite vėliau.",
+      "youtubeDownloadError": "Nepavyko atsisiųsti šio vaizdo įrašo. „YouTube“ galėjo ką nors pakeisti. Bandykite vėliau.",
       "youtubeInvalidUrl": "Tai nepanašu į „YouTube“ nuorodą. Pabandykite įklijuoti visą URL iš naršyklės.",
       "youtubeDisclaimer": "Tai priklauso nuo „YouTube“ paslaugos ir gali ne visada veikti.",
       "noProjectsYet": "Projektų dar nėra",
@@ -437,11 +440,11 @@
       "descriptionPlaceholder_bug": "Kas atsitiko? Ko tikėjotės vietoj to?",
       "descriptionPlaceholder_feature": "Kuo tai padėtų jūsų darbui?",
       "descriptionPlaceholder_feedback": "Papasakokite plačiau...",
-      "hint_bug": "Jei galite, nurodykite veiksmus klaidai atkartoti – tai padės greičiau ją ištaisyti.",
+      "hint_bug": "Jei galite, nurodykite veiksmus klaidai atkartoti. Tai padės greičiau ją ištaisyti.",
       "systemInfoNote": "Pridėta sistemos informacija",
       "submit": "Siųsti",
       "submitting": "Siunčiama...",
-      "submitSuccess": "Ačiū! Jūsų atsiliepimas išsiųstas.",
+      "submitSuccess": "Ačiū Jūsų atsiliepimas išsiųstas.",
       "submitError": "Nepavyko išsiųsti atsiliepimo. Bandykite vėliau."
     },
     "present": {
@@ -490,6 +493,11 @@
     },
     "donation": {
       "nudge": "Su šia nemokama programa eksportavote daugiau nei {{count}} klipų. Jei ji taupo jūsų laiką, nuorodą kavai rasite Nustatymai → Apie."
+    },
+    "startup": {
+      "dbFailed": "Programai nepavyko atidaryti duomenų bazės, todėl jūsų projektai negali būti įkelti. Klaida: {{error}}. Žurnalo failas: {{logPath}}",
+      "checkFailed": "Paleidžiant programą įvyko klaida. Klaida: {{error}}",
+      "apiUnavailable": "Programa nepasileido tinkamai (vidinis tiltas nepasiekiamas). Įdiekite naujausią versiją iš naujo."
     }
   }
 }

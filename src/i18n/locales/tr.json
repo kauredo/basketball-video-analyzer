@@ -1,6 +1,6 @@
 {
   "_machineTranslated": {
-    "date": "2026-09-07",
+    "date": "2026-09-08",
     "reviewed": false,
     "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
     "keys": [
@@ -15,6 +15,9 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.startup.apiUnavailable",
+      "app.startup.checkFailed",
+      "app.startup.dbFailed",
       "app.stats.title",
       "app.video.markInPoint",
       "app.video.markOutPoint",
@@ -24,7 +27,7 @@
   "app": {
     "title": "Basketbol Video Analiz",
     "buttons": {
-      "getStarted": "Başla - Video Seç",
+      "getStarted": "Başlamak için bir video seçin",
       "selectVideo": "Video Seç",
       "settings": "Ayarlar",
       "showSidePanel": "Yan Paneli Göster",
@@ -80,10 +83,10 @@
       "keyBindings": "Tuş Atamaları",
       "markInKey": "Başlangıç İşaretleme Tuşu",
       "markOutKey": "Bitiş İşaretleme Tuşu",
-      "keyBindingSaved": "Tuş ataması başarıyla kaydedildi",
+      "keyBindingSaved": "Tuş ataması kaydedildi",
       "dangerZone": "Tehlikeli Bölge",
       "confirmReset": "Emin misiniz? Bu işlem tüm klipleri silecek ve kategorileri varsayılana sıfırlayacaktır. Bu işlem geri alınamaz.",
-      "resetSuccess": "Veritabanı başarıyla sıfırlandı",
+      "resetSuccess": "Veritabanı sıfırlandı",
       "resetError": "Veritabanı sıfırlanırken hata oluştu",
       "pressAnyKey": "Bir tuşa basın...",
       "theme": "Tema",
@@ -109,9 +112,9 @@
       "errorCreating": "Kategori oluşturulurken hata oluştu. Bu ad zaten mevcut olabilir.",
       "errorUpdating": "Kategori güncellenirken hata oluştu. Bu ad zaten mevcut olabilir.",
       "errorDeleting": "Kategori silinirken hata oluştu.",
-      "categoryCreated": "Kategori başarıyla oluşturuldu",
-      "categoryUpdated": "Kategori başarıyla güncellendi",
-      "categoryDeleted": "Kategori başarıyla silindi",
+      "categoryCreated": "Kategori oluşturuldu",
+      "categoryUpdated": "Kategori güncellendi",
+      "categoryDeleted": "Kategori silindi",
       "editCategory": "Kategoriyi Düzenle",
       "categoryName": "Kategori Adı",
       "color": "Renk",
@@ -142,9 +145,9 @@
         "deleteTooltip": "'{{presetName}}' şablonunu kalıcı olarak sil",
         "noPresetsYet": "Henüz kayıtlı şablon yok",
         "createFirstPreset": "Yukarıda kategoriler oluşturup açıklayıcı bir adla kaydederek ilk şablonunuzu yapın.",
-        "saveSuccess": "Şablon başarıyla kaydedildi! Artık herhangi bir projede yükleyebilirsiniz.",
-        "loadSuccess": "Şablon başarıyla yüklendi!",
-        "deleteSuccess": "Şablon başarıyla silindi!",
+        "saveSuccess": "Şablon kaydedildi Artık herhangi bir projede yükleyebilirsiniz.",
+        "loadSuccess": "Şablon yüklendi",
+        "deleteSuccess": "Şablon silindi",
         "saveFailed": "Şablon kaydedilemedi",
         "loadFailed": "Şablon yüklenemedi",
         "deleteFailed": "Şablon silinemedi",
@@ -168,7 +171,7 @@
       "export": "Klipleri Dışa Aktar",
       "deleteClip": "Klibi Sil",
       "confirmDelete": "Bu klibi silmek istediğinizden emin misiniz?",
-      "exportSuccess": "{{count}} klip başarıyla {{dir}} konumuna aktarıldı",
+      "exportSuccess": "{{count}} klip {{dir}} konumuna aktarıldı",
       "exportError": "Klipler dışa aktarılırken hata oluştu",
       "clipsSummary": "{{count}} klip • {{video}}",
       "noClipsYet": "Henüz klip yok",
@@ -249,7 +252,7 @@
         "errorInvalidTime": "Geçersiz zaman değerleri. Lütfen geçerli başlangıç/bitiş noktaları işaretleyin.",
         "errorInvalidTitle": "Geçersiz klip başlığı. Lütfen geçerli bir başlık girin.",
         "errorNoCategories": "Kategori seçilmedi. Lütfen en az bir kategori seçin.",
-        "clipCreatedSuccess": "Klip başarıyla oluşturuldu!",
+        "clipCreatedSuccess": "Klip oluşturuldu",
         "retryingClipCreation": "Klip oluşturma yeniden deneniyor... Deneme {{attempt}}/{{maxRetries}} ({{delay}}sn bekleniyor)",
         "errorAfterRetries": "Birden fazla denemeden sonra klip oluşturulamadı: {{translationKey}}",
         "systemCheck": {
@@ -333,12 +336,12 @@
       "previousNextFrame": "Bir kare ilerle",
       "errorVideoAborted": "Video yükleme iptal edildi",
       "errorVideoNetwork": "Video yüklenirken ağ hatası",
-      "errorVideoDecoding": "Video çözme hatası - format desteklenmiyor olabilir",
+      "errorVideoDecoding": "Video çözümlenemedi. Bu format desteklenmiyor olabilir.",
       "errorVideoFormat": "Video formatı desteklenmiyor",
       "checkVideoFormat": "Lütfen video dosyasının var olup olmadığını ve desteklenen bir formatta olduğunu kontrol edin (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Güncelleme indiriliyor... {{progress}}%",
       "preparingUpdate": "Güncelleme indirmesi hazırlanıyor...",
-      "updateDownloaded": "Güncelleme {{version}} indirildi — kurulmaya hazır.",
+      "updateDownloaded": "Güncelleme {{version}} indirildi. Kurulmaya hazır.",
       "updateError": "Güncelleme başarısız oldu: {{message}}",
       "zoomTimeline": "Zaman Çizelgesini Yakınlaştır",
       "pathLabel": "Yol:",
@@ -379,7 +382,7 @@
       "youtubeUrlPlaceholder": "Bir YouTube bağlantısı yapıştırın...",
       "youtubeDownload": "İndir",
       "youtubeDownloading": "İndiriliyor...",
-      "youtubeDownloadError": "Bu video indirilemedi. YouTube bir şeyi değiştirmiş olabilir — daha sonra tekrar deneyin.",
+      "youtubeDownloadError": "Bu video indirilemedi. YouTube bir şeyi değiştirmiş olabilir. Daha sonra tekrar deneyin.",
       "youtubeInvalidUrl": "Bu bir YouTube bağlantısına benzemiyor. Tarayıcınızdaki tam URL'yi yapıştırmayı deneyin.",
       "youtubeDisclaimer": "Bu, YouTube'un hizmetine bağlıdır ve her zaman çalışmayabilir.",
       "noProjectsYet": "Henüz Proje Yok",
@@ -438,11 +441,11 @@
       "descriptionPlaceholder_bug": "Ne oldu? Bunun yerine ne bekliyordunuz?",
       "descriptionPlaceholder_feature": "Bu, iş akışınıza nasıl yardımcı olur?",
       "descriptionPlaceholder_feedback": "Bize daha fazlasını anlatın...",
-      "hint_bug": "Yapabiliyorsanız tekrarlama adımlarını ekleyin — daha hızlı düzeltmemize yardımcı olur.",
+      "hint_bug": "Yapabiliyorsanız tekrarlama adımlarını ekleyin. Daha hızlı düzeltmemize yardımcı olur.",
       "systemInfoNote": "Sistem bilgisi dahil edildi",
       "submit": "Gönder",
       "submitting": "Gönderiliyor...",
-      "submitSuccess": "Teşekkürler! Geri bildiriminiz gönderildi.",
+      "submitSuccess": "Teşekkürler Geri bildiriminiz gönderildi.",
       "submitError": "Geri bildirim gönderilemedi. Lütfen daha sonra tekrar deneyin."
     },
     "present": {
@@ -491,6 +494,11 @@
     },
     "donation": {
       "nudge": "Bu ücretsiz uygulamayla {{count}}+ klip dışa aktardınız. Zaman kazandırıyorsa, Ayarlar → Hakkında bölümünde bir kahve bağlantısı var."
+    },
+    "startup": {
+      "dbFailed": "Uygulama veritabanını açamadı, bu yüzden projeleriniz yüklenemiyor. Hata: {{error}}. Günlük dosyası: {{logPath}}",
+      "checkFailed": "Uygulama başlatılırken bir sorun oluştu. Hata: {{error}}",
+      "apiUnavailable": "Uygulama düzgün başlatılamadı (dahili köprü kullanılamıyor). Lütfen en son sürümü yeniden kurun."
     }
   }
 }

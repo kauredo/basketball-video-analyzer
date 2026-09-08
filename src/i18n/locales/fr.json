@@ -1,6 +1,6 @@
 {
   "_machineTranslated": {
-    "date": "2026-09-07",
+    "date": "2026-09-08",
     "reviewed": false,
     "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
     "keys": [
@@ -15,6 +15,9 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.startup.apiUnavailable",
+      "app.startup.checkFailed",
+      "app.startup.dbFailed",
       "app.stats.title",
       "app.video.markInPoint",
       "app.video.markOutPoint",
@@ -24,7 +27,7 @@
   "app": {
     "title": "Basketball Video Analyzer",
     "buttons": {
-      "getStarted": "Commencer - Sélectionner une vidéo",
+      "getStarted": "Sélectionnez une vidéo pour commencer",
       "selectVideo": "Sélectionner une vidéo",
       "settings": "Réglages",
       "showSidePanel": "Afficher le panneau latéral",
@@ -80,10 +83,10 @@
       "keyBindings": "Raccourcis clavier",
       "markInKey": "Touche point d'entrée",
       "markOutKey": "Touche point de sortie",
-      "keyBindingSaved": "Raccourci enregistré avec succès",
+      "keyBindingSaved": "Raccourci enregistré",
       "dangerZone": "Zone sensible",
       "confirmReset": "Êtes-vous sûr ? Cela supprimera tous les clips et réinitialisera les catégories par défaut. Cette action est irréversible.",
-      "resetSuccess": "Base de données réinitialisée avec succès",
+      "resetSuccess": "Base de données réinitialisée",
       "resetError": "Erreur lors de la réinitialisation de la base de données",
       "pressAnyKey": "Appuyez sur une touche...",
       "theme": "Thème",
@@ -109,9 +112,9 @@
       "errorCreating": "Erreur lors de la création de la catégorie. Le nom existe peut-être déjà.",
       "errorUpdating": "Erreur lors de la mise à jour de la catégorie. Le nom existe peut-être déjà.",
       "errorDeleting": "Erreur lors de la suppression de la catégorie.",
-      "categoryCreated": "Catégorie créée avec succès",
-      "categoryUpdated": "Catégorie mise à jour avec succès",
-      "categoryDeleted": "Catégorie supprimée avec succès",
+      "categoryCreated": "Catégorie créée",
+      "categoryUpdated": "Catégorie mise à jour",
+      "categoryDeleted": "Catégorie supprimée",
       "editCategory": "Modifier la catégorie",
       "categoryName": "Nom de la catégorie",
       "color": "Couleur",
@@ -142,9 +145,9 @@
         "deleteTooltip": "Supprimer définitivement le modèle « {{presetName}} »",
         "noPresetsYet": "Aucun modèle enregistré pour le moment",
         "createFirstPreset": "Créez votre premier modèle en construisant des catégories ci-dessus, puis enregistrez-les avec un nom descriptif.",
-        "saveSuccess": "Modèle enregistré avec succès ! Vous pouvez maintenant le charger dans n'importe quel projet.",
-        "loadSuccess": "Modèle chargé avec succès !",
-        "deleteSuccess": "Modèle supprimé avec succès !",
+        "saveSuccess": "Modèle enregistré Vous pouvez maintenant le charger dans n'importe quel projet.",
+        "loadSuccess": "Modèle chargé",
+        "deleteSuccess": "Modèle supprimé",
         "saveFailed": "Échec de l'enregistrement du modèle",
         "loadFailed": "Échec du chargement du modèle",
         "deleteFailed": "Échec de la suppression du modèle",
@@ -168,7 +171,7 @@
       "export": "Exporter les clips",
       "deleteClip": "Supprimer le clip",
       "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce clip ?",
-      "exportSuccess": "{{count}} clip(s) exporté(s) avec succès vers {{dir}}",
+      "exportSuccess": "{{count}} clip(s) exporté(s) vers {{dir}}",
       "exportError": "Erreur lors de l'exportation des clips",
       "clipsSummary": "{{count}} clips • {{video}}",
       "noClipsYet": "Aucun clip pour le moment",
@@ -249,7 +252,7 @@
         "errorInvalidTime": "Valeurs de temps invalides. Veuillez marquer des points d'entrée/sortie valides.",
         "errorInvalidTitle": "Titre de clip invalide. Veuillez fournir un titre valide.",
         "errorNoCategories": "Aucune catégorie sélectionnée. Veuillez sélectionner au moins une catégorie.",
-        "clipCreatedSuccess": "Clip créé avec succès !",
+        "clipCreatedSuccess": "Clip créé",
         "retryingClipCreation": "Nouvelle tentative de création du clip... Tentative {{attempt}}/{{maxRetries}} (attente de {{delay}}s)",
         "errorAfterRetries": "Échec de la création du clip après plusieurs tentatives : {{translationKey}}",
         "systemCheck": {
@@ -333,12 +336,12 @@
       "previousNextFrame": "Avancer d'une image",
       "errorVideoAborted": "Chargement de la vidéo interrompu",
       "errorVideoNetwork": "Erreur réseau lors du chargement de la vidéo",
-      "errorVideoDecoding": "Erreur de décodage vidéo - le format n'est peut-être pas pris en charge",
+      "errorVideoDecoding": "Impossible de décoder la vidéo. Le format n'est peut-être pas pris en charge.",
       "errorVideoFormat": "Format vidéo non pris en charge",
       "checkVideoFormat": "Veuillez vérifier que le fichier vidéo existe et qu'il est dans un format pris en charge (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Téléchargement de la mise à jour... {{progress}} %",
       "preparingUpdate": "Préparation du téléchargement de la mise à jour...",
-      "updateDownloaded": "Mise à jour {{version}} téléchargée — prête à installer.",
+      "updateDownloaded": "Mise à jour {{version}} téléchargée. Prête à installer.",
       "updateError": "Échec de la mise à jour : {{message}}",
       "zoomTimeline": "Zoomer la timeline",
       "pathLabel": "Chemin :",
@@ -379,7 +382,7 @@
       "youtubeUrlPlaceholder": "Collez un lien YouTube...",
       "youtubeDownload": "Télécharger",
       "youtubeDownloading": "Téléchargement...",
-      "youtubeDownloadError": "Impossible de télécharger cette vidéo. YouTube a peut-être changé quelque chose — réessayez plus tard.",
+      "youtubeDownloadError": "Impossible de télécharger cette vidéo. YouTube a peut-être changé quelque chose. Réessayez plus tard.",
       "youtubeInvalidUrl": "Cela ne ressemble pas à un lien YouTube. Essayez de coller l'URL complète depuis votre navigateur.",
       "youtubeDisclaimer": "Cela dépend du service de YouTube et peut ne pas toujours fonctionner.",
       "noProjectsYet": "Aucun projet pour le moment",
@@ -438,11 +441,11 @@
       "descriptionPlaceholder_bug": "Que s'est-il passé ? Qu'attendiez-vous à la place ?",
       "descriptionPlaceholder_feature": "En quoi cela aiderait-il votre flux de travail ?",
       "descriptionPlaceholder_feedback": "Dites-nous en plus...",
-      "hint_bug": "Incluez les étapes pour reproduire le problème si possible — cela nous aide à le corriger plus vite.",
+      "hint_bug": "Incluez les étapes pour reproduire le problème si possible. Cela nous aide à le corriger plus vite.",
       "systemInfoNote": "Informations système incluses",
       "submit": "Envoyer",
       "submitting": "Envoi...",
-      "submitSuccess": "Merci ! Votre retour a été envoyé.",
+      "submitSuccess": "Merci Votre retour a été envoyé.",
       "submitError": "Impossible d'envoyer le retour. Veuillez réessayer plus tard."
     },
     "present": {
@@ -491,6 +494,11 @@
     },
     "donation": {
       "nudge": "Vous avez exporté plus de {{count}} clips avec cette application gratuite. Si elle vous fait gagner du temps, un lien pour offrir un café se trouve dans Réglages → À propos."
+    },
+    "startup": {
+      "dbFailed": "L'application n'a pas pu ouvrir sa base de données, vos projets ne peuvent donc pas être chargés. Erreur : {{error}}. Fichier journal : {{logPath}}",
+      "checkFailed": "Un problème est survenu au démarrage de l'application. Erreur : {{error}}",
+      "apiUnavailable": "L'application n'a pas démarré correctement (pont interne indisponible). Réinstallez la version la plus récente."
     }
   }
 }
