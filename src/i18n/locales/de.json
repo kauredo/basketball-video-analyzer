@@ -1,6 +1,6 @@
 {
   "_machineTranslated": {
-    "date": "2026-09-07",
+    "date": "2026-09-08",
     "reviewed": false,
     "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
     "keys": [
@@ -15,6 +15,9 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.startup.apiUnavailable",
+      "app.startup.checkFailed",
+      "app.startup.dbFailed",
       "app.video.markInPoint",
       "app.video.markOutPoint",
       "app.video.previousNextFrame"
@@ -23,7 +26,7 @@
   "app": {
     "title": "Basketball Video Analyzer",
     "buttons": {
-      "getStarted": "Loslegen – Video auswählen",
+      "getStarted": "Video auswählen, um zu starten",
       "selectVideo": "Video auswählen",
       "settings": "Einstellungen",
       "showSidePanel": "Seitenleiste anzeigen",
@@ -57,7 +60,7 @@
         },
         "markClips": {
           "title": "Clips markieren",
-          "description": "Mit den Tasten I und O Anfang/Ende während der Wiedergabe setzen"
+          "description": "Drücke Z für den Anfang eines Clips und M für das Ende"
         },
         "categorize": {
           "title": "Kategorisieren",
@@ -79,10 +82,10 @@
       "keyBindings": "Tastenbelegung",
       "markInKey": "Taste für Anfang",
       "markOutKey": "Taste für Ende",
-      "keyBindingSaved": "Tastenbelegung erfolgreich gespeichert",
+      "keyBindingSaved": "Tastenbelegung gespeichert",
       "dangerZone": "Gefahrenzone",
       "confirmReset": "Bist du sicher? Dadurch werden alle Clips gelöscht und die Kategorien auf den Standard zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden.",
-      "resetSuccess": "Datenbank erfolgreich zurückgesetzt",
+      "resetSuccess": "Datenbank zurückgesetzt",
       "resetError": "Fehler beim Zurücksetzen der Datenbank",
       "pressAnyKey": "Beliebige Taste drücken …",
       "theme": "Design",
@@ -108,9 +111,9 @@
       "errorCreating": "Fehler beim Erstellen der Kategorie. Der Name existiert möglicherweise bereits.",
       "errorUpdating": "Fehler beim Aktualisieren der Kategorie. Der Name existiert möglicherweise bereits.",
       "errorDeleting": "Fehler beim Löschen der Kategorie.",
-      "categoryCreated": "Kategorie erfolgreich erstellt",
-      "categoryUpdated": "Kategorie erfolgreich aktualisiert",
-      "categoryDeleted": "Kategorie erfolgreich gelöscht",
+      "categoryCreated": "Kategorie erstellt",
+      "categoryUpdated": "Kategorie aktualisiert",
+      "categoryDeleted": "Kategorie gelöscht",
       "editCategory": "Kategorie bearbeiten",
       "categoryName": "Kategoriename",
       "color": "Farbe",
@@ -141,9 +144,9 @@
         "deleteTooltip": "Vorlage „{{presetName}}“ dauerhaft löschen",
         "noPresetsYet": "Noch keine Vorlagen gespeichert",
         "createFirstPreset": "Erstelle deine erste Vorlage, indem du oben Kategorien anlegst und sie unter einem aussagekräftigen Namen speicherst.",
-        "saveSuccess": "Vorlage erfolgreich gespeichert! Du kannst sie nun in jedem Projekt laden.",
-        "loadSuccess": "Vorlage erfolgreich geladen!",
-        "deleteSuccess": "Vorlage erfolgreich gelöscht!",
+        "saveSuccess": "Vorlage gespeichert. Du kannst sie nun in jedem Projekt laden.",
+        "loadSuccess": "Vorlage geladen",
+        "deleteSuccess": "Vorlage gelöscht",
         "saveFailed": "Vorlage konnte nicht gespeichert werden",
         "loadFailed": "Vorlage konnte nicht geladen werden",
         "deleteFailed": "Vorlage konnte nicht gelöscht werden",
@@ -167,7 +170,7 @@
       "export": "Clips exportieren",
       "deleteClip": "Clip löschen",
       "confirmDelete": "Möchtest du diesen Clip wirklich löschen?",
-      "exportSuccess": "{{count}} Clip(s) erfolgreich nach {{dir}} exportiert",
+      "exportSuccess": "{{count}} Clip(s) nach {{dir}} exportiert",
       "exportError": "Fehler beim Exportieren der Clips",
       "clipsSummary": "{{count}} Clips • {{video}}",
       "noClipsYet": "Noch keine Clips",
@@ -195,7 +198,7 @@
       "createClipsInCategory": "Erstelle Clips mit dieser Kategorie, um sie hier zu sehen",
       "sharingClips": "Clips teilen",
       "exportCategoryClips": "Alle Clips der Kategorie „{{category}}“ exportieren und mit dem Team teilen",
-      "exportOrganizedClips": "Clips nach Kategorie geordnet exportieren – einfach mit dem Team teilen",
+      "exportOrganizedClips": "Clips nach Kategorie geordnet exportieren, einfach mit dem Team zu teilen",
       "play": "Abspielen",
       "playClip": "Clip abspielen",
       "deleteClipTooltip": "Clip löschen",
@@ -248,7 +251,7 @@
         "errorInvalidTime": "Ungültige Zeitwerte. Bitte gültigen Anfang und gültiges Ende setzen.",
         "errorInvalidTitle": "Ungültiger Clip-Titel. Bitte einen gültigen Titel angeben.",
         "errorNoCategories": "Keine Kategorien ausgewählt. Bitte mindestens eine Kategorie auswählen.",
-        "clipCreatedSuccess": "Clip erfolgreich erstellt!",
+        "clipCreatedSuccess": "Clip erstellt",
         "retryingClipCreation": "Clip-Erstellung wird wiederholt … Versuch {{attempt}}/{{maxRetries}} (warte {{delay}}s)",
         "errorAfterRetries": "Clip konnte nach mehreren Versuchen nicht erstellt werden: {{translationKey}}",
         "systemCheck": {
@@ -332,12 +335,12 @@
       "previousNextFrame": "Ein Bild weiter",
       "errorVideoAborted": "Laden des Videos abgebrochen",
       "errorVideoNetwork": "Netzwerkfehler beim Laden des Videos",
-      "errorVideoDecoding": "Fehler bei der Videodekodierung – Format wird möglicherweise nicht unterstützt",
+      "errorVideoDecoding": "Das Video konnte nicht dekodiert werden. Das Format wird möglicherweise nicht unterstützt.",
       "errorVideoFormat": "Videoformat nicht unterstützt",
       "checkVideoFormat": "Bitte prüfen, ob die Videodatei existiert und in einem unterstützten Format vorliegt (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Update wird heruntergeladen … {{progress}}%",
       "preparingUpdate": "Update-Download wird vorbereitet …",
-      "updateDownloaded": "Update {{version}} heruntergeladen – bereit zur Installation.",
+      "updateDownloaded": "Update {{version}} heruntergeladen. Bereit zur Installation.",
       "updateError": "Update fehlgeschlagen: {{message}}",
       "zoomTimeline": "Timeline zoomen",
       "pathLabel": "Pfad:",
@@ -378,7 +381,7 @@
       "youtubeUrlPlaceholder": "YouTube-Link einfügen …",
       "youtubeDownload": "Herunterladen",
       "youtubeDownloading": "Wird heruntergeladen …",
-      "youtubeDownloadError": "Dieses Video konnte nicht heruntergeladen werden. YouTube hat möglicherweise etwas geändert – versuche es später erneut.",
+      "youtubeDownloadError": "Dieses Video konnte nicht heruntergeladen werden. YouTube hat möglicherweise etwas geändert. Versuche es später erneut.",
       "youtubeInvalidUrl": "Das sieht nicht nach einem YouTube-Link aus. Versuche, die vollständige URL aus deinem Browser einzufügen.",
       "youtubeDisclaimer": "Dies hängt vom YouTube-Dienst ab und funktioniert möglicherweise nicht immer.",
       "noProjectsYet": "Noch keine Projekte",
@@ -437,11 +440,11 @@
       "descriptionPlaceholder_bug": "Was ist passiert? Was hattest du stattdessen erwartet?",
       "descriptionPlaceholder_feature": "Wie würde das deinen Workflow verbessern?",
       "descriptionPlaceholder_feedback": "Erzähl uns mehr …",
-      "hint_bug": "Gib nach Möglichkeit die Schritte zur Reproduktion an – das hilft uns, den Fehler schneller zu beheben.",
+      "hint_bug": "Gib nach Möglichkeit die Schritte zur Reproduktion an. Das hilft uns, den Fehler schneller zu beheben.",
       "systemInfoNote": "Systeminformationen enthalten",
       "submit": "Senden",
       "submitting": "Wird gesendet …",
-      "submitSuccess": "Danke! Dein Feedback wurde übermittelt.",
+      "submitSuccess": "Danke. Dein Feedback wurde übermittelt.",
       "submitError": "Feedback konnte nicht gesendet werden. Bitte versuche es später erneut."
     },
     "present": {
@@ -490,6 +493,11 @@
     },
     "donation": {
       "nudge": "Du hast mit dieser kostenlosen App bereits über {{count}} Clips exportiert. Wenn sie dir Zeit spart, findest du unter Einstellungen → Über einen Link für einen Kaffee."
+    },
+    "startup": {
+      "dbFailed": "Die App konnte ihre Datenbank nicht öffnen, daher können deine Projekte nicht geladen werden. Fehler: {{error}}. Protokolldatei: {{logPath}}",
+      "checkFailed": "Beim Start der App ist ein Problem aufgetreten. Fehler: {{error}}",
+      "apiUnavailable": "Die App ist nicht korrekt gestartet (interne Brücke nicht verfügbar). Installiere die neueste Version neu."
     }
   }
 }

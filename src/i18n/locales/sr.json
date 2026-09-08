@@ -1,6 +1,6 @@
 {
   "_machineTranslated": {
-    "date": "2026-09-07",
+    "date": "2026-09-08",
     "reviewed": false,
     "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
     "keys": [
@@ -15,6 +15,9 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.startup.apiUnavailable",
+      "app.startup.checkFailed",
+      "app.startup.dbFailed",
       "app.video.markInPoint",
       "app.video.markOutPoint",
       "app.video.previousNextFrame"
@@ -23,7 +26,7 @@
   "app": {
     "title": "Basketball Video Analyzer",
     "buttons": {
-      "getStarted": "Počnite — izaberite snimak",
+      "getStarted": "Izaberite snimak da biste počeli",
       "selectVideo": "Izaberi snimak",
       "settings": "Podešavanja",
       "showSidePanel": "Prikaži bočni panel",
@@ -57,7 +60,7 @@
         },
         "markClips": {
           "title": "Označi klipove",
-          "description": "Tasterima I i O obeležite početnu/završnu tačku tokom reprodukcije"
+          "description": "Pritisnite Z da označite početak klipa, a M za kraj"
         },
         "categorize": {
           "title": "Kategorizuj",
@@ -79,10 +82,10 @@
       "keyBindings": "Prečice na tastaturi",
       "markInKey": "Taster za početnu tačku",
       "markOutKey": "Taster za završnu tačku",
-      "keyBindingSaved": "Prečica uspešno sačuvana",
+      "keyBindingSaved": "Prečica sačuvana",
       "dangerZone": "Opasna zona",
       "confirmReset": "Da li ste sigurni? Ovo će obrisati sve klipove i vratiti kategorije na podrazumevane. Ova radnja se ne može poništiti.",
-      "resetSuccess": "Baza uspešno resetovana",
+      "resetSuccess": "Baza resetovana",
       "resetError": "Greška pri resetovanju baze",
       "pressAnyKey": "Pritisnite bilo koji taster...",
       "theme": "Tema",
@@ -108,9 +111,9 @@
       "errorCreating": "Greška pri pravljenju kategorije. Naziv možda već postoji.",
       "errorUpdating": "Greška pri ažuriranju kategorije. Naziv možda već postoji.",
       "errorDeleting": "Greška pri brisanju kategorije.",
-      "categoryCreated": "Kategorija uspešno napravljena",
-      "categoryUpdated": "Kategorija uspešno ažurirana",
-      "categoryDeleted": "Kategorija uspešno obrisana",
+      "categoryCreated": "Kategorija napravljena",
+      "categoryUpdated": "Kategorija ažurirana",
+      "categoryDeleted": "Kategorija obrisana",
       "editCategory": "Izmeni kategoriju",
       "categoryName": "Naziv kategorije",
       "color": "Boja",
@@ -141,9 +144,9 @@
         "deleteTooltip": "Trajno obriši šablon „{{presetName}}“",
         "noPresetsYet": "Još nema sačuvanih šablona",
         "createFirstPreset": "Napravite prvi šablon tako što ćete kreirati kategorije iznad, pa ih sačuvati pod opisnim nazivom.",
-        "saveSuccess": "Šablon uspešno sačuvan! Sada ga možete učitati u bilo koji projekat.",
-        "loadSuccess": "Šablon uspešno učitan!",
-        "deleteSuccess": "Šablon uspešno obrisan!",
+        "saveSuccess": "Šablon sačuvan. Sada ga možete učitati u bilo koji projekat.",
+        "loadSuccess": "Šablon učitan",
+        "deleteSuccess": "Šablon obrisan",
         "saveFailed": "Čuvanje šablona nije uspelo",
         "loadFailed": "Učitavanje šablona nije uspelo",
         "deleteFailed": "Brisanje šablona nije uspelo",
@@ -167,7 +170,7 @@
       "export": "Izvezi klipove",
       "deleteClip": "Obriši klip",
       "confirmDelete": "Da li ste sigurni da želite da obrišete ovaj klip?",
-      "exportSuccess": "Uspešno izvezeno {{count}} klip(ova) u {{dir}}",
+      "exportSuccess": "Izvezeno {{count}} klip(ova) u {{dir}}",
       "exportError": "Greška pri izvozu klipova",
       "clipsSummary": "{{count}} klipova • {{video}}",
       "noClipsYet": "Još nema klipova",
@@ -248,7 +251,7 @@
         "errorInvalidTime": "Nevažeće vrednosti vremena. Postavite ispravne tačke.",
         "errorInvalidTitle": "Nevažeći naziv klipa. Unesite ispravan naziv.",
         "errorNoCategories": "Nije izabrana nijedna kategorija. Izaberite bar jednu kategoriju.",
-        "clipCreatedSuccess": "Klip uspešno napravljen!",
+        "clipCreatedSuccess": "Klip napravljen",
         "retryingClipCreation": "Ponovni pokušaj pravljenja klipa... Pokušaj {{attempt}}/{{maxRetries}} (čeka se {{delay}}s)",
         "errorAfterRetries": "Pravljenje klipa nije uspelo nakon više pokušaja: {{translationKey}}",
         "systemCheck": {
@@ -332,12 +335,12 @@
       "previousNextFrame": "Pomeri za jedan kadar",
       "errorVideoAborted": "Učitavanje snimka prekinuto",
       "errorVideoNetwork": "Mrežna greška pri učitavanju snimka",
-      "errorVideoDecoding": "Greška u dekodiranju snimka — format možda nije podržan",
+      "errorVideoDecoding": "Snimak nije moguće dekodirati. Format možda nije podržan.",
       "errorVideoFormat": "Video format nije podržan",
       "checkVideoFormat": "Proverite da li video fajl postoji i da li je u podržanom formatu (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Preuzimanje ažuriranja... {{progress}}%",
       "preparingUpdate": "Priprema preuzimanja ažuriranja...",
-      "updateDownloaded": "Ažuriranje {{version}} preuzeto — spremno za instalaciju.",
+      "updateDownloaded": "Ažuriranje {{version}} preuzeto. Spremno za instalaciju.",
       "updateError": "Ažuriranje nije uspelo: {{message}}",
       "zoomTimeline": "Uvećaj vremensku liniju",
       "pathLabel": "Putanja:",
@@ -378,7 +381,7 @@
       "youtubeUrlPlaceholder": "Nalepite YouTube link...",
       "youtubeDownload": "Preuzmi",
       "youtubeDownloading": "Preuzimanje...",
-      "youtubeDownloadError": "Nije moguće preuzeti ovaj snimak. YouTube je možda nešto promenio — pokušajte kasnije.",
+      "youtubeDownloadError": "Nije moguće preuzeti ovaj snimak. YouTube je možda nešto promenio. Pokušajte kasnije.",
       "youtubeInvalidUrl": "Ovo ne izgleda kao YouTube link. Probajte da nalepite punu adresu iz pregledača.",
       "youtubeDisclaimer": "Ovo zavisi od YouTube servisa i možda neće uvek raditi.",
       "noProjectsYet": "Još nema projekata",
@@ -437,11 +440,11 @@
       "descriptionPlaceholder_bug": "Šta se desilo? Šta ste očekivali umesto toga?",
       "descriptionPlaceholder_feature": "Kako bi vam ovo pomoglo u radu?",
       "descriptionPlaceholder_feedback": "Recite nam više...",
-      "hint_bug": "Ako možete, navedite korake za reprodukciju — to nam pomaže da brže rešimo problem.",
+      "hint_bug": "Ako možete, navedite korake za reprodukciju. To nam pomaže da brže rešimo problem.",
       "systemInfoNote": "Sistemske informacije uključene",
       "submit": "Pošalji",
       "submitting": "Slanje...",
-      "submitSuccess": "Hvala! Vaša povratna informacija je poslata.",
+      "submitSuccess": "Hvala. Vaša povratna informacija je poslata.",
       "submitError": "Slanje povratne informacije nije uspelo. Pokušajte kasnije."
     },
     "present": {
@@ -490,6 +493,11 @@
     },
     "donation": {
       "nudge": "Izvezli ste više od {{count}} klipova sa ovom besplatnom aplikacijom. Ako vam štedi vreme, link za kafu se nalazi u Podešavanja → O programu."
+    },
+    "startup": {
+      "dbFailed": "Aplikacija nije mogla da otvori svoju bazu podataka, pa vaši projekti ne mogu da se učitaju. Greška: {{error}}. Datoteka dnevnika: {{logPath}}",
+      "checkFailed": "Došlo je do problema pri pokretanju aplikacije. Greška: {{error}}",
+      "apiUnavailable": "Aplikacija se nije pokrenula ispravno (interni most nije dostupan). Ponovo instalirajte najnoviju verziju."
     }
   }
 }

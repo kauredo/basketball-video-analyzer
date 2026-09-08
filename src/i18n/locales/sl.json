@@ -1,6 +1,6 @@
 {
   "_machineTranslated": {
-    "date": "2026-09-07",
+    "date": "2026-09-08",
     "reviewed": false,
     "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
     "keys": [
@@ -15,6 +15,9 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.startup.apiUnavailable",
+      "app.startup.checkFailed",
+      "app.startup.dbFailed",
       "app.video.markInPoint",
       "app.video.markOutPoint",
       "app.video.previousNextFrame"
@@ -23,7 +26,7 @@
   "app": {
     "title": "Basketball Video Analyzer",
     "buttons": {
-      "getStarted": "Začni – izberi video",
+      "getStarted": "Izberite video za začetek",
       "selectVideo": "Izberi video",
       "settings": "Nastavitve",
       "showSidePanel": "Pokaži stranski panel",
@@ -57,7 +60,7 @@
         },
         "markClips": {
           "title": "Označi posnetke",
-          "description": "Med predvajanjem s tipkama I in O označi začetne in končne točke"
+          "description": "Pritisnite Z za začetek posnetka in M za konec"
         },
         "categorize": {
           "title": "Razvrsti",
@@ -82,7 +85,7 @@
       "keyBindingSaved": "Tipkovna bližnjica je shranjena",
       "dangerZone": "Nevarno območje",
       "confirmReset": "Ali ste prepričani? S tem boste izbrisali vse posnetke in ponastavili kategorije na privzete. Tega dejanja ni mogoče razveljaviti.",
-      "resetSuccess": "Baza je bila uspešno ponastavljena",
+      "resetSuccess": "Baza je bila ponastavljena",
       "resetError": "Napaka pri ponastavitvi baze",
       "pressAnyKey": "Pritisnite poljubno tipko ...",
       "theme": "Tema",
@@ -108,9 +111,9 @@
       "errorCreating": "Napaka pri ustvarjanju kategorije. Ime morda že obstaja.",
       "errorUpdating": "Napaka pri posodabljanju kategorije. Ime morda že obstaja.",
       "errorDeleting": "Napaka pri brisanju kategorije.",
-      "categoryCreated": "Kategorija je bila uspešno ustvarjena",
-      "categoryUpdated": "Kategorija je bila uspešno posodobljena",
-      "categoryDeleted": "Kategorija je bila uspešno izbrisana",
+      "categoryCreated": "Kategorija je bila ustvarjena",
+      "categoryUpdated": "Kategorija je bila posodobljena",
+      "categoryDeleted": "Kategorija je bila izbrisana",
       "editCategory": "Uredi kategorijo",
       "categoryName": "Ime kategorije",
       "color": "Barva",
@@ -141,9 +144,9 @@
         "deleteTooltip": "Trajno izbriši prednastavitev »{{presetName}}«",
         "noPresetsYet": "Še ni shranjenih prednastavitev",
         "createFirstPreset": "Ustvarite svojo prvo prednastavitev tako, da zgoraj zgradite kategorije in jih shranite z opisnim imenom.",
-        "saveSuccess": "Prednastavitev je bila uspešno shranjena! Zdaj jo lahko naložite v katerem koli projektu.",
-        "loadSuccess": "Prednastavitev je bila uspešno naložena!",
-        "deleteSuccess": "Prednastavitev je bila uspešno izbrisana!",
+        "saveSuccess": "Prednastavitev je bila shranjena. Zdaj jo lahko naložite v katerem koli projektu.",
+        "loadSuccess": "Prednastavitev je bila naložena",
+        "deleteSuccess": "Prednastavitev je bila izbrisana",
         "saveFailed": "Shranjevanje prednastavitve ni uspelo",
         "loadFailed": "Nalaganje prednastavitve ni uspelo",
         "deleteFailed": "Brisanje prednastavitve ni uspelo",
@@ -167,7 +170,7 @@
       "export": "Izvozi posnetke",
       "deleteClip": "Izbriši posnetek",
       "confirmDelete": "Ali ste prepričani, da želite izbrisati ta posnetek?",
-      "exportSuccess": "Uspešno izvoženih {{count}} posnetkov v {{dir}}",
+      "exportSuccess": "Izvoženih {{count}} posnetkov v {{dir}}",
       "exportError": "Napaka pri izvozu posnetkov",
       "clipsSummary": "{{count}} posnetkov • {{video}}",
       "noClipsYet": "Še ni posnetkov",
@@ -248,7 +251,7 @@
         "errorInvalidTime": "Neveljavne časovne vrednosti. Označite veljavni začetno in končno točko.",
         "errorInvalidTitle": "Neveljaven naslov posnetka. Vnesite veljaven naslov.",
         "errorNoCategories": "Nobena kategorija ni izbrana. Izberite vsaj eno kategorijo.",
-        "clipCreatedSuccess": "Posnetek je bil uspešno ustvarjen!",
+        "clipCreatedSuccess": "Posnetek je bil ustvarjen",
         "retryingClipCreation": "Ponovni poskus ustvarjanja posnetka ... Poskus {{attempt}}/{{maxRetries}} (čakanje {{delay}} s)",
         "errorAfterRetries": "Ustvarjanje posnetka po več poskusih ni uspelo: {{translationKey}}",
         "systemCheck": {
@@ -332,12 +335,12 @@
       "previousNextFrame": "Premakni za eno sličico",
       "errorVideoAborted": "Nalaganje videa je bilo prekinjeno",
       "errorVideoNetwork": "Napaka omrežja pri nalaganju videa",
-      "errorVideoDecoding": "Napaka pri dekodiranju videa – format morda ni podprt",
+      "errorVideoDecoding": "Videa ni bilo mogoče dekodirati. Format morda ni podprt.",
       "errorVideoFormat": "Video format ni podprt",
       "checkVideoFormat": "Preverite, ali video datoteka obstaja in je v podprtem formatu (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Prenašanje posodobitve ... {{progress}} %",
       "preparingUpdate": "Pripravljanje prenosa posodobitve ...",
-      "updateDownloaded": "Posodobitev {{version}} prenesena – pripravljena za namestitev.",
+      "updateDownloaded": "Posodobitev {{version}} prenesena. Pripravljena za namestitev.",
       "updateError": "Posodobitev ni uspela: {{message}}",
       "zoomTimeline": "Povečava časovnice",
       "pathLabel": "Pot:",
@@ -378,7 +381,7 @@
       "youtubeUrlPlaceholder": "Prilepite povezavo do YouTuba ...",
       "youtubeDownload": "Prenesi",
       "youtubeDownloading": "Prenašanje ...",
-      "youtubeDownloadError": "Tega videa ni bilo mogoče prenesti. YouTube je morda kaj spremenil – poskusite znova pozneje.",
+      "youtubeDownloadError": "Tega videa ni bilo mogoče prenesti. YouTube je morda kaj spremenil. Poskusite znova pozneje.",
       "youtubeInvalidUrl": "To ni videti kot povezava do YouTuba. Prilepite celoten URL iz brskalnika.",
       "youtubeDisclaimer": "To je odvisno od storitve YouTube in ne deluje vedno.",
       "noProjectsYet": "Še ni projektov",
@@ -437,11 +440,11 @@
       "descriptionPlaceholder_bug": "Kaj se je zgodilo? Kaj ste pričakovali namesto tega?",
       "descriptionPlaceholder_feature": "Kako bi to pomagalo vašemu delu?",
       "descriptionPlaceholder_feedback": "Povejte nam več ...",
-      "hint_bug": "Če lahko, navedite korake za ponovitev – tako bomo težavo hitreje odpravili.",
+      "hint_bug": "Če lahko, navedite korake za ponovitev. Tako bomo težavo hitreje odpravili.",
       "systemInfoNote": "Sistemski podatki so vključeni",
       "submit": "Pošlji",
       "submitting": "Pošiljanje ...",
-      "submitSuccess": "Hvala! Vaša povratna informacija je bila poslana.",
+      "submitSuccess": "Hvala. Vaša povratna informacija je bila poslana.",
       "submitError": "Povratne informacije ni bilo mogoče poslati. Poskusite znova pozneje."
     },
     "present": {
@@ -490,6 +493,11 @@
     },
     "donation": {
       "nudge": "S to brezplačno aplikacijo ste izvozili več kot {{count}} posnetkov. Če vam prihrani čas, je povezava za kavo na voljo v Nastavitve → O programu."
+    },
+    "startup": {
+      "dbFailed": "Aplikacija ni mogla odpreti svoje zbirke podatkov, zato vaših projektov ni mogoče naložiti. Napaka: {{error}}. Dnevniška datoteka: {{logPath}}",
+      "checkFailed": "Pri zagonu aplikacije je prišlo do težave. Napaka: {{error}}",
+      "apiUnavailable": "Aplikacija se ni pravilno zagnala (notranji most ni na voljo). Znova namestite najnovejšo različico."
     }
   }
 }

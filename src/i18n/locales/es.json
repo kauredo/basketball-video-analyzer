@@ -1,6 +1,6 @@
 {
   "_machineTranslated": {
-    "date": "2026-09-07",
+    "date": "2026-09-08",
     "reviewed": false,
     "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
     "keys": [
@@ -15,6 +15,9 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.startup.apiUnavailable",
+      "app.startup.checkFailed",
+      "app.startup.dbFailed",
       "app.video.markInPoint",
       "app.video.markOutPoint",
       "app.video.previousNextFrame"
@@ -23,7 +26,7 @@
   "app": {
     "title": "Basketball Video Analyzer",
     "buttons": {
-      "getStarted": "Empezar - Seleccionar vídeo",
+      "getStarted": "Selecciona un vídeo para empezar",
       "selectVideo": "Seleccionar vídeo",
       "settings": "Ajustes",
       "showSidePanel": "Mostrar panel lateral",
@@ -57,7 +60,7 @@
         },
         "markClips": {
           "title": "Marcar clips",
-          "description": "Usa las teclas I y O para marcar los puntos de inicio y fin durante la reproducción"
+          "description": "Pulsa Z para marcar el inicio de un clip y M para marcar el final"
         },
         "categorize": {
           "title": "Categorizar",
@@ -79,10 +82,10 @@
       "keyBindings": "Asignación de teclas",
       "markInKey": "Tecla de marcar inicio",
       "markOutKey": "Tecla de marcar fin",
-      "keyBindingSaved": "Asignación de tecla guardada correctamente",
+      "keyBindingSaved": "Asignación de tecla guardada",
       "dangerZone": "Zona de peligro",
       "confirmReset": "¿Seguro? Esto eliminará todos los clips y restablecerá las categorías por defecto. Esta acción no se puede deshacer.",
-      "resetSuccess": "Base de datos restablecida correctamente",
+      "resetSuccess": "Base de datos restablecida",
       "resetError": "Error al restablecer la base de datos",
       "pressAnyKey": "Pulsa cualquier tecla...",
       "theme": "Tema",
@@ -108,9 +111,9 @@
       "errorCreating": "Error al crear la categoría. Puede que el nombre ya exista.",
       "errorUpdating": "Error al actualizar la categoría. Puede que el nombre ya exista.",
       "errorDeleting": "Error al eliminar la categoría.",
-      "categoryCreated": "Categoría creada correctamente",
-      "categoryUpdated": "Categoría actualizada correctamente",
-      "categoryDeleted": "Categoría eliminada correctamente",
+      "categoryCreated": "Categoría creada",
+      "categoryUpdated": "Categoría actualizada",
+      "categoryDeleted": "Categoría eliminada",
       "editCategory": "Editar categoría",
       "categoryName": "Nombre de la categoría",
       "color": "Color",
@@ -141,9 +144,9 @@
         "deleteTooltip": "Eliminar la plantilla '{{presetName}}' de forma permanente",
         "noPresetsYet": "Aún no hay plantillas guardadas",
         "createFirstPreset": "Crea tu primera plantilla configurando categorías arriba y guardándolas con un nombre descriptivo.",
-        "saveSuccess": "¡Plantilla guardada correctamente! Ya puedes cargarla en cualquier proyecto.",
-        "loadSuccess": "¡Plantilla cargada correctamente!",
-        "deleteSuccess": "¡Plantilla eliminada correctamente!",
+        "saveSuccess": "Plantilla guardada. Ya puedes cargarla en cualquier proyecto.",
+        "loadSuccess": "Plantilla cargada",
+        "deleteSuccess": "Plantilla eliminada",
         "saveFailed": "No se pudo guardar la plantilla",
         "loadFailed": "No se pudo cargar la plantilla",
         "deleteFailed": "No se pudo eliminar la plantilla",
@@ -167,7 +170,7 @@
       "export": "Exportar clips",
       "deleteClip": "Eliminar clip",
       "confirmDelete": "¿Seguro que quieres eliminar este clip?",
-      "exportSuccess": "Se han exportado {{count}} clip(s) a {{dir}}",
+      "exportSuccess": "Exportado {{count}} clip(s) a {{dir}}",
       "exportError": "Error al exportar los clips",
       "clipsSummary": "{{count}} clips • {{video}}",
       "noClipsYet": "Aún no hay clips",
@@ -248,7 +251,7 @@
         "errorInvalidTime": "Valores de tiempo no válidos. Marca puntos de inicio y fin válidos.",
         "errorInvalidTitle": "Título del clip no válido. Indica un título válido.",
         "errorNoCategories": "No se ha seleccionado ninguna categoría. Selecciona al menos una.",
-        "clipCreatedSuccess": "¡Clip creado correctamente!",
+        "clipCreatedSuccess": "Clip creado",
         "retryingClipCreation": "Reintentando la creación del clip... Intento {{attempt}}/{{maxRetries}} (esperando {{delay}}s)",
         "errorAfterRetries": "No se pudo crear el clip tras varios intentos: {{translationKey}}",
         "systemCheck": {
@@ -332,12 +335,12 @@
       "previousNextFrame": "Avanzar un fotograma",
       "errorVideoAborted": "Se ha cancelado la carga del vídeo",
       "errorVideoNetwork": "Error de red al cargar el vídeo",
-      "errorVideoDecoding": "Error al decodificar el vídeo: puede que el formato no sea compatible",
+      "errorVideoDecoding": "No se pudo decodificar el vídeo. Puede que el formato no sea compatible.",
       "errorVideoFormat": "Formato de vídeo no compatible",
       "checkVideoFormat": "Comprueba que el archivo de vídeo existe y está en un formato compatible (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Descargando actualización... {{progress}}%",
       "preparingUpdate": "Preparando la descarga de la actualización...",
-      "updateDownloaded": "Actualización {{version}} descargada — lista para instalar.",
+      "updateDownloaded": "Actualización {{version}} descargada. Lista para instalar.",
       "updateError": "Error en la actualización: {{message}}",
       "zoomTimeline": "Zoom en la línea de tiempo",
       "pathLabel": "Ruta:",
@@ -441,7 +444,7 @@
       "systemInfoNote": "Información del sistema incluida",
       "submit": "Enviar",
       "submitting": "Enviando...",
-      "submitSuccess": "¡Gracias! Tu comentario se ha enviado.",
+      "submitSuccess": "Gracias. Tu comentario se ha enviado.",
       "submitError": "No se pudieron enviar los comentarios. Inténtalo más tarde."
     },
     "present": {
@@ -490,6 +493,11 @@
     },
     "donation": {
       "nudge": "Has exportado más de {{count}} clips con esta aplicación gratuita. Si te ahorra tiempo, hay un enlace para invitar a un café en Ajustes → Acerca de."
+    },
+    "startup": {
+      "dbFailed": "La aplicación no pudo abrir su base de datos, así que no se pueden cargar sus proyectos. Error: {{error}}. Archivo de registro: {{logPath}}",
+      "checkFailed": "Algo falló al iniciar la aplicación. Error: {{error}}",
+      "apiUnavailable": "La aplicación no se inició correctamente (puente interno no disponible). Reinstale la versión más reciente."
     }
   }
 }
