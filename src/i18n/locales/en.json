@@ -41,7 +41,7 @@
         },
         "markClips": {
           "title": "Mark Clips",
-          "description": "Use I and O keys to mark in/out points during playback"
+          "description": "Press Z to mark the start of a clip and M to mark the end"
         },
         "categorize": {
           "title": "Categorize",

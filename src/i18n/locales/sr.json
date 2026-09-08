@@ -60,7 +60,7 @@
         },
         "markClips": {
           "title": "Označi klipove",
-          "description": "Tasterima I i O obeležite početnu/završnu tačku tokom reprodukcije"
+          "description": "Pritisnite Z da označite početak klipa, a M za kraj"
         },
         "categorize": {
           "title": "Kategorizuj",

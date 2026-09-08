@@ -61,7 +61,7 @@
         },
         "markClips": {
           "title": "Klipleri İşaretle",
-          "description": "Oynatma sırasında başlangıç/bitiş noktalarını işaretlemek için I ve O tuşlarını kullanın"
+          "description": "Bir klibin başlangıcını işaretlemek için Z, sonu için M tuşuna basın"
         },
         "categorize": {
           "title": "Kategorize Et",

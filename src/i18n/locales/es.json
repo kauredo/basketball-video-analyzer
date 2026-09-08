@@ -60,7 +60,7 @@
         },
         "markClips": {
           "title": "Marcar clips",
-          "description": "Usa las teclas I y O para marcar los puntos de inicio y fin durante la reproducción"
+          "description": "Pulsa Z para marcar el inicio de un clip y M para marcar el final"
         },
         "categorize": {
           "title": "Categorizar",

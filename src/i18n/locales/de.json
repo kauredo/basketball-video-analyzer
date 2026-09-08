@@ -60,7 +60,7 @@
         },
         "markClips": {
           "title": "Clips markieren",
-          "description": "Mit den Tasten I und O Anfang/Ende während der Wiedergabe setzen"
+          "description": "Drücke Z für den Anfang eines Clips und M für das Ende"
         },
         "categorize": {
           "title": "Kategorisieren",

@@ -60,7 +60,7 @@
         },
         "markClips": {
           "title": "Označi posnetke",
-          "description": "Med predvajanjem s tipkama I in O označi začetne in končne točke"
+          "description": "Pritisnite Z za začetek posnetka in M za konec"
         },
         "categorize": {
           "title": "Razvrsti",

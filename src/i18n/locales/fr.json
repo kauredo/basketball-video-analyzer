@@ -61,7 +61,7 @@
         },
         "markClips": {
           "title": "Marquer les clips",
-          "description": "Utilisez les touches I et O pour marquer les points d'entrée/sortie pendant la lecture"
+          "description": "Appuyez sur Z pour marquer le début d'un clip et sur M pour la fin"
         },
         "categorize": {
           "title": "Catégoriser",

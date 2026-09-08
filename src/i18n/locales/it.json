@@ -60,7 +60,7 @@
         },
         "markClips": {
           "title": "Segna le clip",
-          "description": "Usa i tasti I e O per segnare i punti di inizio/fine durante la riproduzione"
+          "description": "Premi Z per segnare l'inizio di una clip e M per la fine"
         },
         "categorize": {
           "title": "Categorizza",

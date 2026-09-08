@@ -23,12 +23,12 @@
   "app": {
     "title": "Editor de Vídeos de Basquetebol",
     "startup": {
-      "dbFailed": "A aplicação não conseguiu abrir a base de dados, por isso os seus projetos não podem ser carregados. Erro: {{error}}. Ficheiro de registo: {{logPath}}",
+      "dbFailed": "A aplicação não conseguiu abrir a base de dados, por isso os teus projetos não podem ser carregados. Erro: {{error}}. Ficheiro de registo: {{logPath}}",
       "checkFailed": "Ocorreu um problema ao iniciar a aplicação. Erro: {{error}}",
-      "apiUnavailable": "A aplicação não iniciou corretamente (ponte interna indisponível). Reinstale a versão mais recente."
+      "apiUnavailable": "A aplicação não iniciou corretamente (ponte interna indisponível). Reinstala a versão mais recente."
     },
     "buttons": {
-      "getStarted": "Selecione um vídeo para começar",
+      "getStarted": "Seleciona um vídeo para começar",
       "selectVideo": "Selecionar Vídeo",
       "settings": "Definições",
       "showSidePanel": "Mostrar Painel Lateral",
@@ -58,19 +58,19 @@
       "steps": {
         "loadVideo": {
           "title": "Carregar Vídeo",
-          "description": "Selecione o ficheiro de vídeo do jogo de basquetebol"
+          "description": "Seleciona o ficheiro de vídeo do jogo de basquetebol"
         },
         "markClips": {
           "title": "Marcar Clips",
-          "description": "Use as teclas I e O para marcar pontos de entrada/saída durante a reprodução"
+          "description": "Prime Z para marcar o início de um clipe e M para marcar o fim"
         },
         "categorize": {
           "title": "Categorizar",
-          "description": "Marque clips com categorias personalizadas (Ressaltos, Ecrãs, Ações de jogador, etc.)"
+          "description": "Marca clips com categorias personalizadas (Ressaltos, Ecrãs, Ações de jogador, etc.)"
         },
         "share": {
           "title": "Partilhar",
-          "description": "Exporte clips por categoria para partilhar com a sua equipa"
+          "description": "Exporta clips por categoria para partilhar com a tua equipa"
         }
       }
     },
@@ -89,7 +89,7 @@
       "confirmReset": "Tem a certeza? Isto irá eliminar todos os clips e repor as categorias para o padrão. Esta ação não pode ser desfeita.",
       "resetSuccess": "Base de dados reposta",
       "resetError": "Erro ao repor a base de dados",
-      "pressAnyKey": "Prima qualquer tecla...",
+      "pressAnyKey": "Prime qualquer tecla...",
       "theme": "Tema",
       "general": "Geral",
       "darkMode": "Modo Escuro",
@@ -109,7 +109,7 @@
       "placeholder": "Nome da categoria",
       "descriptionPlaceholder": "Descrição da categoria (opcional)",
       "colorLabel": "Cor:",
-      "confirmDelete": "Tem a certeza que pretende eliminar esta categoria? Isto não irá eliminar os clips existentes.",
+      "confirmDelete": "Tens a certeza que queres eliminar esta categoria? Isto não irá eliminar os clips existentes.",
       "errorCreating": "Erro ao criar categoria. O nome pode já existir.",
       "errorUpdating": "Erro ao atualizar categoria. O nome pode já existir.",
       "errorDeleting": "Erro ao eliminar categoria.",
@@ -120,11 +120,11 @@
       "categoryName": "Nome da Categoria",
       "color": "Cor",
       "descriptionOptional": "Descrição (opcional)",
-      "enterCategoryName": "Introduza o nome da categoria...",
+      "enterCategoryName": "Introduz o nome da categoria...",
       "addDescription": "Adicionar descrição...",
       "saveChanges": "Guardar Alterações",
       "addSubcategoryTo": "Adicionar Subcategoria a \"{{name}}\"",
-      "subcategoryPlaceholder": "Introduza o nome da subcategoria (ex: Topo, Lateral, 60°)...",
+      "subcategoryPlaceholder": "Introduz o nome da subcategoria (ex: Topo, Lateral, 60°)...",
       "subcategoryDescriptionPlaceholder": "Descrição (opcional)...",
       "addSubcategory": "Adicionar Subcategoria",
       "noCategory": "Sem Categoria",
@@ -134,26 +134,26 @@
       "addSubcategoryTooltip": "Adicionar subcategoria",
       "presets": {
         "title": "Predefinições de Categorias",
-        "description": "Guarde uma árvore de categorias e carregue-a no jogo seguinte. Tenha uma para analisar adversários e outra para a sua equipa.",
+        "description": "Guarda uma árvore de categorias e carrega-a no jogo seguinte. Tem uma para analisar adversários e outra para a tua equipa.",
         "saveCurrentCategories": "Guardar Categorias Atuais como Nova Predefinição",
         "save": "Guardar Predefinição",
         "load": "Carregar Predefinição",
         "delete": "Eliminar Predefinição",
         "enterName": "Introduzir nome da predefinição (ex: 'Análise Adversário', 'Desenvolvimento Jogador')",
-        "yourSavedPresets": "As Suas Predefinições Guardadas",
-        "loadDescription": "Clique em qualquer predefinição abaixo para carregar a sua estrutura de categorias no projeto atual:",
+        "yourSavedPresets": "As Tuas Predefinições Guardadas",
+        "loadDescription": "Clica em qualquer predefinição abaixo para carregar a tua estrutura de categorias no projeto atual:",
         "loadTooltip": "Carregar categorias de '{{presetName}}' no projeto atual",
         "deleteTooltip": "Eliminar predefinição '{{presetName}}' permanentemente",
         "noPresetsYet": "Ainda não foram guardadas predefinições",
-        "createFirstPreset": "Crie a sua primeira predefinição construindo categorias acima, depois guarde-as com um nome descritivo.",
+        "createFirstPreset": "Cria a tua primeira predefinição construindo categorias acima, depois guarda-as com um nome descritivo.",
         "saveSuccess": "Predefinição guardada Pode agora carregá-la em qualquer projeto.",
         "loadSuccess": "Predefinição carregada",
         "deleteSuccess": "Predefinição eliminada",
         "saveFailed": "Falha ao guardar predefinição",
         "loadFailed": "Falha ao carregar predefinição",
         "deleteFailed": "Falha ao eliminar predefinição",
-        "confirmLoad": "Tem a certeza que pretende carregar a predefinição '{{presetName}}'? Isto irá substituir as suas categorias atuais.",
-        "confirmDelete": "Tem a certeza que pretende eliminar a predefinição '{{presetName}}'? Esta ação não pode ser desfeita."
+        "confirmLoad": "Tens a certeza que queres carregar a predefinição '{{presetName}}'? Isto irá substituir as tuas categorias atuais.",
+        "confirmDelete": "Tens a certeza que queres eliminar a predefinição '{{presetName}}'? Esta ação não pode ser desfeita."
       },
       "default": {
         "offense": "Ataque",
@@ -195,11 +195,11 @@
       "noClipsInCategoryToExport": "Nenhum clip encontrado na categoria selecionada para exportar.",
       "noCategoriesInClips": "Nenhuma categoria encontrada nos clips filtrados.",
       "noProjectLoaded": "Nenhum Projeto Carregado",
-      "selectVideoToStart": "Selecione um ficheiro de vídeo para começar a criar clips para um projeto.",
-      "startCuttingClips": "Reproduza o vídeo e prima Z no início de uma jogada e M no fim. Escolha uma categoria e o clipe fica guardado.",
-      "createClipsInCategory": "Crie clips com esta categoria para os ver aqui",
+      "selectVideoToStart": "Seleciona um ficheiro de vídeo para começar a criar clips para um projeto.",
+      "startCuttingClips": "Reproduz o vídeo e prima Z no início de uma jogada e M no fim. Escolhe uma categoria e o clipe fica guardado.",
+      "createClipsInCategory": "Cria clips com esta categoria para os ver aqui",
       "sharingClips": "Partilhar Clips",
-      "exportCategoryClips": "Exportar todos os clips de \"{{category}}\" para partilhar com a sua equipa",
+      "exportCategoryClips": "Exportar todos os clips de \"{{category}}\" para partilhar com a tua equipa",
       "exportOrganizedClips": "Exportar clips organizados por categoria para partilha fácil com a equipa",
       "play": "Reproduzir",
       "playClip": "Reproduzir clip",
@@ -221,17 +221,17 @@
       "saveSessionSuccess": "Projeto guardado",
       "saveSessionError": "Não foi possível guardar o projeto",
       "quickTagCreated": "Clip criado: {{category}}",
-      "quickTagNoMarks": "Defina os pontos de entrada e saída primeiro",
+      "quickTagNoMarks": "Define os pontos de entrada e saída primeiro",
       "creator": {
         "shotLocation": "Localização do lançamento (opcional)",
         "clearLocation": "Limpar localização",
         "quarter": "Período",
         "title": "Título do Clip",
-        "titlePlaceholder": "Introduza o título do clip (opcional)",
+        "titlePlaceholder": "Introduz o título do clip (opcional)",
         "notes": "Notas",
-        "notesPlaceholder": "Adicione notas para este clip (opcional)",
+        "notesPlaceholder": "Adiciona notas para este clip (opcional)",
         "categories": "Categorias",
-        "selectCategories": "Selecione categorias para este clip",
+        "selectCategories": "Seleciona categorias para este clip",
         "duration": "Duração",
         "markInOut": "Entrada/Saída",
         "createClip": "Criar Clip",
@@ -242,29 +242,29 @@
         "errorSelectCategory": "Por favor selecione pelo menos uma categoria para este clip.",
         "categoryRequired": "Por favor selecione pelo menos uma categoria para este clip.",
         "errorCreating": "Erro ao criar clip. Por favor tente novamente.",
-        "errorNoWriteAccess": "Não é possível escrever na pasta de clips. Verifique as permissões da pasta Documentos.",
+        "errorNoWriteAccess": "Não é possível escrever na pasta de clips. Verifica as permissões da pasta Documentos.",
         "errorInsufficientSpace": "Não há espaço suficiente em disco para criar o clip.",
         "errorFileNotFound": "Ficheiro de vídeo não encontrado ou não acessível.",
         "errorFFmpegFailed": "Falha no processamento de vídeo. O ficheiro pode estar corrompido ou não ser suportado.",
         "errorDatabaseFailed": "Falha ao guardar informações do clip na base de dados.",
         "errorThumbnailFailed": "Falha ao criar miniatura para o clip.",
-        "errorInvalidDuration": "Duração de clip inválida. Verifique os pontos de entrada/saída.",
-        "errorInvalidTime": "Valores de tempo inválidos. Marque pontos de entrada/saída válidos.",
+        "errorInvalidDuration": "Duração de clip inválida. Verifica os pontos de entrada/saída.",
+        "errorInvalidTime": "Valores de tempo inválidos. Marca pontos de entrada/saída válidos.",
         "errorInvalidTitle": "Título de clip inválido. Forneça um título válido.",
-        "errorNoCategories": "Nenhuma categoria selecionada. Selecione pelo menos uma categoria.",
+        "errorNoCategories": "Nenhuma categoria selecionada. Seleciona pelo menos uma categoria.",
         "clipCreatedSuccess": "Clip criado",
         "retryingClipCreation": "A tentar novamente criar clip... Tentativa {{attempt}}/{{maxRetries}} (aguardando {{delay}}s)",
         "errorAfterRetries": "Falha ao criar clip após múltiplas tentativas: {{translationKey}}",
         "systemCheck": {
           "error_ffmpeg_not_found": "FFmpeg não encontrado. O processamento de vídeo não está disponível.",
-          "error_user_data_not_accessible": "Não é possível aceder à pasta de dados da aplicação. Verifique as permissões.",
-          "error_no_write_access": "Sem acesso de escrita à pasta de clips. Verifique as permissões.",
-          "error_system_check_failed": "Verificação do sistema falhada. Tente novamente.",
+          "error_user_data_not_accessible": "Não é possível aceder à pasta de dados da aplicação. Verifica as permissões.",
+          "error_no_write_access": "Sem acesso de escrita à pasta de clips. Verifica as permissões.",
+          "error_system_check_failed": "Verificação do sistema falhada. Tenta novamente.",
           "warning_low_disk_space": "Aviso: Pouco espaço em disco (menos de 1GB disponível)."
         },
         "clipCreationCancelled": "Criação de clip foi cancelada.",
         "clipCancellationFailed": "Falha ao cancelar criação de clip.",
-        "unsupportedFormat": "Formato de vídeo não suportado: {{format}}. Use MP4, AVI, MOV, MKV, WMV, FLV, WebM, ou M4V.",
+        "unsupportedFormat": "Formato de vídeo não suportado: {{format}}. Usa MP4, AVI, MOV, MKV, WMV, FLV, WebM, ou M4V.",
         "untitledClip": "Clip Sem Título",
         "errorNoProject": "Nenhum projeto carregado. Por favor selecione um vídeo primeiro.",
         "selected": "selecionadas",
@@ -321,15 +321,15 @@
       "skip1minForward": "Avançar 1 minuto (Ctrl/Cmd + →)",
       "timeSearch": {
         "placeholder": "Saltar para tempo (ex: 1:23:45, 12:30)",
-        "tooltip": "Introduza o tempo em formato HH:MM:SS, MM:SS, ou segundos para saltar para esse momento",
+        "tooltip": "Introduz o tempo em formato HH:MM:SS, MM:SS, ou segundos para saltar para esse momento",
         "jumpToTime": "Saltar para este tempo",
         "enterTime": "Por favor introduza um tempo para saltar",
-        "invalidFormat": "Formato de tempo inválido. Use HH:MM:SS, MM:SS, ou segundos (ex: 1:23:45, 12:30, 150)",
+        "invalidFormat": "Formato de tempo inválido. Usa HH:MM:SS, MM:SS, ou segundos (ex: 1:23:45, 12:30, 150)",
         "timeExceedsVideo": "O tempo excede a duração do vídeo"
       },
       "playbackSpeed": "Velocidade de Reprodução",
-      "loadVideoTitle": "Carregue um Vídeo para Começar a Cortar Clips",
-      "loadVideoDescription": "Selecione um vídeo de jogo de basquetebol para começar a criar clips para a sua equipa",
+      "loadVideoTitle": "Carrega um Vídeo para Começar a Cortar Clips",
+      "loadVideoDescription": "Seleciona um vídeo de jogo de basquetebol para começar a criar clips para a tua equipa",
       "keyboardShortcuts": "Atalhos de Teclado",
       "playPause": "Reproduzir/Pausar",
       "markInPoint": "Marcar o início de um clipe",
@@ -339,7 +339,7 @@
       "errorVideoNetwork": "Erro de rede ao carregar vídeo",
       "errorVideoDecoding": "Não foi possível descodificar o vídeo. O formato pode não ser suportado.",
       "errorVideoFormat": "Formato de vídeo não suportado",
-      "checkVideoFormat": "Verifique se o ficheiro de vídeo existe e está num formato suportado (MP4, MOV, AVI, MKV, WebM)",
+      "checkVideoFormat": "Verifica se o ficheiro de vídeo existe e está num formato suportado (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "A descarregar atualização... {{progress}}%",
       "preparingUpdate": "A preparar download da atualização...",
       "updateDownloaded": "Atualização {{version}} descarregada. Pronta a instalar.",
@@ -372,10 +372,10 @@
       "lastOpened": "Última abertura",
       "created": "Criado",
       "deleteProject": "Eliminar projeto",
-      "confirmDelete": "Tem a certeza que pretende eliminar o projeto \"{{name}}\"? Isto irá também eliminar todos os clips associados.",
+      "confirmDelete": "Tens a certeza que queres eliminar o projeto \"{{name}}\"? Isto irá também eliminar todos os clips associados.",
       "deleteError": "Erro ao eliminar projeto. Por favor tente novamente.",
       "importSession": "Importar projeto",
-      "importSessionDescription": "Carregar um projeto que guardou antes",
+      "importSessionDescription": "Carregar um projeto que guardaste antes",
       "importSessionSuccess": "Projeto importado",
       "importSessionError": "Não foi possível importar o projeto",
       "importSessionInvalidFile": "Esse ficheiro não é um projeto guardado.",
@@ -383,11 +383,11 @@
       "youtubeUrlPlaceholder": "Cole um link do YouTube...",
       "youtubeDownload": "Descarregar",
       "youtubeDownloading": "A descarregar...",
-      "youtubeDownloadError": "Não foi possível descarregar este vídeo. O YouTube pode ter alterado algo. Tente novamente mais tarde.",
-      "youtubeInvalidUrl": "Isto não parece um link do YouTube. Tente colar o URL completo do navegador.",
+      "youtubeDownloadError": "Não foi possível descarregar este vídeo. O YouTube pode ter alterado algo. Tenta novamente mais tarde.",
+      "youtubeInvalidUrl": "Isto não parece um link do YouTube. Tenta colar o URL completo do navegador.",
       "youtubeDisclaimer": "Depende do serviço do YouTube e pode nem sempre funcionar.",
       "noProjectsYet": "Ainda Não Há Projetos",
-      "noProjectsDescription": "Crie o seu primeiro projeto para começar a análise de vídeo.",
+      "noProjectsDescription": "Cria o teu primeiro projeto para começar a análise de vídeo.",
       "projectCount_one": "{{count}} projeto",
       "projectCount_other": "{{count}} projetos",
       "videoMissingBadge": "Vídeo em falta",
@@ -418,14 +418,14 @@
       "legend": "Legenda",
       "selectedClip": "Clip Selecionado",
       "currentPosition": "Posição Atual",
-      "noClipsGuidance": "Prima Z durante a reprodução para marcar o início de um clipe e M para o terminar."
+      "noClipsGuidance": "Prime Z durante a reprodução para marcar o início de um clipe e M para o terminar."
     },
     "hints": {
-      "markKeys": "Prima {{markIn}} para marcar o início de um clip, {{markOut}} para marcar o fim.",
-      "firstClip": "Os seus clips aparecem aqui. Use categorias para os organizar.",
+      "markKeys": "Prime {{markIn}} para marcar o início de um clip, {{markOut}} para marcar o fim.",
+      "firstClip": "Os seus clips aparecem aqui. Usa categorias para os organizar.",
       "dismiss": "Dispensar dica",
       "markOutNext": "Início marcado. Agora prima {{markOut}} onde a jogada termina para criar o clipe.",
-      "firstExport": "Já tem alguns clipes. Use o botão Exportar acima para os guardar em pastas por categoria."
+      "firstExport": "Já tens alguns clipes. Usa o botão Exportar acima para os guardar em pastas por categoria."
     },
     "feedback": {
       "type": "Que tipo de feedback?",
@@ -440,14 +440,14 @@
       "titlePlaceholder_feedback": "O que tem em mente?",
       "descriptionLabel": "Descrição",
       "descriptionPlaceholder_bug": "O que aconteceu? O que esperava em vez disso?",
-      "descriptionPlaceholder_feature": "Como é que isto ajudaria o seu trabalho?",
+      "descriptionPlaceholder_feature": "Como é que isto ajudaria o teu trabalho?",
       "descriptionPlaceholder_feedback": "Conte-nos mais...",
       "hint_bug": "Inclua os passos para reproduzir se possível. Ajuda-nos a corrigir mais rápido.",
       "systemInfoNote": "Informação do sistema incluída",
       "submit": "Enviar",
       "submitting": "A enviar...",
-      "submitSuccess": "Obrigado O seu feedback foi enviado.",
-      "submitError": "Não foi possível enviar o feedback. Tente novamente mais tarde."
+      "submitSuccess": "Obrigado. O teu feedback foi enviado.",
+      "submitError": "Não foi possível enviar o feedback. Tenta novamente mais tarde."
     },
     "present": {
       "title": "Modo apresentação",
@@ -465,10 +465,10 @@
       "filterCategory": "Categoria",
       "allOption": "Todos",
       "unlocatedCount": "{{count}} clipe(s) sem localização",
-      "noLocatedClips": "Ainda não há clipes com localização. Defina-a no editor de clipes.",
+      "noLocatedClips": "Ainda não há clipes com localização. Define-a no editor de clipes.",
       "title": "Estatísticas",
       "stats": "Estatísticas",
-      "noData": "Ainda não há clips. Crie alguns clips para ver estatísticas.",
+      "noData": "Ainda não há clips. Cria alguns clips para ver estatísticas.",
       "totalClips": "Total de clips",
       "totalDuration": "Duração total",
       "avgDuration": "Duração média",
@@ -487,14 +487,14 @@
       "numberPlaceholder": "Nº",
       "add": "Adicionar",
       "delete": "Eliminar jogador",
-      "empty": "Ainda não há jogadores. Adicione jogadores para os marcar nos clips.",
+      "empty": "Ainda não há jogadores. Adiciona jogadores para os marcar nos clips.",
       "confirmDelete": "Eliminar este jogador? Os clips mantêm as outras etiquetas.",
       "errorCreating": "Não foi possível adicionar o jogador.",
       "errorUpdating": "Não foi possível atualizar o jogador.",
       "errorDeleting": "Não foi possível eliminar o jogador."
     },
     "donation": {
-      "nudge": "Já exportou mais de {{count}} clipes com esta aplicação gratuita. Se lhe poupa tempo, há um link para um café em Definições → Sobre."
+      "nudge": "Já exportaste mais de {{count}} clipes com esta aplicação gratuita. Se te poupa tempo, há um link para um café em Definições → Sobre."
     }
   }
 }
