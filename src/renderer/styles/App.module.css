@@ -81,7 +81,10 @@
   position: relative;
   transition: width 0.2s ease;
   min-width: 280px;
-  max-width: 600px;
+  /* 600px was enough for the card grid, which reflows to whatever it gets. The
+     clip table does not reflow: below about 700px its play calls truncate to
+     "1..." and "2...", which is the column the table exists for. */
+  max-width: 900px;
   flex-shrink: 0;
 }
 

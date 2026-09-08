@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   BOTTOM_PANEL_COLLAPSED: "bottomPanelCollapsed",
   CLIP_SORT_BY: "clipSortBy",
   CLIP_SORT_ORDER: "clipSortOrder",
+  CLIP_VIEW_MODE: "clipViewMode",
   ONBOARDING_COMPLETE: "onboardingComplete",
   ANNOTATION_REPLAY: "annotationReplay",
   EXPORTED_CLIPS_TOTAL: "exportedClipsTotal",

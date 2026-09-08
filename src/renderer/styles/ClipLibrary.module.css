@@ -900,3 +900,47 @@
     }
   }
 }
+
+/* Cards or table. A segmented pair rather than two loose buttons, so the two
+   read as one choice with one of them currently taken. */
+.viewToggle {
+  display: inline-flex;
+  height: var(--button-height);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.viewToggleBtn {
+  background: var(--bg-tertiary);
+  border: none;
+  color: var(--text-secondary);
+  padding: 0 var(--spacing-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: background var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  white-space: nowrap;
+}
+
+.viewToggleBtn + .viewToggleBtn {
+  border-left: 1px solid var(--border-color);
+}
+
+.viewToggleBtn:hover:not(.viewToggleActive) {
+  background: var(--bg-quaternary);
+  color: var(--text-primary);
+}
+
+.viewToggleActive {
+  background: var(--color-primary);
+  color: var(--text-white);
+}
+
+.viewToggleBtn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: -2px;
+}

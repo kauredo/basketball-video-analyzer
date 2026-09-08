@@ -87,6 +87,7 @@ downloading the electron and ffmpeg binaries by running each package's
 | 036 | Eyebrows restate the H1 on all six guide pages | website | P3 | S | — | DONE (2026-09-07) |
 | 037 | App copy drift: two nouns, Title Case, marketing register | app | P3 | M | 005 (coordinate) | DONE (on main 2026-09-08) |
 | 038 | Aphoristic closer, em dashes in four titles, rule of three | website | P3 | S | 015 (coordinate) | DONE (2026-09-07) |
+| 039 | Clips are frozen after the cut: an editable table view | app | P1 | L | — | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) |
 REJECTED (with one-line rationale).
@@ -106,6 +107,11 @@ Real signal from 004: Windows is ~48% of desktop downloads (macOS ~38%, Linux
 ~14%) — relevant to the deferred Windows-signing decision.
 
 ## Dependency notes
+
+- **039 (editable clip table) has no dependencies**, but it is the first
+  renderer caller of `updateClip`, adds a `status` column to `clips`, and
+  rewrites part of `ClipLibrary.tsx`. Anything else editing `ClipLibrary.tsx`
+  should land before it or re-run its drift check after.
 
 - **001 before 005** when both run: both edit `ClipLibrary.tsx`/`App.tsx`, and
   005's first-export hint reads the `EXPORTED_CLIPS_TOTAL` localStorage key

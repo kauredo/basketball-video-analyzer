@@ -72,6 +72,17 @@ export const App: React.FC = () => {
   const [showStats, setShowStats] = useState(false);
   const [hasExistingProjects, setHasExistingProjects] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_WIDTH, 360));
+
+  // The clip table needs more room than the card grid does. Rather than ship a
+  // view that opens truncated, the library asks for the width it needs the
+  // first time a coach switches to it. A panel already wider is left alone.
+  const ensureSidePanelWidth = useCallback((minimum: number) => {
+    setSidePanelWidth(prev => {
+      if (prev >= minimum) return prev;
+      savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, minimum);
+      return minimum;
+    });
+  }, []);
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_COLLAPSED, true));
   const [bottomPanelHeight, setBottomPanelHeight] = useState(() => loadPref(STORAGE_KEYS.BOTTOM_PANEL_HEIGHT, 300));
   const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.BOTTOM_PANEL_COLLAPSED, false));
@@ -705,6 +716,7 @@ export const App: React.FC = () => {
               <ClipLibrary
                 onRefresh={refreshTrigger}
                 currentProject={currentProject}
+                onRequestWidth={ensureSidePanelWidth}
               />
             </div>
           </div>
