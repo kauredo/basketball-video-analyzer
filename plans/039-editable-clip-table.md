@@ -903,3 +903,40 @@ For whoever owns this next:
   - *A diagram indicator column.* Annotations are keyed to a timestamp in the
     source video rather than to a clip id, so a per-clip indicator needs a
     range query that does not exist yet.
+
+---
+
+## Executor notes (2026-09-08, PR #36)
+
+What the plan got wrong, recorded next to the claim rather than deleted:
+
+- **The plan said the table would live inside the existing side panel and
+  listed only `ClipLibrary.module.css` for layout.** The panel opens at 360px
+  and `App.module.css` capped it at 600px, while the table's own floor is
+  755px. Below that the play calls truncate to `1...` and `2...`, which is the
+  column the whole view exists for. The cap moved to 900px and `ClipLibrary`
+  gained an `onRequestWidth` prop that `App` answers with
+  `ensureSidePanelWidth`, so the Table toggle claims the room once. Anyone
+  planning further work in this panel should budget width, not just height.
+
+- **`updateClip` had a second defect the plan named but did not size.** As well
+  as interpolating IPC-supplied field names into the SQL, an empty `updates`
+  object built `UPDATE clips SET  WHERE id = ?` and threw. Both are handled by
+  `UPDATABLE_CLIP_COLUMNS` plus an early return.
+
+- **Bulk category was specified as "re-categorise" and shipped as "add".**
+  Replacing a clip's tags in bulk destroys tags a coach set by hand, and no
+  step of the plan justified that. The English key reads "Add category".
+
+- **The status i18n block is 30 keys, not the 29 the plan's verify command
+  claimed.** The command in the plan was corrected before execution.
+
+Reviewers found two defects the plan's steps did not anticipate, both in the
+shift-click range: a stored row index goes out of bounds when a filter or a
+bulk delete shortens the list, and points at the wrong clip after a re-sort.
+Anchoring on the clip id fixes both. A future plan that adds selection to any
+list in this app should specify the anchor as an id from the start.
+
+Still deferred, in the order they are worth doing: manual clip order, the CSV
+export gaining a Status column, duplicating a clip, re-trimming in and out
+points, and a diagram indicator column.
