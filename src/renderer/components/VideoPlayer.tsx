@@ -38,6 +38,7 @@ import { TelestrationShape, shapesToPngDataUrl } from "../utils/telestration";
 import { useToastContext } from "../contexts/ToastContext";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 import { Annotation } from "../../types/global";
+import { withCause } from "../utils/errors";
 
 interface VideoPlayerProps {
   videoPath: string | null;
@@ -201,7 +202,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }
       } catch (error) {
         console.error("Error saving annotated still:", error);
-        showError(t("app.telestration.saveStillError"));
+        showError(withCause(t("app.telestration.saveStillError"), error));
       } finally {
         setSavingStill(false);
       }
@@ -238,7 +239,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         showSuccess(t("app.telestration.savedAnnotation"));
       } catch (error) {
         console.error("Failed to save annotation:", error);
-        showError(t("app.telestration.saveAnnotationError"));
+        showError(withCause(t("app.telestration.saveAnnotationError"), error));
       }
     }, [projectId, videoPath, shapes, loadAnnotations, showSuccess, showError, t]);
 
@@ -266,7 +267,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         showSuccess(t("app.telestration.deletedAnnotation"));
       } catch (error) {
         console.error("Failed to delete annotation:", error);
-        showError(t("app.telestration.deleteAnnotationError"));
+        showError(withCause(t("app.telestration.deleteAnnotationError"), error));
       }
     };
 

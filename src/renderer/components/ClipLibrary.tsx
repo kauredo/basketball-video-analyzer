@@ -34,6 +34,7 @@ import { DONATION_NUDGE_THRESHOLD } from "../utils/constants";
 import { formatVideoSrc } from "../utils/paths";
 import { Player } from "../../types/global";
 import { inkOn } from "../utils/contrast";
+import { withCause } from "../utils/errors";
 
 // Parse a clip's JSON player-ID array, tolerating malformed values.
 const parsePlayerIds = (playersJson?: string): number[] => {
@@ -217,7 +218,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       await window.electronAPI.playClip(clipPath);
     } catch (error) {
       console.error("Error playing clip:", error);
-      showError(t("app.clips.errorPlayingClip"));
+      showError(withCause(t("app.clips.errorPlayingClip"), error));
     }
   };
 
@@ -231,7 +232,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       await loadData();
     } catch (error) {
       console.error("Error deleting clip:", error);
-      showError(t("app.clips.errorDeletingClip"));
+      showError(withCause(t("app.clips.errorDeletingClip"), error));
     }
   };
 
@@ -384,7 +385,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       }
     } catch (error) {
       console.error("Error exporting clips data:", error);
-      showError(t("app.clips.exportDataError"));
+      showError(withCause(t("app.clips.exportDataError"), error));
     } finally {
       setIsExporting(false);
     }
@@ -401,7 +402,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       }
     } catch (error) {
       console.error("Error exporting Sportscode XML:", error);
-      showError(t("app.clips.exportDataError"));
+      showError(withCause(t("app.clips.exportDataError"), error));
     } finally {
       setIsExporting(false);
     }
@@ -418,7 +419,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       }
     } catch (error) {
       console.error("Error saving session:", error);
-      showError(t("app.clips.saveSessionError"));
+      showError(withCause(t("app.clips.saveSessionError"), error));
     } finally {
       setIsExporting(false);
     }

@@ -15,6 +15,7 @@ import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 
 import { Category } from "../../types/global";
+import { withCause } from "../utils/errors";
 
 // A category with no colour of its own. Deliberately a neutral: it reads as
 // unset rather than impersonating a real category. The old #4CAF50 sat dE 7.4
@@ -171,7 +172,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       showSuccess(t("app.categories.categoryCreated"));
     } catch (error) {
       console.error("Error creating category:", error);
-      showError(t("app.categories.errorCreating"));
+      showError(withCause(t("app.categories.errorCreating"), error));
     }
   };
 
@@ -198,7 +199,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       onCategoriesChange();
     } catch (error) {
       console.error("Error creating subcategory:", error);
-      showError(t("app.categories.errorCreating"));
+      showError(withCause(t("app.categories.errorCreating"), error));
     }
   };
 
@@ -218,7 +219,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       showSuccess(t("app.categories.categoryUpdated"));
     } catch (error) {
       console.error("Error updating category:", error);
-      showError(t("app.categories.errorUpdating"));
+      showError(withCause(t("app.categories.errorUpdating"), error));
     }
   }, [editingCategory, loadCategories, onCategoriesChange, t, showSuccess]);
 
@@ -234,7 +235,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       showSuccess(t("app.categories.categoryDeleted"));
     } catch (error) {
       console.error("Error deleting category:", error);
-      showError(t("app.categories.errorDeleting"));
+      showError(withCause(t("app.categories.errorDeleting"), error));
     }
   };
 
@@ -266,7 +267,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       showSuccess(t("app.categories.presets.saveSuccess"));
     } catch (error) {
       console.error("Failed to save preset:", error);
-      showError(t("app.categories.presets.saveFailed"));
+      showError(withCause(t("app.categories.presets.saveFailed"), error));
     }
   };
 
@@ -410,7 +411,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
       showSuccess(t("app.categories.presets.deleteSuccess"));
     } catch (error) {
       console.error("Failed to delete preset:", error);
-      showError(t("app.categories.presets.deleteFailed"));
+      showError(withCause(t("app.categories.presets.deleteFailed"), error));
     }
   };
 
