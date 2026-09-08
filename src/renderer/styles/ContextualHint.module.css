@@ -15,7 +15,7 @@
 }
 
 .icon {
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
   flex-shrink: 0;
   margin-top: 2px;
 }

@@ -120,7 +120,7 @@
 .playerNumber {
   font-family: var(--font-mono);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
 }
 
 .iconBtn {

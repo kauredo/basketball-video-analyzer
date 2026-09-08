@@ -149,7 +149,7 @@
 }
 
 .saveBtn {
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
 }
 
 .saveBtn:hover:not(:disabled) {

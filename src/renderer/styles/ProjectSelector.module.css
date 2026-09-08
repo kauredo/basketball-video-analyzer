@@ -87,7 +87,7 @@
 
 .loading svg {
   font-size: 2rem;
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
 }
 
 .createNewSection {
@@ -120,7 +120,7 @@
 
 .createNewBtn svg {
   font-size: 2rem;
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
 }
 
 .createNewBtn h3 {
@@ -329,7 +329,7 @@
 }
 
 .metaItem svg {
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
 }
 
 .projectActions {
