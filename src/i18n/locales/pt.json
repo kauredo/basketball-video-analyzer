@@ -1,8 +1,7 @@
 {
   "_machineTranslated": {
     "date": "2026-09-07",
-    "reviewed": false,
-    "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
+    "note": "Machine-translated. No native speaker reviews this project, so reviewed stays false permanently rather than as a pending task. Quality is held by scripts/lint-locales.mjs, which checks what can be checked without fluency: key parity, placeholders, sentence terminators, register consistency, and untranslated product names.",
     "keys": [
       "app.categories.presets.description",
       "app.clips.saveSession",
@@ -20,7 +19,8 @@
       "app.video.markInPoint",
       "app.video.markOutPoint",
       "app.video.previousNextFrame"
-    ]
+    ],
+    "reviewable": false
   },
   "app": {
     "title": "Basketball Video Analyzer",

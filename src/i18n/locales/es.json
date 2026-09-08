@@ -1,8 +1,7 @@
 {
   "_machineTranslated": {
     "date": "2026-09-08",
-    "reviewed": false,
-    "note": "These keys were machine-translated when the English copy changed. They have NOT been checked by a native speaker. Correct them and set reviewed to true.",
+    "note": "Machine-translated. No native speaker reviews this project, so reviewed stays false permanently rather than as a pending task. Quality is held by scripts/lint-locales.mjs, which checks what can be checked without fluency: key parity, placeholders, sentence terminators, register consistency, and untranslated product names.",
     "keys": [
       "app.categories.presets.description",
       "app.clips.saveSession",
@@ -23,7 +22,8 @@
       "app.video.markInPoint",
       "app.video.markOutPoint",
       "app.video.previousNextFrame"
-    ]
+    ],
+    "reviewable": false
   },
   "app": {
     "title": "Basketball Video Analyzer",
@@ -499,7 +499,7 @@
       "nudge": "Has exportado más de {{count}} clips con esta aplicación gratuita. Si te ahorra tiempo, hay un enlace para invitar a un café en Ajustes → Acerca de."
     },
     "startup": {
-      "dbFailed": "La aplicación no pudo abrir su base de datos, así que no se pueden cargar sus proyectos. Error: {{error}}. Archivo de registro: {{logPath}}",
+      "dbFailed": "La aplicación no pudo abrir su base de datos, así que no se pueden cargar tus proyectos. Error: {{error}}. Archivo de registro: {{logPath}}",
       "checkFailed": "La aplicación encontró un error al iniciarse. {{error}}",
       "apiUnavailable": "La aplicación no se inició correctamente. Reinstala la versión más reciente."
     }

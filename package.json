@@ -17,7 +17,9 @@
     "dist": "npm run build && npm run make:all",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
     "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f",
-    "stats:downloads": "node scripts/download-stats.mjs"
+    "stats:downloads": "node scripts/download-stats.mjs",
+    "lint:locales": "node scripts/lint-locales.mjs",
+    "prebuild": "npm run lint:locales"
   },
   "keywords": [
     "basketball",
