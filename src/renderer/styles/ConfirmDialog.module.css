@@ -33,12 +33,12 @@
 
 .iconWarning {
   font-size: var(--font-size-xl);
-  color: var(--color-warning);
+  color: var(--color-warning-ink);
 }
 
 .iconDanger {
   font-size: var(--font-size-xl);
-  color: var(--color-danger);
+  color: var(--color-danger-ink);
 }
 
 .closeButton {

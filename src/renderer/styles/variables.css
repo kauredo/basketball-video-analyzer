@@ -7,10 +7,6 @@
   --color-primary-dark: #075450;
   /* The accent on surfaces that are dark whatever the theme (over video). */
   --color-accent-on-dark: #3ed0c2;
-  /* The scrub track needs its own value. --bg-tertiary read 1.38:1 against the
-     transport row, under the 3.0 bar for identifying a control. */
-  --scrub-track: #6a6a6a;
-
   /* The workspace's vertical floors. These live together because the section
      floor is derived from the other two, and deriving it by hand one file away
      is how it goes stale: if the transport grows a control or a locale makes it
@@ -23,14 +19,29 @@
   /* Independent of --video-min-height despite matching it today: this is how
      far the clip list may be squeezed, not how tall the film must be. */
   --bottom-panel-min-height: 140px;
-  --color-danger: #f44336;
-  --color-danger-dark: #d32f2f;
-  --color-danger-light: #ef5350;
+  /* Semantic colour comes in two jobs, because one hex cannot do both. A fill
+     carries white text and needs 4.5:1 against white. A mark drawn as text or
+     as a border sits on the app's own grounds and needs 4.5:1 against those,
+     which pushes it the opposite way. Holding them in one token is what left
+     white on #f44336 at 3.68:1 and #ff9800 text at 1.63:1 on light paper.
+     The -ink values are measured against --bg-quaternary, the lightest ground
+     in the dark theme and the darkest in the light one. */
+  --color-danger: #d32f2f; /* white reads 4.98:1 */
+  --color-danger-dark: #c62828; /* its hover face, 5.62:1 */
+  --color-danger-ink: #ef9a9a; /* 4.53:1 on --bg-quaternary */
   --color-success: #2e7d32;
   --color-success-rgb: 46, 125, 50;
   --color-success-dark: #1b5e20;
-  --color-warning: #ff9800;
-  --color-info: #2196f3;
+  --color-warning: #ff9800; /* border and rail only, never behind text */
+  --color-warning-ink: #ffb74d; /* 5.63:1 on --bg-quaternary */
+  --color-info: #2196f3; /* border and rail only, never behind text */
+  --color-info-ink: #4fc3f7; /* 4.86:1 on --bg-quaternary */
+
+  /* Progress and scrub tracks. --bg-tertiary reads 1.38:1 against the
+     transport row and 1.14:1 against a stats card, both under the 3.0 bar for
+     identifying a control. The transport draws it as a fill, the stats bars as
+     a 1px outline; either way this is the value that states a track's extent. */
+  --track: #787878; /* 3.25:1 on --bg-secondary */
 
   /* Background Colors */
   --bg-main: #1a1a1a;
@@ -152,7 +163,13 @@
   --focus-ring-color: var(--color-primary);
 
   /* Accent carries over from :root: white reads 5.26:1 on it in either theme. */
-  --scrub-track: #8e8e8e;
+  --track: #868686; /* 3.34:1 on --bg-secondary */
+
+  /* The fills carry over; only the inks flip, because paper moves them the
+     other way. Measured against --bg-quaternary #e0e0e0. */
+  --color-danger-ink: #b3261e; /* 4.95:1 */
+  --color-warning-ink: #a04100; /* 4.89:1 */
+  --color-info-ink: #1257a8; /* 5.38:1 */
 
   --color-success: #1b5e20;
   --color-success-rgb: 27, 94, 32;

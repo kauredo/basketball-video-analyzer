@@ -702,7 +702,7 @@
 }
 
 .dangerZone h3 {
-  color: var(--color-danger);
+  color: var(--color-danger-ink);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
@@ -712,7 +712,7 @@
 
 .resetButton {
   background: var(--color-danger);
-  color: var(--text-primary);
+  color: var(--text-white);
   border: none;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);

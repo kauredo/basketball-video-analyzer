@@ -53,13 +53,13 @@
 /* Type-specific selected states */
 .typeButton.selectedBug {
   border-color: var(--color-danger);
-  color: var(--color-danger);
+  color: var(--color-danger-ink);
   background: color-mix(in srgb, var(--color-danger) 8%, transparent);
 }
 
 .typeButton.selectedFeature {
   border-color: var(--color-warning);
-  color: var(--color-warning);
+  color: var(--color-warning-ink);
   background: color-mix(in srgb, var(--color-warning) 8%, transparent);
 }
 
@@ -122,7 +122,7 @@
 }
 
 .charCount.charCountWarn {
-  color: var(--color-warning);
+  color: var(--color-warning-ink);
 }
 
 .typeHint {

@@ -164,7 +164,7 @@
 .deleteBtn:hover {
   background: var(--color-danger);
   border-color: var(--color-danger);
-  color: var(--text-primary);
+  color: var(--text-white);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
@@ -867,11 +867,6 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-}
-
-.deletePresetBtn:hover {
-  background: var(--color-danger-light);
-  color: var(--color-danger);
 }
 
 .noPresetsMessage {

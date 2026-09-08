@@ -63,7 +63,7 @@
 
 .progressTrack {
   height: 8px;
-  background: var(--scrub-track);
+  background: var(--track);
   border-radius: var(--radius-md);
   position: relative;
   cursor: pointer;
@@ -223,13 +223,13 @@
 .skipButtonMedium {
   background: var(--bg-quaternary);
   border-color: var(--color-warning);
-  color: var(--color-warning);
+  color: var(--color-warning-ink);
 }
 
 .skipButtonLarge {
   background: var(--bg-quaternary);
   border-color: var(--color-info);
-  color: var(--color-info);
+  color: var(--color-info-ink);
   font-weight: var(--font-weight-medium);
 }
 
@@ -605,7 +605,7 @@
 }
 
 .timeSearchField.timeSearchError {
-  color: var(--color-danger);
+  color: var(--color-danger-ink);
 }
 
 .timeSearchButton {
@@ -641,7 +641,7 @@
 }
 
 .timeSearchErrorMessage {
-  color: var(--color-danger);
+  color: var(--color-danger-ink);
   font-size: var(--font-size-xs);
   text-align: center;
   max-width: 200px;
