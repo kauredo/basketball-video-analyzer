@@ -4,6 +4,12 @@
   padding: 0;
   max-width: 100%;
   margin: 0;
+  /* The clip grid reflows on the side panel's width, not the window's, so the
+     breakpoints below are @container and this declaration is load-bearing.
+     It also makes .clipLibrary the containing block for any fixed descendant,
+     which is why PresentMode portals to body instead of using inset: 0 here.
+     Anything else that wants to cover the viewport from inside this subtree
+     has to portal out the same way. */
   container-type: inline-size;
   display: flex;
   flex-direction: column;
@@ -792,7 +798,7 @@
 .deleteBtn:hover {
   background: var(--color-danger);
   border-color: var(--color-danger);
-  color: var(--text-primary);
+  color: var(--text-white);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
