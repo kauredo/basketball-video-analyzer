@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Mark } from "./components/Mark";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBasketball,
   faVideo,
   faFolderOpen,
   faSpinner,
@@ -538,7 +538,7 @@ export const App: React.FC = () => {
       )}
       <header className={styles.appHeader}>
         <h1 className={styles.title}>
-          <FontAwesomeIcon icon={faBasketball} /> {t("app.title")}
+          <Mark /> {t("app.title")}
         </h1>
         <div className={styles.headerActions}>
           <button
