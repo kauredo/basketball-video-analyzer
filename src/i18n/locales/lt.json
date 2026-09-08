@@ -144,7 +144,7 @@
         "deleteTooltip": "Visam laikui ištrinti „{{presetName}}“ šabloną",
         "noPresetsYet": "Šablonų dar nėra",
         "createFirstPreset": "Sukurkite pirmąjį šabloną sudarydami kategorijas viršuje ir išsaugokite jas aprašomuoju pavadinimu.",
-        "saveSuccess": "Šablonas išsaugotas Dabar galite jį įkelti bet kuriame projekte.",
+        "saveSuccess": "Šablonas išsaugotas. Dabar galite jį įkelti bet kuriame projekte.",
         "loadSuccess": "Šablonas įkeltas",
         "deleteSuccess": "Šablonas ištrintas",
         "saveFailed": "Nepavyko išsaugoti šablono",
@@ -444,7 +444,7 @@
       "systemInfoNote": "Pridėta sistemos informacija",
       "submit": "Siųsti",
       "submitting": "Siunčiama...",
-      "submitSuccess": "Ačiū Jūsų atsiliepimas išsiųstas.",
+      "submitSuccess": "Ačiū. Jūsų atsiliepimas išsiųstas.",
       "submitError": "Nepavyko išsiųsti atsiliepimo. Bandykite vėliau."
     },
     "present": {

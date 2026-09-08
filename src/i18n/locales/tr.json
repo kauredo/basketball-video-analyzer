@@ -52,7 +52,7 @@
       "resizeClips": "Klip panelini yeniden boyutlandırmak için sürükle"
     },
     "welcome": {
-      "title": "Basketbol Video Analiz'e Hoş Geldiniz",
+      "title": "Basketball Video Analyzer'e Hoş Geldiniz",
       "subtitle": "Takım izleme için basketbol klipleri oluşturmak ve düzenlemek için ideal",
       "steps": {
         "loadVideo": {
@@ -145,7 +145,7 @@
         "deleteTooltip": "'{{presetName}}' şablonunu kalıcı olarak sil",
         "noPresetsYet": "Henüz kayıtlı şablon yok",
         "createFirstPreset": "Yukarıda kategoriler oluşturup açıklayıcı bir adla kaydederek ilk şablonunuzu yapın.",
-        "saveSuccess": "Şablon kaydedildi Artık herhangi bir projede yükleyebilirsiniz.",
+        "saveSuccess": "Şablon kaydedildi. Artık herhangi bir projede yükleyebilirsiniz.",
         "loadSuccess": "Şablon yüklendi",
         "deleteSuccess": "Şablon silindi",
         "saveFailed": "Şablon kaydedilemedi",
@@ -445,7 +445,7 @@
       "systemInfoNote": "Sistem bilgisi dahil edildi",
       "submit": "Gönder",
       "submitting": "Gönderiliyor...",
-      "submitSuccess": "Teşekkürler Geri bildiriminiz gönderildi.",
+      "submitSuccess": "Teşekkürler. Geri bildiriminiz gönderildi.",
       "submitError": "Geri bildirim gönderilemedi. Lütfen daha sonra tekrar deneyin."
     },
     "present": {

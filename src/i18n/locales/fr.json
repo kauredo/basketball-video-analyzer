@@ -145,7 +145,7 @@
         "deleteTooltip": "Supprimer définitivement le modèle « {{presetName}} »",
         "noPresetsYet": "Aucun modèle enregistré pour le moment",
         "createFirstPreset": "Créez votre premier modèle en construisant des catégories ci-dessus, puis enregistrez-les avec un nom descriptif.",
-        "saveSuccess": "Modèle enregistré Vous pouvez maintenant le charger dans n'importe quel projet.",
+        "saveSuccess": "Modèle enregistré. Vous pouvez maintenant le charger dans n'importe quel projet.",
         "loadSuccess": "Modèle chargé",
         "deleteSuccess": "Modèle supprimé",
         "saveFailed": "Échec de l'enregistrement du modèle",
@@ -445,7 +445,7 @@
       "systemInfoNote": "Informations système incluses",
       "submit": "Envoyer",
       "submitting": "Envoi...",
-      "submitSuccess": "Merci Votre retour a été envoyé.",
+      "submitSuccess": "Merci. Votre retour a été envoyé.",
       "submitError": "Impossible d'envoyer le retour. Veuillez réessayer plus tard."
     },
     "present": {

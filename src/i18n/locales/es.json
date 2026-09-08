@@ -144,7 +144,7 @@
         "deleteTooltip": "Eliminar la plantilla '{{presetName}}' de forma permanente",
         "noPresetsYet": "Aún no hay plantillas guardadas",
         "createFirstPreset": "Crea tu primera plantilla configurando categorías arriba y guardándolas con un nombre descriptivo.",
-        "saveSuccess": "Plantilla guardada Ya puedes cargarla en cualquier proyecto.",
+        "saveSuccess": "Plantilla guardada. Ya puedes cargarla en cualquier proyecto.",
         "loadSuccess": "Plantilla cargada",
         "deleteSuccess": "Plantilla eliminada",
         "saveFailed": "No se pudo guardar la plantilla",
@@ -444,7 +444,7 @@
       "systemInfoNote": "Información del sistema incluida",
       "submit": "Enviar",
       "submitting": "Enviando...",
-      "submitSuccess": "Gracias Tu comentario se ha enviado.",
+      "submitSuccess": "Gracias. Tu comentario se ha enviado.",
       "submitError": "No se pudieron enviar los comentarios. Inténtalo más tarde."
     },
     "present": {

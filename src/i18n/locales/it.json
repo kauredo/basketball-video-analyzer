@@ -144,7 +144,7 @@
         "deleteTooltip": "Elimina definitivamente il preset '{{presetName}}'",
         "noPresetsYet": "Nessun preset salvato",
         "createFirstPreset": "Crea il tuo primo preset costruendo le categorie qui sopra, poi salvale con un nome descrittivo.",
-        "saveSuccess": "Preset salvato Ora puoi caricarlo in qualsiasi progetto.",
+        "saveSuccess": "Preset salvato. Ora puoi caricarlo in qualsiasi progetto.",
         "loadSuccess": "Preset caricato",
         "deleteSuccess": "Preset eliminato",
         "saveFailed": "Salvataggio del preset non riuscito",
@@ -444,7 +444,7 @@
       "systemInfoNote": "Informazioni di sistema incluse",
       "submit": "Invia",
       "submitting": "Invio in corso...",
-      "submitSuccess": "Grazie Il tuo feedback è stato inviato.",
+      "submitSuccess": "Grazie. Il tuo feedback è stato inviato.",
       "submitError": "Impossibile inviare il feedback. Riprova più tardi."
     },
     "present": {

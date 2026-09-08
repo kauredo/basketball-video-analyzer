@@ -144,7 +144,7 @@
         "deleteTooltip": "Trajno obriši šablon „{{presetName}}“",
         "noPresetsYet": "Još nema sačuvanih šablona",
         "createFirstPreset": "Napravite prvi šablon tako što ćete kreirati kategorije iznad, pa ih sačuvati pod opisnim nazivom.",
-        "saveSuccess": "Šablon sačuvan Sada ga možete učitati u bilo koji projekat.",
+        "saveSuccess": "Šablon sačuvan. Sada ga možete učitati u bilo koji projekat.",
         "loadSuccess": "Šablon učitan",
         "deleteSuccess": "Šablon obrisan",
         "saveFailed": "Čuvanje šablona nije uspelo",
@@ -444,7 +444,7 @@
       "systemInfoNote": "Sistemske informacije uključene",
       "submit": "Pošalji",
       "submitting": "Slanje...",
-      "submitSuccess": "Hvala Vaša povratna informacija je poslata.",
+      "submitSuccess": "Hvala. Vaša povratna informacija je poslata.",
       "submitError": "Slanje povratne informacije nije uspelo. Pokušajte kasnije."
     },
     "present": {

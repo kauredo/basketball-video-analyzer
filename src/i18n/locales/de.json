@@ -144,7 +144,7 @@
         "deleteTooltip": "Vorlage „{{presetName}}“ dauerhaft löschen",
         "noPresetsYet": "Noch keine Vorlagen gespeichert",
         "createFirstPreset": "Erstelle deine erste Vorlage, indem du oben Kategorien anlegst und sie unter einem aussagekräftigen Namen speicherst.",
-        "saveSuccess": "Vorlage gespeichert Du kannst sie nun in jedem Projekt laden.",
+        "saveSuccess": "Vorlage gespeichert. Du kannst sie nun in jedem Projekt laden.",
         "loadSuccess": "Vorlage geladen",
         "deleteSuccess": "Vorlage gelöscht",
         "saveFailed": "Vorlage konnte nicht gespeichert werden",
@@ -444,7 +444,7 @@
       "systemInfoNote": "Systeminformationen enthalten",
       "submit": "Senden",
       "submitting": "Wird gesendet …",
-      "submitSuccess": "Danke Dein Feedback wurde übermittelt.",
+      "submitSuccess": "Danke. Dein Feedback wurde übermittelt.",
       "submitError": "Feedback konnte nicht gesendet werden. Bitte versuche es später erneut."
     },
     "present": {

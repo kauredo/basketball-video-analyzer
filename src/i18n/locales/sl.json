@@ -144,7 +144,7 @@
         "deleteTooltip": "Trajno izbriši prednastavitev »{{presetName}}«",
         "noPresetsYet": "Še ni shranjenih prednastavitev",
         "createFirstPreset": "Ustvarite svojo prvo prednastavitev tako, da zgoraj zgradite kategorije in jih shranite z opisnim imenom.",
-        "saveSuccess": "Prednastavitev je bila shranjena Zdaj jo lahko naložite v katerem koli projektu.",
+        "saveSuccess": "Prednastavitev je bila shranjena. Zdaj jo lahko naložite v katerem koli projektu.",
         "loadSuccess": "Prednastavitev je bila naložena",
         "deleteSuccess": "Prednastavitev je bila izbrisana",
         "saveFailed": "Shranjevanje prednastavitve ni uspelo",
@@ -444,7 +444,7 @@
       "systemInfoNote": "Sistemski podatki so vključeni",
       "submit": "Pošlji",
       "submitting": "Pošiljanje ...",
-      "submitSuccess": "Hvala Vaša povratna informacija je bila poslana.",
+      "submitSuccess": "Hvala. Vaša povratna informacija je bila poslana.",
       "submitError": "Povratne informacije ni bilo mogoče poslati. Poskusite znova pozneje."
     },
     "present": {
