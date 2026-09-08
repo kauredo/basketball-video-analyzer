@@ -33,6 +33,7 @@ import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 import { DONATION_NUDGE_THRESHOLD } from "../utils/constants";
 import { formatVideoSrc } from "../utils/paths";
 import { Player } from "../../types/global";
+import { inkOn } from "../utils/contrast";
 
 // Parse a clip's JSON player-ID array, tolerating malformed values.
 const parsePlayerIds = (playersJson?: string): number[] => {
@@ -875,7 +876,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                             <span
                               key={category.id}
                               className={styles.categoryTag}
-                              style={{ backgroundColor: category.color }}
+                              style={{ backgroundColor: category.color, color: inkOn(category.color) }}
                             >
                               {category.name}
                             </span>

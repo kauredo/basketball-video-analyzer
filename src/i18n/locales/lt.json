@@ -52,7 +52,7 @@
     },
     "welcome": {
       "title": "Sveiki atvykę į Basketball Video Analyzer",
-      "subtitle": "Puikiai tinka kurti ir tvarkyti krepšinio klipams komandų žvalgybai",
+      "subtitle": "Žymėkite epizodus, tvarkykite klipus ir eksportuokite juos komandos analizei",
       "steps": {
         "loadVideo": {
           "title": "Įkelti vaizdo įrašą",
@@ -127,7 +127,7 @@
       "addSubcategory": "Pridėti subkategoriją",
       "noCategory": "Be kategorijos",
       "unknownCategory": "Nežinoma kategorija",
-      "noCategoriesFromPreset": "Iš šablono nepavyko sukurti kategorijų",
+      "noCategoriesFromPreset": "Šis šablonas nepridėjo kategorijų. Jis gali jau sutapti su jūsų turimomis.",
       "enterPresetName": "Įveskite šablono pavadinimą",
       "addSubcategoryTooltip": "Pridėti subkategoriją",
       "presets": {
@@ -208,7 +208,7 @@
       "all": "Visi",
       "clipsCount": "Klipai",
       "unknown": "Nežinoma",
-      "exportNoneWarning": "Nė vienas klipas nebuvo eksportuotas. Galimos priežastys:\n\n- Klipų failų gali nebebūti pradinėje vietoje\n- Gali būti leidimų problemų\n- Nepavyko sukurti eksportavimo aplanko",
+      "exportNoneWarning": "Neeksportuotas nė vienas klipas. Failai galėjo būti perkelti arba programa negalėjo rašyti į eksporto aplanką.",
       "exportErrorGeneric": "Klaida eksportuojant klipus: {{error}}",
       "exportVideoFiles": "Vaizdo failai",
       "exportCsvJson": "CSV / JSON",
@@ -243,14 +243,14 @@
         "errorCreating": "Klaida kuriant klipą. Bandykite dar kartą.",
         "errorNoWriteAccess": "Nepavyksta rašyti į klipų aplanką. Patikrinkite Dokumentų aplanko leidimus.",
         "errorInsufficientSpace": "Nepakanka vietos diske klipui sukurti.",
-        "errorFileNotFound": "Įvesties vaizdo įrašo failas nerastas arba neprieinamas.",
+        "errorFileNotFound": "Vaizdo failas nerastas. Jis galėjo būti perkeltas arba ištrintas.",
         "errorFFmpegFailed": "Vaizdo įrašo apdorojimas nepavyko. Failas gali būti sugadintas arba nepalaikomas.",
         "errorDatabaseFailed": "Nepavyko išsaugoti klipo informacijos į duomenų bazę.",
         "errorThumbnailFailed": "Nepavyko sukurti klipo miniatiūros.",
         "errorInvalidDuration": "Neteisinga klipo trukmė. Patikrinkite pradžios ir pabaigos taškus.",
         "errorInvalidTime": "Neteisingos laiko reikšmės. Pažymėkite teisingus pradžios ir pabaigos taškus.",
-        "errorInvalidTitle": "Neteisingas klipo pavadinimas. Įveskite tinkamą pavadinimą.",
-        "errorNoCategories": "Nepasirinkta nė viena kategorija. Pasirinkite bent vieną kategoriją.",
+        "errorInvalidTitle": "Šis klipo pavadinimas netinka. Pabandykite trumpesnį, be pasvirųjų brūkšnių.",
+        "errorNoCategories": "Pasirinkite bent vieną kategoriją šiam klipui sukurti.",
         "clipCreatedSuccess": "Klipas sukurtas",
         "retryingClipCreation": "Bandoma sukurti klipą iš naujo... Bandymas {{attempt}}/{{maxRetries}} (laukiama {{delay}} s)",
         "errorAfterRetries": "Nepavyko sukurti klipo po kelių bandymų: {{translationKey}}",
@@ -259,7 +259,7 @@
           "error_user_data_not_accessible": "Nepavyksta pasiekti programos duomenų aplanko. Patikrinkite leidimus.",
           "error_no_write_access": "Nėra rašymo leidimo į klipų aplanką. Patikrinkite leidimus.",
           "error_system_check_failed": "Sistemos patikra nepavyko. Bandykite dar kartą.",
-          "warning_low_disk_space": "Įspėjimas: mažai vietos diske (liko mažiau nei 1 GB)."
+          "warning_low_disk_space": "Mažai vietos diske: laisva mažiau nei 1 GB."
         },
         "clipCreationCancelled": "Klipo kūrimas atšauktas.",
         "clipCancellationFailed": "Nepavyko atšaukti klipo kūrimo.",
@@ -333,10 +333,10 @@
       "markInPoint": "Pažymėti klipo pradžią",
       "markOutPoint": "Pažymėti klipo pabaigą",
       "previousNextFrame": "Pereiti vienu kadru",
-      "errorVideoAborted": "Vaizdo įrašo įkėlimas nutrauktas",
+      "errorVideoAborted": "Vaizdo įrašas nustojo krautis. Pabandykite pasirinkti failą dar kartą.",
       "errorVideoNetwork": "Tinklo klaida įkeliant vaizdo įrašą",
       "errorVideoDecoding": "Nepavyko dekoduoti vaizdo įrašo. Formatas gali būti nepalaikomas.",
-      "errorVideoFormat": "Vaizdo įrašo formatas nepalaikomas",
+      "errorVideoFormat": "Vaizdo formatas nepalaikomas. Išbandykite MP4, MOV, AVI, MKV arba WebM.",
       "checkVideoFormat": "Patikrinkite, ar vaizdo įrašo failas egzistuoja ir yra palaikomo formato (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Atsisiunčiamas atnaujinimas... {{progress}}%",
       "preparingUpdate": "Ruošiamasi atsisiųsti atnaujinimą...",
@@ -496,8 +496,8 @@
     },
     "startup": {
       "dbFailed": "Programai nepavyko atidaryti duomenų bazės, todėl jūsų projektai negali būti įkelti. Klaida: {{error}}. Žurnalo failas: {{logPath}}",
-      "checkFailed": "Paleidžiant programą įvyko klaida. Klaida: {{error}}",
-      "apiUnavailable": "Programa nepasileido tinkamai (vidinis tiltas nepasiekiamas). Įdiekite naujausią versiją iš naujo."
+      "checkFailed": "Paleidžiant programą įvyko klaida. {{error}}",
+      "apiUnavailable": "Programa nepasileido tinkamai. Įdiekite naujausią versiją iš naujo."
     }
   }
 }

@@ -95,9 +95,13 @@
   --spacing-xl: 2rem;
 
   /* Border Radius */
-  --radius-sm: 3px;
-  --radius-md: 4px;
-  --radius-lg: 6px;
+  /* The direction: no cards, no shadows, no radii above 1px. The three
+     rectangular steps collapse to the hairline; --radius-round stays, because
+     a pill and a dot are shapes rather than softened corners. Kept as three
+     names so the change is one edit here and one revert here. */
+  --radius-sm: 1px;
+  --radius-md: 1px;
+  --radius-lg: 1px;
   --radius-round: 100000px;
 
   /* Font Sizes */
@@ -126,11 +130,15 @@
   --transition-slow: 0.4s;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.4);
-  --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.4);
+  /* Depth is what separated a floating panel from the band behind it. The
+     direction's answer is the hairline, so --border-color does that work now.
+     The scale is kept rather than deleted: every call site still resolves, and
+     restoring depth is one edit. */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-hover: none;
 
   /* Z-indices */
   --z-present: 2500;
@@ -226,11 +234,11 @@
   --text-white: #ffffff;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.2);
-  --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-hover: none;
 }
 
 /* Reduced motion: disable transforms and animations */

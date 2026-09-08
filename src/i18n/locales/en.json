@@ -3,8 +3,8 @@
     "title": "Basketball Video Analyzer",
     "startup": {
       "dbFailed": "The app couldn't open its database, so your projects can't be loaded. Error: {{error}}. Log file: {{logPath}}",
-      "checkFailed": "Something went wrong while starting the app. Error: {{error}}",
-      "apiUnavailable": "The app failed to start correctly (internal bridge unavailable). Please reinstall the latest version."
+      "checkFailed": "The app hit an error while starting. {{error}}",
+      "apiUnavailable": "The app couldn't start properly. Reinstall the latest version."
     },
     "buttons": {
       "getStarted": "Select a video to start",
@@ -33,7 +33,7 @@
     },
     "welcome": {
       "title": "Welcome to Basketball Video Analyzer",
-      "subtitle": "Perfect for creating and organizing basketball clips for team scouting",
+      "subtitle": "Mark plays, organize clips, and export them for team scouting",
       "steps": {
         "loadVideo": {
           "title": "Load Video",
@@ -108,7 +108,7 @@
       "addSubcategory": "Add Subcategory",
       "noCategory": "No Category",
       "unknownCategory": "Unknown Category",
-      "noCategoriesFromPreset": "No categories could be created from the preset",
+      "noCategoriesFromPreset": "This preset didn't add any categories. It may already match the ones you have.",
       "enterPresetName": "Please enter a preset name",
       "addSubcategoryTooltip": "Add subcategory",
       "presets": {
@@ -189,7 +189,7 @@
       "all": "All",
       "clipsCount": "Clips",
       "unknown": "Unknown",
-      "exportNoneWarning": "No clips were exported. This could be because:\n\n- The clip files may no longer exist in their original location\n- There might be permission issues\n- The export directory could not be created",
+      "exportNoneWarning": "No clips were exported. The clip files may have been moved, or the app could not write to the export folder.",
       "exportErrorGeneric": "Error exporting clips: {{error}}",
       "exportVideoFiles": "Video Files",
       "exportCsvJson": "CSV / JSON",
@@ -224,14 +224,14 @@
         "errorCreating": "Error creating clip. Please try again.",
         "errorNoWriteAccess": "Cannot write to clips folder. Please check your Documents folder permissions.",
         "errorInsufficientSpace": "Not enough disk space to create the clip.",
-        "errorFileNotFound": "Input video file not found or is not accessible.",
+        "errorFileNotFound": "Video file not found. It may have been moved or deleted.",
         "errorFFmpegFailed": "Video processing failed. The video file may be corrupted or unsupported.",
         "errorDatabaseFailed": "Failed to save clip information to database.",
         "errorThumbnailFailed": "Failed to create thumbnail for the clip.",
         "errorInvalidDuration": "Invalid clip duration. Please check your mark in/out points.",
         "errorInvalidTime": "Invalid time values. Please mark valid in/out points.",
-        "errorInvalidTitle": "Invalid clip title. Please provide a valid title.",
-        "errorNoCategories": "No categories selected. Please select at least one category.",
+        "errorInvalidTitle": "That clip title cannot be used. Try a shorter one without slashes.",
+        "errorNoCategories": "Select at least one category to create this clip.",
         "clipCreatedSuccess": "Clip created",
         "retryingClipCreation": "Retrying clip creation... Attempt {{attempt}}/{{maxRetries}} (waiting {{delay}}s)",
         "errorAfterRetries": "Failed to create clip after multiple attempts: {{translationKey}}",
@@ -240,7 +240,7 @@
           "error_user_data_not_accessible": "Cannot access application data folder. Please check permissions.",
           "error_no_write_access": "No write access to clips folder. Please check permissions.",
           "error_system_check_failed": "System check failed. Please try again.",
-          "warning_low_disk_space": "Warning: Low disk space (less than 1GB available)."
+          "warning_low_disk_space": "Low disk space: less than 1GB free."
         },
         "clipCreationCancelled": "Clip creation was cancelled.",
         "clipCancellationFailed": "Failed to cancel clip creation.",
@@ -314,10 +314,10 @@
       "markInPoint": "Mark the start of a clip",
       "markOutPoint": "Mark the end of a clip",
       "previousNextFrame": "Step one frame",
-      "errorVideoAborted": "Video loading aborted",
+      "errorVideoAborted": "The video stopped loading. Try selecting the file again.",
       "errorVideoNetwork": "Network error while loading video",
       "errorVideoDecoding": "Couldn't decode the video. The format may not be supported.",
-      "errorVideoFormat": "Video format not supported",
+      "errorVideoFormat": "Video format not supported. Try MP4, MOV, AVI, MKV or WebM.",
       "checkVideoFormat": "Please check if the video file exists and is in a supported format (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Downloading update... {{progress}}%",
       "preparingUpdate": "Preparing update download...",
@@ -443,7 +443,7 @@
       "filterQuarter": "Quarter",
       "filterCategory": "Category",
       "allOption": "All",
-      "unlocatedCount": "{{count}} clip(s) have no location",
+      "unlocatedCount": "{{count}} clips have no location",
       "noLocatedClips": "No clips with a shot location yet. Set one in the clip editor.",
       "title": "Stats",
       "stats": "Stats",

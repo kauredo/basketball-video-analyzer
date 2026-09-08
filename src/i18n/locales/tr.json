@@ -53,7 +53,7 @@
     },
     "welcome": {
       "title": "Basketball Video Analyzer'e Hoş Geldiniz",
-      "subtitle": "Takım izleme için basketbol klipleri oluşturmak ve düzenlemek için ideal",
+      "subtitle": "Oyunları işaretleyin, klipleri düzenleyin ve takım analizi için dışa aktarın",
       "steps": {
         "loadVideo": {
           "title": "Video Yükle",
@@ -128,7 +128,7 @@
       "addSubcategory": "Alt Kategori Ekle",
       "noCategory": "Kategori Yok",
       "unknownCategory": "Bilinmeyen Kategori",
-      "noCategoriesFromPreset": "Şablondan kategori oluşturulamadı",
+      "noCategoriesFromPreset": "Bu şablon kategori eklemedi. Mevcut kategorilerinizle aynı olabilir.",
       "enterPresetName": "Lütfen bir şablon adı girin",
       "addSubcategoryTooltip": "Alt kategori ekle",
       "presets": {
@@ -209,7 +209,7 @@
       "all": "Tümü",
       "clipsCount": "Klipler",
       "unknown": "Bilinmiyor",
-      "exportNoneWarning": "Hiçbir klip dışa aktarılmadı. Bunun nedeni şunlar olabilir:\n\n- Klip dosyaları artık orijinal konumlarında olmayabilir\n- İzin sorunları olabilir\n- Dışa aktarma klasörü oluşturulamamış olabilir",
+      "exportNoneWarning": "Hiçbir klip aktarılmadı. Dosyalar taşınmış olabilir veya uygulama dışa aktarma klasörüne yazamadı.",
       "exportErrorGeneric": "Klipler dışa aktarılırken hata oluştu: {{error}}",
       "exportVideoFiles": "Video Dosyaları",
       "exportCsvJson": "CSV / JSON",
@@ -244,14 +244,14 @@
         "errorCreating": "Klip oluşturulurken hata oluştu. Lütfen tekrar deneyin.",
         "errorNoWriteAccess": "Klipler klasörüne yazılamıyor. Lütfen Belgeler klasörü izinlerinizi kontrol edin.",
         "errorInsufficientSpace": "Klibi oluşturmak için yeterli disk alanı yok.",
-        "errorFileNotFound": "Kaynak video dosyası bulunamadı veya erişilemiyor.",
+        "errorFileNotFound": "Video dosyası bulunamadı. Taşınmış veya silinmiş olabilir.",
         "errorFFmpegFailed": "Video işleme başarısız oldu. Video dosyası bozuk veya desteklenmiyor olabilir.",
         "errorDatabaseFailed": "Klip bilgisi veritabanına kaydedilemedi.",
         "errorThumbnailFailed": "Klip için küçük resim oluşturulamadı.",
         "errorInvalidDuration": "Geçersiz klip süresi. Lütfen başlangıç/bitiş noktalarınızı kontrol edin.",
         "errorInvalidTime": "Geçersiz zaman değerleri. Lütfen geçerli başlangıç/bitiş noktaları işaretleyin.",
-        "errorInvalidTitle": "Geçersiz klip başlığı. Lütfen geçerli bir başlık girin.",
-        "errorNoCategories": "Kategori seçilmedi. Lütfen en az bir kategori seçin.",
+        "errorInvalidTitle": "Bu klip başlığı kullanılamıyor. Eğik çizgisiz ve daha kısa bir tane deneyin.",
+        "errorNoCategories": "Bu klibi oluşturmak için en az bir kategori seçin.",
         "clipCreatedSuccess": "Klip oluşturuldu",
         "retryingClipCreation": "Klip oluşturma yeniden deneniyor... Deneme {{attempt}}/{{maxRetries}} ({{delay}}sn bekleniyor)",
         "errorAfterRetries": "Birden fazla denemeden sonra klip oluşturulamadı: {{translationKey}}",
@@ -260,7 +260,7 @@
           "error_user_data_not_accessible": "Uygulama veri klasörüne erişilemiyor. Lütfen izinleri kontrol edin.",
           "error_no_write_access": "Klipler klasörüne yazma erişimi yok. Lütfen izinleri kontrol edin.",
           "error_system_check_failed": "Sistem kontrolü başarısız oldu. Lütfen tekrar deneyin.",
-          "warning_low_disk_space": "Uyarı: Düşük disk alanı (1GB'tan az boş alan)."
+          "warning_low_disk_space": "Disk alanı az: 1 GB'tan az boş yer."
         },
         "clipCreationCancelled": "Klip oluşturma iptal edildi.",
         "clipCancellationFailed": "Klip oluşturma iptal edilemedi.",
@@ -334,10 +334,10 @@
       "markInPoint": "Klibin başlangıcını işaretle",
       "markOutPoint": "Klibin sonunu işaretle",
       "previousNextFrame": "Bir kare ilerle",
-      "errorVideoAborted": "Video yükleme iptal edildi",
+      "errorVideoAborted": "Video yüklenmeyi durdurdu. Dosyayı yeniden seçmeyi deneyin.",
       "errorVideoNetwork": "Video yüklenirken ağ hatası",
       "errorVideoDecoding": "Video çözümlenemedi. Bu format desteklenmiyor olabilir.",
-      "errorVideoFormat": "Video formatı desteklenmiyor",
+      "errorVideoFormat": "Video biçimi desteklenmiyor. MP4, MOV, AVI, MKV veya WebM deneyin.",
       "checkVideoFormat": "Lütfen video dosyasının var olup olmadığını ve desteklenen bir formatta olduğunu kontrol edin (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Güncelleme indiriliyor... {{progress}}%",
       "preparingUpdate": "Güncelleme indirmesi hazırlanıyor...",
@@ -463,7 +463,7 @@
       "filterQuarter": "Periyot",
       "filterCategory": "Kategori",
       "allOption": "Tümü",
-      "unlocatedCount": "{{count}} klip konumsuz",
+      "unlocatedCount": "Konumu olmayan {{count}} klip",
       "noLocatedClips": "Henüz şut konumu olan klip yok. Klip düzenleyicide bir konum belirleyin.",
       "title": "İstatistik",
       "stats": "İstatistik",
@@ -497,8 +497,8 @@
     },
     "startup": {
       "dbFailed": "Uygulama veritabanını açamadı, bu yüzden projeleriniz yüklenemiyor. Hata: {{error}}. Günlük dosyası: {{logPath}}",
-      "checkFailed": "Uygulama başlatılırken bir sorun oluştu. Hata: {{error}}",
-      "apiUnavailable": "Uygulama düzgün başlatılamadı (dahili köprü kullanılamıyor). Lütfen en son sürümü yeniden kurun."
+      "checkFailed": "Uygulama başlatılırken bir hatayla karşılaştı. {{error}}",
+      "apiUnavailable": "Uygulama düzgün başlatılamadı. En son sürümü yeniden kurun."
     }
   }
 }

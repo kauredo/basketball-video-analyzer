@@ -24,8 +24,8 @@
     "title": "Basketball Video Analyzer",
     "startup": {
       "dbFailed": "A aplicação não conseguiu abrir a base de dados, por isso os teus projetos não podem ser carregados. Erro: {{error}}. Ficheiro de registo: {{logPath}}",
-      "checkFailed": "Ocorreu um problema ao iniciar a aplicação. Erro: {{error}}",
-      "apiUnavailable": "A aplicação não iniciou corretamente (ponte interna indisponível). Reinstala a versão mais recente."
+      "checkFailed": "A aplicação encontrou um erro ao iniciar. {{error}}",
+      "apiUnavailable": "A aplicação não iniciou corretamente. Reinstala a versão mais recente."
     },
     "buttons": {
       "getStarted": "Seleciona um vídeo para começar",
@@ -54,7 +54,7 @@
     },
     "welcome": {
       "title": "Bem-vindo ao Basketball Video Analyzer",
-      "subtitle": "Perfeito para criar e organizar clips de basquetebol para análise de equipas",
+      "subtitle": "Marca jogadas, organiza clips e exporta-os para analisar a equipa",
       "steps": {
         "loadVideo": {
           "title": "Carregar Vídeo",
@@ -129,7 +129,7 @@
       "addSubcategory": "Adicionar Subcategoria",
       "noCategory": "Sem Categoria",
       "unknownCategory": "Categoria Desconhecida",
-      "noCategoriesFromPreset": "Não foi possível criar categorias a partir da predefinição",
+      "noCategoriesFromPreset": "Esta predefinição não adicionou categorias. Pode já corresponder às que tens.",
       "enterPresetName": "Introduz um nome para a predefinição",
       "addSubcategoryTooltip": "Adicionar subcategoria",
       "presets": {
@@ -210,7 +210,7 @@
       "all": "Todos",
       "clipsCount": "Clips",
       "unknown": "Desconhecido",
-      "exportNoneWarning": "Nenhum clip foi exportado. Isto pode ser porque:\n\n- Os ficheiros de clip podem já não existir na localização original\n- Pode haver problemas de permissões\n- A pasta de exportação não pôde ser criada",
+      "exportNoneWarning": "Nenhum clip foi exportado. Os ficheiros podem ter sido movidos, ou a aplicação não conseguiu escrever na pasta de exportação.",
       "exportErrorGeneric": "Erro ao exportar clips: {{error}}",
       "exportVideoFiles": "Ficheiros de Vídeo",
       "exportCsvJson": "CSV / JSON",
@@ -244,14 +244,14 @@
         "errorCreating": "Erro ao criar clip. Tenta novamente.",
         "errorNoWriteAccess": "Não é possível escrever na pasta de clips. Verifica as permissões da pasta Documentos.",
         "errorInsufficientSpace": "Não há espaço suficiente em disco para criar o clip.",
-        "errorFileNotFound": "Ficheiro de vídeo não encontrado ou não acessível.",
+        "errorFileNotFound": "Ficheiro de vídeo não encontrado. Pode ter sido movido ou eliminado.",
         "errorFFmpegFailed": "Falha no processamento de vídeo. O ficheiro pode estar corrompido ou não ser suportado.",
         "errorDatabaseFailed": "Falha ao guardar informações do clip na base de dados.",
         "errorThumbnailFailed": "Falha ao criar miniatura para o clip.",
         "errorInvalidDuration": "Duração de clip inválida. Verifica os pontos de entrada/saída.",
         "errorInvalidTime": "Valores de tempo inválidos. Marca pontos de entrada/saída válidos.",
-        "errorInvalidTitle": "Título de clip inválido. Forneça um título válido.",
-        "errorNoCategories": "Nenhuma categoria selecionada. Seleciona pelo menos uma categoria.",
+        "errorInvalidTitle": "Esse título de clip não pode ser usado. Experimenta um mais curto e sem barras.",
+        "errorNoCategories": "Seleciona pelo menos uma categoria para criar este clip.",
         "clipCreatedSuccess": "Clip criado",
         "retryingClipCreation": "A tentar novamente criar clip... Tentativa {{attempt}}/{{maxRetries}} (aguardando {{delay}}s)",
         "errorAfterRetries": "Falha ao criar clip após múltiplas tentativas: {{translationKey}}",
@@ -260,7 +260,7 @@
           "error_user_data_not_accessible": "Não é possível aceder à pasta de dados da aplicação. Verifica as permissões.",
           "error_no_write_access": "Sem acesso de escrita à pasta de clips. Verifica as permissões.",
           "error_system_check_failed": "Verificação do sistema falhada. Tenta novamente.",
-          "warning_low_disk_space": "Aviso: Pouco espaço em disco (menos de 1GB disponível)."
+          "warning_low_disk_space": "Pouco espaço em disco: menos de 1 GB livre."
         },
         "clipCreationCancelled": "Criação de clip foi cancelada.",
         "clipCancellationFailed": "Falha ao cancelar criação de clip.",
@@ -335,10 +335,10 @@
       "markInPoint": "Marcar o início de um clipe",
       "markOutPoint": "Marcar o fim de um clipe",
       "previousNextFrame": "Avançar um fotograma",
-      "errorVideoAborted": "Carregamento de vídeo abortado",
+      "errorVideoAborted": "O vídeo parou de carregar. Tenta selecionar o ficheiro outra vez.",
       "errorVideoNetwork": "Erro de rede ao carregar vídeo",
       "errorVideoDecoding": "Não foi possível descodificar o vídeo. O formato pode não ser suportado.",
-      "errorVideoFormat": "Formato de vídeo não suportado",
+      "errorVideoFormat": "Formato de vídeo não suportado. Experimenta MP4, MOV, AVI, MKV ou WebM.",
       "checkVideoFormat": "Verifica se o ficheiro de vídeo existe e está num formato suportado (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "A descarregar atualização... {{progress}}%",
       "preparingUpdate": "A preparar download da atualização...",
@@ -464,7 +464,7 @@
       "filterQuarter": "Período",
       "filterCategory": "Categoria",
       "allOption": "Todos",
-      "unlocatedCount": "{{count}} clipe(s) sem localização",
+      "unlocatedCount": "{{count}} clips sem localização",
       "noLocatedClips": "Ainda não há clipes com localização. Define-a no editor de clipes.",
       "title": "Estatísticas",
       "stats": "Estatísticas",
