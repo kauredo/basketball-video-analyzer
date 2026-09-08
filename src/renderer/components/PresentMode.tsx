@@ -13,6 +13,7 @@ import {
 import styles from "../styles/PresentMode.module.css";
 import { Clip, Category } from "../../types/global";
 import { formatVideoSrc } from "../utils/paths";
+import { inkOn } from "../utils/contrast";
 
 interface PresentModeProps {
   clips: Clip[];
@@ -154,7 +155,7 @@ export const PresentMode: React.FC<PresentModeProps> = ({
               <span
                 key={category.id}
                 className={styles.categoryTag}
-                style={{ backgroundColor: category.color }}
+                style={{ backgroundColor: category.color, color: inkOn(category.color) }}
               >
                 {category.name}
               </span>

@@ -107,7 +107,9 @@
 .categoryTag {
   padding: 2px 10px;
   border-radius: var(--radius-round);
-  color: var(--text-white);
+  /* The ink is set inline, per category colour, by utils/contrast.inkOn.
+     Category colour is data a coach picks, so no fixed foreground is
+     safe: white measured 2.78:1 on the seeded Transition colour. */
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
 }
