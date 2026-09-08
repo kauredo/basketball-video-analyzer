@@ -162,7 +162,9 @@
      grounds only. */
   --focus-ring-color: var(--color-primary);
 
-  /* Accent carries over from :root: white reads 5.26:1 on it in either theme. */
+  /* --color-primary carries over from :root unchanged: white reads 5.26:1 on it
+     in either theme, so the accent needs no light-theme face. */
+
   --track: #868686; /* 3.34:1 on --bg-secondary */
 
   /* The fills carry over; only the inks flip, because paper moves them the
