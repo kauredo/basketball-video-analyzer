@@ -52,7 +52,7 @@
     },
     "welcome": {
       "title": "Dobrodošli v Basketball Video Analyzer",
-      "subtitle": "Idealno za ustvarjanje in urejanje košarkarskih posnetkov za skavting ekip",
+      "subtitle": "Označite akcije, uredite posnetke in jih izvozite za analizo ekipe",
       "steps": {
         "loadVideo": {
           "title": "Naloži video",
@@ -127,7 +127,7 @@
       "addSubcategory": "Dodaj podkategorijo",
       "noCategory": "Brez kategorije",
       "unknownCategory": "Neznana kategorija",
-      "noCategoriesFromPreset": "Iz prednastavitve ni bilo mogoče ustvariti nobene kategorije",
+      "noCategoriesFromPreset": "Ta prednastavitev ni dodala kategorij. Morda se že ujema z vašimi.",
       "enterPresetName": "Vnesite ime prednastavitve",
       "addSubcategoryTooltip": "Dodaj podkategorijo",
       "presets": {
@@ -208,7 +208,7 @@
       "all": "Vsi",
       "clipsCount": "Posnetki",
       "unknown": "Neznano",
-      "exportNoneWarning": "Noben posnetek ni bil izvožen. Možni vzroki:\n\n- Datoteke posnetkov morda ne obstajajo več na izvirni lokaciji\n- Morda obstajajo težave z dovoljenji\n- Mape za izvoz ni bilo mogoče ustvariti",
+      "exportNoneWarning": "Noben posnetek ni bil izvožen. Datoteke so bile morda premaknjene ali pa aplikacija ni mogla pisati v izvozno mapo.",
       "exportErrorGeneric": "Napaka pri izvozu posnetkov: {{error}}",
       "exportVideoFiles": "Video datoteke",
       "exportCsvJson": "CSV / JSON",
@@ -243,14 +243,14 @@
         "errorCreating": "Napaka pri ustvarjanju posnetka. Poskusite znova.",
         "errorNoWriteAccess": "Pisanje v mapo s posnetki ni mogoče. Preverite dovoljenja za mapo Dokumenti.",
         "errorInsufficientSpace": "Premalo prostora na disku za ustvarjanje posnetka.",
-        "errorFileNotFound": "Vhodne video datoteke ni mogoče najti ali ni dostopna.",
+        "errorFileNotFound": "Video datoteke ni mogoče najti. Morda je bila premaknjena ali izbrisana.",
         "errorFFmpegFailed": "Obdelava videa ni uspela. Video datoteka je morda poškodovana ali nepodprta.",
         "errorDatabaseFailed": "Shranjevanje podatkov posnetka v bazo ni uspelo.",
         "errorThumbnailFailed": "Ustvarjanje sličice za posnetek ni uspelo.",
         "errorInvalidDuration": "Neveljavno trajanje posnetka. Preverite začetno in končno oznako.",
         "errorInvalidTime": "Neveljavne časovne vrednosti. Označite veljavni začetno in končno točko.",
-        "errorInvalidTitle": "Neveljaven naslov posnetka. Vnesite veljaven naslov.",
-        "errorNoCategories": "Nobena kategorija ni izbrana. Izberite vsaj eno kategorijo.",
+        "errorInvalidTitle": "Tega naslova posnetka ni mogoče uporabiti. Poskusite krajšega, brez poševnic.",
+        "errorNoCategories": "Izberite vsaj eno kategorijo za ustvarjanje tega posnetka.",
         "clipCreatedSuccess": "Posnetek je bil ustvarjen",
         "retryingClipCreation": "Ponovni poskus ustvarjanja posnetka ... Poskus {{attempt}}/{{maxRetries}} (čakanje {{delay}} s)",
         "errorAfterRetries": "Ustvarjanje posnetka po več poskusih ni uspelo: {{translationKey}}",
@@ -259,7 +259,7 @@
           "error_user_data_not_accessible": "Dostop do mape s podatki aplikacije ni mogoč. Preverite dovoljenja.",
           "error_no_write_access": "Ni dostopa za pisanje v mapo s posnetki. Preverite dovoljenja.",
           "error_system_check_failed": "Preverjanje sistema ni uspelo. Poskusite znova.",
-          "warning_low_disk_space": "Opozorilo: malo prostora na disku (na voljo manj kot 1 GB)."
+          "warning_low_disk_space": "Malo prostora na disku: manj kot 1 GB prostega."
         },
         "clipCreationCancelled": "Ustvarjanje posnetka je bilo preklicano.",
         "clipCancellationFailed": "Preklic ustvarjanja posnetka ni uspel.",
@@ -333,10 +333,10 @@
       "markInPoint": "Označi začetek posnetka",
       "markOutPoint": "Označi konec posnetka",
       "previousNextFrame": "Premakni za eno sličico",
-      "errorVideoAborted": "Nalaganje videa je bilo prekinjeno",
+      "errorVideoAborted": "Video se je nehal nalagati. Poskusite datoteko izbrati znova.",
       "errorVideoNetwork": "Napaka omrežja pri nalaganju videa",
       "errorVideoDecoding": "Videa ni bilo mogoče dekodirati. Format morda ni podprt.",
-      "errorVideoFormat": "Video format ni podprt",
+      "errorVideoFormat": "Format videa ni podprt. Poskusite MP4, MOV, AVI, MKV ali WebM.",
       "checkVideoFormat": "Preverite, ali video datoteka obstaja in je v podprtem formatu (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Prenašanje posodobitve ... {{progress}} %",
       "preparingUpdate": "Pripravljanje prenosa posodobitve ...",
@@ -496,8 +496,8 @@
     },
     "startup": {
       "dbFailed": "Aplikacija ni mogla odpreti svoje zbirke podatkov, zato vaših projektov ni mogoče naložiti. Napaka: {{error}}. Dnevniška datoteka: {{logPath}}",
-      "checkFailed": "Pri zagonu aplikacije je prišlo do težave. Napaka: {{error}}",
-      "apiUnavailable": "Aplikacija se ni pravilno zagnala (notranji most ni na voljo). Znova namestite najnovejšo različico."
+      "checkFailed": "Aplikacija je ob zagonu naletela na napako. {{error}}",
+      "apiUnavailable": "Aplikacija se ni pravilno zagnala. Znova namestite najnovejšo različico."
     }
   }
 }

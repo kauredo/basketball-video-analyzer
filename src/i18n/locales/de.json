@@ -52,7 +52,7 @@
     },
     "welcome": {
       "title": "Willkommen beim Basketball Video Analyzer",
-      "subtitle": "Ideal zum Erstellen und Organisieren von Basketball-Clips für das Scouting",
+      "subtitle": "Markiere Spielzüge, ordne Clips und exportiere sie fürs Scouting",
       "steps": {
         "loadVideo": {
           "title": "Video laden",
@@ -127,7 +127,7 @@
       "addSubcategory": "Unterkategorie hinzufügen",
       "noCategory": "Keine Kategorie",
       "unknownCategory": "Unbekannte Kategorie",
-      "noCategoriesFromPreset": "Aus der Vorlage konnten keine Kategorien erstellt werden",
+      "noCategoriesFromPreset": "Diese Vorlage hat keine Kategorien hinzugefügt. Sie passt vielleicht schon zu deinen.",
       "enterPresetName": "Bitte einen Vorlagennamen eingeben",
       "addSubcategoryTooltip": "Unterkategorie hinzufügen",
       "presets": {
@@ -208,7 +208,7 @@
       "all": "Alle",
       "clipsCount": "Clips",
       "unknown": "Unbekannt",
-      "exportNoneWarning": "Es wurden keine Clips exportiert. Mögliche Gründe:\n\n- Die Clip-Dateien existieren möglicherweise nicht mehr am ursprünglichen Speicherort\n- Es könnten Berechtigungsprobleme vorliegen\n- Der Export-Ordner konnte nicht erstellt werden",
+      "exportNoneWarning": "Keine Clips exportiert. Die Dateien wurden vielleicht verschoben, oder die App konnte nicht in den Export-Ordner schreiben.",
       "exportErrorGeneric": "Fehler beim Exportieren der Clips: {{error}}",
       "exportVideoFiles": "Videodateien",
       "exportCsvJson": "CSV / JSON",
@@ -243,14 +243,14 @@
         "errorCreating": "Fehler beim Erstellen des Clips. Bitte erneut versuchen.",
         "errorNoWriteAccess": "Schreiben in den Clip-Ordner nicht möglich. Bitte die Berechtigungen deines Dokumente-Ordners prüfen.",
         "errorInsufficientSpace": "Nicht genügend Speicherplatz, um den Clip zu erstellen.",
-        "errorFileNotFound": "Eingabe-Videodatei nicht gefunden oder nicht zugänglich.",
+        "errorFileNotFound": "Videodatei nicht gefunden. Sie wurde vielleicht verschoben oder gelöscht.",
         "errorFFmpegFailed": "Videoverarbeitung fehlgeschlagen. Die Videodatei ist möglicherweise beschädigt oder wird nicht unterstützt.",
         "errorDatabaseFailed": "Clip-Informationen konnten nicht in der Datenbank gespeichert werden.",
         "errorThumbnailFailed": "Vorschaubild für den Clip konnte nicht erstellt werden.",
         "errorInvalidDuration": "Ungültige Clip-Dauer. Bitte Anfang/Ende prüfen.",
         "errorInvalidTime": "Ungültige Zeitwerte. Bitte gültigen Anfang und gültiges Ende setzen.",
-        "errorInvalidTitle": "Ungültiger Clip-Titel. Bitte einen gültigen Titel angeben.",
-        "errorNoCategories": "Keine Kategorien ausgewählt. Bitte mindestens eine Kategorie auswählen.",
+        "errorInvalidTitle": "Dieser Cliptitel geht nicht. Versuche einen kürzeren ohne Schrägstriche.",
+        "errorNoCategories": "Wähle mindestens eine Kategorie, um diesen Clip zu erstellen.",
         "clipCreatedSuccess": "Clip erstellt",
         "retryingClipCreation": "Clip-Erstellung wird wiederholt … Versuch {{attempt}}/{{maxRetries}} (warte {{delay}}s)",
         "errorAfterRetries": "Clip konnte nach mehreren Versuchen nicht erstellt werden: {{translationKey}}",
@@ -259,7 +259,7 @@
           "error_user_data_not_accessible": "Zugriff auf den App-Datenordner nicht möglich. Bitte die Berechtigungen prüfen.",
           "error_no_write_access": "Kein Schreibzugriff auf den Clip-Ordner. Bitte die Berechtigungen prüfen.",
           "error_system_check_failed": "Systemprüfung fehlgeschlagen. Bitte erneut versuchen.",
-          "warning_low_disk_space": "Warnung: Wenig Speicherplatz (weniger als 1 GB verfügbar)."
+          "warning_low_disk_space": "Wenig Speicherplatz: weniger als 1 GB frei."
         },
         "clipCreationCancelled": "Clip-Erstellung wurde abgebrochen.",
         "clipCancellationFailed": "Clip-Erstellung konnte nicht abgebrochen werden.",
@@ -333,10 +333,10 @@
       "markInPoint": "Den Anfang eines Clips markieren",
       "markOutPoint": "Das Ende eines Clips markieren",
       "previousNextFrame": "Ein Bild weiter",
-      "errorVideoAborted": "Laden des Videos abgebrochen",
+      "errorVideoAborted": "Das Video hat aufgehört zu laden. Wähle die Datei noch einmal aus.",
       "errorVideoNetwork": "Netzwerkfehler beim Laden des Videos",
       "errorVideoDecoding": "Das Video konnte nicht dekodiert werden. Das Format wird möglicherweise nicht unterstützt.",
-      "errorVideoFormat": "Videoformat nicht unterstützt",
+      "errorVideoFormat": "Videoformat nicht unterstützt. Versuche MP4, MOV, AVI, MKV oder WebM.",
       "checkVideoFormat": "Bitte prüfen, ob die Videodatei existiert und in einem unterstützten Format vorliegt (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Update wird heruntergeladen … {{progress}}%",
       "preparingUpdate": "Update-Download wird vorbereitet …",
@@ -462,7 +462,7 @@
       "filterQuarter": "Viertel",
       "filterCategory": "Kategorie",
       "allOption": "Alle",
-      "unlocatedCount": "{{count}} Clip(s) ohne Position",
+      "unlocatedCount": "{{count}} Clips ohne Position",
       "noLocatedClips": "Noch keine Clips mit Wurfposition. Lege eine im Clip-Editor fest.",
       "title": "Statistik",
       "stats": "Statistik",
@@ -496,8 +496,8 @@
     },
     "startup": {
       "dbFailed": "Die App konnte ihre Datenbank nicht öffnen, daher können deine Projekte nicht geladen werden. Fehler: {{error}}. Protokolldatei: {{logPath}}",
-      "checkFailed": "Beim Start der App ist ein Problem aufgetreten. Fehler: {{error}}",
-      "apiUnavailable": "Die App ist nicht korrekt gestartet (interne Brücke nicht verfügbar). Installiere die neueste Version neu."
+      "checkFailed": "Die App ist beim Start auf einen Fehler gestoßen. {{error}}",
+      "apiUnavailable": "Die App ist nicht richtig gestartet. Installiere die neueste Version neu."
     }
   }
 }

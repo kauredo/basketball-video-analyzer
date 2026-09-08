@@ -53,7 +53,7 @@
     },
     "welcome": {
       "title": "Bienvenue dans Basketball Video Analyzer",
-      "subtitle": "Idéal pour créer et organiser des clips de basket pour le scouting d'équipe",
+      "subtitle": "Marquez les actions, organisez les clips et exportez-les pour analyser l'équipe",
       "steps": {
         "loadVideo": {
           "title": "Charger une vidéo",
@@ -128,7 +128,7 @@
       "addSubcategory": "Ajouter une sous-catégorie",
       "noCategory": "Aucune catégorie",
       "unknownCategory": "Catégorie inconnue",
-      "noCategoriesFromPreset": "Aucune catégorie n'a pu être créée à partir du modèle",
+      "noCategoriesFromPreset": "Ce modèle n'a ajouté aucune catégorie. Il correspond peut-être déjà aux vôtres.",
       "enterPresetName": "Veuillez saisir un nom de modèle",
       "addSubcategoryTooltip": "Ajouter une sous-catégorie",
       "presets": {
@@ -209,7 +209,7 @@
       "all": "Tous",
       "clipsCount": "Clips",
       "unknown": "Inconnu",
-      "exportNoneWarning": "Aucun clip n'a été exporté. Cela peut être dû à :\n\n- Les fichiers de clips n'existent peut-être plus à leur emplacement d'origine\n- Il peut y avoir des problèmes de permissions\n- Le dossier d'exportation n'a pas pu être créé",
+      "exportNoneWarning": "Aucun clip exporté. Les fichiers ont peut-être été déplacés, ou l'application n'a pas pu écrire dans le dossier d'export.",
       "exportErrorGeneric": "Erreur lors de l'exportation des clips : {{error}}",
       "exportVideoFiles": "Fichiers vidéo",
       "exportCsvJson": "CSV / JSON",
@@ -244,14 +244,14 @@
         "errorCreating": "Erreur lors de la création du clip. Veuillez réessayer.",
         "errorNoWriteAccess": "Impossible d'écrire dans le dossier des clips. Veuillez vérifier les permissions de votre dossier Documents.",
         "errorInsufficientSpace": "Espace disque insuffisant pour créer le clip.",
-        "errorFileNotFound": "Fichier vidéo source introuvable ou inaccessible.",
+        "errorFileNotFound": "Fichier vidéo introuvable. Il a peut-être été déplacé ou supprimé.",
         "errorFFmpegFailed": "Échec du traitement vidéo. Le fichier vidéo est peut-être corrompu ou non pris en charge.",
         "errorDatabaseFailed": "Échec de l'enregistrement des informations du clip dans la base de données.",
         "errorThumbnailFailed": "Échec de la création de la miniature du clip.",
         "errorInvalidDuration": "Durée de clip invalide. Veuillez vérifier vos points d'entrée/sortie.",
         "errorInvalidTime": "Valeurs de temps invalides. Veuillez marquer des points d'entrée/sortie valides.",
-        "errorInvalidTitle": "Titre de clip invalide. Veuillez fournir un titre valide.",
-        "errorNoCategories": "Aucune catégorie sélectionnée. Veuillez sélectionner au moins une catégorie.",
+        "errorInvalidTitle": "Ce titre de clip ne peut pas être utilisé. Essayez-en un plus court, sans barres obliques.",
+        "errorNoCategories": "Sélectionnez au moins une catégorie pour créer ce clip.",
         "clipCreatedSuccess": "Clip créé",
         "retryingClipCreation": "Nouvelle tentative de création du clip... Tentative {{attempt}}/{{maxRetries}} (attente de {{delay}}s)",
         "errorAfterRetries": "Échec de la création du clip après plusieurs tentatives : {{translationKey}}",
@@ -260,7 +260,7 @@
           "error_user_data_not_accessible": "Impossible d'accéder au dossier de données de l'application. Veuillez vérifier les permissions.",
           "error_no_write_access": "Aucun accès en écriture au dossier des clips. Veuillez vérifier les permissions.",
           "error_system_check_failed": "La vérification du système a échoué. Veuillez réessayer.",
-          "warning_low_disk_space": "Avertissement : espace disque faible (moins de 1 Go disponible)."
+          "warning_low_disk_space": "Espace disque faible : moins de 1 Go libre."
         },
         "clipCreationCancelled": "La création du clip a été annulée.",
         "clipCancellationFailed": "Échec de l'annulation de la création du clip.",
@@ -334,10 +334,10 @@
       "markInPoint": "Marquer le début d'un clip",
       "markOutPoint": "Marquer la fin d'un clip",
       "previousNextFrame": "Avancer d'une image",
-      "errorVideoAborted": "Chargement de la vidéo interrompu",
+      "errorVideoAborted": "La vidéo a cessé de se charger. Essayez de sélectionner le fichier à nouveau.",
       "errorVideoNetwork": "Erreur réseau lors du chargement de la vidéo",
       "errorVideoDecoding": "Impossible de décoder la vidéo. Le format n'est peut-être pas pris en charge.",
-      "errorVideoFormat": "Format vidéo non pris en charge",
+      "errorVideoFormat": "Format vidéo non pris en charge. Essayez MP4, MOV, AVI, MKV ou WebM.",
       "checkVideoFormat": "Veuillez vérifier que le fichier vidéo existe et qu'il est dans un format pris en charge (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Téléchargement de la mise à jour... {{progress}} %",
       "preparingUpdate": "Préparation du téléchargement de la mise à jour...",
@@ -463,7 +463,7 @@
       "filterQuarter": "Quart-temps",
       "filterCategory": "Catégorie",
       "allOption": "Tous",
-      "unlocatedCount": "{{count}} clip(s) sans emplacement",
+      "unlocatedCount": "{{count}} clips sans position",
       "noLocatedClips": "Aucun clip avec emplacement de tir pour le moment. Définissez-le dans l'éditeur de clips.",
       "title": "Stats",
       "stats": "Stats",
@@ -497,8 +497,8 @@
     },
     "startup": {
       "dbFailed": "L'application n'a pas pu ouvrir sa base de données, vos projets ne peuvent donc pas être chargés. Erreur : {{error}}. Fichier journal : {{logPath}}",
-      "checkFailed": "Un problème est survenu au démarrage de l'application. Erreur : {{error}}",
-      "apiUnavailable": "L'application n'a pas démarré correctement (pont interne indisponible). Réinstallez la version la plus récente."
+      "checkFailed": "L'application a rencontré une erreur au démarrage. {{error}}",
+      "apiUnavailable": "L'application n'a pas démarré correctement. Réinstallez la version la plus récente."
     }
   }
 }

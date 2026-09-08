@@ -52,7 +52,7 @@
     },
     "welcome": {
       "title": "Benvenuto in Basketball Video Analyzer",
-      "subtitle": "Ideale per creare e organizzare clip di pallacanestro per lo scouting della squadra",
+      "subtitle": "Segna le giocate, organizza le clip ed esportale per studiare la squadra",
       "steps": {
         "loadVideo": {
           "title": "Carica video",
@@ -127,7 +127,7 @@
       "addSubcategory": "Aggiungi sottocategoria",
       "noCategory": "Nessuna categoria",
       "unknownCategory": "Categoria sconosciuta",
-      "noCategoriesFromPreset": "Non è stato possibile creare categorie dal preset",
+      "noCategoriesFromPreset": "Questo preset non ha aggiunto categorie. Potrebbe già corrispondere alle tue.",
       "enterPresetName": "Inserisci un nome per il preset",
       "addSubcategoryTooltip": "Aggiungi sottocategoria",
       "presets": {
@@ -208,7 +208,7 @@
       "all": "Tutte",
       "clipsCount": "Clip",
       "unknown": "Sconosciuto",
-      "exportNoneWarning": "Nessuna clip è stata esportata. Le possibili cause sono:\n\n- I file delle clip potrebbero non esistere più nella posizione originale\n- Potrebbero esserci problemi di permessi\n- Non è stato possibile creare la cartella di esportazione",
+      "exportNoneWarning": "Nessuna clip esportata. I file potrebbero essere stati spostati, oppure l'app non ha potuto scrivere nella cartella di esportazione.",
       "exportErrorGeneric": "Errore durante l'esportazione delle clip: {{error}}",
       "exportVideoFiles": "File video",
       "exportCsvJson": "CSV / JSON",
@@ -243,14 +243,14 @@
         "errorCreating": "Errore nella creazione della clip. Riprova.",
         "errorNoWriteAccess": "Impossibile scrivere nella cartella clip. Controlla i permessi della cartella Documenti.",
         "errorInsufficientSpace": "Spazio su disco insufficiente per creare la clip.",
-        "errorFileNotFound": "File video di input non trovato o non accessibile.",
+        "errorFileNotFound": "File video non trovato. Potrebbe essere stato spostato o eliminato.",
         "errorFFmpegFailed": "Elaborazione del video non riuscita. Il file video potrebbe essere danneggiato o non supportato.",
         "errorDatabaseFailed": "Salvataggio delle informazioni della clip nel database non riuscito.",
         "errorThumbnailFailed": "Creazione della miniatura per la clip non riuscita.",
         "errorInvalidDuration": "Durata della clip non valida. Controlla i punti di inizio/fine.",
         "errorInvalidTime": "Valori temporali non validi. Segna punti di inizio/fine validi.",
-        "errorInvalidTitle": "Titolo della clip non valido. Inserisci un titolo valido.",
-        "errorNoCategories": "Nessuna categoria selezionata. Seleziona almeno una categoria.",
+        "errorInvalidTitle": "Questo titolo non può essere usato. Provane uno più corto e senza barre.",
+        "errorNoCategories": "Seleziona almeno una categoria per creare questa clip.",
         "clipCreatedSuccess": "Clip creata",
         "retryingClipCreation": "Nuovo tentativo di creazione clip... Tentativo {{attempt}}/{{maxRetries}} (attesa {{delay}}s)",
         "errorAfterRetries": "Creazione della clip non riuscita dopo più tentativi: {{translationKey}}",
@@ -259,7 +259,7 @@
           "error_user_data_not_accessible": "Impossibile accedere alla cartella dei dati dell'applicazione. Controlla i permessi.",
           "error_no_write_access": "Nessun accesso in scrittura alla cartella clip. Controlla i permessi.",
           "error_system_check_failed": "Controllo di sistema non riuscito. Riprova.",
-          "warning_low_disk_space": "Attenzione: spazio su disco insufficiente (meno di 1GB disponibile)."
+          "warning_low_disk_space": "Spazio su disco insufficiente: meno di 1 GB libero."
         },
         "clipCreationCancelled": "Creazione della clip annullata.",
         "clipCancellationFailed": "Annullamento della creazione della clip non riuscito.",
@@ -333,10 +333,10 @@
       "markInPoint": "Segna l'inizio di una clip",
       "markOutPoint": "Segna la fine di una clip",
       "previousNextFrame": "Avanza di un fotogramma",
-      "errorVideoAborted": "Caricamento del video interrotto",
+      "errorVideoAborted": "Il video ha smesso di caricarsi. Prova a selezionare di nuovo il file.",
       "errorVideoNetwork": "Errore di rete durante il caricamento del video",
       "errorVideoDecoding": "Impossibile decodificare il video. Il formato potrebbe non essere supportato.",
-      "errorVideoFormat": "Formato video non supportato",
+      "errorVideoFormat": "Formato video non supportato. Prova MP4, MOV, AVI, MKV o WebM.",
       "checkVideoFormat": "Verifica che il file video esista e sia in un formato supportato (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Download dell'aggiornamento... {{progress}}%",
       "preparingUpdate": "Preparazione del download dell'aggiornamento...",
@@ -496,8 +496,8 @@
     },
     "startup": {
       "dbFailed": "L'applicazione non è riuscita ad aprire il database, quindi i tuoi progetti non possono essere caricati. Errore: {{error}}. File di log: {{logPath}}",
-      "checkFailed": "Si è verificato un problema all'avvio dell'applicazione. Errore: {{error}}",
-      "apiUnavailable": "L'applicazione non si è avviata correttamente (ponte interno non disponibile). Reinstalla la versione più recente."
+      "checkFailed": "L'applicazione ha riscontrato un errore all'avvio. {{error}}",
+      "apiUnavailable": "L'applicazione non si è avviata correttamente. Reinstalla la versione più recente."
     }
   }
 }

@@ -52,7 +52,7 @@
     },
     "welcome": {
       "title": "Dobro došli u Basketball Video Analyzer",
-      "subtitle": "Idealno za pravljenje i organizovanje košarkaških klipova za skauting tima",
+      "subtitle": "Označite akcije, sredite klipove i izvezite ih za analizu tima",
       "steps": {
         "loadVideo": {
           "title": "Učitaj snimak",
@@ -127,7 +127,7 @@
       "addSubcategory": "Dodaj potkategoriju",
       "noCategory": "Bez kategorije",
       "unknownCategory": "Nepoznata kategorija",
-      "noCategoriesFromPreset": "Nijedna kategorija nije mogla biti napravljena iz šablona",
+      "noCategoriesFromPreset": "Ovaj šablon nije dodao kategorije. Možda se već poklapa sa vašima.",
       "enterPresetName": "Unesite naziv šablona",
       "addSubcategoryTooltip": "Dodaj potkategoriju",
       "presets": {
@@ -208,7 +208,7 @@
       "all": "Sve",
       "clipsCount": "Klipovi",
       "unknown": "Nepoznato",
-      "exportNoneWarning": "Nijedan klip nije izvezen. Mogući razlozi:\n\n- Fajlovi klipova možda više ne postoje na originalnoj lokaciji\n- Možda postoje problemi sa dozvolama\n- Fascikla za izvoz nije mogla biti napravljena",
+      "exportNoneWarning": "Nijedan klip nije izvezen. Datoteke su možda premeštene ili aplikacija nije mogla da piše u izvoznu fasciklu.",
       "exportErrorGeneric": "Greška pri izvozu klipova: {{error}}",
       "exportVideoFiles": "Video fajlovi",
       "exportCsvJson": "CSV / JSON",
@@ -243,14 +243,14 @@
         "errorCreating": "Greška pri pravljenju klipa. Pokušajte ponovo.",
         "errorNoWriteAccess": "Nije moguće upisivanje u fasciklu klipova. Proverite dozvole fascikle Dokumenti.",
         "errorInsufficientSpace": "Nema dovoljno prostora na disku za pravljenje klipa.",
-        "errorFileNotFound": "Ulazni video fajl nije pronađen ili nije dostupan.",
+        "errorFileNotFound": "Video datoteka nije pronađena. Možda je premeštena ili obrisana.",
         "errorFFmpegFailed": "Obrada videa nije uspela. Video fajl je možda oštećen ili nepodržan.",
         "errorDatabaseFailed": "Čuvanje podataka o klipu u bazu nije uspelo.",
         "errorThumbnailFailed": "Pravljenje sličice za klip nije uspelo.",
         "errorInvalidDuration": "Nevažeće trajanje klipa. Proverite početnu/završnu tačku.",
         "errorInvalidTime": "Nevažeće vrednosti vremena. Postavite ispravne tačke.",
-        "errorInvalidTitle": "Nevažeći naziv klipa. Unesite ispravan naziv.",
-        "errorNoCategories": "Nije izabrana nijedna kategorija. Izaberite bar jednu kategoriju.",
+        "errorInvalidTitle": "Ovaj naslov klipa ne može da se koristi. Probajte kraći, bez kosih crta.",
+        "errorNoCategories": "Izaberite bar jednu kategoriju da napravite ovaj klip.",
         "clipCreatedSuccess": "Klip napravljen",
         "retryingClipCreation": "Ponovni pokušaj pravljenja klipa... Pokušaj {{attempt}}/{{maxRetries}} (čeka se {{delay}}s)",
         "errorAfterRetries": "Pravljenje klipa nije uspelo nakon više pokušaja: {{translationKey}}",
@@ -259,7 +259,7 @@
           "error_user_data_not_accessible": "Nije moguć pristup fascikli sa podacima aplikacije. Proverite dozvole.",
           "error_no_write_access": "Nema dozvole za upisivanje u fasciklu klipova. Proverite dozvole.",
           "error_system_check_failed": "Provera sistema nije uspela. Pokušajte ponovo.",
-          "warning_low_disk_space": "Upozorenje: malo prostora na disku (manje od 1 GB dostupno)."
+          "warning_low_disk_space": "Malo prostora na disku: manje od 1 GB slobodno."
         },
         "clipCreationCancelled": "Pravljenje klipa je otkazano.",
         "clipCancellationFailed": "Otkazivanje pravljenja klipa nije uspelo.",
@@ -333,10 +333,10 @@
       "markInPoint": "Označi početak snimka",
       "markOutPoint": "Označi kraj snimka",
       "previousNextFrame": "Pomeri za jedan kadar",
-      "errorVideoAborted": "Učitavanje snimka prekinuto",
+      "errorVideoAborted": "Video je prestao da se učitava. Pokušajte ponovo da izaberete datoteku.",
       "errorVideoNetwork": "Mrežna greška pri učitavanju snimka",
       "errorVideoDecoding": "Snimak nije moguće dekodirati. Format možda nije podržan.",
-      "errorVideoFormat": "Video format nije podržan",
+      "errorVideoFormat": "Format videa nije podržan. Probajte MP4, MOV, AVI, MKV ili WebM.",
       "checkVideoFormat": "Proverite da li video fajl postoji i da li je u podržanom formatu (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Preuzimanje ažuriranja... {{progress}}%",
       "preparingUpdate": "Priprema preuzimanja ažuriranja...",
@@ -496,8 +496,8 @@
     },
     "startup": {
       "dbFailed": "Aplikacija nije mogla da otvori svoju bazu podataka, pa vaši projekti ne mogu da se učitaju. Greška: {{error}}. Datoteka dnevnika: {{logPath}}",
-      "checkFailed": "Došlo je do problema pri pokretanju aplikacije. Greška: {{error}}",
-      "apiUnavailable": "Aplikacija se nije pokrenula ispravno (interni most nije dostupan). Ponovo instalirajte najnoviju verziju."
+      "checkFailed": "Aplikacija je naišla na grešku pri pokretanju. {{error}}",
+      "apiUnavailable": "Aplikacija se nije pokrenula ispravno. Ponovo instalirajte najnoviju verziju."
     }
   }
 }
