@@ -416,7 +416,7 @@
 }
 
 .modalBody {
-  padding: var(--spacing-lg) var(--spacing-xl);
+  padding: var(--modal-body-padding-y) var(--spacing-xl);
   overflow-y: auto;
   flex: 1 1 auto;
   /* Required: without it the flex item refuses to shrink and any pinned

@@ -6,8 +6,9 @@
   right: var(--spacing-lg);
   z-index: var(--z-toast);
   display: flex;
-  /* Newest nearest the corner, older ones stacking away from it. */
-  flex-direction: column-reverse;
+  /* Anchored at the bottom, plain column puts the newest toast last in the
+     stack and so nearest the corner. column-reverse would put the oldest there. */
+  flex-direction: column;
   gap: var(--spacing-sm);
   pointer-events: none;
 }
