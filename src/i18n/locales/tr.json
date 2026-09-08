@@ -25,7 +25,7 @@
     ]
   },
   "app": {
-    "title": "Basketbol Video Analiz",
+    "title": "Basketball Video Analyzer",
     "buttons": {
       "getStarted": "Başlamak için bir video seçin",
       "selectVideo": "Video Seç",

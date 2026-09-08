@@ -21,7 +21,7 @@
     ]
   },
   "app": {
-    "title": "Editor de Vídeos de Basquetebol",
+    "title": "Basketball Video Analyzer",
     "startup": {
       "dbFailed": "A aplicação não conseguiu abrir a base de dados, por isso os teus projetos não podem ser carregados. Erro: {{error}}. Ficheiro de registo: {{logPath}}",
       "checkFailed": "Ocorreu um problema ao iniciar a aplicação. Erro: {{error}}",
