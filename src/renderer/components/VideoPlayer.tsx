@@ -14,6 +14,7 @@ import {
   faForwardStep,
   faBackwardStep,
   faVolumeHigh,
+  faVolumeXmark,
   faLocationPin,
   faTrash,
   faFilm,
@@ -90,6 +91,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [volume, setVolume] = useState(1);
     const [playbackRate, setPlaybackRate] = useState(1);
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showVolumeMenu, setShowVolumeMenu] = useState(false);
     const [keyBindings, setKeyBindings] = useState({
       markInKey: "z",
       markOutKey: "m",
@@ -848,25 +850,38 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </div>
 
                 <div className={styles.volumeControl}>
-                  <span>
-                    <FontAwesomeIcon icon={faVolumeHigh} />
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={volume}
-                    onChange={e => {
-                      const newVolume = parseFloat(e.target.value);
-                      setVolume(newVolume);
-                      if (videoRef.current) {
-                        videoRef.current.volume = newVolume;
-                      }
-                    }}
-                    className={styles.volumeSlider}
+                  <button
+                    type="button"
+                    className={styles.speedButton}
+                    onClick={() => setShowVolumeMenu(!showVolumeMenu)}
+                    title={t("app.video.volumeLabel")}
                     aria-label={t("app.video.volumeLabel")}
-                  />
+                    aria-expanded={showVolumeMenu}
+                  >
+                    <FontAwesomeIcon
+                      icon={volume === 0 ? faVolumeXmark : faVolumeHigh}
+                    />
+                  </button>
+                  {showVolumeMenu && (
+                    <div className={styles.volumeMenu}>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={volume}
+                        onChange={e => {
+                          const newVolume = parseFloat(e.target.value);
+                          setVolume(newVolume);
+                          if (videoRef.current) {
+                            videoRef.current.volume = newVolume;
+                          }
+                        }}
+                        className={styles.volumeSlider}
+                        aria-label={t("app.video.volumeLabel")}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.speedControl}>
