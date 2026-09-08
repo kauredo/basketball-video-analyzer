@@ -19,7 +19,10 @@
   justify-content: center;
   background: var(--bg-main);
   overflow: hidden;
-  min-height: 0;
+  /* The film never gets squeezed to nothing. With min-height: 0 the control
+     block could take the whole section and leave the video at 0px, which is
+     what happened at a 680px window. */
+  min-height: var(--video-min-height);
 }
 
 .videoElement {
@@ -60,7 +63,7 @@
 
 .progressTrack {
   height: 8px;
-  background: var(--bg-tertiary);
+  background: var(--scrub-track);
   border-radius: var(--radius-md);
   position: relative;
   cursor: pointer;
@@ -110,11 +113,11 @@
 }
 
 .markIn {
-  background: var(--color-success);
+  background: var(--color-primary);
 }
 
 .markOut {
-  background: var(--color-danger);
+  background: var(--color-primary-dark);
 }
 
 .annotationMarker {
@@ -165,8 +168,8 @@
 
 .annotationMarker:focus-visible,
 .annotationDelete:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .markIndicator:hover {
@@ -176,7 +179,18 @@
 .controlsRow {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  /* Measured at 1440x691 with the side panel open: 931px of controls in 1048px
+     of row. At spacing-sm the fourteen gaps come to 112px, so the line needed
+     1043 of 1048 and broke on five pixels of slack. spacing-xs is 4px, which
+     takes the gaps to 56 and the line to 988, leaving 60px. At 1280 with the
+     panel open there are only 888px and it still wraps, which is correct: the
+     controls do not fit there and wrapping beats clipping. */
+  gap: var(--spacing-xs);
+  /* wrap is kept so nothing is ever clipped at a small window. The row fits on
+     one line at the common widths because the controls below are sized to fit,
+     not because wrapping is disabled: a flex line break is decided from each
+     item's hypothetical size before any shrinking, so flex-shrink alone cannot
+     prevent a second row. */
   flex-wrap: wrap;
 }
 
@@ -235,8 +249,8 @@
 .playButton:focus-visible,
 .skipButton:focus-visible,
 .frameButton:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .skipText {
@@ -273,12 +287,12 @@
 }
 
 .markInBtn {
-  background: var(--color-success);
+  background: var(--color-primary);
   color: var(--text-white);
 }
 
 .markOutBtn {
-  background: var(--color-danger);
+  background: var(--color-primary-dark);
   color: var(--text-white);
 }
 
@@ -304,8 +318,8 @@
 }
 
 .markBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .markInfo {
@@ -330,10 +344,28 @@
 }
 
 .volumeControl {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
   margin-left: auto;
+}
+
+/* The slider lives in a popover so the transport fits on one row when the side
+   panel is open. Mirrors .speedMenu. */
+.volumeMenu {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-popover);
 }
 
 .volumeSlider {
@@ -388,8 +420,8 @@
 }
 
 .speedButton:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .drawButtonActive {
@@ -443,8 +475,8 @@
 }
 
 .speedOption:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .activeSpeed {
@@ -514,7 +546,15 @@
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-xs);
-  min-width: 200px;
+  /* 180px is what keeps the whole transport on one row with the side panel
+     open. A fixed 200px min-width here is what made it wrap. */
+  flex: 0 1 180px;
+  min-width: 140px;
+}
+
+.timeSearchContainer > * {
+  min-width: 0;
+  width: 100%;
 }
 
 .timeSearchInput {
@@ -534,7 +574,8 @@
 
 .timeSearchInput:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-light);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .timeSearchIcon {
@@ -551,6 +592,10 @@
   padding: var(--spacing-xs) var(--spacing-sm);
   outline: none;
   width: 140px;
+  /* Yields with its container rather than overflowing it. The container can be
+     squeezed to its 140px floor, which is less than this field plus the icon
+     and the button need. */
+  min-width: 0;
   font-family: var(--font-mono);
 }
 
@@ -591,8 +636,8 @@
 }
 
 .timeSearchButton:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .timeSearchErrorMessage {

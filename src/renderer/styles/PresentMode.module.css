@@ -1,4 +1,7 @@
 .presentMode {
+  /* Always a black backdrop, so the ring takes the bright face in
+     either theme rather than the theme's own. */
+  --focus-ring-color: var(--color-accent-on-dark);
   position: fixed;
   inset: 0;
   z-index: var(--z-present);
@@ -46,7 +49,8 @@
 }
 
 .closeBtn:focus-visible {
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Bottom gradient overlay holding clip info + transport controls */
@@ -80,7 +84,7 @@
   display: inline-block;
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
-  color: var(--color-primary-light);
+  color: var(--color-accent-on-dark);
   margin-bottom: 4px;
 }
 
@@ -140,7 +144,8 @@
 }
 
 .controlBtn:focus-visible {
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .playBtn {

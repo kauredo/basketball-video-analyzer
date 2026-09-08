@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useDismissableMenu } from "../hooks/useDismissableMenu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFilm,
@@ -110,17 +111,12 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const [showPresent, setShowPresent] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close export menu on click outside
-  useEffect(() => {
-    if (!exportMenuOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
-        setExportMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [exportMenuOpen]);
+  // Shared with the transport popovers, so Escape closes all of them alike.
+  useDismissableMenu(
+    exportMenuOpen,
+    useCallback(() => setExportMenuOpen(false), []),
+    [exportMenuRef],
+  );
 
   useEffect(() => {
     loadData();

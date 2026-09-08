@@ -7,6 +7,7 @@ import React, {
   useImperativeHandle,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { useDismissableMenu } from "../hooks/useDismissableMenu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlay,
@@ -14,6 +15,7 @@ import {
   faForwardStep,
   faBackwardStep,
   faVolumeHigh,
+  faVolumeXmark,
   faLocationPin,
   faTrash,
   faFilm,
@@ -90,6 +92,21 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [volume, setVolume] = useState(1);
     const [playbackRate, setPlaybackRate] = useState(1);
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showVolumeMenu, setShowVolumeMenu] = useState(false);
+
+  const speedControlRef = useRef<HTMLDivElement>(null);
+  const volumeControlRef = useRef<HTMLDivElement>(null);
+
+  // Refs rather than class-name lookups: a CSS-module hash is a styling
+  // identifier and nothing ties its shape to this behaviour.
+  useDismissableMenu(
+    showSpeedMenu || showVolumeMenu,
+    useCallback(() => {
+      setShowSpeedMenu(false);
+      setShowVolumeMenu(false);
+    }, []),
+    [speedControlRef, volumeControlRef],
+  );
     const [keyBindings, setKeyBindings] = useState({
       markInKey: "z",
       markOutKey: "m",
@@ -847,33 +864,52 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   )}
                 </div>
 
-                <div className={styles.volumeControl}>
-                  <span>
-                    <FontAwesomeIcon icon={faVolumeHigh} />
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={volume}
-                    onChange={e => {
-                      const newVolume = parseFloat(e.target.value);
-                      setVolume(newVolume);
-                      if (videoRef.current) {
-                        videoRef.current.volume = newVolume;
-                      }
-                    }}
-                    className={styles.volumeSlider}
-                    aria-label={t("app.video.volumeLabel")}
-                  />
-                </div>
-
-                <div className={styles.speedControl}>
+                <div className={styles.volumeControl} ref={volumeControlRef}>
                   <button
                     type="button"
                     className={styles.speedButton}
-                    onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                    onClick={() => {
+                      setShowSpeedMenu(false);
+                      setShowVolumeMenu(!showVolumeMenu);
+                    }}
+                    title={t("app.video.volumeLabel")}
+                    aria-label={t("app.video.volumeLabel")}
+                    aria-expanded={showVolumeMenu}
+                  >
+                    <FontAwesomeIcon
+                      icon={volume === 0 ? faVolumeXmark : faVolumeHigh}
+                    />
+                  </button>
+                  {showVolumeMenu && (
+                    <div className={styles.volumeMenu}>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={volume}
+                        onChange={e => {
+                          const newVolume = parseFloat(e.target.value);
+                          setVolume(newVolume);
+                          if (videoRef.current) {
+                            videoRef.current.volume = newVolume;
+                          }
+                        }}
+                        className={styles.volumeSlider}
+                        aria-label={t("app.video.volumeLabel")}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className={styles.speedControl} ref={speedControlRef}>
+                  <button
+                    type="button"
+                    className={styles.speedButton}
+                    onClick={() => {
+                      setShowVolumeMenu(false);
+                      setShowSpeedMenu(!showSpeedMenu);
+                    }}
                     title={t("app.video.playbackSpeed")}
                   >
                     <FontAwesomeIcon icon={faGaugeHigh} />
@@ -936,7 +972,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </button>
               </div>
 
-              {showFirstVideoHint && (
+              {showFirstVideoHint && markInTime === null && (
                 <ContextualHint
                   hintId="first-video"
                   message={t("app.hints.markKeys", {

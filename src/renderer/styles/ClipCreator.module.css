@@ -1,8 +1,9 @@
 @import "./variables.css";
 
 .clipCreator {
-  height: 100%;
-  overflow-y: auto;
+  /* No overflow of its own. The modal body is the scroll container, and a
+     second one nested inside it gave the sticky action row nothing to stick
+     against. */
   max-width: var(--container-max-width);
   margin: 0 auto;
   padding: var(--spacing-lg);
@@ -78,8 +79,8 @@
 .clipTitleInput:focus,
 .clipNotesInput:focus {
   border-color: var(--color-primary);
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .creationProgress {
@@ -117,6 +118,16 @@
 .clipCreationActions {
   display: flex;
   gap: var(--spacing-md);
+  /* The commit action for the app's central task. It pins to the bottom of the
+     modal's scroll area so it is reachable without scrolling past the category
+     tree and the player list. */
+  position: sticky;
+  bottom: calc(var(--modal-body-padding-y) * -1);
+  z-index: 1;
+  background: var(--bg-secondary);
+  padding: var(--spacing-md) 0;
+  margin-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
 }
 
 .createClipBtn,
@@ -140,7 +151,7 @@
 
 .createClipBtn {
   background: var(--color-primary);
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .createClipBtn:hover:not(:disabled) {
@@ -176,8 +187,8 @@
 
 .createClipBtn:focus-visible,
 .cancelBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Quarter Selector */
@@ -228,8 +239,8 @@
 }
 
 .quarterBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Player Selection */
@@ -284,8 +295,8 @@
 }
 
 .playerBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /* Category Selection */
@@ -337,9 +348,9 @@
 }
 
 .selectAllBtn:hover:not(:disabled) {
-  background: var(--color-success);
-  border-color: var(--color-success);
-  color: var(--text-primary);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-white);
   transform: translateY(-1px);
 }
 
@@ -359,8 +370,8 @@
 
 .selectAllBtn:focus-visible,
 .clearSelectionBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .categoryGrid {
@@ -414,8 +425,8 @@
 }
 
 .categoryBtn:focus-visible {
-  box-shadow: var(--focus-ring);
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .categoryBtn.selected {
@@ -457,8 +468,8 @@
 }
 
 .courtToggle:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 .courtPicker {
@@ -485,6 +496,6 @@
 }
 
 .courtClear:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }

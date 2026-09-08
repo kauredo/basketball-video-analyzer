@@ -2,14 +2,33 @@
 :root,
 [data-theme="dark"] {
   /* Colors */
-  --color-primary: #4caf50;
-  --color-primary-dark: #45a049;
-  --color-primary-light: #66bb6a;
+  /* The one accent. Clear of the orange band the category presets own. */
+  --color-primary: #0b7972;
+  --color-primary-dark: #075450;
+  /* The accent on surfaces that are dark whatever the theme (over video). */
+  --color-accent-on-dark: #3ed0c2;
+  /* The scrub track needs its own value. --bg-tertiary read 1.38:1 against the
+     transport row, under the 3.0 bar for identifying a control. */
+  --scrub-track: #6a6a6a;
+
+  /* The workspace's vertical floors. These live together because the section
+     floor is derived from the other two, and deriving it by hand one file away
+     is how it goes stale: if the transport grows a control or a locale makes it
+     wrap taller, --video-controls-max only has to change here. */
+  --video-min-height: 140px;
+  --video-controls-max: 320px;
+  --video-section-min-height: calc(
+    var(--video-min-height) + var(--video-controls-max)
+  );
+  /* Independent of --video-min-height despite matching it today: this is how
+     far the clip list may be squeezed, not how tall the film must be. */
+  --bottom-panel-min-height: 140px;
   --color-danger: #f44336;
   --color-danger-dark: #d32f2f;
   --color-danger-light: #ef5350;
-  --color-success: #4caf50;
-  --color-success-dark: #388e3c;
+  --color-success: #2e7d32;
+  --color-success-rgb: 46, 125, 50;
+  --color-success-dark: #1b5e20;
   --color-warning: #ff9800;
   --color-info: #2196f3;
 
@@ -99,28 +118,45 @@
   --input-height: 36px;
   --button-height: 36px;
   --input-padding: var(--spacing-sm) var(--spacing-md);
+  /* Load-bearing: a modal's scrolling body uses this as its vertical padding,
+     and a sticky footer inside it cancels exactly this much to sit flush. */
+  --modal-body-padding-y: var(--spacing-lg);
 
   /* Widths */
   --sidebar-width: 320px;
   --container-max-width: 1200px;
   --min-interactive-size: 44px;
 
-  /* Focus Styles */
-  --focus-ring: 0 0 0 2px var(--color-primary-light);
+  /* Focus Styles.
+     outline, not box-shadow: forced-colors mode on Windows drops shadows, and
+     keyboard users there lost the ring entirely.
+     Worth knowing when testing: an Electron window that does not hold OS focus
+     matches no :focus-visible at all, so the ring reads as missing when the
+     window is simply not focused. */
+  --focus-ring-color: var(--color-accent-on-dark);
+  --focus-ring-width: 2px;
   --focus-ring-within: 0 0 0 2px var(--color-primary);
 
-  /* Monospace Font */
-  --font-mono: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  /* Typefaces. Plex Sans carries interface text, not Space Grotesk, which has
+     no Greek and el.json needs it. Space Grotesk is display only. */
+  --font-display: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Variable", "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Monaco", "Menlo", "Ubuntu Mono", monospace;
 }
 
 /* Light theme */
 [data-theme="light"] {
   /* Colors */
-  --color-primary: #2e7d32;
-  --color-primary-dark: #1b5e20;
-  --color-primary-light: #388e3c;
+  /* On paper the ring takes the accent itself; the bright face is for dark
+     grounds only. */
+  --focus-ring-color: var(--color-primary);
 
-  --color-success-dark: #1b5e20;
+  /* Accent carries over from :root: white reads 5.26:1 on it in either theme. */
+  --scrub-track: #8e8e8e;
+
+  --color-success: #1b5e20;
+  --color-success-rgb: 27, 94, 32;
+  --color-success-dark: #14481a;
 
   /* Background Colors */
   --bg-main: #ffffff;
