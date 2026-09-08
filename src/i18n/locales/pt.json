@@ -15,6 +15,8 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.shortcuts.toggleBottomPanel",
+      "app.shortcuts.toggleSidePanel",
       "app.video.markInPoint",
       "app.video.markOutPoint",
       "app.video.previousNextFrame"
@@ -358,7 +360,9 @@
       "seek30s": "Avançar/retroceder 30 segundos",
       "seek1m": "Avançar/retroceder 1 minuto",
       "frameStep": "Frame a frame",
-      "quickTag": "Marcação rápida (1-9)"
+      "quickTag": "Marcação rápida (1-9)",
+      "toggleSidePanel": "Mostrar ou ocultar o painel lateral",
+      "toggleBottomPanel": "Mostrar ou ocultar a lista de clips"
     },
     "library": {
       "searchPlaceholder": "Pesquisar clips..."

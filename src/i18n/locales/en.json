@@ -337,7 +337,9 @@
       "seek30s": "Seek 30 seconds",
       "seek1m": "Seek 1 minute",
       "frameStep": "Frame-by-frame",
-      "quickTag": "Quick tag (1-9)"
+      "quickTag": "Quick tag (1-9)",
+      "toggleSidePanel": "Show or hide the side panel",
+      "toggleBottomPanel": "Show or hide the clip list"
     },
     "library": {
       "searchPlaceholder": "Search clips..."

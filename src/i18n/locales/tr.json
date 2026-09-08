@@ -15,6 +15,8 @@
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
       "app.shortcuts.markOut",
+      "app.shortcuts.toggleBottomPanel",
+      "app.shortcuts.toggleSidePanel",
       "app.startup.apiUnavailable",
       "app.startup.checkFailed",
       "app.startup.dbFailed",
@@ -357,7 +359,9 @@
       "seek30s": "30 saniye atla",
       "seek1m": "1 dakika atla",
       "frameStep": "Kare kare",
-      "quickTag": "Hızlı etiket (1-9)"
+      "quickTag": "Hızlı etiket (1-9)",
+      "toggleSidePanel": "Yan paneli göster veya gizle",
+      "toggleBottomPanel": "Klip listesini göster veya gizle"
     },
     "library": {
       "searchPlaceholder": "Klip ara..."

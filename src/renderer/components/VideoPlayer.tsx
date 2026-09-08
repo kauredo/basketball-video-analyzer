@@ -324,7 +324,16 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           } else {
             skipTime(-5);
           }
-        } else if (key >= "1" && key <= "9" && onQuickTag) {
+        } else if (
+          key >= "1" &&
+          key <= "9" &&
+          !e.metaKey &&
+          !e.ctrlKey &&
+          !e.altKey &&
+          onQuickTag
+        ) {
+          // Unmodified digits only. Cmd/Ctrl+1 and +2 toggle the panels, and
+          // without this guard they quick-tagged the clip on the way past.
           e.preventDefault();
           onQuickTag(parseInt(key, 10));
         }

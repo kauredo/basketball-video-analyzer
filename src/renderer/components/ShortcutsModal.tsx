@@ -40,6 +40,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
     { key: "Cmd/Ctrl + ← / →", description: t("app.shortcuts.seek1m") },
     { key: "Shift + ← / →", description: t("app.shortcuts.frameStep") },
     { key: "1-9", description: t("app.shortcuts.quickTag") },
+    { key: "Cmd/Ctrl + 1", description: t("app.shortcuts.toggleSidePanel") },
+    { key: "Cmd/Ctrl + 2", description: t("app.shortcuts.toggleBottomPanel") },
   ];
 
   return (
