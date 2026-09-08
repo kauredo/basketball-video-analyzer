@@ -940,3 +940,29 @@ list in this app should specify the anchor as an id from the start.
 Still deferred, in the order they are worth doing: manual clip order, the CSV
 export gaining a Status column, duplicating a clip, re-trimming in and out
 points, and a diagram indicator column.
+
+## Second pass (2026-09-09)
+
+Two things the first pass shipped that thorough testing caught:
+
+- **The count strings had one form each**, so a single-clip bulk action read
+  "Delete 1 clips" in English and worse in the languages that inflect the
+  participle. `app.projects.projectCount_one` / `_other` was already in the
+  repo, so the shape existed and the plan simply did not think to use it.
+  Four keys under `app.clips.table` now carry the pair. **Any future plan that
+  adds a `{{count}}` string should specify the plural pair up front**, and the
+  locale linter cannot catch this because both forms are structurally valid.
+
+- **`build (windows-latest)` had been red on main since before this branch**,
+  and the plan's verification section did not look at CI at all. The cause was
+  `npm_config_build_from_source` in `.github/workflows/build.yml` forcing
+  `lzma-native` to compile against a Windows SDK the runner no longer exposes
+  to node-gyp. `release.yml` never had the problem because it runs a plain
+  `npm ci`. Fixed on this branch. Worth knowing: a green release does not imply
+  a green build workflow, they are separate and configured differently.
+
+Testing was done by driving the running app over the Chrome DevTools Protocol,
+since the repo has no test suite: 27 checks across editing, the category
+popover, selection, bulk actions, filters, the two review regressions,
+first-run defaults, panel width, Portuguese, and the empty-clip state. The
+harness was scratch tooling and is not committed.
