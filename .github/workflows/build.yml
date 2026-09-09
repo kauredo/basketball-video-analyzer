@@ -60,8 +60,7 @@ jobs:
         run: |
           npm config list
           npm install -g @electron/rebuild
-          npm ci --omit=optional
-          npm install --save-dev @electron-forge/maker-squirrel@7.2.0 @electron-forge/maker-zip@7.2.0 @electron-forge/maker-dmg@7.2.0
+          npm ci
 
       - name: Download yt-dlp binary
         run: |
