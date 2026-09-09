@@ -16,8 +16,12 @@
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { join, basename } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const DIR = new URL("../src/i18n/locales/", import.meta.url).pathname;
+// fileURLToPath, not .pathname: on Windows the latter yields "/D:/a/..." with
+// a leading slash before the drive letter, which readdirSync cannot open. It
+// broke the first release cut after this script landed.
+const DIR = fileURLToPath(new URL("../src/i18n/locales/", import.meta.url));
 const BASE = "en";
 
 /** Strings that are meant to be identical across every locale. */

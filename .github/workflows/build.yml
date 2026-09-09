@@ -96,10 +96,12 @@ jobs:
           npm list ffmpeg-static
           node -e "console.log('FFmpeg path:', require('ffmpeg-static'))"
 
+      # npm run build, not the two sub-scripts: only the full script fires the
+      # prebuild hook, and prebuild is where the locale linter runs. Calling
+      # build:main and build:renderer directly is how a linter crash reached a
+      # release tag without any PR check going red.
       - name: Build TypeScript and Webpack
-        run: |
-          npm run build:main
-          npm run build:renderer
+        run: npm run build
 
       - name: Build for macOS
         if: matrix.os == 'macos-latest'
