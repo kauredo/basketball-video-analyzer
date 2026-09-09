@@ -1021,10 +1021,11 @@ Both of the loose ends this plan left are done, each as its own PR off `main`.
   and no longer reinstalling forge makers at 7.2.0 over the 7.8.1 in the
   lockfile, which had CI packaging with older makers than every release.
 
-**Still unvalidated:** the Node 20 change to `release.yml` cannot be exercised
-without pushing a tag. `build.yml` does the same install-build-make work on all
-three platforms under Node 20, so the risk is low, but the next tag is the real
-test. Cut it deliberately rather than discovering it during an urgent release.
+**Validated on 2026-09-09 by v1.9.1.** The Node 20 change to `release.yml`
+cannot be exercised without pushing a tag, so a tag was cut deliberately rather
+than leaving the unknown to surface during an urgent release. Release run
+34335679720 built macOS, Windows and Linux green under Node 20 and published.
+Do the same the next time a change lands in `release.yml` that CI cannot reach.
 
 Testing note for #37: the three export paths were driven end to end by attaching
 to the Electron main process over `--inspect` and stubbing
