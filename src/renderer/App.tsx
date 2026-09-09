@@ -311,6 +311,17 @@ export const App: React.FC = () => {
   );
 
   // Handle side panel resizing (clips library)
+  // The clip table needs more room than the card grid does. Rather than ship a
+  // view that opens truncated, the library asks for the width it needs the
+  // first time a coach switches to it. A panel already wider is left alone.
+  const ensureSidePanelWidth = useCallback((minimum: number) => {
+    setSidePanelWidth(prev => {
+      if (prev >= minimum) return prev;
+      savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, minimum);
+      return minimum;
+    });
+  }, []);
+
   const startSideResize = useCallback(
     (e: React.MouseEvent) => {
       isResizing.current = true;
@@ -705,6 +716,7 @@ export const App: React.FC = () => {
               <ClipLibrary
                 onRefresh={refreshTrigger}
                 currentProject={currentProject}
+                onRequestWidth={ensureSidePanelWidth}
               />
             </div>
           </div>

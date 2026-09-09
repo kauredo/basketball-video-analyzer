@@ -25,6 +25,9 @@ export interface Annotation {
   created_at?: string;
 }
 
+/** Review state a coach sets after watching the cut back. */
+export type ClipStatus = "keep" | "cut" | "review";
+
 export interface Clip {
   id: number;
   video_path: string;
@@ -40,6 +43,8 @@ export interface Clip {
   court_x?: number | null; // normalized 0-1, baseline at top; null = no location
   court_y?: number | null;
   notes?: string;
+  /** null or absent means no status has been set. */
+  status?: ClipStatus | null;
   created_at: string;
 }
 

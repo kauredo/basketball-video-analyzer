@@ -23,16 +23,23 @@ import {
   faFloppyDisk,
   faFileCode,
   faPlayCircle,
+  faTableCells,
+  faList,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { ContextualHint } from "./ContextualHint";
 import { PresentMode } from "./PresentMode";
+import { ClipTable } from "./ClipTable";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
-import { DONATION_NUDGE_THRESHOLD } from "../utils/constants";
+import {
+  CLIP_STATUSES,
+  DONATION_NUDGE_THRESHOLD,
+  statusLabelKey,
+} from "../utils/constants";
 import { formatVideoSrc } from "../utils/paths";
-import { Player } from "../../types/global";
+import { Player, ClipStatus } from "../../types/global";
 import { inkOn } from "../utils/contrast";
 import { withCause } from "../utils/errors";
 
@@ -46,7 +53,7 @@ const parsePlayerIds = (playersJson?: string): number[] => {
   }
 };
 
-interface Category {
+export interface Category {
   id: number;
   name: string;
   color: string;
@@ -55,7 +62,7 @@ interface Category {
   children?: Category[];
 }
 
-interface Clip {
+export interface Clip {
   id: number;
   video_path: string;
   output_path: string;
@@ -68,17 +75,25 @@ interface Clip {
   players?: string; // JSON array of player IDs
   quarter?: string | null;
   notes?: string;
+  status?: ClipStatus | null;
   created_at: string;
 }
 
 interface ClipLibraryProps {
   onRefresh: number; // Trigger refresh when this changes
   currentProject: any | null;
+  /** Ask the side panel for at least this many pixels. */
+  onRequestWidth?: (minimum: number) => void;
 }
+
+/** What the clip table needs before its play calls stop truncating. Measured:
+    the table's own floor is 737px and the panel's chrome takes another 35. */
+const TABLE_MIN_PANEL_WIDTH = 790;
 
 export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   onRefresh,
   currentProject,
+  onRequestWidth,
 }) => {
   const { t } = useTranslation();
   const { showSuccess, showError, showWarning, showInfo } = useToastContext();
@@ -111,7 +126,17 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [showPresent, setShowPresent] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<ClipStatus | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "table">(
+    () => loadPref(STORAGE_KEYS.CLIP_VIEW_MODE, "grid") as "grid" | "table"
+  );
   const exportMenuRef = useRef<HTMLDivElement>(null);
+
+  const changeViewMode = (mode: "grid" | "table") => {
+    setViewMode(mode);
+    savePref(STORAGE_KEYS.CLIP_VIEW_MODE, mode);
+    if (mode === "table") onRequestWidth?.(TABLE_MIN_PANEL_WIDTH);
+  };
 
   // Shared with the transport popovers, so Escape closes all of them alike.
   useDismissableMenu(
@@ -160,9 +185,11 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
       const matchesPlayer = !selectedPlayer || parsePlayerIds(clip.players).includes(selectedPlayer);
 
-      return matchesSearch && matchesCategory && matchesPlayer;
+      const matchesStatus = !selectedStatus || clip.status === selectedStatus;
+
+      return matchesSearch && matchesCategory && matchesPlayer && matchesStatus;
     });
-  }, [clips, searchTerm, selectedCategory, selectedPlayer]);
+  }, [clips, searchTerm, selectedCategory, selectedPlayer, selectedStatus]);
 
   const sortedClips = useMemo(() => {
     return [...filteredClips].sort((a, b) => {
@@ -234,6 +261,80 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       console.error("Error deleting clip:", error);
       showError(withCause(t("app.clips.errorDeletingClip"), error));
     }
+  };
+
+  // The first renderer caller of updateClip. Local state is patched rather than
+  // reloading everything: a reload would refetch clips, categories and players
+  // over IPC on every committed edit. The catch resyncs, so a rejected write
+  // never leaves a value on screen that the database does not hold.
+  const handleUpdateClip = async (id: number, updates: Partial<Clip>) => {
+    try {
+      await window.electronAPI.updateClip(id, updates);
+      setClips(prev => prev.map(c => (c.id === id ? { ...c, ...updates } : c)));
+    } catch (error) {
+      console.error("Error updating clip:", error);
+      showError(withCause(t("app.clips.table.saveError"), error));
+      await loadData();
+    }
+  };
+
+  const handleUpdateEach = async (
+    entries: Array<{ id: number; updates: Partial<Clip> }>
+  ) => {
+    // allSettled, not all: one clip that fails to write must not abort the
+    // other nineteen, and the count reported has to be the count that landed.
+    const results = await Promise.allSettled(
+      entries.map(entry => window.electronAPI.updateClip(entry.id, entry.updates))
+    );
+    const failed = results.filter(r => r.status === "rejected").length;
+    const applied = new Map(
+      entries
+        .filter((_, i) => results[i].status === "fulfilled")
+        .map(entry => [entry.id, entry.updates])
+    );
+    setClips(prev =>
+      prev.map(c => (applied.has(c.id) ? { ...c, ...applied.get(c.id) } : c))
+    );
+
+    if (failed > 0) {
+      showWarning(
+        t("app.clips.table.bulkPartialFailure", {
+          done: entries.length - failed,
+          total: entries.length,
+          failed,
+        })
+      );
+    } else {
+      showSuccess(t("app.clips.table.bulkUpdateSuccess", { count: entries.length }));
+    }
+  };
+
+  const handleDeleteMany = async (ids: number[]) => {
+    if (
+      !(await confirm({
+        message: t("app.clips.table.confirmBulkDelete", { count: ids.length }),
+        danger: true,
+      }))
+    ) {
+      return;
+    }
+
+    const results = await Promise.allSettled(
+      ids.map(id => window.electronAPI.deleteClip(id))
+    );
+    const failed = results.filter(r => r.status === "rejected").length;
+    if (failed > 0) {
+      showWarning(
+        t("app.clips.table.bulkPartialFailure", {
+          done: ids.length - failed,
+          total: ids.length,
+          failed,
+        })
+      );
+    } else {
+      showSuccess(t("app.clips.table.bulkDeleteSuccess", { count: ids.length }));
+    }
+    await loadData();
   };
 
   const handleExportCategory = async () => {
@@ -471,6 +572,29 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           </div>
         )}
         <div className={styles.libraryActions}>
+          <div className={styles.viewToggle} role="group" aria-label={t("app.clips.library")}>
+            <button
+              type="button"
+              onClick={() => changeViewMode("grid")}
+              aria-pressed={viewMode === "grid"}
+              className={`${styles.viewToggleBtn} ${
+                viewMode === "grid" ? styles.viewToggleActive : ""
+              }`}
+            >
+              <FontAwesomeIcon icon={faTableCells} />{" "}
+              {t("app.clips.table.viewGrid")}
+            </button>
+            <button
+              type="button"
+              onClick={() => changeViewMode("table")}
+              aria-pressed={viewMode === "table"}
+              className={`${styles.viewToggleBtn} ${
+                viewMode === "table" ? styles.viewToggleActive : ""
+              }`}
+            >
+              <FontAwesomeIcon icon={faList} /> {t("app.clips.table.viewTable")}
+            </button>
+          </div>
           <button
             type="button"
             onClick={() => setShowPresent(true)}
@@ -726,6 +850,40 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
               </div>
             )}
 
+            {/* Status Filter. Only once a status exists, so a project that
+                never uses one does not pay a row of vertical space for it. */}
+            {clips.some(clip => clip.status) && (
+            <div className={styles.categoryFilterSection}>
+              <h4>{t("app.clips.table.filterByStatus")}</h4>
+              <div className={styles.filterButtons}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedStatus(null)}
+                  className={`${styles.filterBtn} ${
+                    selectedStatus === null ? styles.active : ""
+                  }`}
+                >
+                  {t("app.clips.all")} ({clips.length})
+                </button>
+                {CLIP_STATUSES.map(status => {
+                  const count = clips.filter(clip => clip.status === status).length;
+                  return (
+                    <button
+                      type="button"
+                      key={status}
+                      onClick={() => setSelectedStatus(status)}
+                      className={`${styles.filterBtn} ${
+                        selectedStatus === status ? styles.active : ""
+                      }`}
+                    >
+                      {t(statusLabelKey(status))} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            )}
+
             {/* Stats */}
             <div className={styles.libraryStats}>
               <div className={styles.statItem}>
@@ -815,7 +973,20 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
               />
             )}
 
-            {/* Clips Grid */}
+            {/* Clips, as cards or as the editable table */}
+            {viewMode === "table" && sortedClips.length > 0 ? (
+              <ClipTable
+                clips={sortedClips}
+                categories={categories}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onToggleSort={toggleSort}
+                onPlay={handlePlayClip}
+                onUpdate={handleUpdateClip}
+                onUpdateEach={handleUpdateEach}
+                onDeleteMany={handleDeleteMany}
+              />
+            ) : (
             <div className={styles.clipsGrid}>
               {sortedClips.length === 0 ? (
                 <div className={styles.emptyState}>
@@ -928,6 +1099,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 })
               )}
             </div>
+            )}
 
             {/* Export Instructions */}
             {filteredClips.length > 0 && (

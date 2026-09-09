@@ -43,13 +43,6 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: Install Visual Studio Build Tools
-        if: matrix.os == 'windows-latest'
-        shell: powershell
-        run: |
-          echo "Installing Visual Studio Build Tools..."
-          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK" -y
-
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -63,10 +56,6 @@ jobs:
       - name: Install dependencies
         env:
           YOUTUBE_DL_SKIP_DOWNLOAD: "1"
-          PYTHON: ${{ github.workspace }}/python.exe
-          GYP_MSVS_VERSION: "2019"
-          npm_config_build_from_source: true
-          npm_config_python: ${{ github.workspace }}/python.exe
           npm_config_registry: "https://registry.npmjs.org/"
         run: |
           npm config list
@@ -90,13 +79,16 @@ jobs:
         shell: bash
 
       # Rebuild native modules for the target platform
+      # better-sqlite3 is the only dependency that runs inside Electron and so
+      # the only one whose ABI has to match it. lzma-native used to be listed
+      # here too, but the Squirrel maker runs it under Node at build time, so
+      # rebuilding it against Electron was wrong as well as slow.
       - name: Rebuild native modules
         run: |
-          electron-rebuild -f --which better-sqlite3,lzma-native
+          electron-rebuild -f --which better-sqlite3
         env:
           ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
           ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
-          npm_config_build_from_source: true
 
       # Debug FFmpeg installation
       - name: Debug FFmpeg

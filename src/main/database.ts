@@ -690,6 +690,7 @@ const createTables = () => {
       court_x REAL,
       court_y REAL,
       notes TEXT,
+      status TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
     )
@@ -747,6 +748,10 @@ const migrateClipColumns = () => {
     if (!has("court_y")) {
       db.exec("ALTER TABLE clips ADD COLUMN court_y REAL");
       console.log("Added court_y column to clips");
+    }
+    if (!has("status")) {
+      db.exec("ALTER TABLE clips ADD COLUMN status TEXT");
+      console.log("Added status column to clips");
     }
   } catch (error) {
     console.error("Error migrating clip columns:", error);
@@ -1353,11 +1358,33 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
   }
 };
 
+/**
+ * Columns a caller may set. `updateClip` interpolates field names into the SQL
+ * string, and its `updates` argument arrives over IPC from the renderer, so the
+ * set of names that can reach the query is closed here rather than trusted.
+ *
+ * The time columns are deliberately absent. Moving start_time or end_time
+ * without re-cutting the file would leave the row describing a clip the video
+ * on disk is not.
+ */
+const UPDATABLE_CLIP_COLUMNS: readonly string[] = [
+  "title",
+  "categories",
+  "players",
+  "quarter",
+  "notes",
+  "status",
+  "court_x",
+  "court_y",
+];
+
 export const updateClip = (id: number, updates: Partial<Clip>): void => {
   try {
-    const fields = Object.keys(updates).filter(
-      (key) => key !== "id" && key !== "created_at",
+    const fields = Object.keys(updates).filter((key) =>
+      UPDATABLE_CLIP_COLUMNS.includes(key),
     );
+    if (fields.length === 0) return;
+
     const setClause = fields.map((field) => `${field} = ?`).join(", ");
     const values = fields.map((field) => updates[field as keyof Clip]);
 
