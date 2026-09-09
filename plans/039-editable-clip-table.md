@@ -1003,3 +1003,32 @@ platform. `build.yml` now runs `npm run build`, the same command
 Two workflows, two different commands, two different Node versions, and a red
 Windows check nobody trusted. Anyone touching CI here should diff `build.yml`
 against `release.yml` first and justify every difference that remains.
+
+## Follow-ups closed (2026-09-09)
+
+Both of the loose ends this plan left are done, each as its own PR off `main`.
+
+- **[#37](https://github.com/kauredo/basketball-video-analyzer/pull/37), `978ed3e`.**
+  Status reaches the CSV, the JSON and the Sportscode XML. Appended as the last
+  CSV column so a spreadsheet keyed on column position survives. It also found a
+  **third** `Clip` interface, `src/main/database.ts:75`, which this plan missed:
+  the main process was compiling against a shape without a column its own
+  `UPDATABLE_CLIP_COLUMNS` list already wrote. **When adding a field to a clip,
+  there are three copies of the type to update**, in `types/global.d.ts`,
+  `main/database.ts` and `renderer/components/ClipLibrary.tsx`.
+- **[#38](https://github.com/kauredo/basketball-video-analyzer/pull/38), `8702c86`.**
+  `release.yml` on Node 20 like `build.yml`; `build.yml` off `--omit=optional`
+  and no longer reinstalling forge makers at 7.2.0 over the 7.8.1 in the
+  lockfile, which had CI packaging with older makers than every release.
+
+**Still unvalidated:** the Node 20 change to `release.yml` cannot be exercised
+without pushing a tag. `build.yml` does the same install-build-make work on all
+three platforms under Node 20, so the risk is low, but the next tag is the real
+test. Cut it deliberately rather than discovering it during an urgent release.
+
+Testing note for #37: the three export paths were driven end to end by attaching
+to the Electron main process over `--inspect` and stubbing
+`dialog.showSaveDialog` to a fixed path, then reading the files back. That is
+the way to test anything gated behind a native dialog in this app. Do **not**
+drive native dialogs with `osascript` keystrokes: System Events types into
+whichever app is frontmost, which during this session was not Electron.
