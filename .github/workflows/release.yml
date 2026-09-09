@@ -20,10 +20,12 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
+      # Kept in step with build.yml. When these two disagree, build.yml stops
+      # being a check on what the release actually does.
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: "20"
           cache: npm
 
       - name: Cache Electron binaries
