@@ -966,3 +966,21 @@ since the repo has no test suite: 27 checks across editing, the category
 popover, selection, bulk actions, filters, the two review regressions,
 first-run defaults, panel width, Portuguese, and the empty-clip state. The
 harness was scratch tooling and is not committed.
+
+## Merged (2026-09-09)
+
+Squashed to `d9ce7ad` on `main` and released as **v1.9.0**. This repo ships
+straight from `main`, so a tag is a release to users: pushing `v1.9.0` built
+all three platforms, published the GitHub release, submitted the macOS DMG for
+notarization, and rebuilt the marketing site. Nothing was staged first.
+
+No promotion checklist item. The `status` column is added by
+`migrateClipColumns` on first launch of the new version, with no prod-side
+command to run, and users on 1.8.2 and later get the update through
+update.electronjs.org.
+
+What the merge taught us, beyond the notes above: **the two CI workflows drift
+apart silently.** `build.yml` had been red on Windows for long enough that the
+red check stopped meaning anything, while `release.yml` stayed green because it
+installs differently. If a check is expected to be red, it is not a check. The
+next person to touch either workflow should diff them against each other first.

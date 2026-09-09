@@ -87,7 +87,7 @@ downloading the electron and ffmpeg binaries by running each package's
 | 036 | Eyebrows restate the H1 on all six guide pages | website | P3 | S | — | DONE (2026-09-07) |
 | 037 | App copy drift: two nouns, Title Case, marketing register | app | P3 | M | 005 (coordinate) | DONE (on main 2026-09-08) |
 | 038 | Aphoristic closer, em dashes in four titles, rule of three | website | P3 | S | 015 (coordinate) | DONE (2026-09-07) |
-| 039 | Clips are frozen after the cut: an editable table view | app | P1 | L | — | IN REVIEW, [PR #36](https://github.com/kauredo/basketball-video-analyzer/pull/36) |
+| 039 | Clips are frozen after the cut: an editable table view | app | P1 | L | — | DONE, [PR #36](https://github.com/kauredo/basketball-video-analyzer/pull/36) squashed to `d9ce7ad` on main, shipped in v1.9.0 |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) |
 REJECTED (with one-line rationale).
