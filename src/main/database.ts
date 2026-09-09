@@ -88,6 +88,11 @@ export interface Clip {
   court_x?: number | null; // normalized 0-1, baseline at top; null = no location
   court_y?: number | null;
   notes?: string;
+  /** Review state a coach sets after watching the cut. null = unset.
+      The union is repeated rather than imported from types/global: pulling
+      that file in as a module here breaks the ambient Window augmentation the
+      renderer relies on. */
+  status?: "keep" | "cut" | "review" | null;
   created_at?: string;
 }
 

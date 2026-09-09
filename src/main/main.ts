@@ -1489,7 +1489,7 @@ ipcMain.handle(
       const isCSV = ext === ".csv";
 
       if (isCSV) {
-        const header = "Title,Categories,Players,Quarter,Start Time,End Time,Duration,Notes,Created At";
+        const header = "Title,Categories,Players,Quarter,Start Time,End Time,Duration,Notes,Created At,Status";
         const rows = clips.map(clip => {
           let categoryNames: string[] = [];
           try {
@@ -1521,6 +1521,7 @@ ipcMain.handle(
             clip.duration.toFixed(2),
             escapeCsv(clip.notes || ""),
             clip.created_at || "",
+            escapeCsv(clip.status || ""),
           ].join(",");
         });
 
@@ -1549,6 +1550,7 @@ ipcMain.handle(
             duration: clip.duration,
             notes: clip.notes || "",
             created_at: clip.created_at || "",
+            status: clip.status || null,
           };
         });
 
@@ -1645,6 +1647,7 @@ ipcMain.handle("export-clips-xml", async (_event, projectId: number) => {
       });
       if (clip.quarter) labels.push(label("Quarter", clip.quarter));
       if (clip.notes && clip.notes.trim()) labels.push(label("Note", clip.notes.trim()));
+      if (clip.status) labels.push(label("Status", clip.status));
 
       instances.push(
         `    <instance>\n      <ID>${id}</ID>\n      <start>${clip.start_time.toFixed(2)}</start>\n      <end>${clip.end_time.toFixed(2)}</end>\n      <code>${escapeXml(code)}</code>${labels.length ? "\n" + labels.join("\n") : ""}\n    </instance>`
