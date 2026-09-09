@@ -22,12 +22,12 @@ A powerful desktop application designed specifically for basketball coaches and 
 
 - **[Download BasketballVideoAnalyzer.dmg](https://github.com/kauredo/basketball-video-analyzer/releases/latest/download/BasketballVideoAnalyzer.dmg)** (macOS 11+, Apple Silicon)
 - Open the .dmg and drag the app to Applications
-- On first launch, right-click the app → **Open** to bypass the Gatekeeper prompt (one time)
+- Builds are signed with a Developer ID certificate and notarized by Apple, so it opens with a double-click. No Gatekeeper workaround needed.
 
 #### Windows
 
 - Open the [latest release](https://github.com/kauredo/basketball-video-analyzer/releases/latest) and download `BasketballVideoAnalyzer-X.Y.Z.Setup.exe` from the Assets list
-- Run the installer; if SmartScreen blocks it, click **More info** → **Run anyway** (app is signed but not yet trusted by SmartScreen reputation)
+- Run the installer; if SmartScreen blocks it, click **More info** → **Run anyway**. Windows builds are not code-signed, so SmartScreen will warn on every release.
 - The app will auto-update when new versions are available
 
 #### Linux
@@ -50,7 +50,7 @@ sudo rpm -i basketball-video-analyzer-*.x86_64.rpm
 
 #### Minimum Requirements
 
-- **OS**: Windows 10, macOS 10.15, or Ubuntu 18.04+
+- **OS**: Windows 10, macOS 11 (Apple Silicon), or Ubuntu 18.04+
 - **RAM**: 4GB minimum, 8GB recommended
 - **Storage**: 2GB free space (plus space for video clips)
 - **CPU**: Intel i5 or AMD equivalent
@@ -64,7 +64,7 @@ sudo rpm -i basketball-video-analyzer-*.x86_64.rpm
 
 #### Supported Video Formats
 
-- **Input**: MP4, MOV, AVI, MKV, WebM
+- **Input**: MP4, MOV, AVI, MKV, WebM, M4V
 - **Output**: MP4 (H.264 for maximum compatibility)
 
 ---
@@ -122,16 +122,35 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 - **Category Statistics**: See clip counts and total duration by category and subcategory
 - **Cross-Project Overview**: Easily switch between project libraries
 
+### 📊 Table View and Clip Editing
+
+- **Two Views**: Browse clips as a thumbnail grid or switch to a dense, editable table
+- **Inline Editing**: Change title, categories, and notes directly in a table row
+- **Multi-Select**: Tick rows to delete or re-categorise clips in bulk
+- **Clip Status**: Mark a clip keep, cut, or review; the row tints to match and the library filters by it
+
+### 👥 Players, Court, and Stats
+
+- **Player Tagging**: Tag clips with the players involved and filter the library by player
+- **Court Positions**: Mark where on the floor a play happened
+- **Stats Dashboard**: Clip counts and durations broken down by category, player, and quarter
+
+### 🎥 Film Sessions
+
+- **Present Mode**: Play a filtered set of clips back to back for a team film session
+- **Telestration**: Draw arrows, circles, and freehand over paused video, then replay the annotations
+- **YouTube Import**: Pull game footage in from a YouTube URL
+
 ### 📤 Flexible Export System
 
 - **Project-Based Export**: Export entire project libraries or selected categories
 - **Batch Export**: Export all clips in selected categories while maintaining folder structure
 - **Organized Folders**: Creates hierarchical folders by category for intuitive team sharing
-- **Multiple Formats**: Exports to any directory for cloud sharing, USB distribution, or team platforms
+- **Data Export**: Export the clip list as CSV or JSON, or as Sportscode-compatible timeline XML for coaches already on that workflow
 
 ### 🌐 Multi-Language Support
 
-- **English and Portuguese**: Full interface translation support
+- **Eleven Languages**: English, Portuguese, Spanish, French, Italian, German, Greek, Lithuanian, Slovenian, Serbian, and Turkish
 - **Dynamic Language Switching**: Change languages without restarting the application
 - **Localized Dialogs**: All confirmation dialogs and messages respect language selection
 
@@ -163,7 +182,7 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 ### 3. Load Your Game Video
 
 - Click **"Select Video"** and choose your basketball game file
-- Supports: MP4, MOV, AVI, MKV, WebM formats
+- Supports: MP4, MOV, AVI, MKV, WebM, M4V formats
 - Video loads within your current project context
 
 ### 4. Navigate and Cut Video Clips
@@ -179,12 +198,15 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 #### Keyboard Shortcuts:
 
 - **`Space`** - Play/Pause video
-- **`I`** - Mark In point (start of clip)
-- **`O`** - Mark Out point (end of clip)
-- **`C`** - Clear marks
+- **`Z`** - Mark In point (start of clip)
+- **`M`** - Mark Out point (end of clip)
+- **`Esc`** - Clear marks
 - **`←/→`** - Skip 5 seconds
 - **`Alt + ←/→`** - Skip 30 seconds
 - **`Ctrl/Cmd + ←/→`** - Skip 1 minute
+- **`Shift + ←/→`** - Step one frame
+
+The mark keys are rebindable in Settings. Z and M are the defaults.
 
 #### Using Mouse:
 
@@ -242,20 +264,26 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 
 ## ⌨️ Keyboard Shortcuts
 
-| Key            | Action                   |
-| -------------- | ------------------------ |
-| `Space`        | Play/Pause video         |
-| `I`            | Mark In (start of clip)  |
-| `O`            | Mark Out (end of clip)   |
-| `C`            | Clear marks              |
-| `←`            | Skip backward 5 seconds  |
-| `→`            | Skip forward 5 seconds   |
-| `Alt + ←`      | Skip backward 30 seconds |
-| `Alt + →`      | Skip forward 30 seconds  |
-| `Ctrl/Cmd + ←` | Skip backward 1 minute   |
-| `Ctrl/Cmd + →` | Skip forward 1 minute    |
-| `Shift + ←`    | Previous frame           |
-| `Shift + →`    | Next frame               |
+| Key            | Action                     |
+| -------------- | -------------------------- |
+| `Space`        | Play/Pause video           |
+| `Z`            | Mark In (start of clip)    |
+| `M`            | Mark Out (end of clip)     |
+| `Esc`          | Clear marks                |
+| `←`            | Skip backward 5 seconds    |
+| `→`            | Skip forward 5 seconds     |
+| `Alt + ←`      | Skip backward 30 seconds   |
+| `Alt + →`      | Skip forward 30 seconds    |
+| `Ctrl/Cmd + ←` | Skip backward 1 minute     |
+| `Ctrl/Cmd + →` | Skip forward 1 minute      |
+| `Shift + ←`    | Previous frame             |
+| `Shift + →`    | Next frame                 |
+| `1`-`9`        | Quick tag with category    |
+| `Ctrl/Cmd + 1` | Show or hide the side panel |
+| `Ctrl/Cmd + 2` | Show or hide the clip list |
+
+`Z` and `M` are defaults. Both can be rebound in Settings, and the in-app
+shortcuts dialog always shows your current bindings.
 
 ## 📁 File Organization
 
@@ -291,9 +319,9 @@ The app automatically organizes your files with project-based structure:
 
 #### macOS
 
-- **"App can't be opened"**: Right-click app → "Open" → "Open" (bypass Gatekeeper)
-- **Permission denied**: Check System Preferences → Security & Privacy → General
-- **App crashes**: Ensure macOS 10.15+ and check Console for errors
+- **"App can't be opened"**: Releases are notarized, so this should not happen. If it does, check you are on macOS 11+ and re-download the .dmg; a partial download fails the signature check.
+- **Permission denied**: Check System Settings → Privacy & Security
+- **App crashes**: Ensure macOS 11+ and check Console for errors
 
 #### Linux
 
@@ -303,7 +331,7 @@ The app automatically organizes your files with project-based structure:
 
 ### Video Issues
 
-- **Video won't load**: Ensure format is supported (MP4, MOV, AVI, MKV, WebM)
+- **Video won't load**: Ensure format is supported (MP4, MOV, AVI, MKV, WebM, M4V)
 - **Playback stutters**: Close other applications or try lower resolution video
 - **Audio issues**: Check system audio settings and volume controls
 
@@ -359,24 +387,15 @@ We welcome contributions from the basketball and developer communities:
 
 ## 📄 License
 
-**Free for Basketball Teams and Personal Use**
+Basketball Video Analyzer is licensed under the **GNU Affero General Public
+License v3.0**. In practice that means:
 
-This software is free to use for:
+- ✅ Free to use for anything, including commercially. Coaches, clubs, schools, and federations all qualify, at any level.
+- ✅ Free to modify and to redistribute.
+- ⚠️ If you distribute a modified version, or run one as a network service, you have to release your source under the AGPL as well.
 
-- ✅ Basketball teams and coaches (any level)
-- ✅ Educational institutions
-- ✅ Personal/individual use
-- ✅ Non-commercial purposes
-
-**Restrictions:**
-
-- ❌ Cannot be sold or commercialized
-- ❌ Cannot be redistributed for profit
-- ❌ Modified versions cannot be distributed
-
-For commercial licensing inquiries, contact: contact@basketballvideoanalyzer.com
-
-See the [LICENSE](LICENSE) file for complete terms.
+The full terms are in the [LICENSE](LICENSE) file, and they are what governs.
+Questions about the licence: contact@basketballvideoanalyzer.com
 
 ---
 
@@ -386,7 +405,7 @@ See the [LICENSE](LICENSE) file for complete terms.
 
 #### Prerequisites
 
-- **Node.js** 16+ and **npm**
+- **Node.js** 20+ and **npm**
 - **Git** for cloning the repository
 
 #### Installation
