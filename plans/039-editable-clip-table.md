@@ -984,3 +984,22 @@ apart silently.** `build.yml` had been red on Windows for long enough that the
 red check stopped meaning anything, while `release.yml` stayed green because it
 installs differently. If a check is expected to be red, it is not a check. The
 next person to touch either workflow should diff them against each other first.
+
+### Release, second attempt
+
+The first `v1.9.0` tag failed. Not this feature: `scripts/lint-locales.mjs`
+resolved its own directory with `new URL(...).pathname`, which on Windows
+returns `/D:/a/...` with a leading slash before the drive letter, and
+`readdirSync` cannot open that. Fixed with `fileURLToPath` in `8b79536`, tag
+moved, released clean.
+
+**The lesson is about the check, not the bug.** `v1.8.2` was tagged before the
+locale linter existed, so `v1.9.0` was the first release ever to run the
+`prebuild` hook. And `build.yml` called `build:main` and `build:renderer`
+directly, which skips `prebuild`, so no PR check could have caught it on any
+platform. `build.yml` now runs `npm run build`, the same command
+`release.yml` runs.
+
+Two workflows, two different commands, two different Node versions, and a red
+Windows check nobody trusted. Anyone touching CI here should diff `build.yml`
+against `release.yml` first and justify every difference that remains.
