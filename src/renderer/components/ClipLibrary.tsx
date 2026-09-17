@@ -167,6 +167,29 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
   };
 
+  // A parent category owns its subcategories' clips too: quick tag and most
+  // manual tagging pick the subcategory, so an exact-id match left "Offense (0)".
+  const categoryFamily = useMemo(() => {
+    const family = new Map<number, Set<number>>();
+    categories.forEach(parent => {
+      family.set(parent.id, new Set([parent.id, ...(parent.children ?? []).map(child => child.id)]));
+      parent.children?.forEach(child => family.set(child.id, new Set([child.id])));
+    });
+    return family;
+  }, [categories]);
+
+  const clipInCategory = useCallback(
+    (clip: Clip, categoryId: number) => {
+      const ids = categoryFamily.get(categoryId) ?? new Set([categoryId]);
+      try {
+        return (JSON.parse(clip.categories || "[]") as number[]).some(id => ids.has(id));
+      } catch {
+        return false;
+      }
+    },
+    [categoryFamily],
+  );
+
   const filteredClips = useMemo(() => {
     const term = searchTerm.toLowerCase();
     return clips.filter(clip => {
@@ -174,14 +197,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         clip.title.toLowerCase().includes(term) ||
         clip.notes?.toLowerCase().includes(term);
 
-      let matchesCategory = true;
-      if (selectedCategory) {
-        try {
-          matchesCategory = JSON.parse(clip.categories || "[]").includes(selectedCategory);
-        } catch {
-          matchesCategory = false;
-        }
-      }
+      const matchesCategory = !selectedCategory || clipInCategory(clip, selectedCategory);
 
       const matchesPlayer = !selectedPlayer || parsePlayerIds(clip.players).includes(selectedPlayer);
 
@@ -189,7 +205,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
       return matchesSearch && matchesCategory && matchesPlayer && matchesStatus;
     });
-  }, [clips, searchTerm, selectedCategory, selectedPlayer, selectedStatus]);
+  }, [clips, searchTerm, selectedCategory, selectedPlayer, selectedStatus, clipInCategory]);
 
   const sortedClips = useMemo(() => {
     return [...filteredClips].sort((a, b) => {
@@ -347,14 +363,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       setIsExporting(true);
 
       // Get clips for the selected category
-      const clipsToExport = filteredClips.filter(clip => {
-        try {
-          const clipCategories = JSON.parse(clip.categories);
-          return clipCategories.includes(selectedCategory);
-        } catch {
-          return false;
-        }
-      });
+      const clipsToExport = filteredClips.filter(clip => clipInCategory(clip, selectedCategory));
 
       if (clipsToExport.length === 0) {
         showWarning(t("app.clips.noClipsInCategoryToExport"));
@@ -372,11 +381,13 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
       const result = await window.electronAPI.exportClipsByCategory({
         categoryIds: [selectedCategory],
+        // The main process groups by exact id; every clip here already belongs to
+        // the selected category (subcategory clips included), so say so.
         clips: clipsToExport.map(clip => ({
           id: clip.id,
           title: clip.title,
           output_path: clip.output_path,
-          categories: clip.categories,
+          categories: JSON.stringify([selectedCategory]),
         })),
       });
 
@@ -717,14 +728,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 {categories
                   .filter(category => !category.parent_id) // Only show parent categories
                   .map(category => {
-                    const count = clips.filter(clip => {
-                      try {
-                        const clipCategories = JSON.parse(clip.categories);
-                        return clipCategories.includes(category.id);
-                      } catch {
-                        return false;
-                      }
-                    }).length;
+                    const count = clips.filter(clip => clipInCategory(clip, category.id)).length;
 
                     return (
                       <div key={category.id} className={styles.categoryGroup}>

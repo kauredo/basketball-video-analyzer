@@ -5,7 +5,6 @@ import { Readable } from "stream";
 import { spawn } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
-import ffprobeStatic from "ffprobe-static";
 import { v4 as uuidv4 } from "uuid";
 import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
 import {
@@ -87,7 +86,7 @@ const fixAsarPath = (binaryPath: string): string => {
   return fixedPath;
 };
 
-// Set FFmpeg and FFprobe paths
+// Set the FFmpeg path
 if (ffmpegStatic) {
   const ffmpegPath = fixAsarPath(ffmpegStatic);
   console.log("FFmpeg path:", ffmpegPath);
@@ -95,15 +94,6 @@ if (ffmpegStatic) {
   ffmpeg.setFfmpegPath(ffmpegPath);
 } else {
   console.error("FFmpeg static path not found!");
-}
-
-if (ffprobeStatic.path) {
-  const ffprobePath = fixAsarPath(ffprobeStatic.path);
-  console.log("FFprobe path:", ffprobePath);
-  console.log("FFprobe exists:", fs.existsSync(ffprobePath));
-  ffmpeg.setFfprobePath(ffprobePath);
-} else {
-  console.error("FFprobe static path not found!");
 }
 
 let mainWindow: BrowserWindow;
@@ -776,7 +766,7 @@ ipcMain.handle(
         console.log("Thumbnail path (native):", thumbnailPath);
         console.log("Thumbnail path (FFmpeg):", ffmpegThumbnailPath);
 
-        console.log("Using globally configured FFmpeg and FFprobe paths");
+        console.log("Using the globally configured FFmpeg path");
 
         // Generate process ID for cancellation support
         const processId = uuidv4().slice(0, 8);
@@ -915,10 +905,18 @@ ipcMain.handle(
                 console.error("Duration:", duration);
                 reject(new Error("ERROR_FFMPEG_FAILED"));
               })
-              .on("progress", progress => {
+              // Read progress from ffmpeg's own "time=" output. A "progress"
+              // listener makes fluent-ffmpeg spawn ffprobe, and the bundled
+              // ffprobe-static darwin/arm64 binary is x86_64, which crashes the
+              // main process on Apple Silicon Macs without Rosetta. It also
+              // measured against the whole source video, not the clip.
+              .on("stderr", (line: string) => {
+                const match = /time=(\d+):(\d+):(\d+(?:\.\d+)?)/.exec(line);
+                if (!match) return;
+                const elapsed = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
                 mainWindow.webContents.send("clip-progress", {
-                  percent: progress.percent || 0,
-                  timemark: progress.timemark,
+                  percent: Math.min(100, (elapsed / duration) * 100),
+                  timemark: `${match[1]}:${match[2]}:${match[3]}`,
                 });
               })
               .run();
