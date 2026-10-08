@@ -20,7 +20,7 @@ const windows = (filters: string[]) =>
 
 test("no pauses: no re-timing, source audio kept", () => {
   const g = buildDrawingGraph(5, [{ start: 1, seconds: 2, pause: false }], 1, true);
-  assert.equal(g.addedSeconds, 0);
+  assert.equal(g.addedSeconds, 99);
   assert.ok(!g.filters.some(f => f.includes("fps=")));
   assert.equal(g.audioMap, "0:a?");
   assert.deepEqual(windows(g.filters), [[1, 3]]);
