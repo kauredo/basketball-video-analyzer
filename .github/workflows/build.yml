@@ -70,8 +70,11 @@ jobs:
               "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" \
               -o node_modules/youtube-dl-exec/bin/yt-dlp.exe
           else
+            # The plain "yt-dlp" asset is a Python zipapp that needs Python
+            # 3.10+, which macOS does not ship. These are standalone builds.
+            if [ "$RUNNER_OS" = "macOS" ]; then ASSET=yt-dlp_macos; else ASSET=yt-dlp_linux; fi
             curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp" \
+              "https://github.com/yt-dlp/yt-dlp/releases/latest/download/$ASSET" \
               -o node_modules/youtube-dl-exec/bin/yt-dlp
             chmod +x node_modules/youtube-dl-exec/bin/yt-dlp
           fi
