@@ -320,6 +320,7 @@
       "drawingSecondsDefault": "{{seconds}}s (varsayılan)",
       "editTiming": "Çizim süresi",
       "showFor": "Gösterme süresi",
+      "pauseVideo": "Videoyu duraklat",
       "done": "Çizimi bitir",
       "undo": "Geri al",
       "clear": "Tümünü temizle",

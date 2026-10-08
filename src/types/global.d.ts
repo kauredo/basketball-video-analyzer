@@ -23,10 +23,14 @@ export interface Annotation {
   timestamp: number;
   data: string; // JSON-encoded shape list
   display_seconds?: number | null; // null = use the global replay setting
+  pause_playback?: boolean;
   created_at?: string;
 }
 
-export type AnnotationTiming = Pick<Annotation, "display_seconds">;
+export type AnnotationTiming = Pick<
+  Annotation,
+  "display_seconds" | "pause_playback"
+>;
 
 /** Review state a coach sets after watching the cut back. */
 export type ClipStatus = "keep" | "cut" | "review";

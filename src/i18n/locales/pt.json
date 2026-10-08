@@ -321,6 +321,7 @@
       "drawingSecondsDefault": "{{seconds}}s (predefinição)",
       "editTiming": "Tempo do desenho",
       "showFor": "Mostrar durante",
+      "pauseVideo": "Pausar o vídeo",
       "done": "Concluir desenho",
       "undo": "Anular",
       "clear": "Limpar tudo",

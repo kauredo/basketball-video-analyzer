@@ -85,6 +85,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   const [widthFrac, setWidthFrac] = useState(TELESTRATION_WIDTHS[1]);
   const [saveTiming, setSaveTiming] = useState<AnnotationTiming>({
     display_seconds: null,
+    pause_playback: false,
   });
   const [draft, setDraft] = useState<TelestrationShape | null>(null);
   const [textDraft, setTextDraft] = useState<{ at: NormPoint; value: string } | null>(

@@ -142,6 +142,66 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       ? `${replaySeconds}s`
       : t("app.telestration.replayOff");
 
+    const holdTimerRef = useRef<number | null>(null);
+    const releaseHold = useCallback(() => {
+      if (holdTimerRef.current !== null) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+    }, []);
+
+    // Watch every frame rather than timeupdate, which fires only about four
+    // times a second and would stop the video well past the drawing.
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video || !isPlaying || !replayEnabled || drawMode) return;
+      const pausing = savedAnnotations.filter(a => a.pause_playback);
+      if (pausing.length === 0) return;
+
+      let prev = video.currentTime;
+      let frame = 0;
+      const tick = () => {
+        const now = video.currentTime;
+        const from = prev;
+        prev = now;
+        // A seek moves currentTime at once but its event arrives later, so a
+        // skip can look like playback crossing a drawing. video.seeking is set
+        // synchronously, and real playback never covers a second in a frame.
+        const crossed = !video.seeking && now > from && now - from < 1;
+        const hits = crossed
+          ? pausing.filter(a => a.timestamp > from && a.timestamp <= now)
+          : [];
+        if (hits.length > 0) {
+          video.pause();
+          const seconds = Math.max(
+            ...hits.map(a => a.display_seconds ?? replaySeconds)
+          );
+          holdTimerRef.current = window.setTimeout(() => {
+            holdTimerRef.current = null;
+            video.play().catch(() => {});
+          }, seconds * 1000);
+          return;
+        }
+        frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(frame);
+    }, [isPlaying, replayEnabled, drawMode, savedAnnotations, replaySeconds]);
+
+    // Playing, seeking, drawing or turning replay off during a hold means the
+    // coach has taken over, so the automatic resume is dropped.
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+      video.addEventListener("play", releaseHold);
+      video.addEventListener("seeking", releaseHold);
+      return () => {
+        video.removeEventListener("play", releaseHold);
+        video.removeEventListener("seeking", releaseHold);
+        releaseHold();
+      };
+    }, [videoPath, videoError, drawMode, replayEnabled, releaseHold]);
+
     // null turns replay off and keeps the last duration for when it comes back.
     const selectReplay = (seconds: number | null) => {
       setReplayEnabled(seconds !== null);
@@ -467,6 +527,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     };
 
     const togglePlay = () => {
+      releaseHold();
       if (videoRef.current) {
         if (isPlaying) {
           videoRef.current.pause();
@@ -683,6 +744,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             annotations={savedAnnotations}
             currentTime={currentTime}
             displaySeconds={replaySeconds}
+            isPlaying={isPlaying}
             enabled={replayEnabled && !drawMode && !videoError}
           />
           <TelestrationLayer
@@ -782,7 +844,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                             : undefined
                         }
                         className={`${styles.annotationTiming} ${
-                          annotation.display_seconds != null
+                          annotation.display_seconds != null ||
+                          annotation.pause_playback === true
                             ? styles.annotationTimingSet
                             : ""
                         }`}
@@ -801,7 +864,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                             : undefined
                         }
                       >
-                        <FontAwesomeIcon icon={faClock} />
+                        <FontAwesomeIcon
+                          icon={annotation.pause_playback ? faPause : faClock}
+                        />
                       </button>
                       <button
                         type="button"

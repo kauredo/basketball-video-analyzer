@@ -298,6 +298,7 @@
       "drawingSecondsDefault": "{{seconds}}s (default)",
       "editTiming": "Drawing timing",
       "showFor": "Show for",
+      "pauseVideo": "Pause the video",
       "done": "Done drawing",
       "undo": "Undo",
       "clear": "Clear all",

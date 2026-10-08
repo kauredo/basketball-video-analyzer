@@ -1,7 +1,7 @@
 import React, { RefObject, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faPause } from "@fortawesome/free-solid-svg-icons";
 import { AnnotationTiming } from "../../types/global";
 import { REPLAY_SECONDS_OPTIONS } from "../utils/telestration";
 import { useDismissableMenu } from "../hooks/useDismissableMenu";
@@ -23,36 +23,51 @@ export const AnnotationTimingControl: React.FC<
   const label = t("app.telestration.drawingSeconds");
 
   return (
-    <label className={styles.field} title={label}>
-      {showLabel ? (
-        t("app.telestration.showFor")
-      ) : (
-        <FontAwesomeIcon icon={faClock} aria-hidden />
-      )}
-      <select
-        ref={selectRef}
-        className={styles.select}
-        value={value.display_seconds ?? ""}
-        onChange={e =>
-          onChange({
-            display_seconds:
-              e.target.value === "" ? null : Number(e.target.value),
-          })
-        }
-        aria-label={label}
-      >
-        <option value="">
-          {t("app.telestration.drawingSecondsDefault", {
-            seconds: defaultSeconds,
-          })}
-        </option>
-        {REPLAY_SECONDS_OPTIONS.map(s => (
-          <option key={s} value={s}>
-            {s}s
+    <span className={styles.controls}>
+      <label className={styles.field} title={label}>
+        {showLabel ? (
+          t("app.telestration.showFor")
+        ) : (
+          <FontAwesomeIcon icon={faClock} aria-hidden />
+        )}
+        <select
+          ref={selectRef}
+          className={styles.select}
+          value={value.display_seconds ?? ""}
+          onChange={e =>
+            onChange({
+              display_seconds:
+                e.target.value === "" ? null : Number(e.target.value),
+            })
+          }
+          aria-label={label}
+        >
+          <option value="">
+            {t("app.telestration.drawingSecondsDefault", {
+              seconds: defaultSeconds,
+            })}
           </option>
-        ))}
-      </select>
-    </label>
+          {REPLAY_SECONDS_OPTIONS.map(s => (
+            <option key={s} value={s}>
+              {s}s
+            </option>
+          ))}
+        </select>
+      </label>
+      <button
+        type="button"
+        className={`${styles.toggle} ${
+          value.pause_playback ? styles.toggleOn : ""
+        }`}
+        onClick={() => onChange({ pause_playback: !value.pause_playback })}
+        aria-pressed={value.pause_playback === true}
+        title={t("app.telestration.pauseVideo")}
+        aria-label={showLabel ? undefined : t("app.telestration.pauseVideo")}
+      >
+        <FontAwesomeIcon icon={faPause} aria-hidden />
+        {showLabel && t("app.telestration.pauseVideo")}
+      </button>
+    </span>
   );
 };
 

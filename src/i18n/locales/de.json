@@ -319,6 +319,7 @@
       "drawingSecondsDefault": "{{seconds}}s (Standard)",
       "editTiming": "Dauer der Zeichnung",
       "showFor": "Anzeigen für",
+      "pauseVideo": "Video anhalten",
       "done": "Zeichnen beenden",
       "undo": "Rückgängig",
       "clear": "Alles löschen",

@@ -319,6 +319,7 @@
       "drawingSecondsDefault": "{{seconds}}s (podrazumevano)",
       "editTiming": "Trajanje crteža",
       "showFor": "Prikaži",
+      "pauseVideo": "Pauziraj video",
       "done": "Završi crtanje",
       "undo": "Poništi",
       "clear": "Obriši sve",

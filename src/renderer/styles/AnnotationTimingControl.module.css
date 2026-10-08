@@ -1,3 +1,9 @@
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 .field {
   display: inline-flex;
   align-items: center;
@@ -22,6 +28,39 @@
 }
 
 .select:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  height: 32px;
+  min-width: 32px;
+  padding: 0 var(--spacing-sm);
+  justify-content: center;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.toggle:hover {
+  border-color: var(--border-color-hover);
+  color: var(--text-primary);
+}
+
+.toggleOn,
+.toggleOn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-white);
+}
+
+.toggle:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;
 }
