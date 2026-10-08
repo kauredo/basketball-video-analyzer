@@ -50,52 +50,11 @@ jobs:
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
           npm_config_cache: ~/.npm
 
-      - name: Download yt-dlp binary
-        run: |
-          # The plain "yt-dlp" asset is a Python zipapp that needs Python
-          # 3.10+, which macOS does not ship. These are standalone builds.
-          case "$RUNNER_OS" in
-            Windows) ASSET=yt-dlp.exe; DEST=yt-dlp.exe ;;
-            macOS) ASSET=yt-dlp_macos; DEST=yt-dlp ;;
-            *) ASSET=yt-dlp_linux; DEST=yt-dlp ;;
-          esac
-          BASE=https://github.com/yt-dlp/yt-dlp/releases/latest/download
-          AUTH="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
-          OUT="node_modules/youtube-dl-exec/bin/$DEST"
-          mkdir -p node_modules/youtube-dl-exec/bin
-          curl -fsSL -H "$AUTH" "$BASE/$ASSET" -o "$OUT"
-          curl -fsSL -H "$AUTH" "$BASE/SHA2-256SUMS" -o yt-dlp-sums.txt
-          EXPECTED=$(grep " $ASSET\$" yt-dlp-sums.txt | cut -d' ' -f1)
-          ACTUAL=$( (sha256sum "$OUT" 2>/dev/null || shasum -a 256 "$OUT") | cut -d' ' -f1 | tr -d '\\')
-          if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
-            echo "yt-dlp checksum mismatch for $ASSET: expected '$EXPECTED', got '$ACTUAL'"
-            exit 1
-          fi
-          chmod +x "$OUT"
+      - name: Download yt-dlp and deno
+        run: bash scripts/fetch-yt-dlp.sh
         shell: bash
-
-      - name: Download QuickJS for yt-dlp
-        run: |
-          # yt-dlp needs a JavaScript runtime to solve YouTube's challenges.
-          # QuickJS-NG is ~2 MB against deno's ~77 MB. Pinned, with the
-          # SHA-256 GitHub records for each release asset.
-          VERSION=v0.17.0
-          case "$RUNNER_OS-$RUNNER_ARCH" in
-            macOS-ARM64) ASSET=qjs-darwin-arm64; SUM=8be3ddfe3397d2e692e4e1e8972ee9d032a0a580505d2f8b4ea528cf1b651c11; DEST=qjs ;;
-            macOS-X64) ASSET=qjs-darwin-x86_64; SUM=9e5e101b4fd13cda3204222ca9f8be35412c41dcdef3745829633b7a67245412; DEST=qjs ;;
-            Linux-X64) ASSET=qjs-linux-x86_64; SUM=0bfc02511a9f549c28b53880d988fc7cd5d361e90c5e8afdfcd7dc6774ceace5; DEST=qjs ;;
-            Windows-X64) ASSET=qjs-windows-x86_64.exe; SUM=2aeabf0092c3262d6b2609824418f7dd7ed1f1df939f73b2b15645230cac0d77; DEST=qjs.exe ;;
-            *) echo "No QuickJS build for $RUNNER_OS-$RUNNER_ARCH"; exit 1 ;;
-          esac
-          OUT="node_modules/youtube-dl-exec/bin/$DEST"
-          curl -fsSL "https://github.com/quickjs-ng/quickjs/releases/download/$VERSION/$ASSET" -o "$OUT"
-          ACTUAL=$( (sha256sum "$OUT" 2>/dev/null || shasum -a 256 "$OUT") | cut -d' ' -f1 | tr -d '\\')
-          if [ "$SUM" != "$ACTUAL" ]; then
-            echo "QuickJS checksum mismatch for $ASSET: expected '$SUM', got '$ACTUAL'"
-            exit 1
-          fi
-          chmod +x "$OUT"
-        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build application
         run: npm run build
