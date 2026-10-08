@@ -50,29 +50,11 @@ jobs:
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
           npm_config_cache: ~/.npm
 
-      - name: Download yt-dlp binary
-        run: |
-          # The plain "yt-dlp" asset is a Python zipapp that needs Python
-          # 3.10+, which macOS does not ship. These are standalone builds.
-          case "$RUNNER_OS" in
-            Windows) ASSET=yt-dlp.exe; DEST=yt-dlp.exe ;;
-            macOS) ASSET=yt-dlp_macos; DEST=yt-dlp ;;
-            *) ASSET=yt-dlp_linux; DEST=yt-dlp ;;
-          esac
-          BASE=https://github.com/yt-dlp/yt-dlp/releases/latest/download
-          AUTH="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
-          OUT="node_modules/youtube-dl-exec/bin/$DEST"
-          mkdir -p node_modules/youtube-dl-exec/bin
-          curl -fsSL -H "$AUTH" "$BASE/$ASSET" -o "$OUT"
-          curl -fsSL -H "$AUTH" "$BASE/SHA2-256SUMS" -o yt-dlp-sums.txt
-          EXPECTED=$(grep " $ASSET\$" yt-dlp-sums.txt | cut -d' ' -f1)
-          ACTUAL=$( (sha256sum "$OUT" 2>/dev/null || shasum -a 256 "$OUT") | cut -d' ' -f1 | tr -d '\\')
-          if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
-            echo "yt-dlp checksum mismatch for $ASSET: expected '$EXPECTED', got '$ACTUAL'"
-            exit 1
-          fi
-          chmod +x "$OUT"
+      - name: Download yt-dlp and deno
+        run: bash scripts/fetch-yt-dlp.sh
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build application
         run: npm run build

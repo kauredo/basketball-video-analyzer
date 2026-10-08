@@ -53,6 +53,7 @@ import {
 } from "./database";
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings } from "./clipDrawings";
+import { parseYoutubeUrl } from "./youtubeUrl";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -1963,11 +1964,20 @@ const getYtdlpPath = (): string => {
   return fixAsarPath(YOUTUBE_DL_PATH);
 };
 
+// Release builds ship deno next to yt-dlp, which uses it to solve YouTube's
+// challenges. Dev installs may not have it.
+const getDenoPath = (): string | null => {
+  const deno = path.join(
+    path.dirname(getYtdlpPath()),
+    process.platform === "win32" ? "deno.exe" : "deno"
+  );
+  return fs.existsSync(deno) ? deno : null;
+};
+
 // Download YouTube video using bundled yt-dlp
 ipcMain.handle("download-youtube-video", async (_event, url: string) => {
-  // Validate YouTube URL
-  const ytRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)/;
-  if (!ytRegex.test(url)) {
+  const youtubeUrl = parseYoutubeUrl(url);
+  if (!youtubeUrl) {
     throw new Error("INVALID_YOUTUBE_URL");
   }
 
@@ -1977,6 +1987,7 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
   }
 
   const ytdlpPath = getYtdlpPath();
+  const denoPath = getDenoPath();
 
   return new Promise<{ filePath: string; fileName: string; success: boolean }>((resolve, reject) => {
     let outputFilePath = "";
@@ -1989,7 +2000,9 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
       "--newline",
       // Merging video and audio needs ffmpeg, and most users have none on PATH.
       ...(ffmpegPath ? ["--ffmpeg-location", ffmpegPath] : []),
-      url,
+      ...(denoPath ? ["--js-runtimes", `deno:${denoPath}`] : []),
+      "--",
+      youtubeUrl,
     ]);
 
     ytdlp.stdout.on("data", (data: Buffer) => {
