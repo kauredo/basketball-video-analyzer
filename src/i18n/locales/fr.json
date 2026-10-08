@@ -322,6 +322,7 @@
       "showFor": "Afficher pendant",
       "pauseVideo": "Mettre la vidéo en pause",
       "clearAndPlay": "Effacer et lire (Espace)",
+      "clearAndPlayShort": "Effacer et lire",
       "done": "Terminer le dessin",
       "undo": "Annuler",
       "clear": "Tout effacer",

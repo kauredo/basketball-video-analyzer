@@ -157,6 +157,21 @@
   color: var(--text-white);
 }
 
+/* The one action that leaves drawing, so it reads as a button, not a tool. */
+.resumeBtn {
+  width: auto;
+  gap: 6px;
+  padding: 0 10px;
+  background: var(--color-primary);
+  color: var(--text-white);
+  font-size: var(--font-size-sm);
+}
+
+.resumeBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  color: var(--text-white);
+}
+
 .closeBtn:hover:not(:disabled) {
   background: var(--bg-quaternary);
   color: var(--text-white);

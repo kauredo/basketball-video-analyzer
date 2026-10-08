@@ -522,13 +522,13 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
 
         <button
           type="button"
-          className={`${styles.toolBtn} ${styles.saveBtn}`}
+          className={`${styles.toolBtn} ${styles.resumeBtn}`}
           onClick={onClearAndPlay}
           aria-keyshortcuts="Space"
           title={t("app.telestration.clearAndPlay")}
-          aria-label={t("app.telestration.clearAndPlay")}
         >
-          <FontAwesomeIcon icon={faPlay} />
+          <FontAwesomeIcon icon={faPlay} aria-hidden />
+          {t("app.telestration.clearAndPlayShort")}
         </button>
         <button
           type="button"
