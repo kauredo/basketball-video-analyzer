@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   ONBOARDING_COMPLETE: "onboardingComplete",
   ANNOTATION_REPLAY: "annotationReplay",
   ANNOTATION_REPLAY_SECONDS: "annotationReplaySeconds",
+  DRAW_TOOLBAR_POSITION: "drawToolbarPosition",
   EXPORTED_CLIPS_TOTAL: "exportedClipsTotal",
   DONATION_NUDGE_SHOWN: "donationNudgeShown",
 } as const;

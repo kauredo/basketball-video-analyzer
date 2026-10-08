@@ -322,6 +322,7 @@
       "pauseVideo": "Video anhalten",
       "clearAndPlay": "Löschen und abspielen (Leertaste)",
       "clearAndPlayShort": "Löschen & abspielen",
+      "moveToolbar": "Ziehen, um die Leiste zu verschieben (Pfeiltasten verschieben schrittweise, Doppelklick setzt zurück)",
       "done": "Zeichnen beenden",
       "undo": "Rückgängig",
       "clear": "Alles löschen",

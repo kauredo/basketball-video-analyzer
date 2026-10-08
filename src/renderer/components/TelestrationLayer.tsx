@@ -20,9 +20,11 @@ import {
   faBookmark,
   faXmark,
   faPlay,
+  faGripVertical,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/Telestration.module.css";
 import { AnnotationTimingControl } from "./AnnotationTimingControl";
+import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 import { AnnotationTiming } from "../../types/global";
 import {
   TelestrationShape,
@@ -65,6 +67,27 @@ const genId = () =>
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
+// Where the toolbar sits, as a fraction of the room it has to move in.
+interface ToolbarPosition {
+  fx: number;
+  fy: number;
+}
+
+const loadToolbarPosition = (): ToolbarPosition | null => {
+  const stored = loadPref<ToolbarPosition | null>(
+    STORAGE_KEYS.DRAW_TOOLBAR_POSITION,
+    null
+  );
+  return stored &&
+    typeof stored.fx === "number" &&
+    typeof stored.fy === "number"
+    ? { fx: clamp01(stored.fx), fy: clamp01(stored.fy) }
+    : null;
+};
+
+const saveToolbarPosition = (pos: ToolbarPosition | null) =>
+  savePref(STORAGE_KEYS.DRAW_TOOLBAR_POSITION, pos);
+
 export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   active,
   videoRef,
@@ -86,6 +109,66 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   const [tool, setTool] = useState<TelestrationTool>("arrow");
   const [color, setColor] = useState(TELESTRATION_COLORS[0].hex);
   const [widthFrac, setWidthFrac] = useState(TELESTRATION_WIDTHS[1]);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const toolbarLaneRef = useRef<HTMLDivElement>(null);
+  const toolbarGrab = useRef<{ dx: number; dy: number } | null>(null);
+  const [toolbarPos, setToolbarPos] = useState(loadToolbarPosition);
+
+  const moveToolbarTo = (left: number, top: number) => {
+    const box = toolbarLaneRef.current?.getBoundingClientRect();
+    const bar = toolbarRef.current;
+    if (!box || !bar) return null;
+    const next = {
+      fx: clamp01(left / Math.max(1, box.width - bar.offsetWidth)),
+      fy: clamp01(top / Math.max(1, box.height - bar.offsetHeight)),
+    };
+    setToolbarPos(next);
+    return next;
+  };
+
+  const handleGripDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const bar = toolbarRef.current?.getBoundingClientRect();
+    if (!bar) return;
+    toolbarGrab.current = { dx: e.clientX - bar.left, dy: e.clientY - bar.top };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handleGripMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const grab = toolbarGrab.current;
+    const box = toolbarLaneRef.current?.getBoundingClientRect();
+    if (!grab || !box) return;
+    moveToolbarTo(e.clientX - box.left - grab.dx, e.clientY - box.top - grab.dy);
+  };
+
+  const handleGripUp = () => {
+    if (!toolbarGrab.current) return;
+    toolbarGrab.current = null;
+    setToolbarPos(pos => {
+      saveToolbarPosition(pos);
+      return pos;
+    });
+  };
+
+  const handleGripKey = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    const step = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[
+      e.key
+    ];
+    if (!step) return;
+    e.preventDefault();
+    const box = toolbarLaneRef.current?.getBoundingClientRect();
+    const bar = toolbarRef.current?.getBoundingClientRect();
+    if (!box || !bar) return;
+    const next = moveToolbarTo(
+      bar.left - box.left + step[0] * 20,
+      bar.top - box.top + step[1] * 20
+    );
+    if (next) saveToolbarPosition(next);
+  };
+
+  const resetToolbar = () => {
+    setToolbarPos(null);
+    saveToolbarPosition(null);
+  };
   const [saveTiming, setSaveTiming] = useState<AnnotationTiming>({
     display_seconds: null,
     pause_playback: false,
@@ -330,6 +413,16 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     ) : null;
   }
 
+  const videoEl = videoRef.current;
+  const videoBox = videoEl
+    ? {
+        left: videoEl.offsetLeft,
+        top: videoEl.offsetTop,
+        width: videoEl.offsetWidth,
+        height: videoEl.offsetHeight,
+      }
+    : rect;
+
   const textPx = textDraft
     ? {
         left: rect.left + textDraft.at.x * rect.width,
@@ -389,156 +482,188 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
         />
       )}
 
+      {/* The toolbar moves anywhere over the video element, letterbox bars
+          included, but not over the player controls below it. */}
       <div
-        className={styles.toolbar}
-        role="toolbar"
-        aria-label={t("app.telestration.title")}
-        // A clicked button would keep focus and swallow the next Space, which
-        // should clear and play. Keyboard focus still reaches every button.
-        onMouseDown={e => {
-          if ((e.target as HTMLElement).closest("button")) e.preventDefault();
-        }}
+        ref={toolbarLaneRef}
+        className={styles.toolbarLane}
+        style={videoBox}
       >
-        <div className={styles.toolGroup}>
-          {TOOLS.map(ti => (
-            <button
-              key={ti.tool}
-              type="button"
-              className={`${styles.toolBtn} ${
-                tool === ti.tool ? styles.toolBtnActive : ""
-              }`}
-              onClick={() => setTool(ti.tool)}
-              title={t(ti.labelKey)}
-              aria-label={t(ti.labelKey)}
-              aria-pressed={tool === ti.tool}
-            >
-              <FontAwesomeIcon icon={ti.icon} />
-            </button>
-          ))}
-        </div>
-
-        <div className={styles.divider} />
-
-        <div className={styles.toolGroup}>
-          {TELESTRATION_COLORS.map(c => (
-            <button
-              key={c.hex}
-              type="button"
-              className={`${styles.colorBtn} ${
-                color === c.hex ? styles.colorBtnActive : ""
-              }`}
-              style={{ backgroundColor: c.hex }}
-              onClick={() => setColor(c.hex)}
-              title={c.name}
-              aria-label={c.name}
-              aria-pressed={color === c.hex}
-            />
-          ))}
-        </div>
-
-        <div className={styles.divider} />
-
-        <div className={styles.toolGroup}>
-          {TELESTRATION_WIDTHS.map((w, i) => (
-            <button
-              key={w}
-              type="button"
-              className={`${styles.widthBtn} ${
-                widthFrac === w ? styles.widthBtnActive : ""
-              }`}
-              onClick={() => setWidthFrac(w)}
-              title={t(`app.telestration.widths.${["thin", "medium", "thick"][i]}`)}
-              aria-label={t(
-                `app.telestration.widths.${["thin", "medium", "thick"][i]}`
-              )}
-              aria-pressed={widthFrac === w}
-            >
-              <span
-                className={styles.widthDot}
-                style={{ width: 4 + i * 4, height: 4 + i * 4 }}
-              />
-            </button>
-          ))}
-        </div>
-
-        <div className={styles.divider} />
-
-        <div className={styles.toolGroup}>
-          <button
-            type="button"
-            className={styles.toolBtn}
-            onClick={undo}
-            disabled={shapes.length === 0}
-            title={t("app.telestration.undo")}
-            aria-label={t("app.telestration.undo")}
-          >
-            <FontAwesomeIcon icon={faRotateLeft} />
-          </button>
-          <button
-            type="button"
-            className={styles.toolBtn}
-            onClick={clearAll}
-            disabled={shapes.length === 0}
-            title={t("app.telestration.clear")}
-            aria-label={t("app.telestration.clear")}
-          >
-            <FontAwesomeIcon icon={faTrash} />
-          </button>
-          {onSaveAnnotation && (
-            <>
-              <div className={styles.divider} />
-              <AnnotationTimingControl
-                value={saveTiming}
-                onChange={changes =>
-                  setSaveTiming(prev => ({ ...prev, ...changes }))
+        <div
+          ref={toolbarRef}
+          className={styles.toolbar}
+          style={
+            toolbarPos
+              ? {
+                  left: `${toolbarPos.fx * 100}%`,
+                  top: `${toolbarPos.fy * 100}%`,
+                  transform: `translate(${-toolbarPos.fx * 100}%, ${-toolbarPos.fy * 100}%)`,
                 }
-                defaultSeconds={defaultReplaySeconds}
-              />
-              <button
-                type="button"
-                className={`${styles.toolBtn} ${styles.saveBtn}`}
-                onClick={() => onSaveAnnotation(saveTiming)}
-                disabled={shapes.length === 0}
-                title={t("app.telestration.saveAnnotation")}
-                aria-label={t("app.telestration.saveAnnotation")}
-              >
-                <FontAwesomeIcon icon={faBookmark} />
-              </button>
-            </>
-          )}
+              : undefined
+          }
+          role="toolbar"
+          aria-label={t("app.telestration.title")}
+          // A clicked button would keep focus and swallow the next Space, which
+          // should clear and play. Keyboard focus still reaches every button.
+          onMouseDown={e => {
+            if ((e.target as HTMLElement).closest("button")) e.preventDefault();
+          }}
+        >
           <button
             type="button"
-            className={`${styles.toolBtn} ${styles.saveBtn}`}
-            onClick={onSaveStill}
-            disabled={shapes.length === 0 || saving}
-            title={t("app.telestration.saveStill")}
-            aria-label={t("app.telestration.saveStill")}
+            className={`${styles.toolBtn} ${styles.grip}`}
+            onPointerDown={handleGripDown}
+            onPointerMove={handleGripMove}
+            onPointerUp={handleGripUp}
+            onPointerCancel={handleGripUp}
+            onKeyDown={handleGripKey}
+            onDoubleClick={resetToolbar}
+            title={t("app.telestration.moveToolbar")}
+            aria-label={t("app.telestration.moveToolbar")}
           >
-            <FontAwesomeIcon icon={faCamera} />
+            <FontAwesomeIcon icon={faGripVertical} />
+          </button>
+          <div className={styles.toolGroup}>
+            {TOOLS.map(ti => (
+              <button
+                key={ti.tool}
+                type="button"
+                className={`${styles.toolBtn} ${
+                  tool === ti.tool ? styles.toolBtnActive : ""
+                }`}
+                onClick={() => setTool(ti.tool)}
+                title={t(ti.labelKey)}
+                aria-label={t(ti.labelKey)}
+                aria-pressed={tool === ti.tool}
+              >
+                <FontAwesomeIcon icon={ti.icon} />
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.toolGroup}>
+            {TELESTRATION_COLORS.map(c => (
+              <button
+                key={c.hex}
+                type="button"
+                className={`${styles.colorBtn} ${
+                  color === c.hex ? styles.colorBtnActive : ""
+                }`}
+                style={{ backgroundColor: c.hex }}
+                onClick={() => setColor(c.hex)}
+                title={c.name}
+                aria-label={c.name}
+                aria-pressed={color === c.hex}
+              />
+            ))}
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.toolGroup}>
+            {TELESTRATION_WIDTHS.map((w, i) => (
+              <button
+                key={w}
+                type="button"
+                className={`${styles.widthBtn} ${
+                  widthFrac === w ? styles.widthBtnActive : ""
+                }`}
+                onClick={() => setWidthFrac(w)}
+                title={t(`app.telestration.widths.${["thin", "medium", "thick"][i]}`)}
+                aria-label={t(
+                  `app.telestration.widths.${["thin", "medium", "thick"][i]}`
+                )}
+                aria-pressed={widthFrac === w}
+              >
+                <span
+                  className={styles.widthDot}
+                  style={{ width: 4 + i * 4, height: 4 + i * 4 }}
+                />
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.toolGroup}>
+            <button
+              type="button"
+              className={styles.toolBtn}
+              onClick={undo}
+              disabled={shapes.length === 0}
+              title={t("app.telestration.undo")}
+              aria-label={t("app.telestration.undo")}
+            >
+              <FontAwesomeIcon icon={faRotateLeft} />
+            </button>
+            <button
+              type="button"
+              className={styles.toolBtn}
+              onClick={clearAll}
+              disabled={shapes.length === 0}
+              title={t("app.telestration.clear")}
+              aria-label={t("app.telestration.clear")}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+            {onSaveAnnotation && (
+              <>
+                <div className={styles.divider} />
+                <AnnotationTimingControl
+                  value={saveTiming}
+                  onChange={changes =>
+                    setSaveTiming(prev => ({ ...prev, ...changes }))
+                  }
+                  defaultSeconds={defaultReplaySeconds}
+                />
+                <button
+                  type="button"
+                  className={`${styles.toolBtn} ${styles.saveBtn}`}
+                  onClick={() => onSaveAnnotation(saveTiming)}
+                  disabled={shapes.length === 0}
+                  title={t("app.telestration.saveAnnotation")}
+                  aria-label={t("app.telestration.saveAnnotation")}
+                >
+                  <FontAwesomeIcon icon={faBookmark} />
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              className={`${styles.toolBtn} ${styles.saveBtn}`}
+              onClick={onSaveStill}
+              disabled={shapes.length === 0 || saving}
+              title={t("app.telestration.saveStill")}
+              aria-label={t("app.telestration.saveStill")}
+            >
+              <FontAwesomeIcon icon={faCamera} />
+            </button>
+          </div>
+
+          <div className={styles.divider} />
+
+          <button
+            type="button"
+            className={`${styles.toolBtn} ${styles.resumeBtn}`}
+            onClick={onClearAndPlay}
+            aria-keyshortcuts="Space"
+            title={t("app.telestration.clearAndPlay")}
+          >
+            <FontAwesomeIcon icon={faPlay} aria-hidden />
+            {t("app.telestration.clearAndPlayShort")}
+          </button>
+          <button
+            type="button"
+            className={`${styles.toolBtn} ${styles.closeBtn}`}
+            onClick={onClose}
+            title={t("app.telestration.done")}
+            aria-label={t("app.telestration.done")}
+          >
+            <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
-
-        <div className={styles.divider} />
-
-        <button
-          type="button"
-          className={`${styles.toolBtn} ${styles.resumeBtn}`}
-          onClick={onClearAndPlay}
-          aria-keyshortcuts="Space"
-          title={t("app.telestration.clearAndPlay")}
-        >
-          <FontAwesomeIcon icon={faPlay} aria-hidden />
-          {t("app.telestration.clearAndPlayShort")}
-        </button>
-        <button
-          type="button"
-          className={`${styles.toolBtn} ${styles.closeBtn}`}
-          onClick={onClose}
-          title={t("app.telestration.done")}
-          aria-label={t("app.telestration.done")}
-        >
-          <FontAwesomeIcon icon={faXmark} />
-        </button>
       </div>
     </>
   );
