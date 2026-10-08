@@ -435,6 +435,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
           >
             <FontAwesomeIcon icon={faGripVertical} />
           </button>
+          <div className={styles.divider} />
           <div className={styles.toolGroup}>
             {TOOLS.map(ti => (
               <button
