@@ -89,8 +89,8 @@ const fixAsarPath = (binaryPath: string): string => {
 };
 
 // Set the FFmpeg path
-if (ffmpegStatic) {
-  const ffmpegPath = fixAsarPath(ffmpegStatic);
+const ffmpegPath = ffmpegStatic ? fixAsarPath(ffmpegStatic) : null;
+if (ffmpegPath) {
   console.log("FFmpeg path:", ffmpegPath);
   console.log("FFmpeg exists:", fs.existsSync(ffmpegPath));
   ffmpeg.setFfmpegPath(ffmpegPath);
@@ -1930,6 +1930,8 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
       "-o", path.join(downloadsDir, "%(title)s.%(ext)s"),
       "--no-playlist",
       "--newline",
+      // Merging video and audio needs ffmpeg, and most users have none on PATH.
+      ...(ffmpegPath ? ["--ffmpeg-location", ffmpegPath] : []),
       url,
     ]);
 
