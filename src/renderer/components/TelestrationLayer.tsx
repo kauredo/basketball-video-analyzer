@@ -24,7 +24,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/Telestration.module.css";
 import { AnnotationTimingControl } from "./AnnotationTimingControl";
-import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
+import { useToolbarDrag } from "../hooks/useToolbarDrag";
 import { AnnotationTiming } from "../../types/global";
 import {
   TelestrationShape,
@@ -67,27 +67,6 @@ const genId = () =>
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
-// Where the toolbar sits, as a fraction of the room it has to move in.
-interface ToolbarPosition {
-  fx: number;
-  fy: number;
-}
-
-const loadToolbarPosition = (): ToolbarPosition | null => {
-  const stored = loadPref<ToolbarPosition | null>(
-    STORAGE_KEYS.DRAW_TOOLBAR_POSITION,
-    null
-  );
-  return stored &&
-    typeof stored.fx === "number" &&
-    typeof stored.fy === "number"
-    ? { fx: clamp01(stored.fx), fy: clamp01(stored.fy) }
-    : null;
-};
-
-const saveToolbarPosition = (pos: ToolbarPosition | null) =>
-  savePref(STORAGE_KEYS.DRAW_TOOLBAR_POSITION, pos);
-
 export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   active,
   videoRef,
@@ -111,64 +90,10 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   const [widthFrac, setWidthFrac] = useState(TELESTRATION_WIDTHS[1]);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const toolbarLaneRef = useRef<HTMLDivElement>(null);
-  const toolbarGrab = useRef<{ dx: number; dy: number } | null>(null);
-  const [toolbarPos, setToolbarPos] = useState(loadToolbarPosition);
-
-  const moveToolbarTo = (left: number, top: number) => {
-    const box = toolbarLaneRef.current?.getBoundingClientRect();
-    const bar = toolbarRef.current;
-    if (!box || !bar) return null;
-    const next = {
-      fx: clamp01(left / Math.max(1, box.width - bar.offsetWidth)),
-      fy: clamp01(top / Math.max(1, box.height - bar.offsetHeight)),
-    };
-    setToolbarPos(next);
-    return next;
-  };
-
-  const handleGripDown = (e: React.PointerEvent<HTMLButtonElement>) => {
-    const bar = toolbarRef.current?.getBoundingClientRect();
-    if (!bar) return;
-    toolbarGrab.current = { dx: e.clientX - bar.left, dy: e.clientY - bar.top };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const handleGripMove = (e: React.PointerEvent<HTMLButtonElement>) => {
-    const grab = toolbarGrab.current;
-    const box = toolbarLaneRef.current?.getBoundingClientRect();
-    if (!grab || !box) return;
-    moveToolbarTo(e.clientX - box.left - grab.dx, e.clientY - box.top - grab.dy);
-  };
-
-  const handleGripUp = () => {
-    if (!toolbarGrab.current) return;
-    toolbarGrab.current = null;
-    setToolbarPos(pos => {
-      saveToolbarPosition(pos);
-      return pos;
-    });
-  };
-
-  const handleGripKey = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    const step = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[
-      e.key
-    ];
-    if (!step) return;
-    e.preventDefault();
-    const box = toolbarLaneRef.current?.getBoundingClientRect();
-    const bar = toolbarRef.current?.getBoundingClientRect();
-    if (!box || !bar) return;
-    const next = moveToolbarTo(
-      bar.left - box.left + step[0] * 20,
-      bar.top - box.top + step[1] * 20
-    );
-    if (next) saveToolbarPosition(next);
-  };
-
-  const resetToolbar = () => {
-    setToolbarPos(null);
-    saveToolbarPosition(null);
-  };
+  const { gripProps, style: toolbarStyle } = useToolbarDrag(
+    toolbarRef,
+    toolbarLaneRef
+  );
   const [saveTiming, setSaveTiming] = useState<AnnotationTiming>({
     display_seconds: null,
     pause_playback: false,
@@ -492,15 +417,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
         <div
           ref={toolbarRef}
           className={styles.toolbar}
-          style={
-            toolbarPos
-              ? {
-                  left: `${toolbarPos.fx * 100}%`,
-                  top: `${toolbarPos.fy * 100}%`,
-                  transform: `translate(${-toolbarPos.fx * 100}%, ${-toolbarPos.fy * 100}%)`,
-                }
-              : undefined
-          }
+          style={toolbarStyle}
           role="toolbar"
           aria-label={t("app.telestration.title")}
           // A clicked button would keep focus and swallow the next Space, which
@@ -512,13 +429,8 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
           <button
             type="button"
             className={`${styles.toolBtn} ${styles.grip}`}
-            onPointerDown={handleGripDown}
-            onPointerMove={handleGripMove}
-            onPointerUp={handleGripUp}
-            onPointerCancel={handleGripUp}
-            onKeyDown={handleGripKey}
-            onDoubleClick={resetToolbar}
-            title={t("app.telestration.moveToolbar")}
+            {...gripProps}
+            title={t("app.telestration.moveToolbarHint")}
             aria-label={t("app.telestration.moveToolbar")}
           >
             <FontAwesomeIcon icon={faGripVertical} />
