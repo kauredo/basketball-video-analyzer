@@ -1963,6 +1963,16 @@ const getYtdlpPath = (): string => {
   return fixAsarPath(YOUTUBE_DL_PATH);
 };
 
+// QuickJS ships next to yt-dlp in release builds; yt-dlp needs a JavaScript
+// runtime to solve YouTube's challenges. Dev installs may not have it.
+const getQuickJsPath = (): string | null => {
+  const qjs = path.join(
+    path.dirname(getYtdlpPath()),
+    process.platform === "win32" ? "qjs.exe" : "qjs"
+  );
+  return fs.existsSync(qjs) ? qjs : null;
+};
+
 // Download YouTube video using bundled yt-dlp
 ipcMain.handle("download-youtube-video", async (_event, url: string) => {
   // Validate YouTube URL
@@ -1977,6 +1987,7 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
   }
 
   const ytdlpPath = getYtdlpPath();
+  const quickJsPath = getQuickJsPath();
 
   return new Promise<{ filePath: string; fileName: string; success: boolean }>((resolve, reject) => {
     let outputFilePath = "";
@@ -1989,6 +2000,7 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
       "--newline",
       // Merging video and audio needs ffmpeg, and most users have none on PATH.
       ...(ffmpegPath ? ["--ffmpeg-location", ffmpegPath] : []),
+      ...(quickJsPath ? ["--js-runtimes", `quickjs:${quickJsPath}`] : []),
       url,
     ]);
 
