@@ -32,7 +32,7 @@ import {
 import styles from "../styles/VideoPlayer.module.css";
 import { ContextualHint } from "./ContextualHint";
 import { AnnotationReplayLayer } from "./AnnotationReplayLayer";
-import { AnnotationTimingControl } from "./AnnotationTimingControl";
+import { AnnotationTimingPopover } from "./AnnotationTimingControl";
 import { formatVideoSrc } from "../utils/paths";
 import { TelestrationLayer } from "./TelestrationLayer";
 import {
@@ -43,7 +43,7 @@ import {
 } from "../utils/telestration";
 import { useToastContext } from "../contexts/ToastContext";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
-import { Annotation } from "../../types/global";
+import { Annotation, AnnotationTiming } from "../../types/global";
 import { withCause } from "../utils/errors";
 
 interface VideoPlayerProps {
@@ -106,14 +106,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   const volumeControlRef = useRef<HTMLDivElement>(null);
   const replayControlRef = useRef<HTMLDivElement>(null);
   const [editingTimingId, setEditingTimingId] = useState<number | null>(null);
-  const timingPopoverRef = useRef<HTMLDivElement>(null);
   const timingTriggerRef = useRef<HTMLButtonElement>(null);
-
-  useDismissableMenu(
-    editingTimingId !== null,
-    useCallback(() => setEditingTimingId(null), []),
-    [timingPopoverRef, timingTriggerRef],
-  );
+  const closeTimingPopover = useCallback(() => setEditingTimingId(null), []);
 
   // Refs rather than class-name lookups: a CSS-module hash is a styling
   // identifier and nothing ties its shape to this behaviour.
@@ -269,7 +263,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     }, [loadAnnotations]);
 
     const handleSaveAnnotation = useCallback(async (
-      timing: { display_seconds: number | null }
+      timing: AnnotationTiming
     ) => {
       if (!projectId || !videoPath || shapes.length === 0) return;
       try {
@@ -305,14 +299,12 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
-    const updateAnnotationSeconds = async (
+    const updateAnnotationTiming = async (
       id: number,
-      seconds: number | null
+      changes: AnnotationTiming
     ) => {
       try {
-        await window.electronAPI.updateAnnotationTiming(id, {
-          display_seconds: seconds,
-        });
+        await window.electronAPI.updateAnnotationTiming(id, changes);
         await loadAnnotations();
       } catch (error) {
         console.error("Failed to update annotation:", error);
@@ -500,6 +492,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         setCurrentTime(newTime);
       }
     };
+
+    const editingAnnotation = savedAnnotations.find(
+      a => a.id === editingTimingId
+    );
 
     const formatTime = (time: number): string => {
       const hours = Math.floor(time / 3600);
@@ -799,6 +795,11 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                         title={t("app.telestration.editTiming")}
                         aria-label={t("app.telestration.editTiming")}
                         aria-expanded={editingTimingId === annotation.id}
+                        aria-controls={
+                          editingTimingId === annotation.id
+                            ? "annotation-timing-popover"
+                            : undefined
+                        }
                       >
                         <FontAwesomeIcon icon={faClock} />
                       </button>
@@ -816,40 +817,22 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       </button>
                     </div>
                   ))}
-                {duration > 0 &&
-                  (() => {
-                    const editing = savedAnnotations.find(
-                      a => a.id === editingTimingId
-                    );
-                    if (!editing) return null;
-                    const pct = (editing.timestamp / duration) * 100;
-                    return (
-                      <div
-                        ref={timingPopoverRef}
-                        className={styles.timingPopover}
-                        style={{
-                          left: `${pct}%`,
-                          transform: `translateX(${
-                            pct < 15 ? "0" : pct > 85 ? "-100%" : "-50%"
-                          })`,
-                        }}
-                        role="group"
-                        aria-label={t("app.telestration.editTiming")}
-                      >
-                        <span className={styles.timingPopoverHeading}>
-                          {t("app.telestration.savedView")}:{" "}
-                          {formatTime(editing.timestamp)}
-                        </span>
-                        <AnnotationTimingControl
-                          seconds={editing.display_seconds ?? null}
-                          onSecondsChange={seconds =>
-                            updateAnnotationSeconds(editing.id, seconds)
-                          }
-                          defaultSeconds={replaySeconds}
-                        />
-                      </div>
-                    );
-                  })()}
+                {duration > 0 && editingAnnotation && (
+                  <AnnotationTimingPopover
+                    id="annotation-timing-popover"
+                    heading={`${t("app.telestration.savedView")}: ${formatTime(
+                      editingAnnotation.timestamp
+                    )}`}
+                    positionPct={(editingAnnotation.timestamp / duration) * 100}
+                    value={editingAnnotation}
+                    onChange={changes =>
+                      updateAnnotationTiming(editingAnnotation.id, changes)
+                    }
+                    defaultSeconds={replaySeconds}
+                    triggerRef={timingTriggerRef}
+                    onClose={closeTimingPopover}
+                  />
+                )}
               </div>
             </div>
 

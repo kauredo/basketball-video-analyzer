@@ -26,6 +26,8 @@ export interface Annotation {
   created_at?: string;
 }
 
+export type AnnotationTiming = Pick<Annotation, "display_seconds">;
+
 /** Review state a coach sets after watching the cut back. */
 export type ClipStatus = "keep" | "cut" | "review";
 
@@ -128,11 +130,10 @@ export interface ElectronAPI {
     video_path: string;
     timestamp: number;
     data: string;
-    display_seconds?: number | null;
-  }) => Promise<Annotation>;
+  } & AnnotationTiming) => Promise<Annotation>;
   updateAnnotationTiming: (
     id: number,
-    updates: { display_seconds?: number | null }
+    updates: AnnotationTiming
   ) => Promise<boolean>;
   deleteAnnotation: (id: number) => Promise<boolean>;
 

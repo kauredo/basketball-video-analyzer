@@ -1273,6 +1273,14 @@ const migrateAnnotationColumns = () => {
   }
 };
 
+// The UI offers 1-10 s. Anything outside a sane range falls back to the
+// global setting rather than pinning a drawing on screen.
+const MAX_DISPLAY_SECONDS = 60;
+const toDisplaySeconds = (value: unknown): number | null =>
+  typeof value === "number" && value > 0 && value <= MAX_DISPLAY_SECONDS
+    ? value
+    : null;
+
 // Annotation operations (saved telestration drawings)
 export const getAnnotations = (
   projectId: number,
@@ -1295,6 +1303,7 @@ export const createAnnotation = (
   annotation: Omit<Annotation, "id" | "created_at">,
 ): Annotation => {
   try {
+    const displaySeconds = toDisplaySeconds(annotation.display_seconds);
     const stmt = db.prepare(`
       INSERT INTO annotations (project_id, video_path, timestamp, data, display_seconds)
       VALUES (?, ?, ?, ?, ?)
@@ -1305,13 +1314,13 @@ export const createAnnotation = (
       annotation.video_path,
       annotation.timestamp,
       annotation.data,
-      toDisplaySeconds(annotation.display_seconds),
+      displaySeconds,
     );
 
     return {
       id: result.lastInsertRowid as number,
       ...annotation,
-      display_seconds: toDisplaySeconds(annotation.display_seconds),
+      display_seconds: displaySeconds,
       created_at: new Date().toISOString(),
     };
   } catch (error) {
@@ -1320,11 +1329,7 @@ export const createAnnotation = (
   }
 };
 
-// Anything that isn't a positive number falls back to the global setting.
-const toDisplaySeconds = (value: unknown): number | null =>
-  typeof value === "number" && Number.isFinite(value) && value > 0
-    ? value
-    : null;
+
 
 export type AnnotationTiming = Pick<Annotation, "display_seconds">;
 

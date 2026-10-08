@@ -22,6 +22,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/Telestration.module.css";
 import { AnnotationTimingControl } from "./AnnotationTimingControl";
+import { AnnotationTiming } from "../../types/global";
 import {
   TelestrationShape,
   TelestrationTool,
@@ -41,7 +42,7 @@ interface TelestrationLayerProps {
   shapes: TelestrationShape[];
   onShapesChange: (shapes: TelestrationShape[]) => void;
   onSaveStill: () => void;
-  onSaveAnnotation?: (timing: { display_seconds: number | null }) => void;
+  onSaveAnnotation?: (timing: AnnotationTiming) => void;
   defaultReplaySeconds: number;
   onClose: () => void;
   saving: boolean;
@@ -82,7 +83,9 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   const [tool, setTool] = useState<TelestrationTool>("arrow");
   const [color, setColor] = useState(TELESTRATION_COLORS[0].hex);
   const [widthFrac, setWidthFrac] = useState(TELESTRATION_WIDTHS[1]);
-  const [saveSeconds, setSaveSeconds] = useState<number | null>(null);
+  const [saveTiming, setSaveTiming] = useState<AnnotationTiming>({
+    display_seconds: null,
+  });
   const [draft, setDraft] = useState<TelestrationShape | null>(null);
   const [textDraft, setTextDraft] = useState<{ at: NormPoint; value: string } | null>(
     null
@@ -463,23 +466,25 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
             <FontAwesomeIcon icon={faTrash} />
           </button>
           {onSaveAnnotation && (
-            <AnnotationTimingControl
-              seconds={saveSeconds}
-              onSecondsChange={setSaveSeconds}
-              defaultSeconds={defaultReplaySeconds}
-            />
-          )}
-          {onSaveAnnotation && (
-            <button
-              type="button"
-              className={`${styles.toolBtn} ${styles.saveBtn}`}
-              onClick={() => onSaveAnnotation({ display_seconds: saveSeconds })}
-              disabled={shapes.length === 0}
-              title={t("app.telestration.saveAnnotation")}
-              aria-label={t("app.telestration.saveAnnotation")}
-            >
-              <FontAwesomeIcon icon={faBookmark} />
-            </button>
+            <>
+              <AnnotationTimingControl
+                value={saveTiming}
+                onChange={changes =>
+                  setSaveTiming(prev => ({ ...prev, ...changes }))
+                }
+                defaultSeconds={defaultReplaySeconds}
+              />
+              <button
+                type="button"
+                className={`${styles.toolBtn} ${styles.saveBtn}`}
+                onClick={() => onSaveAnnotation(saveTiming)}
+                disabled={shapes.length === 0}
+                title={t("app.telestration.saveAnnotation")}
+                aria-label={t("app.telestration.saveAnnotation")}
+              >
+                <FontAwesomeIcon icon={faBookmark} />
+              </button>
+            </>
           )}
           <button
             type="button"

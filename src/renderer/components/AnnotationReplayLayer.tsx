@@ -46,6 +46,7 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
   const parsed = useMemo(
     () =>
       annotations.map(a => ({
+        id: a.id,
         timestamp: a.timestamp,
         seconds: a.display_seconds ?? null,
         shapes: safeParse(a.data),
@@ -64,15 +65,15 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
             currentTime >= p.timestamp &&
             currentTime < p.timestamp + (p.seconds ?? displaySeconds)
         )
-        .map(p => p.timestamp)
+        .map(p => p.id)
         .join(","),
     [parsed, currentTime, displaySeconds]
   );
 
   const activeShapes = useMemo(() => {
     if (!activeKey) return [];
-    const times = new Set(activeKey.split(",").map(Number));
-    return parsed.filter(p => times.has(p.timestamp)).flatMap(p => p.shapes);
+    const ids = new Set(activeKey.split(",").map(Number));
+    return parsed.filter(p => ids.has(p.id)).flatMap(p => p.shapes);
   }, [activeKey, parsed]);
 
   const hasActive = enabled && activeShapes.length > 0;
