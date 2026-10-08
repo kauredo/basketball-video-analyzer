@@ -33,6 +33,12 @@ export interface ElectronAPI {
     notes?: string;
     projectId: number;
     overlayImage?: string;
+    drawings?: Array<{
+      image: string;
+      timestamp: number;
+      seconds: number;
+      pause: boolean;
+    }>;
   }) => Promise<any>;
   exportAnnotatedFrame: (params: {
     inputPath: string;

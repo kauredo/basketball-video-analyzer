@@ -33,6 +33,14 @@ export type AnnotationTiming = Pick<
 >;
 
 /** Review state a coach sets after watching the cut back. */
+// A saved drawing rendered for burning into an exported clip.
+export interface ClipDrawingImage {
+  image: string; // native-resolution transparent PNG data URL
+  timestamp: number; // source video seconds
+  seconds: number;
+  pause: boolean;
+}
+
 export type ClipStatus = "keep" | "cut" | "review";
 
 export interface Clip {
@@ -88,6 +96,7 @@ export interface ElectronAPI {
     notes?: string;
     projectId: number;
     overlayImage?: string;
+    drawings?: ClipDrawingImage[];
   }) => Promise<any>;
   exportAnnotatedFrame: (params: {
     inputPath: string;
