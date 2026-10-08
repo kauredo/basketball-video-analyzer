@@ -313,6 +313,8 @@
       "title": "Herramientas de dibujo",
       "draw": "Dibujar sobre el vídeo",
       "replayToggle": "Mostrar dibujos guardados durante la reproducción",
+      "replayOff": "Desactivado",
+      "replayDuration": "Cuánto tiempo permanecen en pantalla los dibujos guardados",
       "done": "Finalizar dibujo",
       "undo": "Deshacer",
       "clear": "Borrar todo",

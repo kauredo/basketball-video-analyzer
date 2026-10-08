@@ -8,14 +8,13 @@ import {
 } from "../utils/telestration";
 import styles from "../styles/AnnotationReplayLayer.module.css";
 
-// How long a saved drawing stays on screen once playback reaches its timestamp.
-const REPLAY_DISPLAY_SECONDS = 4;
-
 interface AnnotationReplayLayerProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   containerRef: React.RefObject<HTMLDivElement>;
   annotations: Annotation[];
   currentTime: number;
+  // How long a saved drawing stays on screen once playback reaches its timestamp.
+  displaySeconds: number;
   enabled: boolean;
 }
 
@@ -36,6 +35,7 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
   containerRef,
   annotations,
   currentTime,
+  displaySeconds,
   enabled,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -60,11 +60,11 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
         .filter(
           p =>
             currentTime >= p.timestamp &&
-            currentTime < p.timestamp + REPLAY_DISPLAY_SECONDS
+            currentTime < p.timestamp + displaySeconds
         )
         .map(p => p.timestamp)
         .join(","),
-    [parsed, currentTime]
+    [parsed, currentTime, displaySeconds]
   );
 
   const activeShapes = useMemo(() => {

@@ -313,6 +313,8 @@
       "title": "Strumenti di disegno",
       "draw": "Disegna sul video",
       "replayToggle": "Mostra i disegni salvati durante la riproduzione",
+      "replayOff": "Disattivato",
+      "replayDuration": "Per quanto tempo restano visibili i disegni salvati",
       "done": "Fine disegno",
       "undo": "Annulla",
       "clear": "Cancella tutto",

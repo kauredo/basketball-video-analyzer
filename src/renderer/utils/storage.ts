@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   CLIP_VIEW_MODE: "clipViewMode",
   ONBOARDING_COMPLETE: "onboardingComplete",
   ANNOTATION_REPLAY: "annotationReplay",
+  ANNOTATION_REPLAY_SECONDS: "annotationReplaySeconds",
   EXPORTED_CLIPS_TOTAL: "exportedClipsTotal",
   DONATION_NUDGE_SHOWN: "donationNudgeShown",
 } as const;
