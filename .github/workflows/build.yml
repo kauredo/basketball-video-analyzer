@@ -10,6 +10,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # The tests are .mts files run directly, which needs Node's type
+      # stripping. They import nothing from node_modules, so no install.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Run unit tests
+        run: npm test
+
   build:
     strategy:
       matrix:
@@ -165,7 +181,7 @@ jobs:
           if-no-files-found: ignore
 
   release:
-    needs: build
+    needs: [build, test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
