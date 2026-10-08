@@ -36,6 +36,9 @@ export interface TelestrationShape {
   fontFrac?: number;
 }
 
+export const REPLAY_SECONDS_OPTIONS = [1, 2, 3, 4, 6, 10];
+export const DEFAULT_REPLAY_SECONDS = 4;
+
 export const TELESTRATION_COLORS: { hex: string; name: string }[] = [
   { hex: "#ff3b30", name: "Red" },
   { hex: "#ffcc00", name: "Yellow" },

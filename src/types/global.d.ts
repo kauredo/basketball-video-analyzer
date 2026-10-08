@@ -22,6 +22,7 @@ export interface Annotation {
   video_path: string;
   timestamp: number;
   data: string; // JSON-encoded shape list
+  display_seconds?: number | null; // null = use the global replay setting
   created_at?: string;
 }
 
@@ -127,7 +128,12 @@ export interface ElectronAPI {
     video_path: string;
     timestamp: number;
     data: string;
+    display_seconds?: number | null;
   }) => Promise<Annotation>;
+  updateAnnotationTiming: (
+    id: number,
+    updates: { display_seconds?: number | null }
+  ) => Promise<boolean>;
   deleteAnnotation: (id: number) => Promise<boolean>;
 
   // Export clips data

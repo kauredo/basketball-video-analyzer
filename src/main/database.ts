@@ -69,6 +69,7 @@ export interface Annotation {
   video_path: string;
   timestamp: number; // video seconds
   data: string; // JSON-encoded shape list
+  display_seconds?: number | null; // null = use the global replay setting
   created_at?: string;
 }
 
@@ -113,6 +114,7 @@ export const setupDatabase = () => {
     migrateDatabase();
     createTables();
     migrateClipColumns();
+    migrateAnnotationColumns();
     insertDefaultCategories();
     migrateClipPaths();
     dbInitError = null;
@@ -710,6 +712,7 @@ const createTables = () => {
       video_path TEXT NOT NULL,
       timestamp REAL NOT NULL,
       data TEXT NOT NULL,
+      display_seconds REAL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
     )
@@ -1254,6 +1257,22 @@ export const deletePlayer = (id: number): void => {
   }
 };
 
+const migrateAnnotationColumns = () => {
+  try {
+    const columns = db.prepare("PRAGMA table_info(annotations)").all() as Array<{
+      name: string;
+    }>;
+    const has = (name: string) => columns.some((col) => col.name === name);
+
+    if (!has("display_seconds")) {
+      db.exec("ALTER TABLE annotations ADD COLUMN display_seconds REAL");
+      console.log("Added display_seconds column to annotations");
+    }
+  } catch (error) {
+    console.error("Error migrating annotation columns:", error);
+  }
+};
+
 // Annotation operations (saved telestration drawings)
 export const getAnnotations = (
   projectId: number,
@@ -1277,8 +1296,8 @@ export const createAnnotation = (
 ): Annotation => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO annotations (project_id, video_path, timestamp, data)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO annotations (project_id, video_path, timestamp, data, display_seconds)
+      VALUES (?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -1286,15 +1305,47 @@ export const createAnnotation = (
       annotation.video_path,
       annotation.timestamp,
       annotation.data,
+      toDisplaySeconds(annotation.display_seconds),
     );
 
     return {
       id: result.lastInsertRowid as number,
       ...annotation,
+      display_seconds: toDisplaySeconds(annotation.display_seconds),
       created_at: new Date().toISOString(),
     };
   } catch (error) {
     console.error("Error creating annotation:", error);
+    throw error;
+  }
+};
+
+// Anything that isn't a positive number falls back to the global setting.
+const toDisplaySeconds = (value: unknown): number | null =>
+  typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : null;
+
+export type AnnotationTiming = Pick<Annotation, "display_seconds">;
+
+export const updateAnnotationTiming = (
+  id: number,
+  updates: AnnotationTiming,
+): void => {
+  try {
+    // Allowlisted for the same reason as updatePlayer: column names are
+    // interpolated into SQL.
+    const allowed: (keyof AnnotationTiming)[] = ["display_seconds"];
+    const fields = allowed.filter((key) => key in updates);
+    if (fields.length === 0) return;
+
+    const setClause = fields.map((field) => `${field} = ?`).join(", ");
+    const values = fields.map((field) => toDisplaySeconds(updates[field]));
+
+    const stmt = db.prepare(`UPDATE annotations SET ${setClause} WHERE id = ?`);
+    stmt.run(...values, id);
+  } catch (error) {
+    console.error("Error updating annotation:", error);
     throw error;
   }
 };

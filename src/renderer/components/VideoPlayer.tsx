@@ -32,9 +32,15 @@ import {
 import styles from "../styles/VideoPlayer.module.css";
 import { ContextualHint } from "./ContextualHint";
 import { AnnotationReplayLayer } from "./AnnotationReplayLayer";
+import { AnnotationTimingControl } from "./AnnotationTimingControl";
 import { formatVideoSrc } from "../utils/paths";
 import { TelestrationLayer } from "./TelestrationLayer";
-import { TelestrationShape, shapesToPngDataUrl } from "../utils/telestration";
+import {
+  TelestrationShape,
+  shapesToPngDataUrl,
+  REPLAY_SECONDS_OPTIONS,
+  DEFAULT_REPLAY_SECONDS,
+} from "../utils/telestration";
 import { useToastContext } from "../contexts/ToastContext";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 import { Annotation } from "../../types/global";
@@ -52,9 +58,6 @@ interface VideoPlayerProps {
   onClearMarks: () => void;
   onQuickTag?: (keyNumber: number) => void;
 }
-
-const REPLAY_SECONDS_OPTIONS = [1, 2, 3, 4, 6, 10];
-const DEFAULT_REPLAY_SECONDS = 4;
 
 interface VideoPlayerRef {
   seekTo: (time: number) => void;
@@ -102,6 +105,15 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   const speedControlRef = useRef<HTMLDivElement>(null);
   const volumeControlRef = useRef<HTMLDivElement>(null);
   const replayControlRef = useRef<HTMLDivElement>(null);
+  const [editingTimingId, setEditingTimingId] = useState<number | null>(null);
+  const timingPopoverRef = useRef<HTMLDivElement>(null);
+  const timingTriggerRef = useRef<HTMLButtonElement>(null);
+
+  useDismissableMenu(
+    editingTimingId !== null,
+    useCallback(() => setEditingTimingId(null), []),
+    [timingPopoverRef, timingTriggerRef],
+  );
 
   // Refs rather than class-name lookups: a CSS-module hash is a styling
   // identifier and nothing ties its shape to this behaviour.
@@ -256,7 +268,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       loadAnnotations();
     }, [loadAnnotations]);
 
-    const handleSaveAnnotation = useCallback(async () => {
+    const handleSaveAnnotation = useCallback(async (
+      timing: { display_seconds: number | null }
+    ) => {
       if (!projectId || !videoPath || shapes.length === 0) return;
       try {
         await window.electronAPI.createAnnotation({
@@ -264,6 +278,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           video_path: videoPath,
           timestamp: videoRef.current?.currentTime ?? 0,
           data: JSON.stringify(shapes),
+          ...timing,
         });
         await loadAnnotations();
         showSuccess(t("app.telestration.savedAnnotation"));
@@ -287,6 +302,21 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         setDrawMode(true);
       } catch (error) {
         console.error("Failed to open annotation:", error);
+      }
+    };
+
+    const updateAnnotationSeconds = async (
+      id: number,
+      seconds: number | null
+    ) => {
+      try {
+        await window.electronAPI.updateAnnotationTiming(id, {
+          display_seconds: seconds,
+        });
+        await loadAnnotations();
+      } catch (error) {
+        console.error("Failed to update annotation:", error);
+        showError(withCause(t("app.telestration.saveAnnotationError"), error));
       }
     };
 
@@ -667,6 +697,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             onShapesChange={setShapes}
             onSaveStill={handleSaveStill}
             onSaveAnnotation={projectId ? handleSaveAnnotation : undefined}
+            defaultReplaySeconds={replaySeconds}
             onClose={() => setDrawMode(false)}
             saving={savingStill}
           />
@@ -735,6 +766,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       tabIndex={0}
                       onClick={() => openAnnotation(annotation)}
                       onKeyDown={e => {
+                        // Keys pressed on the buttons inside the marker are theirs.
+                        if (e.target !== e.currentTarget) return;
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           openAnnotation(annotation);
@@ -745,6 +778,30 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       )}`}
                     >
                       <FontAwesomeIcon icon={faPen} />
+                      <button
+                        type="button"
+                        ref={
+                          editingTimingId === annotation.id
+                            ? timingTriggerRef
+                            : undefined
+                        }
+                        className={`${styles.annotationTiming} ${
+                          annotation.display_seconds != null
+                            ? styles.annotationTimingSet
+                            : ""
+                        }`}
+                        onClick={e => {
+                          e.stopPropagation();
+                          setEditingTimingId(prev =>
+                            prev === annotation.id ? null : annotation.id
+                          );
+                        }}
+                        title={t("app.telestration.editTiming")}
+                        aria-label={t("app.telestration.editTiming")}
+                        aria-expanded={editingTimingId === annotation.id}
+                      >
+                        <FontAwesomeIcon icon={faClock} />
+                      </button>
                       <button
                         type="button"
                         className={styles.annotationDelete}
@@ -759,6 +816,40 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                       </button>
                     </div>
                   ))}
+                {duration > 0 &&
+                  (() => {
+                    const editing = savedAnnotations.find(
+                      a => a.id === editingTimingId
+                    );
+                    if (!editing) return null;
+                    const pct = (editing.timestamp / duration) * 100;
+                    return (
+                      <div
+                        ref={timingPopoverRef}
+                        className={styles.timingPopover}
+                        style={{
+                          left: `${pct}%`,
+                          transform: `translateX(${
+                            pct < 15 ? "0" : pct > 85 ? "-100%" : "-50%"
+                          })`,
+                        }}
+                        role="group"
+                        aria-label={t("app.telestration.editTiming")}
+                      >
+                        <span className={styles.timingPopoverHeading}>
+                          {t("app.telestration.savedView")}:{" "}
+                          {formatTime(editing.timestamp)}
+                        </span>
+                        <AnnotationTimingControl
+                          seconds={editing.display_seconds ?? null}
+                          onSecondsChange={seconds =>
+                            updateAnnotationSeconds(editing.id, seconds)
+                          }
+                          defaultSeconds={replaySeconds}
+                        />
+                      </div>
+                    );
+                  })()}
               </div>
             </div>
 

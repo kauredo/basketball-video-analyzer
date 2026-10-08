@@ -161,12 +161,58 @@
   cursor: pointer;
 }
 
-.annotationMarker:hover .annotationDelete,
-.annotationMarker:focus-within .annotationDelete {
+.annotationTiming {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  width: 14px;
+  height: 14px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-round);
+  background: var(--color-primary-dark);
+  color: var(--text-white);
+  font-size: 8px;
+  cursor: pointer;
+}
+
+/* A drawing with its own timing keeps the badge showing so it stands out. */
+.annotationTimingSet {
   display: flex;
 }
 
+.annotationMarker:hover .annotationDelete,
+.annotationMarker:focus-within .annotationDelete,
+.annotationMarker:hover .annotationTiming,
+.annotationMarker:focus-within .annotationTiming {
+  display: flex;
+}
+
+.timingPopover {
+  position: absolute;
+  bottom: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-popover);
+  white-space: nowrap;
+}
+
+.timingPopoverHeading {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
 .annotationMarker:focus-visible,
+.annotationTiming:focus-visible,
 .annotationDelete:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;

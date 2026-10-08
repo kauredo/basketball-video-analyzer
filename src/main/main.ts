@@ -23,8 +23,10 @@ import {
   Player,
   getAnnotations,
   createAnnotation,
+  updateAnnotationTiming,
   deleteAnnotation,
   Annotation,
+  AnnotationTiming,
   getClips,
   createClip,
   updateClip,
@@ -1203,6 +1205,19 @@ ipcMain.handle(
       return createAnnotation(annotation);
     } catch (error) {
       console.error("Error creating annotation:", error);
+      throw error;
+    }
+  }
+);
+
+ipcMain.handle(
+  "update-annotation-timing",
+  async (_event, id: number, updates: AnnotationTiming) => {
+    try {
+      updateAnnotationTiming(id, updates);
+      return true;
+    } catch (error) {
+      console.error("Error updating annotation:", error);
       throw error;
     }
   }

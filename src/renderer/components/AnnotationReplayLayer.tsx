@@ -13,7 +13,8 @@ interface AnnotationReplayLayerProps {
   containerRef: React.RefObject<HTMLDivElement>;
   annotations: Annotation[];
   currentTime: number;
-  // How long a saved drawing stays on screen once playback reaches its timestamp.
+  // How long a saved drawing stays on screen once playback reaches its
+  // timestamp, for drawings that don't set their own.
   displaySeconds: number;
   enabled: boolean;
 }
@@ -46,6 +47,7 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
     () =>
       annotations.map(a => ({
         timestamp: a.timestamp,
+        seconds: a.display_seconds ?? null,
         shapes: safeParse(a.data),
       })),
     [annotations]
@@ -60,7 +62,7 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
         .filter(
           p =>
             currentTime >= p.timestamp &&
-            currentTime < p.timestamp + displaySeconds
+            currentTime < p.timestamp + (p.seconds ?? displaySeconds)
         )
         .map(p => p.timestamp)
         .join(","),
