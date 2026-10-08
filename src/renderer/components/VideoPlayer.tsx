@@ -269,11 +269,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
-    // Wipes the sketch and lets the play run on, so a coach can stop, draw,
-    // then carry on with one key.
     const clearAndPlay = () => {
       setShapes([]);
       setDrawMode(false);
+      // play() rejects when a pause interrupts it, which is not an error here.
       videoRef.current?.play().catch(() => {});
     };
 

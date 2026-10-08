@@ -296,15 +296,15 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   };
 
   // Exit on Escape (after dismissing any in-progress text input). Space
-  // clears and plays even when a toolbar button has focus, except where it
-  // types or opens something (the text label, the timing select).
+  // clears and plays, but leaves keys meant for a focused control alone.
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === " ") {
         const target = e.target as HTMLElement;
-        if (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+        if (["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(target.tagName)) return;
         e.preventDefault();
+        if (e.repeat) return;
         e.stopPropagation();
         onClearAndPlay();
         return;
@@ -393,6 +393,11 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
         className={styles.toolbar}
         role="toolbar"
         aria-label={t("app.telestration.title")}
+        // A clicked button would keep focus and swallow the next Space, which
+        // should clear and play. Keyboard focus still reaches every button.
+        onMouseDown={e => {
+          if ((e.target as HTMLElement).closest("button")) e.preventDefault();
+        }}
       >
         <div className={styles.toolGroup}>
           {TOOLS.map(ti => (
@@ -519,6 +524,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
           type="button"
           className={`${styles.toolBtn} ${styles.saveBtn}`}
           onClick={onClearAndPlay}
+          aria-keyshortcuts="Space"
           title={t("app.telestration.clearAndPlay")}
           aria-label={t("app.telestration.clearAndPlay")}
         >
