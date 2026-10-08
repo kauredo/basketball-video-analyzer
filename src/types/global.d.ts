@@ -22,8 +22,11 @@ export interface Annotation {
   video_path: string;
   timestamp: number;
   data: string; // JSON-encoded shape list
+  display_seconds?: number | null; // null = use the global replay setting
   created_at?: string;
 }
+
+export type AnnotationTiming = Pick<Annotation, "display_seconds">;
 
 /** Review state a coach sets after watching the cut back. */
 export type ClipStatus = "keep" | "cut" | "review";
@@ -127,7 +130,11 @@ export interface ElectronAPI {
     video_path: string;
     timestamp: number;
     data: string;
-  }) => Promise<Annotation>;
+  } & AnnotationTiming) => Promise<Annotation>;
+  updateAnnotationTiming: (
+    id: number,
+    updates: AnnotationTiming
+  ) => Promise<boolean>;
   deleteAnnotation: (id: number) => Promise<boolean>;
 
   // Export clips data

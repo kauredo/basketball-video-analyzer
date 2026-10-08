@@ -100,7 +100,12 @@ export interface ElectronAPI {
     video_path: string;
     timestamp: number;
     data: string;
+    display_seconds?: number | null;
   }) => Promise<any>;
+  updateAnnotationTiming: (
+    id: number,
+    updates: { display_seconds?: number | null }
+  ) => Promise<boolean>;
   deleteAnnotation: (id: number) => Promise<boolean>;
 
   // Clip operations
@@ -211,6 +216,8 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.invoke("get-annotations", projectId, videoPath),
   createAnnotation: annotation =>
     ipcRenderer.invoke("create-annotation", annotation),
+  updateAnnotationTiming: (id, updates) =>
+    ipcRenderer.invoke("update-annotation-timing", id, updates),
   deleteAnnotation: id => ipcRenderer.invoke("delete-annotation", id),
 
   // Clip operations

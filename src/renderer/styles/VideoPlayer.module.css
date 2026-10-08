@@ -143,7 +143,8 @@
   transform: translateX(-50%) scale(1.15);
 }
 
-.annotationDelete {
+.annotationDelete,
+.annotationTiming {
   position: absolute;
   top: -7px;
   right: -7px;
@@ -161,12 +162,26 @@
   cursor: pointer;
 }
 
+.annotationTiming {
+  right: auto;
+  left: -7px;
+  background: var(--color-primary-dark);
+}
+
+/* A drawing with its own timing keeps the badge showing so it stands out. */
+.annotationTimingSet {
+  display: flex;
+}
+
 .annotationMarker:hover .annotationDelete,
-.annotationMarker:focus-within .annotationDelete {
+.annotationMarker:focus-within .annotationDelete,
+.annotationMarker:hover .annotationTiming,
+.annotationMarker:focus-within .annotationTiming {
   display: flex;
 }
 
 .annotationMarker:focus-visible,
+.annotationTiming:focus-visible,
 .annotationDelete:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;
