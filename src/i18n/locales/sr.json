@@ -322,6 +322,8 @@
       "pauseVideo": "Pauziraj video",
       "clearAndPlay": "Obriši i pusti (razmak)",
       "clearAndPlayShort": "Obriši i pusti",
+      "moveToolbar": "Pomeri traku",
+      "moveToolbarHint": "Prevucite da pomerite traku. Strelice je pomeraju, dvoklik ili Home je vraća.",
       "done": "Završi crtanje",
       "undo": "Poništi",
       "clear": "Obriši sve",

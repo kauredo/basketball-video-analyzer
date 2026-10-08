@@ -322,6 +322,8 @@
       "pauseVideo": "Zaustavi videoposnetek",
       "clearAndPlay": "Počisti in predvajaj (preslednica)",
       "clearAndPlayShort": "Počisti in predvajaj",
+      "moveToolbar": "Premakni vrstico",
+      "moveToolbarHint": "Povlecite za premik vrstice. Puščice jo premaknejo, dvoklik ali Home jo vrne na mesto.",
       "done": "Končaj risanje",
       "undo": "Razveljavi",
       "clear": "Počisti vse",

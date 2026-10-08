@@ -322,6 +322,8 @@
       "pauseVideo": "Metti in pausa il video",
       "clearAndPlay": "Cancella e riproduci (Spazio)",
       "clearAndPlayShort": "Cancella e riproduci",
+      "moveToolbar": "Sposta barra",
+      "moveToolbarHint": "Trascina per spostare la barra. Le frecce la spostano, doppio clic o Home la rimette a posto.",
       "done": "Fine disegno",
       "undo": "Annulla",
       "clear": "Cancella tutto",

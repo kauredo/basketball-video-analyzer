@@ -4,6 +4,12 @@
   touch-action: none;
 }
 
+.toolbarLane {
+  position: absolute;
+  z-index: calc(var(--z-popover) + 2);
+  pointer-events: none;
+}
+
 .textInput {
   position: absolute;
   z-index: calc(var(--z-popover) + 1);
@@ -28,6 +34,7 @@
 }
 
 .toolbar {
+  pointer-events: auto;
   position: absolute;
   top: 12px;
   left: 50%;
@@ -42,9 +49,21 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(8px);
+  /* An absolute box sizes to the room right of its left edge, which is half
+     the video when centred and nothing when dragged to the right side. */
+  width: max-content;
   max-width: calc(100% - 24px);
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.grip {
+  cursor: grab;
+  touch-action: none;
+}
+
+.grip:active {
+  cursor: grabbing;
 }
 
 .toolGroup {

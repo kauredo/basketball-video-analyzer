@@ -324,6 +324,8 @@
       "pauseVideo": "Pausar o vídeo",
       "clearAndPlay": "Limpar e reproduzir (Espaço)",
       "clearAndPlayShort": "Limpar e reproduzir",
+      "moveToolbar": "Mover barra",
+      "moveToolbarHint": "Arraste para mover a barra. As setas ajustam-na, duplo clique ou Home repõe-na.",
       "done": "Concluir desenho",
       "undo": "Anular",
       "clear": "Limpar tudo",

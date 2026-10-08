@@ -322,6 +322,8 @@
       "pauseVideo": "Pausar el vídeo",
       "clearAndPlay": "Borrar y reproducir (Espacio)",
       "clearAndPlayShort": "Borrar y reproducir",
+      "moveToolbar": "Mover barra",
+      "moveToolbarHint": "Arrastra para mover la barra. Las flechas la ajustan; doble clic o Inicio la restablece.",
       "done": "Finalizar dibujo",
       "undo": "Deshacer",
       "clear": "Borrar todo",

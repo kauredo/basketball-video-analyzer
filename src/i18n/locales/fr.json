@@ -323,6 +323,8 @@
       "pauseVideo": "Mettre la vidéo en pause",
       "clearAndPlay": "Effacer et lire (Espace)",
       "clearAndPlayShort": "Effacer et lire",
+      "moveToolbar": "Déplacer la barre",
+      "moveToolbarHint": "Glissez pour déplacer la barre. Les flèches l'ajustent, double-clic ou Début la remet en place.",
       "done": "Terminer le dessin",
       "undo": "Annuler",
       "clear": "Tout effacer",

@@ -301,6 +301,8 @@
       "pauseVideo": "Pause the video",
       "clearAndPlay": "Clear and play (Space)",
       "clearAndPlayShort": "Clear & play",
+      "moveToolbar": "Move toolbar",
+      "moveToolbarHint": "Drag to move the toolbar. Arrow keys nudge it, double-click or Home puts it back.",
       "done": "Done drawing",
       "undo": "Undo",
       "clear": "Clear all",
