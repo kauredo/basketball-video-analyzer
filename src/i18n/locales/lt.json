@@ -313,6 +313,8 @@
       "title": "Piešimo įrankiai",
       "draw": "Piešti ant vaizdo įrašo",
       "replayToggle": "Rodyti išsaugotus piešinius atkūrimo metu",
+      "replayOff": "Išjungta",
+      "replayDuration": "Kiek laiko išsaugoti piešiniai rodomi ekrane",
       "done": "Baigti piešti",
       "undo": "Atšaukti",
       "clear": "Išvalyti viską",

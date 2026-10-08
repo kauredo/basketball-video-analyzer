@@ -315,6 +315,8 @@
       "title": "Ferramentas de desenho",
       "draw": "Desenhar no vídeo",
       "replayToggle": "Mostrar desenhos guardados durante a reprodução",
+      "replayOff": "Desligado",
+      "replayDuration": "Quanto tempo os desenhos guardados ficam no ecrã",
       "done": "Concluir desenho",
       "undo": "Anular",
       "clear": "Limpar tudo",

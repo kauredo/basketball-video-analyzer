@@ -313,6 +313,8 @@
       "title": "Alatke za crtanje",
       "draw": "Crtaj po videu",
       "replayToggle": "Prikaži sačuvane crteže tokom reprodukcije",
+      "replayOff": "Isključeno",
+      "replayDuration": "Koliko dugo sačuvani crteži ostaju na ekranu",
       "done": "Završi crtanje",
       "undo": "Poništi",
       "clear": "Obriši sve",

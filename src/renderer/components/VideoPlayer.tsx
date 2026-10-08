@@ -53,6 +53,9 @@ interface VideoPlayerProps {
   onQuickTag?: (keyNumber: number) => void;
 }
 
+const REPLAY_SECONDS_OPTIONS = [1, 2, 3, 4, 6, 10];
+const DEFAULT_REPLAY_SECONDS = 4;
+
 interface VideoPlayerRef {
   seekTo: (time: number) => void;
   getOverlay: () => string | null;
@@ -94,19 +97,22 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [playbackRate, setPlaybackRate] = useState(1);
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showVolumeMenu, setShowVolumeMenu] = useState(false);
+  const [showReplayMenu, setShowReplayMenu] = useState(false);
 
   const speedControlRef = useRef<HTMLDivElement>(null);
   const volumeControlRef = useRef<HTMLDivElement>(null);
+  const replayControlRef = useRef<HTMLDivElement>(null);
 
   // Refs rather than class-name lookups: a CSS-module hash is a styling
   // identifier and nothing ties its shape to this behaviour.
   useDismissableMenu(
-    showSpeedMenu || showVolumeMenu,
+    showSpeedMenu || showVolumeMenu || showReplayMenu,
     useCallback(() => {
       setShowSpeedMenu(false);
       setShowVolumeMenu(false);
+      setShowReplayMenu(false);
     }, []),
-    [speedControlRef, volumeControlRef],
+    [speedControlRef, volumeControlRef, replayControlRef],
   );
     const [keyBindings, setKeyBindings] = useState({
       markInKey: "z",
@@ -116,6 +122,30 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [replayEnabled, setReplayEnabled] = useState(() =>
       loadPref(STORAGE_KEYS.ANNOTATION_REPLAY, true)
     );
+    const [replaySeconds, setReplaySeconds] = useState(() => {
+      const stored = loadPref(
+        STORAGE_KEYS.ANNOTATION_REPLAY_SECONDS,
+        DEFAULT_REPLAY_SECONDS
+      );
+      return REPLAY_SECONDS_OPTIONS.includes(stored)
+        ? stored
+        : DEFAULT_REPLAY_SECONDS;
+    });
+
+    const replayLabel = replayEnabled
+      ? `${replaySeconds}s`
+      : t("app.telestration.replayOff");
+
+    // null turns replay off and keeps the last duration for when it comes back.
+    const selectReplay = (seconds: number | null) => {
+      setReplayEnabled(seconds !== null);
+      savePref(STORAGE_KEYS.ANNOTATION_REPLAY, seconds !== null);
+      if (seconds !== null) {
+        setReplaySeconds(seconds);
+        savePref(STORAGE_KEYS.ANNOTATION_REPLAY_SECONDS, seconds);
+      }
+      setShowReplayMenu(false);
+    };
     const [timeSearchValue, setTimeSearchValue] = useState("");
     const [timeSearchError, setTimeSearchError] = useState<string | null>(null);
     const [showFirstVideoHint, setShowFirstVideoHint] = useState(false);
@@ -626,6 +656,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             containerRef={containerRef}
             annotations={savedAnnotations}
             currentTime={currentTime}
+            displaySeconds={replaySeconds}
             enabled={replayEnabled && !drawMode && !videoError}
           />
           <TelestrationLayer
@@ -880,6 +911,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     className={styles.speedButton}
                     onClick={() => {
                       setShowSpeedMenu(false);
+                      setShowReplayMenu(false);
                       setShowVolumeMenu(!showVolumeMenu);
                     }}
                     title={t("app.video.volumeLabel")}
@@ -918,6 +950,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     className={styles.speedButton}
                     onClick={() => {
                       setShowVolumeMenu(false);
+                      setShowReplayMenu(false);
                       setShowSpeedMenu(!showSpeedMenu);
                     }}
                     title={t("app.video.playbackSpeed")}
@@ -949,24 +982,66 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  className={`${styles.speedButton} ${
-                    replayEnabled ? styles.drawButtonActive : ""
-                  }`}
-                  onClick={() => {
-                    setReplayEnabled(prev => {
-                      const next = !prev;
-                      savePref(STORAGE_KEYS.ANNOTATION_REPLAY, next);
-                      return next;
-                    });
-                  }}
-                  title={t("app.telestration.replayToggle")}
-                  aria-label={t("app.telestration.replayToggle")}
-                  aria-pressed={replayEnabled}
-                >
-                  <FontAwesomeIcon icon={faClapperboard} />
-                </button>
+                <div className={styles.speedControl} ref={replayControlRef}>
+                  <button
+                    type="button"
+                    className={`${styles.speedButton} ${
+                      replayEnabled ? styles.drawButtonActive : ""
+                    }`}
+                    onClick={() => {
+                      setShowSpeedMenu(false);
+                      setShowVolumeMenu(false);
+                      setShowReplayMenu(!showReplayMenu);
+                    }}
+                    title={t("app.telestration.replayToggle")}
+                    aria-label={`${t("app.telestration.replayToggle")}: ${replayLabel}`}
+                    aria-expanded={showReplayMenu}
+                  >
+                    <FontAwesomeIcon icon={faClapperboard} />
+                    <span className={styles.speedValue}>{replayLabel}</span>
+                  </button>
+                  {showReplayMenu && (
+                    <div
+                      className={`${styles.speedMenu} ${styles.replayMenu}`}
+                      role="group"
+                      aria-labelledby="replay-menu-heading"
+                    >
+                      <span
+                        id="replay-menu-heading"
+                        className={styles.replayMenuHeading}
+                      >
+                        {t("app.telestration.replayDuration")}
+                      </span>
+                      <button
+                        type="button"
+                        aria-pressed={!replayEnabled}
+                        className={`${styles.speedOption} ${
+                          !replayEnabled ? styles.activeSpeed : ""
+                        }`}
+                        onClick={() => selectReplay(null)}
+                      >
+                        {t("app.telestration.replayOff")}
+                      </button>
+                      {REPLAY_SECONDS_OPTIONS.map(seconds => {
+                        const selected =
+                          replayEnabled && replaySeconds === seconds;
+                        return (
+                          <button
+                            key={seconds}
+                            type="button"
+                            aria-pressed={selected}
+                            className={`${styles.speedOption} ${
+                              selected ? styles.activeSpeed : ""
+                            }`}
+                            onClick={() => selectReplay(seconds)}
+                          >
+                            {seconds}s
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
                 <button
                   type="button"

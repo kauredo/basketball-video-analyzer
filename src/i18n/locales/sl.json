@@ -313,6 +313,8 @@
       "title": "Orodja za risanje",
       "draw": "Riši po videu",
       "replayToggle": "Prikaži shranjene risbe med predvajanjem",
+      "replayOff": "Izklopljeno",
+      "replayDuration": "Kako dolgo shranjene risbe ostanejo na zaslonu",
       "done": "Končaj risanje",
       "undo": "Razveljavi",
       "clear": "Počisti vse",

@@ -314,6 +314,8 @@
       "title": "Outils de dessin",
       "draw": "Dessiner sur la vidéo",
       "replayToggle": "Afficher les dessins enregistrés pendant la lecture",
+      "replayOff": "Désactivé",
+      "replayDuration": "Durée d'affichage des dessins enregistrés",
       "done": "Terminer le dessin",
       "undo": "Annuler",
       "clear": "Tout effacer",
