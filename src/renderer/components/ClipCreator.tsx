@@ -14,7 +14,7 @@ import styles from "../styles/ClipCreator.module.css";
 import { useToastContext } from "../contexts/ToastContext";
 import { formatVideoTime } from "../utils/format";
 import { Court } from "./Court";
-import { Player } from "../../types/global";
+import { ClipDrawingImage, Player } from "../../types/global";
 import { withCause } from "../utils/errors";
 
 interface Category {
@@ -36,6 +36,7 @@ interface ClipCreatorProps {
   currentQuarter: string | null;
   onQuarterChange: (quarter: string | null) => void;
   getOverlay?: () => string | null;
+  getClipDrawings?: (start: number, end: number) => ClipDrawingImage[];
 }
 
 export const ClipCreator: React.FC<ClipCreatorProps> = ({
@@ -48,6 +49,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   currentQuarter,
   onQuarterChange,
   getOverlay,
+  getClipDrawings,
 }) => {
   const { t, i18n } = useTranslation();
   const { showError, showSuccess, showWarning } = useToastContext();
@@ -303,6 +305,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         notes: clipNotes.trim() || undefined,
         projectId: currentProject.id,
         overlayImage: getOverlay?.() ?? undefined,
+        drawings: getClipDrawings?.(markInTime!, markOutTime!),
       });
     } catch (error) {
       // Enhanced error logging for diagnostics

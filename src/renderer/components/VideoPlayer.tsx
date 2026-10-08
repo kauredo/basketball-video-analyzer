@@ -43,7 +43,11 @@ import {
 } from "../utils/telestration";
 import { useToastContext } from "../contexts/ToastContext";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
-import { Annotation, AnnotationTiming } from "../../types/global";
+import {
+  Annotation,
+  AnnotationTiming,
+  ClipDrawingImage,
+} from "../../types/global";
 import { withCause } from "../utils/errors";
 
 interface VideoPlayerProps {
@@ -59,9 +63,13 @@ interface VideoPlayerProps {
   onQuickTag?: (keyNumber: number) => void;
 }
 
+// Mirrors MAX_CLIP_DRAWINGS in src/main/clipDrawings.ts, which main enforces.
+const MAX_CLIP_DRAWINGS = 20;
+
 interface VideoPlayerRef {
   seekTo: (time: number) => void;
   getOverlay: () => string | null;
+  getClipDrawings: (start: number, end: number) => ClipDrawingImage[];
 }
 
 export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
@@ -234,6 +242,42 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           video.videoWidth,
           video.videoHeight
         );
+      },
+      // Saved drawings that would replay inside a clip's range, including one
+      // already on screen at mark-in. Nothing when replay is off, since the
+      // coach chose not to see them. Main applies the same rule and cap.
+      getClipDrawings: (start: number, end: number): ClipDrawingImage[] => {
+        const video = videoRef.current;
+        if (!video || !replayEnabled) return [];
+        const shown = savedAnnotations.filter(a => {
+          const seconds = a.display_seconds ?? replaySeconds;
+          if (a.timestamp >= end) return false;
+          if (a.timestamp >= start) return true;
+          return !a.pause_playback && a.timestamp + seconds > start;
+        });
+        return shown.slice(0, MAX_CLIP_DRAWINGS).flatMap(a => {
+          let shapes: TelestrationShape[];
+          try {
+            shapes = JSON.parse(a.data);
+          } catch {
+            return [];
+          }
+          const image = shapesToPngDataUrl(
+            shapes,
+            video.videoWidth,
+            video.videoHeight
+          );
+          return image
+            ? [
+                {
+                  image,
+                  timestamp: a.timestamp,
+                  seconds: a.display_seconds ?? replaySeconds,
+                  pause: a.pause_playback === true,
+                },
+              ]
+            : [];
+        });
       },
     }));
 

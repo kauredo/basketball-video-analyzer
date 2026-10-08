@@ -52,6 +52,7 @@ import {
   deletePreset,
 } from "./database";
 import { MEDIA_SCHEME } from "../shared/media";
+import { buildDrawingGraph, selectClipDrawings } from "./clipDrawings";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -553,6 +554,18 @@ const writeOverlayToTemp = (overlayImage: string): string => {
   return overlayPath;
 };
 
+// ffmpeg prints the input's streams before complaining there is no output,
+// which is the only stream probe available now ffprobe isn't bundled.
+const hasAudioStream = (inputPath: string): Promise<boolean> =>
+  new Promise(resolve => {
+    if (!ffmpegPath) return resolve(false);
+    let stderr = "";
+    const probe = spawn(ffmpegPath, ["-hide_banner", "-i", inputPath]);
+    probe.stderr.on("data", (data: Buffer) => (stderr += data.toString()));
+    probe.on("close", () => resolve(/Stream #\d+:\d+.*: Audio:/.test(stderr)));
+    probe.on("error", () => resolve(false));
+  });
+
 // Best-effort removal of a temp file.
 const deleteTempFile = (filePath: string): void => {
   try {
@@ -642,6 +655,12 @@ ipcMain.handle(
       notes?: string;
       projectId: number;
       overlayImage?: string;
+      drawings?: Array<{
+        image: string;
+        timestamp: number;
+        seconds: number;
+        pause: boolean;
+      }>;
     }
   ) => {
     return new Promise((resolve, reject) => {
@@ -659,6 +678,7 @@ ipcMain.handle(
           notes,
           projectId,
           overlayImage,
+          drawings,
         } = params;
 
         // Use native path separators for file system operations
@@ -774,6 +794,12 @@ ipcMain.handle(
         const processId = uuidv4().slice(0, 8);
         mainWindow.webContents.send("clip-process-id", { processId });
 
+        // Saved drawings that show up in the clip, burned in at their moment.
+        const selectedDrawings = selectClipDrawings(startTime, duration, drawings ?? []);
+        const audioProbe = selectedDrawings.some(d => d.pause)
+          ? hasAudioStream(normalizedInputPath)
+          : Promise.resolve(false);
+
         // First, generate the thumbnail
         const thumbnailCommand = ffmpeg(ffmpegInputPath);
 
@@ -800,9 +826,10 @@ ipcMain.handle(
             activeClipProcesses.delete(`${processId}-thumb`);
             reject(new Error("ERROR_THUMBNAIL_FAILED"));
           })
-          .on("end", () => {
+          .on("end", async () => {
             activeClipProcesses.delete(`${processId}-thumb`);
             console.log("Thumbnail created successfully");
+            const hasAudio = await audioProbe;
 
             // After thumbnail is created, create the clip
             console.log("Starting clip creation...");
@@ -818,8 +845,17 @@ ipcMain.handle(
                 console.error("Skipping clip overlay:", overlayError);
               }
             }
+            const clipDrawings = selectedDrawings.flatMap(d => {
+              try {
+                return [{ ...d, path: writeOverlayToTemp(d.image) }];
+              } catch (drawingError) {
+                console.error("Skipping clip drawing:", drawingError);
+                return [];
+              }
+            });
             const cleanupClipOverlay = () => {
               if (clipOverlayPath) deleteTempFile(clipOverlayPath);
+              clipDrawings.forEach(d => deleteTempFile(d.path));
             };
 
             const videoOutputOptions = [
@@ -841,15 +877,36 @@ ipcMain.handle(
             ];
 
             const clipCommand = ffmpeg(ffmpegInputPath);
+            let addedSeconds = 0;
 
-            clipCommand.setStartTime(startTime).setDuration(duration);
-
-            if (clipOverlayPath) {
+            if (clipDrawings.length > 0) {
+              // -t goes on the input here: freezes make the output longer
+              // than the source range.
+              clipCommand.inputOptions(["-ss", String(startTime), "-t", String(duration)]);
+              clipDrawings.forEach(d => clipCommand.input(d.path));
+              if (clipOverlayPath) clipCommand.input(clipOverlayPath);
+              const graph = buildDrawingGraph(
+                duration,
+                clipDrawings,
+                1,
+                hasAudio,
+                clipOverlayPath ? clipDrawings.length + 1 : undefined
+              );
+              addedSeconds = graph.addedSeconds;
+              clipCommand.complexFilter(graph.filters).outputOptions([
+                "-map",
+                `[${graph.videoOut}]`,
+                ...(graph.audioMap ? ["-map", graph.audioMap] : []),
+                ...videoOutputOptions,
+              ]);
+            } else if (clipOverlayPath) {
+              clipCommand.setStartTime(startTime).setDuration(duration);
               clipCommand
                 .input(clipOverlayPath)
                 .complexFilter(["[0:v][1:v]overlay=0:0[outv]"])
                 .outputOptions(["-map", "[outv]", "-map", "0:a?", ...videoOutputOptions]);
             } else {
+              clipCommand.setStartTime(startTime).setDuration(duration);
               clipCommand.outputOptions(videoOutputOptions);
             }
 
@@ -917,7 +974,7 @@ ipcMain.handle(
                 if (!match) return;
                 const elapsed = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
                 mainWindow.webContents.send("clip-progress", {
-                  percent: Math.min(100, (elapsed / duration) * 100),
+                  percent: Math.min(100, (elapsed / (duration + addedSeconds)) * 100),
                   timemark: `${match[1]}:${match[2]}:${match[3]}`,
                 });
               })
