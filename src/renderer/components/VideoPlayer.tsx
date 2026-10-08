@@ -864,7 +864,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                             : undefined
                         }
                       >
-                        <FontAwesomeIcon icon={faClock} />
+                        <FontAwesomeIcon
+                          icon={annotation.pause_playback ? faPause : faClock}
+                        />
                       </button>
                       <button
                         type="button"

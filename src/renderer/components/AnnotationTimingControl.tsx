@@ -1,7 +1,7 @@
 import React, { RefObject, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faPause } from "@fortawesome/free-solid-svg-icons";
 import { AnnotationTiming } from "../../types/global";
 import { REPLAY_SECONDS_OPTIONS } from "../utils/telestration";
 import { useDismissableMenu } from "../hooks/useDismissableMenu";
@@ -54,15 +54,19 @@ export const AnnotationTimingControl: React.FC<
           ))}
         </select>
       </label>
-      <label className={styles.field}>
-        <input
-          type="checkbox"
-          className={styles.checkbox}
-          checked={value.pause_playback === true}
-          onChange={e => onChange({ pause_playback: e.target.checked })}
-        />
-        {t("app.telestration.pauseVideo")}
-      </label>
+      <button
+        type="button"
+        className={`${styles.toggle} ${
+          value.pause_playback ? styles.toggleOn : ""
+        }`}
+        onClick={() => onChange({ pause_playback: !value.pause_playback })}
+        aria-pressed={value.pause_playback === true}
+        title={t("app.telestration.pauseVideo")}
+        aria-label={showLabel ? undefined : t("app.telestration.pauseVideo")}
+      >
+        <FontAwesomeIcon icon={faPause} aria-hidden />
+        {showLabel && t("app.telestration.pauseVideo")}
+      </button>
     </span>
   );
 };
