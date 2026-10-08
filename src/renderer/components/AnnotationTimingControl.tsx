@@ -109,7 +109,7 @@ export const AnnotationTimingPopover: React.FC<
       triggerRef.current?.focus();
       onClose();
     }, [triggerRef, onClose]),
-    [popoverRef, triggerRef],
+    [popoverRef, triggerRef]
   );
 
   const shift =

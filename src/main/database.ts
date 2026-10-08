@@ -1353,25 +1353,19 @@ export const updateAnnotationTiming = (
   updates: AnnotationTiming,
 ): void => {
   try {
-    // Allowlisted for the same reason as updatePlayer: column names are
-    // interpolated into SQL.
-    const allowed: (keyof AnnotationTiming)[] = [
-      "display_seconds",
-      "pause_playback",
-    ];
-    const fields = allowed.filter((key) => key in updates);
-    if (fields.length === 0) return;
+    const sets: string[] = [];
+    const values: (number | null)[] = [];
+    if ("display_seconds" in updates) {
+      sets.push("display_seconds = ?");
+      values.push(toDisplaySeconds(updates.display_seconds));
+    }
+    if ("pause_playback" in updates) {
+      sets.push("pause_playback = ?");
+      values.push(updates.pause_playback === true ? 1 : 0);
+    }
+    if (sets.length === 0) return;
 
-    const setClause = fields.map((field) => `${field} = ?`).join(", ");
-    const values = fields.map((field) =>
-      field === "pause_playback"
-        ? updates.pause_playback === true
-          ? 1
-          : 0
-        : toDisplaySeconds(updates.display_seconds),
-    );
-
-    const stmt = db.prepare(`UPDATE annotations SET ${setClause} WHERE id = ?`);
+    const stmt = db.prepare(`UPDATE annotations SET ${sets.join(", ")} WHERE id = ?`);
     stmt.run(...values, id);
   } catch (error) {
     console.error("Error updating annotation:", error);

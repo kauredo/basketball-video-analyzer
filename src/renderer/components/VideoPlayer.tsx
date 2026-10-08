@@ -142,7 +142,6 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       ? `${replaySeconds}s`
       : t("app.telestration.replayOff");
 
-    // The timer that resumes playback after a pausing drawing has been shown.
     const holdTimerRef = useRef<number | null>(null);
     const releaseHold = useCallback(() => {
       if (holdTimerRef.current !== null) {
@@ -159,39 +158,38 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       const pausing = savedAnnotations.filter(a => a.pause_playback);
       if (pausing.length === 0) return;
 
-      let prev: number | null = video.currentTime;
+      let prev = video.currentTime;
       let frame = 0;
-      const onSeeking = () => {
-        prev = null;
-      };
       const tick = () => {
         const now = video.currentTime;
         const from = prev;
         prev = now;
-        const hit =
-          from !== null && now > from
-            ? pausing.find(a => a.timestamp > from && a.timestamp <= now)
-            : undefined;
-        if (hit) {
+        // A seek moves currentTime at once but its event arrives later, so a
+        // skip can look like playback crossing a drawing. video.seeking is set
+        // synchronously, and real playback never covers a second in a frame.
+        const crossed = !video.seeking && now > from && now - from < 1;
+        const hits = crossed
+          ? pausing.filter(a => a.timestamp > from && a.timestamp <= now)
+          : [];
+        if (hits.length > 0) {
           video.pause();
+          const seconds = Math.max(
+            ...hits.map(a => a.display_seconds ?? replaySeconds)
+          );
           holdTimerRef.current = window.setTimeout(() => {
             holdTimerRef.current = null;
             video.play().catch(() => {});
-          }, (hit.display_seconds ?? replaySeconds) * 1000);
+          }, seconds * 1000);
           return;
         }
         frame = requestAnimationFrame(tick);
       };
-      video.addEventListener("seeking", onSeeking);
       frame = requestAnimationFrame(tick);
-      return () => {
-        cancelAnimationFrame(frame);
-        video.removeEventListener("seeking", onSeeking);
-      };
+      return () => cancelAnimationFrame(frame);
     }, [isPlaying, replayEnabled, drawMode, savedAnnotations, replaySeconds]);
 
-    // Playing, seeking or drawing during a hold means the coach has taken
-    // over, so the automatic resume is dropped.
+    // Playing, seeking, drawing or turning replay off during a hold means the
+    // coach has taken over, so the automatic resume is dropped.
     useEffect(() => {
       const video = videoRef.current;
       if (!video) return;
@@ -202,11 +200,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         video.removeEventListener("seeking", releaseHold);
         releaseHold();
       };
-    }, [videoPath, releaseHold]);
-
-    useEffect(() => {
-      if (drawMode) releaseHold();
-    }, [drawMode, releaseHold]);
+    }, [videoPath, videoError, drawMode, replayEnabled, releaseHold]);
 
     // null turns replay off and keeps the last duration for when it comes back.
     const selectReplay = (seconds: number | null) => {
@@ -533,6 +527,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     };
 
     const togglePlay = () => {
+      releaseHold();
       if (videoRef.current) {
         if (isPlaying) {
           videoRef.current.pause();
@@ -850,7 +845,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                         }
                         className={`${styles.annotationTiming} ${
                           annotation.display_seconds != null ||
-                          annotation.pause_playback
+                          annotation.pause_playback === true
                             ? styles.annotationTimingSet
                             : ""
                         }`}
