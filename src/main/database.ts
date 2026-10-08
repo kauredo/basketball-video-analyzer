@@ -70,6 +70,7 @@ export interface Annotation {
   timestamp: number; // video seconds
   data: string; // JSON-encoded shape list
   display_seconds?: number | null; // null = use the global replay setting
+  pause_playback?: boolean; // stored as 0/1
   created_at?: string;
 }
 
@@ -713,6 +714,7 @@ const createTables = () => {
       timestamp REAL NOT NULL,
       data TEXT NOT NULL,
       display_seconds REAL,
+      pause_playback INTEGER NOT NULL DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
     )
@@ -1268,6 +1270,12 @@ const migrateAnnotationColumns = () => {
       db.exec("ALTER TABLE annotations ADD COLUMN display_seconds REAL");
       console.log("Added display_seconds column to annotations");
     }
+    if (!has("pause_playback")) {
+      db.exec(
+        "ALTER TABLE annotations ADD COLUMN pause_playback INTEGER NOT NULL DEFAULT 0",
+      );
+      console.log("Added pause_playback column to annotations");
+    }
   } catch (error) {
     console.error("Error migrating annotation columns:", error);
   }
@@ -1292,7 +1300,9 @@ export const getAnnotations = (
       WHERE project_id = ? AND video_path = ?
       ORDER BY timestamp ASC
     `);
-    return stmt.all(projectId, videoPath) as Annotation[];
+    return (stmt.all(projectId, videoPath) as Array<
+      Omit<Annotation, "pause_playback"> & { pause_playback: number }
+    >).map((row) => ({ ...row, pause_playback: row.pause_playback === 1 }));
   } catch (error) {
     console.error("Error getting annotations:", error);
     return [];
@@ -1305,8 +1315,8 @@ export const createAnnotation = (
   try {
     const displaySeconds = toDisplaySeconds(annotation.display_seconds);
     const stmt = db.prepare(`
-      INSERT INTO annotations (project_id, video_path, timestamp, data, display_seconds)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO annotations (project_id, video_path, timestamp, data, display_seconds, pause_playback)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -1315,12 +1325,14 @@ export const createAnnotation = (
       annotation.timestamp,
       annotation.data,
       displaySeconds,
+      annotation.pause_playback === true ? 1 : 0,
     );
 
     return {
       id: result.lastInsertRowid as number,
       ...annotation,
       display_seconds: displaySeconds,
+      pause_playback: annotation.pause_playback === true,
       created_at: new Date().toISOString(),
     };
   } catch (error) {
@@ -1331,7 +1343,10 @@ export const createAnnotation = (
 
 
 
-export type AnnotationTiming = Pick<Annotation, "display_seconds">;
+export type AnnotationTiming = Pick<
+  Annotation,
+  "display_seconds" | "pause_playback"
+>;
 
 export const updateAnnotationTiming = (
   id: number,
@@ -1340,12 +1355,21 @@ export const updateAnnotationTiming = (
   try {
     // Allowlisted for the same reason as updatePlayer: column names are
     // interpolated into SQL.
-    const allowed: (keyof AnnotationTiming)[] = ["display_seconds"];
+    const allowed: (keyof AnnotationTiming)[] = [
+      "display_seconds",
+      "pause_playback",
+    ];
     const fields = allowed.filter((key) => key in updates);
     if (fields.length === 0) return;
 
     const setClause = fields.map((field) => `${field} = ?`).join(", ");
-    const values = fields.map((field) => toDisplaySeconds(updates[field]));
+    const values = fields.map((field) =>
+      field === "pause_playback"
+        ? updates.pause_playback === true
+          ? 1
+          : 0
+        : toDisplaySeconds(updates.display_seconds),
+    );
 
     const stmt = db.prepare(`UPDATE annotations SET ${setClause} WHERE id = ?`);
     stmt.run(...values, id);

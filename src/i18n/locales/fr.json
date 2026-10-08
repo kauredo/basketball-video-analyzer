@@ -320,6 +320,7 @@
       "drawingSecondsDefault": "{{seconds}}s (par défaut)",
       "editTiming": "Durée du dessin",
       "showFor": "Afficher pendant",
+      "pauseVideo": "Mettre la vidéo en pause",
       "done": "Terminer le dessin",
       "undo": "Annuler",
       "clear": "Tout effacer",

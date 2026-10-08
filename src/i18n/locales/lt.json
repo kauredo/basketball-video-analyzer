@@ -319,6 +319,7 @@
       "drawingSecondsDefault": "{{seconds}}s (numatytasis)",
       "editTiming": "Piešinio trukmė",
       "showFor": "Rodyti",
+      "pauseVideo": "Pristabdyti vaizdo įrašą",
       "done": "Baigti piešti",
       "undo": "Atšaukti",
       "clear": "Išvalyti viską",

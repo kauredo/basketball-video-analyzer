@@ -101,10 +101,11 @@ export interface ElectronAPI {
     timestamp: number;
     data: string;
     display_seconds?: number | null;
+    pause_playback?: boolean;
   }) => Promise<any>;
   updateAnnotationTiming: (
     id: number,
-    updates: { display_seconds?: number | null }
+    updates: { display_seconds?: number | null; pause_playback?: boolean }
   ) => Promise<boolean>;
   deleteAnnotation: (id: number) => Promise<boolean>;
 

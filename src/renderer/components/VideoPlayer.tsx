@@ -142,6 +142,72 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       ? `${replaySeconds}s`
       : t("app.telestration.replayOff");
 
+    // The timer that resumes playback after a pausing drawing has been shown.
+    const holdTimerRef = useRef<number | null>(null);
+    const releaseHold = useCallback(() => {
+      if (holdTimerRef.current !== null) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+    }, []);
+
+    // Watch every frame rather than timeupdate, which fires only about four
+    // times a second and would stop the video well past the drawing.
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video || !isPlaying || !replayEnabled || drawMode) return;
+      const pausing = savedAnnotations.filter(a => a.pause_playback);
+      if (pausing.length === 0) return;
+
+      let prev: number | null = video.currentTime;
+      let frame = 0;
+      const onSeeking = () => {
+        prev = null;
+      };
+      const tick = () => {
+        const now = video.currentTime;
+        const from = prev;
+        prev = now;
+        const hit =
+          from !== null && now > from
+            ? pausing.find(a => a.timestamp > from && a.timestamp <= now)
+            : undefined;
+        if (hit) {
+          video.pause();
+          holdTimerRef.current = window.setTimeout(() => {
+            holdTimerRef.current = null;
+            video.play().catch(() => {});
+          }, (hit.display_seconds ?? replaySeconds) * 1000);
+          return;
+        }
+        frame = requestAnimationFrame(tick);
+      };
+      video.addEventListener("seeking", onSeeking);
+      frame = requestAnimationFrame(tick);
+      return () => {
+        cancelAnimationFrame(frame);
+        video.removeEventListener("seeking", onSeeking);
+      };
+    }, [isPlaying, replayEnabled, drawMode, savedAnnotations, replaySeconds]);
+
+    // Playing, seeking or drawing during a hold means the coach has taken
+    // over, so the automatic resume is dropped.
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+      video.addEventListener("play", releaseHold);
+      video.addEventListener("seeking", releaseHold);
+      return () => {
+        video.removeEventListener("play", releaseHold);
+        video.removeEventListener("seeking", releaseHold);
+        releaseHold();
+      };
+    }, [videoPath, releaseHold]);
+
+    useEffect(() => {
+      if (drawMode) releaseHold();
+    }, [drawMode, releaseHold]);
+
     // null turns replay off and keeps the last duration for when it comes back.
     const selectReplay = (seconds: number | null) => {
       setReplayEnabled(seconds !== null);
@@ -683,6 +749,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             annotations={savedAnnotations}
             currentTime={currentTime}
             displaySeconds={replaySeconds}
+            isPlaying={isPlaying}
             enabled={replayEnabled && !drawMode && !videoError}
           />
           <TelestrationLayer
@@ -782,7 +849,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                             : undefined
                         }
                         className={`${styles.annotationTiming} ${
-                          annotation.display_seconds != null
+                          annotation.display_seconds != null ||
+                          annotation.pause_playback
                             ? styles.annotationTimingSet
                             : ""
                         }`}

@@ -16,6 +16,7 @@ interface AnnotationReplayLayerProps {
   // How long a saved drawing stays on screen once playback reaches its
   // timestamp, for drawings that don't set their own.
   displaySeconds: number;
+  isPlaying: boolean;
   enabled: boolean;
 }
 
@@ -37,6 +38,7 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
   annotations,
   currentTime,
   displaySeconds,
+  isPlaying,
   enabled,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -49,6 +51,7 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
         id: a.id,
         timestamp: a.timestamp,
         seconds: a.display_seconds ?? null,
+        pause: a.pause_playback === true,
         shapes: safeParse(a.data),
       })),
     [annotations]
@@ -62,12 +65,15 @@ export const AnnotationReplayLayer: React.FC<AnnotationReplayLayerProps> = ({
       parsed
         .filter(
           p =>
+            // A pausing drawing shows while playback is held on it (or the
+            // coach is paused inside its window), not once play resumes.
+            !(p.pause && isPlaying) &&
             currentTime >= p.timestamp &&
             currentTime < p.timestamp + (p.seconds ?? displaySeconds)
         )
         .map(p => p.id)
         .join(","),
-    [parsed, currentTime, displaySeconds]
+    [parsed, currentTime, displaySeconds, isPlaying]
   );
 
   const activeShapes = useMemo(() => {

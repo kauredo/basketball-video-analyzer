@@ -23,36 +23,47 @@ export const AnnotationTimingControl: React.FC<
   const label = t("app.telestration.drawingSeconds");
 
   return (
-    <label className={styles.field} title={label}>
-      {showLabel ? (
-        t("app.telestration.showFor")
-      ) : (
-        <FontAwesomeIcon icon={faClock} aria-hidden />
-      )}
-      <select
-        ref={selectRef}
-        className={styles.select}
-        value={value.display_seconds ?? ""}
-        onChange={e =>
-          onChange({
-            display_seconds:
-              e.target.value === "" ? null : Number(e.target.value),
-          })
-        }
-        aria-label={label}
-      >
-        <option value="">
-          {t("app.telestration.drawingSecondsDefault", {
-            seconds: defaultSeconds,
-          })}
-        </option>
-        {REPLAY_SECONDS_OPTIONS.map(s => (
-          <option key={s} value={s}>
-            {s}s
+    <span className={styles.controls}>
+      <label className={styles.field} title={label}>
+        {showLabel ? (
+          t("app.telestration.showFor")
+        ) : (
+          <FontAwesomeIcon icon={faClock} aria-hidden />
+        )}
+        <select
+          ref={selectRef}
+          className={styles.select}
+          value={value.display_seconds ?? ""}
+          onChange={e =>
+            onChange({
+              display_seconds:
+                e.target.value === "" ? null : Number(e.target.value),
+            })
+          }
+          aria-label={label}
+        >
+          <option value="">
+            {t("app.telestration.drawingSecondsDefault", {
+              seconds: defaultSeconds,
+            })}
           </option>
-        ))}
-      </select>
-    </label>
+          {REPLAY_SECONDS_OPTIONS.map(s => (
+            <option key={s} value={s}>
+              {s}s
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className={styles.field}>
+        <input
+          type="checkbox"
+          className={styles.checkbox}
+          checked={value.pause_playback === true}
+          onChange={e => onChange({ pause_playback: e.target.checked })}
+        />
+        {t("app.telestration.pauseVideo")}
+      </label>
+    </span>
   );
 };
 
@@ -98,7 +109,7 @@ export const AnnotationTimingPopover: React.FC<
       triggerRef.current?.focus();
       onClose();
     }, [triggerRef, onClose]),
-    [popoverRef, triggerRef]
+    [popoverRef, triggerRef],
   );
 
   const shift =
