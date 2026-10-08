@@ -64,20 +64,26 @@ jobs:
 
       - name: Download yt-dlp binary
         run: |
+          # The plain "yt-dlp" asset is a Python zipapp that needs Python
+          # 3.10+, which macOS does not ship. These are standalone builds.
+          case "$RUNNER_OS" in
+            Windows) ASSET=yt-dlp.exe; DEST=yt-dlp.exe ;;
+            macOS) ASSET=yt-dlp_macos; DEST=yt-dlp ;;
+            *) ASSET=yt-dlp_linux; DEST=yt-dlp ;;
+          esac
+          BASE=https://github.com/yt-dlp/yt-dlp/releases/latest/download
+          AUTH="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"
+          OUT="node_modules/youtube-dl-exec/bin/$DEST"
           mkdir -p node_modules/youtube-dl-exec/bin
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" \
-              -o node_modules/youtube-dl-exec/bin/yt-dlp.exe
-          else
-            # The plain "yt-dlp" asset is a Python zipapp that needs Python
-            # 3.10+, which macOS does not ship. These are standalone builds.
-            if [ "$RUNNER_OS" = "macOS" ]; then ASSET=yt-dlp_macos; else ASSET=yt-dlp_linux; fi
-            curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://github.com/yt-dlp/yt-dlp/releases/latest/download/$ASSET" \
-              -o node_modules/youtube-dl-exec/bin/yt-dlp
-            chmod +x node_modules/youtube-dl-exec/bin/yt-dlp
+          curl -fsSL -H "$AUTH" "$BASE/$ASSET" -o "$OUT"
+          curl -fsSL -H "$AUTH" "$BASE/SHA2-256SUMS" -o yt-dlp-sums.txt
+          EXPECTED=$(grep " $ASSET\$" yt-dlp-sums.txt | cut -d' ' -f1)
+          ACTUAL=$( (sha256sum "$OUT" 2>/dev/null || shasum -a 256 "$OUT") | cut -d' ' -f1 | tr -d '\\')
+          if [ -z "$EXPECTED" ] || [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "yt-dlp checksum mismatch for $ASSET: expected '$EXPECTED', got '$ACTUAL'"
+            exit 1
           fi
+          chmod +x "$OUT"
         shell: bash
 
       # Rebuild native modules for the target platform
