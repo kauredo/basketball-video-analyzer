@@ -52,7 +52,7 @@ import {
   deletePreset,
 } from "./database";
 import { MEDIA_SCHEME } from "../shared/media";
-import { buildDrawingGraph, ClipDrawing } from "./clipDrawings";
+import { buildDrawingGraph, selectClipDrawings } from "./clipDrawings";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -554,7 +554,6 @@ const writeOverlayToTemp = (overlayImage: string): string => {
   return overlayPath;
 };
 
-// Best-effort removal of a temp file.
 // ffmpeg prints the input's streams before complaining there is no output,
 // which is the only stream probe available now ffprobe isn't bundled.
 const hasAudioStream = (inputPath: string): Promise<boolean> =>
@@ -567,6 +566,7 @@ const hasAudioStream = (inputPath: string): Promise<boolean> =>
     probe.on("error", () => resolve(false));
   });
 
+// Best-effort removal of a temp file.
 const deleteTempFile = (filePath: string): void => {
   try {
     fs.unlinkSync(filePath);
@@ -794,24 +794,9 @@ ipcMain.handle(
         const processId = uuidv4().slice(0, 8);
         mainWindow.webContents.send("clip-process-id", { processId });
 
-        // Saved drawings inside the clip, burned in at their own moment.
-        const clipDrawings: (ClipDrawing & { path: string })[] = [];
-        for (const d of drawings ?? []) {
-          const start = d.timestamp - startTime;
-          if (!(start >= 0 && start < duration)) continue;
-          if (!(d.seconds > 0 && d.seconds <= 60)) continue;
-          try {
-            clipDrawings.push({
-              start,
-              seconds: d.seconds,
-              pause: d.pause === true,
-              path: writeOverlayToTemp(d.image),
-            });
-          } catch (drawingError) {
-            console.error("Skipping clip drawing:", drawingError);
-          }
-        }
-        const audioProbe = clipDrawings.some(d => d.pause)
+        // Saved drawings that show up in the clip, burned in at their moment.
+        const selectedDrawings = selectClipDrawings(startTime, duration, drawings ?? []);
+        const audioProbe = selectedDrawings.some(d => d.pause)
           ? hasAudioStream(normalizedInputPath)
           : Promise.resolve(false);
 
@@ -860,6 +845,14 @@ ipcMain.handle(
                 console.error("Skipping clip overlay:", overlayError);
               }
             }
+            const clipDrawings = selectedDrawings.flatMap(d => {
+              try {
+                return [{ ...d, path: writeOverlayToTemp(d.image) }];
+              } catch (drawingError) {
+                console.error("Skipping clip drawing:", drawingError);
+                return [];
+              }
+            });
             const cleanupClipOverlay = () => {
               if (clipOverlayPath) deleteTempFile(clipOverlayPath);
               clipDrawings.forEach(d => deleteTempFile(d.path));
@@ -891,20 +884,19 @@ ipcMain.handle(
               // than the source range.
               clipCommand.inputOptions(["-ss", String(startTime), "-t", String(duration)]);
               clipDrawings.forEach(d => clipCommand.input(d.path));
-              const graph = buildDrawingGraph(duration, clipDrawings, 1, hasAudio);
+              if (clipOverlayPath) clipCommand.input(clipOverlayPath);
+              const graph = buildDrawingGraph(
+                duration,
+                clipDrawings,
+                1,
+                hasAudio,
+                clipOverlayPath ? clipDrawings.length + 1 : undefined
+              );
               addedSeconds = graph.addedSeconds;
-              const filters = [...graph.filters];
-              let videoOut = graph.videoOut;
-              if (clipOverlayPath) {
-                clipCommand.input(clipOverlayPath);
-                filters.push(`[${videoOut}][${clipDrawings.length + 1}:v]overlay=0:0[outv]`);
-                videoOut = "outv";
-              }
-              clipCommand.complexFilter(filters).outputOptions([
+              clipCommand.complexFilter(graph.filters).outputOptions([
                 "-map",
-                `[${videoOut}]`,
-                "-map",
-                graph.audioOut ? `[${graph.audioOut}]` : "0:a?",
+                `[${graph.videoOut}]`,
+                ...(graph.audioMap ? ["-map", graph.audioMap] : []),
                 ...videoOutputOptions,
               ]);
             } else if (clipOverlayPath) {

@@ -63,6 +63,9 @@ interface VideoPlayerProps {
   onQuickTag?: (keyNumber: number) => void;
 }
 
+// Mirrors MAX_CLIP_DRAWINGS in src/main/clipDrawings.ts, which main enforces.
+const MAX_CLIP_DRAWINGS = 20;
+
 interface VideoPlayerRef {
   seekTo: (time: number) => void;
   getOverlay: () => string | null;
@@ -240,13 +243,19 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           video.videoHeight
         );
       },
-      // Saved drawings inside a clip's range, as they would replay. Nothing
-      // when replay is off, since the coach chose not to see them.
+      // Saved drawings that would replay inside a clip's range, including one
+      // already on screen at mark-in. Nothing when replay is off, since the
+      // coach chose not to see them. Main applies the same rule and cap.
       getClipDrawings: (start: number, end: number): ClipDrawingImage[] => {
         const video = videoRef.current;
         if (!video || !replayEnabled) return [];
-        return savedAnnotations.flatMap(a => {
-          if (a.timestamp < start || a.timestamp >= end) return [];
+        const shown = savedAnnotations.filter(a => {
+          const seconds = a.display_seconds ?? replaySeconds;
+          if (a.timestamp >= end) return false;
+          if (a.timestamp >= start) return true;
+          return !a.pause_playback && a.timestamp + seconds > start;
+        });
+        return shown.slice(0, MAX_CLIP_DRAWINGS).flatMap(a => {
           let shapes: TelestrationShape[];
           try {
             shapes = JSON.parse(a.data);
