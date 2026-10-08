@@ -12,17 +12,23 @@ interface AnnotationTimingControlProps {
   onChange: (changes: AnnotationTiming) => void;
   defaultSeconds: number;
   selectRef?: RefObject<HTMLSelectElement>;
+  // The toolbar has room for an icon only; the popover spells the label out.
+  showLabel?: boolean;
 }
 
 export const AnnotationTimingControl: React.FC<
   AnnotationTimingControlProps
-> = ({ value, onChange, defaultSeconds, selectRef }) => {
+> = ({ value, onChange, defaultSeconds, selectRef, showLabel }) => {
   const { t } = useTranslation();
   const label = t("app.telestration.drawingSeconds");
 
   return (
     <label className={styles.field} title={label}>
-      <FontAwesomeIcon icon={faClock} aria-hidden />
+      {showLabel ? (
+        t("app.telestration.showFor")
+      ) : (
+        <FontAwesomeIcon icon={faClock} aria-hidden />
+      )}
       <select
         ref={selectRef}
         className={styles.select}
@@ -117,6 +123,7 @@ export const AnnotationTimingPopover: React.FC<
         onChange={onChange}
         defaultSeconds={defaultSeconds}
         selectRef={selectRef}
+        showLabel
       />
     </div>
   );

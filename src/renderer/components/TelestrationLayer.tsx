@@ -467,6 +467,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
           </button>
           {onSaveAnnotation && (
             <>
+              <div className={styles.divider} />
               <AnnotationTimingControl
                 value={saveTiming}
                 onChange={changes =>
