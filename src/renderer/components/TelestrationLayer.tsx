@@ -19,6 +19,7 @@ import {
   faCamera,
   faBookmark,
   faXmark,
+  faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/Telestration.module.css";
 import { AnnotationTimingControl } from "./AnnotationTimingControl";
@@ -45,6 +46,7 @@ interface TelestrationLayerProps {
   onSaveAnnotation?: (timing: AnnotationTiming) => void;
   defaultReplaySeconds: number;
   onClose: () => void;
+  onClearAndPlay: () => void;
   saving: boolean;
 }
 
@@ -73,6 +75,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   onSaveAnnotation,
   defaultReplaySeconds,
   onClose,
+  onClearAndPlay,
   saving,
 }) => {
   const { t } = useTranslation();
@@ -292,10 +295,20 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     onShapesChange([]);
   };
 
-  // Exit on Escape (after dismissing any in-progress text input).
+  // Exit on Escape (after dismissing any in-progress text input). Space
+  // clears and plays, but leaves keys meant for a focused control alone.
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === " ") {
+        const target = e.target as HTMLElement;
+        if (["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(target.tagName)) return;
+        e.preventDefault();
+        if (e.repeat) return;
+        e.stopPropagation();
+        onClearAndPlay();
+        return;
+      }
       if (e.key !== "Escape") return;
       // Escape belongs to the drawing layer while it's open: dismiss an
       // in-progress text label first, otherwise exit draw mode. Stop it here
@@ -309,7 +322,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [active, textDraft, onClose]);
+  }, [active, textDraft, onClose, onClearAndPlay]);
 
   if (!active || !rect) {
     return active ? (
@@ -380,6 +393,11 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
         className={styles.toolbar}
         role="toolbar"
         aria-label={t("app.telestration.title")}
+        // A clicked button would keep focus and swallow the next Space, which
+        // should clear and play. Keyboard focus still reaches every button.
+        onMouseDown={e => {
+          if ((e.target as HTMLElement).closest("button")) e.preventDefault();
+        }}
       >
         <div className={styles.toolGroup}>
           {TOOLS.map(ti => (
@@ -502,6 +520,16 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
 
         <div className={styles.divider} />
 
+        <button
+          type="button"
+          className={`${styles.toolBtn} ${styles.resumeBtn}`}
+          onClick={onClearAndPlay}
+          aria-keyshortcuts="Space"
+          title={t("app.telestration.clearAndPlay")}
+        >
+          <FontAwesomeIcon icon={faPlay} aria-hidden />
+          {t("app.telestration.clearAndPlayShort")}
+        </button>
         <button
           type="button"
           className={`${styles.toolBtn} ${styles.closeBtn}`}

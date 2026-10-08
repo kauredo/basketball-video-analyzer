@@ -299,6 +299,8 @@
       "editTiming": "Drawing timing",
       "showFor": "Show for",
       "pauseVideo": "Pause the video",
+      "clearAndPlay": "Clear and play (Space)",
+      "clearAndPlayShort": "Clear & play",
       "done": "Done drawing",
       "undo": "Undo",
       "clear": "Clear all",

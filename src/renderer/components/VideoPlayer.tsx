@@ -269,6 +269,13 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
+    const clearAndPlay = () => {
+      setShapes([]);
+      setDrawMode(false);
+      // play() rejects when a pause interrupts it, which is not an error here.
+      videoRef.current?.play().catch(() => {});
+    };
+
     const toggleDrawMode = () => {
       setDrawMode(prev => {
         const next = !prev;
@@ -757,6 +764,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             onSaveAnnotation={projectId ? handleSaveAnnotation : undefined}
             defaultReplaySeconds={replaySeconds}
             onClose={() => setDrawMode(false)}
+            onClearAndPlay={clearAndPlay}
             saving={savingStill}
           />
           <div className={styles.videoControls}>
