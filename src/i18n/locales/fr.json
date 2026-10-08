@@ -321,6 +321,7 @@
       "editTiming": "Durée du dessin",
       "showFor": "Afficher pendant",
       "pauseVideo": "Mettre la vidéo en pause",
+      "clearAndPlay": "Effacer et lire (Espace)",
       "done": "Terminer le dessin",
       "undo": "Annuler",
       "clear": "Tout effacer",

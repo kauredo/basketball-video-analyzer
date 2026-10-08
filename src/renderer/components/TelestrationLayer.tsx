@@ -19,6 +19,7 @@ import {
   faCamera,
   faBookmark,
   faXmark,
+  faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/Telestration.module.css";
 import { AnnotationTimingControl } from "./AnnotationTimingControl";
@@ -45,6 +46,7 @@ interface TelestrationLayerProps {
   onSaveAnnotation?: (timing: AnnotationTiming) => void;
   defaultReplaySeconds: number;
   onClose: () => void;
+  onClearAndPlay: () => void;
   saving: boolean;
 }
 
@@ -73,6 +75,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
   onSaveAnnotation,
   defaultReplaySeconds,
   onClose,
+  onClearAndPlay,
   saving,
 }) => {
   const { t } = useTranslation();
@@ -292,10 +295,20 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     onShapesChange([]);
   };
 
-  // Exit on Escape (after dismissing any in-progress text input).
+  // Exit on Escape (after dismissing any in-progress text input). Space
+  // clears and plays even when a toolbar button has focus, except where it
+  // types or opens something (the text label, the timing select).
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === " ") {
+        const target = e.target as HTMLElement;
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        onClearAndPlay();
+        return;
+      }
       if (e.key !== "Escape") return;
       // Escape belongs to the drawing layer while it's open: dismiss an
       // in-progress text label first, otherwise exit draw mode. Stop it here
@@ -309,7 +322,7 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [active, textDraft, onClose]);
+  }, [active, textDraft, onClose, onClearAndPlay]);
 
   if (!active || !rect) {
     return active ? (
@@ -502,6 +515,15 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
 
         <div className={styles.divider} />
 
+        <button
+          type="button"
+          className={`${styles.toolBtn} ${styles.saveBtn}`}
+          onClick={onClearAndPlay}
+          title={t("app.telestration.clearAndPlay")}
+          aria-label={t("app.telestration.clearAndPlay")}
+        >
+          <FontAwesomeIcon icon={faPlay} />
+        </button>
         <button
           type="button"
           className={`${styles.toolBtn} ${styles.closeBtn}`}

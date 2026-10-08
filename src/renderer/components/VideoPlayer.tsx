@@ -269,6 +269,14 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
+    // Wipes the sketch and lets the play run on, so a coach can stop, draw,
+    // then carry on with one key.
+    const clearAndPlay = () => {
+      setShapes([]);
+      setDrawMode(false);
+      videoRef.current?.play().catch(() => {});
+    };
+
     const toggleDrawMode = () => {
       setDrawMode(prev => {
         const next = !prev;
@@ -757,6 +765,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             onSaveAnnotation={projectId ? handleSaveAnnotation : undefined}
             defaultReplaySeconds={replaySeconds}
             onClose={() => setDrawMode(false)}
+            onClearAndPlay={clearAndPlay}
             saving={savingStill}
           />
           <div className={styles.videoControls}>

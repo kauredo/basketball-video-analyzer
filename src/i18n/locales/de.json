@@ -320,6 +320,7 @@
       "editTiming": "Dauer der Zeichnung",
       "showFor": "Anzeigen für",
       "pauseVideo": "Video anhalten",
+      "clearAndPlay": "Löschen und abspielen (Leertaste)",
       "done": "Zeichnen beenden",
       "undo": "Rückgängig",
       "clear": "Alles löschen",
