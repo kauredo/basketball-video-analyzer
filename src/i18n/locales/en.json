@@ -313,6 +313,8 @@
       "savedAnnotation": "Drawing saved",
       "saveAnnotationError": "Could not save the drawing",
       "deletedAnnotation": "Drawing removed",
+      "clipsUpdated_one": "Drawings updated in {{count}} clip",
+      "clipsUpdated_other": "Drawings updated in {{count}} clips",
       "deleteAnnotationError": "Could not remove the drawing",
       "savedView": "Saved drawing",
       "deleteView": "Remove saved drawing",

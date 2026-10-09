@@ -31,6 +31,7 @@ import {
   createClip,
   updateClip,
   deleteClip,
+  setClipDrawingsKey,
   getClipsByCategory,
   createProject,
   getProject,
@@ -534,9 +535,12 @@ ipcMain.handle("check-paths-exist", async (_event, paths: string[]) => {
 const MAX_OVERLAY_BYTES = 64 * 1024 * 1024;
 const PNG_DATA_URL_PREFIX = "data:image/png;base64,";
 
-// Decode a base64 PNG data URL to a temp file and return its path. Rejects
-// anything that isn't a PNG data URL or exceeds the size cap.
-const writeOverlayToTemp = (overlayImage: string): string => {
+// Decode a base64 PNG data URL to a file (a temp file by default) and return
+// its path. Rejects anything that isn't a PNG data URL or exceeds the size cap.
+const writeOverlayToTemp = (
+  overlayImage: string,
+  overlayPath = path.join(app.getPath("temp"), `telestration-${uuidv4().slice(0, 8)}.png`)
+): string => {
   if (!overlayImage.startsWith(PNG_DATA_URL_PREFIX)) {
     throw new Error("ERROR_INVALID_OVERLAY");
   }
@@ -547,10 +551,6 @@ const writeOverlayToTemp = (overlayImage: string): string => {
   if (buffer.length === 0 || buffer.length > MAX_OVERLAY_BYTES) {
     throw new Error("ERROR_INVALID_OVERLAY");
   }
-  const overlayPath = path.join(
-    app.getPath("temp"),
-    `telestration-${uuidv4().slice(0, 8)}.png`
-  );
   fs.writeFileSync(overlayPath, buffer);
   return overlayPath;
 };
@@ -639,6 +639,125 @@ ipcMain.handle(
   }
 );
 
+interface EncodeClipOptions {
+  inputPath: string;
+  outputPath: string;
+  startTime: number;
+  duration: number;
+  drawings: Array<{ image: string; timestamp: number; seconds: number; pause: boolean }>;
+  overlayPath: string | null;
+  onStart?: (command: ffmpeg.FfmpegCommand) => void;
+  onProgress?: (percent: number, timemark: string) => void;
+}
+
+// Cut [startTime, startTime + duration) of the source into outputPath, burning
+// in saved drawings at their moments and the creation-time overlay throughout.
+const encodeClip = async ({
+  inputPath,
+  outputPath,
+  startTime,
+  duration,
+  drawings,
+  overlayPath,
+  onStart,
+  onProgress,
+}: EncodeClipOptions): Promise<void> => {
+  const selected = selectClipDrawings(startTime, duration, drawings);
+  const hasAudio = selected.some(d => d.pause) && (await hasAudioStream(inputPath));
+  return new Promise((resolve, reject) => {
+    const clipDrawings = selected.flatMap(d => {
+      try {
+        return [{ ...d, path: writeOverlayToTemp(d.image) }];
+      } catch (drawingError) {
+        console.error("Skipping clip drawing:", drawingError);
+        return [];
+      }
+    });
+    const cleanup = () => clipDrawings.forEach(d => deleteTempFile(d.path));
+
+    const videoOutputOptions = [
+      "-y", // Overwrite output files
+      "-movflags",
+      "+faststart", // Optimize for web playback - allows video to start playing before fully downloaded
+      "-c:v",
+      "libx264", // Use H.264 codec for broad compatibility
+      "-preset",
+      "veryfast", // Best speed/quality balance (faster than medium with similar quality)
+      "-crf",
+      "23", // Constant Rate Factor: 18-28 range, 23 is good balance (lower = better quality)
+      "-c:a",
+      "aac", // Use AAC audio codec for broad compatibility
+      "-b:a",
+      "128k", // Audio bitrate - good quality for basketball commentary/court sounds
+      "-ar",
+      "44100", // Audio sample rate - standard for video
+    ];
+
+    const clipCommand = ffmpeg(inputPath);
+    let addedSeconds = 0;
+
+    if (clipDrawings.length > 0) {
+      // -t goes on the input here: freezes make the output longer
+      // than the source range.
+      clipCommand.inputOptions(["-ss", String(startTime), "-t", String(duration)]);
+      clipDrawings.forEach(d => clipCommand.input(d.path));
+      if (overlayPath) clipCommand.input(overlayPath);
+      const graph = buildDrawingGraph(
+        duration,
+        clipDrawings,
+        1,
+        hasAudio,
+        overlayPath ? clipDrawings.length + 1 : undefined
+      );
+      addedSeconds = graph.addedSeconds;
+      clipCommand.complexFilter(graph.filters).outputOptions([
+        "-map",
+        `[${graph.videoOut}]`,
+        ...(graph.audioMap ? ["-map", graph.audioMap] : []),
+        ...videoOutputOptions,
+      ]);
+    } else if (overlayPath) {
+      // overlay's default eof_action=repeat keeps the PNG up for the whole clip.
+      clipCommand.setStartTime(startTime).setDuration(duration);
+      clipCommand
+        .input(overlayPath)
+        .complexFilter(["[0:v][1:v]overlay=0:0[outv]"])
+        .outputOptions(["-map", "[outv]", "-map", "0:a?", ...videoOutputOptions]);
+    } else {
+      clipCommand.setStartTime(startTime).setDuration(duration);
+      clipCommand.outputOptions(videoOutputOptions);
+    }
+
+    clipCommand
+      .output(outputPath)
+      .on("start", commandLine => {
+        console.log("Clip FFmpeg command:", commandLine);
+        onStart?.(clipCommand);
+      })
+      .on("end", () => {
+        cleanup();
+        resolve();
+      })
+      .on("error", error => {
+        cleanup();
+        reject(error);
+      })
+      // Read progress from ffmpeg's own "time=" output. A "progress"
+      // listener makes fluent-ffmpeg spawn ffprobe, which isn't bundled.
+      .on("stderr", (line: string) => {
+        if (!onProgress) return;
+        const match = /time=(\d+):(\d+):(\d+(?:\.\d+)?)/.exec(line);
+        if (!match) return;
+        const elapsed = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
+        onProgress(
+          Math.min(100, (elapsed / (duration + addedSeconds)) * 100),
+          `${match[1]}:${match[2]}:${match[3]}`
+        );
+      })
+      .run();
+  });
+};
+
 ipcMain.handle(
   "cut-video-clip",
   async (
@@ -662,6 +781,7 @@ ipcMain.handle(
         seconds: number;
         pause: boolean;
       }>;
+      drawingsKey?: string;
     }
   ) => {
     return new Promise((resolve, reject) => {
@@ -680,6 +800,7 @@ ipcMain.handle(
           projectId,
           overlayImage,
           drawings,
+          drawingsKey,
         } = params;
 
         // Use native path separators for file system operations
@@ -795,12 +916,6 @@ ipcMain.handle(
         const processId = uuidv4().slice(0, 8);
         mainWindow.webContents.send("clip-process-id", { processId });
 
-        // Saved drawings that show up in the clip, burned in at their moment.
-        const selectedDrawings = selectClipDrawings(startTime, duration, drawings ?? []);
-        const audioProbe = selectedDrawings.some(d => d.pause)
-          ? hasAudioStream(normalizedInputPath)
-          : Promise.resolve(false);
-
         // First, generate the thumbnail
         const thumbnailCommand = ffmpeg(ffmpegInputPath);
 
@@ -830,97 +945,35 @@ ipcMain.handle(
           .on("end", async () => {
             activeClipProcesses.delete(`${processId}-thumb`);
             console.log("Thumbnail created successfully");
-            const hasAudio = await audioProbe;
-
-            // After thumbnail is created, create the clip
-            console.log("Starting clip creation...");
-            // If the user drew over the frame, burn it into the clip. The
-            // overlay is a single native-resolution PNG; overlay's default
-            // eof_action=repeat keeps it visible for the whole clip.
-            let clipOverlayPath: string | null = null;
+            // The live drawing on screen at creation covers the whole clip.
+            // It is kept next to the clip so a re-cut can burn it in again.
+            let overlayPath: string | null = null;
             if (overlayImage) {
               try {
-                clipOverlayPath = writeOverlayToTemp(overlayImage);
+                overlayPath = writeOverlayToTemp(
+                  overlayImage,
+                  outputPath.replace(/\.mp4$/, "_overlay.png")
+                );
               } catch (overlayError) {
                 // A bad overlay shouldn't fail the whole clip — just skip it.
                 console.error("Skipping clip overlay:", overlayError);
               }
             }
-            const clipDrawings = selectedDrawings.flatMap(d => {
-              try {
-                return [{ ...d, path: writeOverlayToTemp(d.image) }];
-              } catch (drawingError) {
-                console.error("Skipping clip drawing:", drawingError);
-                return [];
-              }
-            });
-            const cleanupClipOverlay = () => {
-              if (clipOverlayPath) deleteTempFile(clipOverlayPath);
-              clipDrawings.forEach(d => deleteTempFile(d.path));
-            };
 
-            const videoOutputOptions = [
-              "-y", // Overwrite output files
-              "-movflags",
-              "+faststart", // Optimize for web playback - allows video to start playing before fully downloaded
-              "-c:v",
-              "libx264", // Use H.264 codec for broad compatibility
-              "-preset",
-              "veryfast", // Best speed/quality balance (faster than medium with similar quality)
-              "-crf",
-              "23", // Constant Rate Factor: 18-28 range, 23 is good balance (lower = better quality)
-              "-c:a",
-              "aac", // Use AAC audio codec for broad compatibility
-              "-b:a",
-              "128k", // Audio bitrate - good quality for basketball commentary/court sounds
-              "-ar",
-              "44100", // Audio sample rate - standard for video
-            ];
-
-            const clipCommand = ffmpeg(ffmpegInputPath);
-            let addedSeconds = 0;
-
-            if (clipDrawings.length > 0) {
-              // -t goes on the input here: freezes make the output longer
-              // than the source range.
-              clipCommand.inputOptions(["-ss", String(startTime), "-t", String(duration)]);
-              clipDrawings.forEach(d => clipCommand.input(d.path));
-              if (clipOverlayPath) clipCommand.input(clipOverlayPath);
-              const graph = buildDrawingGraph(
-                duration,
-                clipDrawings,
-                1,
-                hasAudio,
-                clipOverlayPath ? clipDrawings.length + 1 : undefined
-              );
-              addedSeconds = graph.addedSeconds;
-              clipCommand.complexFilter(graph.filters).outputOptions([
-                "-map",
-                `[${graph.videoOut}]`,
-                ...(graph.audioMap ? ["-map", graph.audioMap] : []),
-                ...videoOutputOptions,
-              ]);
-            } else if (clipOverlayPath) {
-              clipCommand.setStartTime(startTime).setDuration(duration);
-              clipCommand
-                .input(clipOverlayPath)
-                .complexFilter(["[0:v][1:v]overlay=0:0[outv]"])
-                .outputOptions(["-map", "[outv]", "-map", "0:a?", ...videoOutputOptions]);
-            } else {
-              clipCommand.setStartTime(startTime).setDuration(duration);
-              clipCommand.outputOptions(videoOutputOptions);
-            }
-
-            clipCommand
-              .output(ffmpegOutputPath)
-              .on("start", commandLine => {
-                console.log("Clip FFmpeg command:", commandLine);
-                // Store the clip process for potential cancellation
-                activeClipProcesses.set(processId, clipCommand);
-              })
-              .on("end", () => {
+            console.log("Starting clip creation...");
+            encodeClip({
+              inputPath: ffmpegInputPath,
+              outputPath: ffmpegOutputPath,
+              startTime,
+              duration,
+              drawings: drawings ?? [],
+              overlayPath,
+              onStart: command => activeClipProcesses.set(processId, command),
+              onProgress: (percent, timemark) =>
+                mainWindow.webContents.send("clip-progress", { percent, timemark }),
+            })
+              .then(() => {
                 activeClipProcesses.delete(processId);
-                cleanupClipOverlay();
                 try {
                   console.log("Clip created successfully");
                   // Save clip to database with thumbnail path
@@ -939,6 +992,8 @@ ipcMain.handle(
                     court_x: courtX ?? null,
                     court_y: courtY ?? null,
                     notes: notes,
+                    drawings_key: drawingsKey ?? null,
+                    overlay_path: overlayPath,
                   };
 
                   const savedClip = createClip(clipData);
@@ -954,32 +1009,16 @@ ipcMain.handle(
                   reject(new Error("ERROR_DATABASE_FAILED"));
                 }
               })
-              .on("error", error => {
+              .catch(error => {
                 activeClipProcesses.delete(processId);
-                cleanupClipOverlay();
+                if (overlayPath) deleteTempFile(overlayPath);
                 console.error("FFmpeg clip creation error:", error);
-                console.error("Error stack:", error.stack);
                 console.error("Input path:", normalizedInputPath);
                 console.error("Output path:", outputPath);
                 console.error("Start time:", startTime);
                 console.error("Duration:", duration);
                 reject(new Error("ERROR_FFMPEG_FAILED"));
-              })
-              // Read progress from ffmpeg's own "time=" output. A "progress"
-              // listener makes fluent-ffmpeg spawn ffprobe, and the bundled
-              // ffprobe-static darwin/arm64 binary is x86_64, which crashes the
-              // main process on Apple Silicon Macs without Rosetta. It also
-              // measured against the whole source video, not the clip.
-              .on("stderr", (line: string) => {
-                const match = /time=(\d+):(\d+):(\d+(?:\.\d+)?)/.exec(line);
-                if (!match) return;
-                const elapsed = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
-                mainWindow.webContents.send("clip-progress", {
-                  percent: Math.min(100, (elapsed / (duration + addedSeconds)) * 100),
-                  timemark: `${match[1]}:${match[2]}:${match[3]}`,
-                });
-              })
-              .run();
+              });
           })
           .run();
       } catch (error) {
@@ -1414,6 +1453,47 @@ ipcMain.handle(
   }
 );
 
+// Re-cut a clip from its source video with the current saved drawings. The
+// new file replaces the old one only once it is complete, so a missing source
+// or an ffmpeg failure leaves the clip as it was.
+ipcMain.handle(
+  "rerender-clip-drawings",
+  async (
+    _event,
+    params: {
+      clipId: number;
+      drawings: Array<{ image: string; timestamp: number; seconds: number; pause: boolean }>;
+      drawingsKey: string;
+    }
+  ) => {
+    const clip = getClips().find(c => c.id === params.clipId);
+    if (!clip) throw new Error("ERROR_CLIP_NOT_FOUND");
+    if (!fs.existsSync(clip.video_path)) throw new Error("ERROR_FILE_NOT_FOUND");
+
+    const tempPath = path.join(
+      path.dirname(clip.output_path),
+      `.rerender-${uuidv4().slice(0, 8)}.mp4`
+    );
+    try {
+      await encodeClip({
+        inputPath: clip.video_path.replace(/\\/g, "/"),
+        outputPath: tempPath.replace(/\\/g, "/"),
+        startTime: clip.start_time,
+        duration: clip.duration,
+        drawings: params.drawings,
+        overlayPath:
+          clip.overlay_path && fs.existsSync(clip.overlay_path) ? clip.overlay_path : null,
+      });
+      fs.renameSync(tempPath, clip.output_path);
+    } catch (error) {
+      deleteTempFile(tempPath);
+      throw error;
+    }
+    setClipDrawingsKey(params.clipId, params.drawingsKey);
+    return { ...clip, drawings_key: params.drawingsKey };
+  }
+);
+
 ipcMain.handle("delete-clip", async (_event, id: number) => {
   try {
     // Get clip info to delete file
@@ -1428,6 +1508,9 @@ ipcMain.handle("delete-clip", async (_event, id: number) => {
       // Delete thumbnail if it exists
       if (clip.thumbnail_path && fs.existsSync(clip.thumbnail_path)) {
         fs.unlinkSync(clip.thumbnail_path);
+      }
+      if (clip.overlay_path && fs.existsSync(clip.overlay_path)) {
+        fs.unlinkSync(clip.overlay_path);
       }
     }
 

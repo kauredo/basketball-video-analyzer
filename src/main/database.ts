@@ -95,6 +95,12 @@ export interface Clip {
       that file in as a module here breaks the ambient Window augmentation the
       renderer relies on. */
   status?: "keep" | "cut" | "review" | null;
+  /** Which saved drawings the file was cut with. null = cut before this was
+      tracked, and treated as no drawings. */
+  drawings_key?: string | null;
+  /** The live drawing burned into the whole clip at creation, kept so a
+      re-cut can burn it again. */
+  overlay_path?: string | null;
   created_at?: string;
 }
 
@@ -763,6 +769,14 @@ const migrateClipColumns = () => {
       db.exec("ALTER TABLE clips ADD COLUMN status TEXT");
       console.log("Added status column to clips");
     }
+    if (!has("drawings_key")) {
+      db.exec("ALTER TABLE clips ADD COLUMN drawings_key TEXT");
+      console.log("Added drawings_key column to clips");
+    }
+    if (!has("overlay_path")) {
+      db.exec("ALTER TABLE clips ADD COLUMN overlay_path TEXT");
+      console.log("Added overlay_path column to clips");
+    }
   } catch (error) {
     console.error("Error migrating clip columns:", error);
   }
@@ -1405,8 +1419,8 @@ export const getClips = (projectId?: number): Clip[] => {
 export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes, drawings_key, overlay_path)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -1424,6 +1438,8 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
       clip.court_x ?? null,
       clip.court_y ?? null,
       clip.notes || null,
+      clip.drawings_key ?? null,
+      clip.overlay_path ?? null,
     );
 
     return {
@@ -1435,6 +1451,10 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
     console.error("Error creating clip:", error);
     throw error;
   }
+};
+
+export const setClipDrawingsKey = (id: number, key: string): void => {
+  db.prepare("UPDATE clips SET drawings_key = ? WHERE id = ?").run(key, id);
 };
 
 /**

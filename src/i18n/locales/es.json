@@ -334,6 +334,8 @@
       "savedAnnotation": "Dibujo guardado",
       "saveAnnotationError": "No se pudo guardar el dibujo",
       "deletedAnnotation": "Dibujo eliminado",
+      "clipsUpdated_one": "Dibujos actualizados en {{count}} clip",
+      "clipsUpdated_other": "Dibujos actualizados en {{count}} clips",
       "deleteAnnotationError": "No se pudo eliminar el dibujo",
       "savedView": "Dibujo guardado",
       "deleteView": "Eliminar dibujo guardado",

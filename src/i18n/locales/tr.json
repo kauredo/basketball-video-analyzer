@@ -335,6 +335,8 @@
       "savedAnnotation": "Çizim kaydedildi",
       "saveAnnotationError": "Çizim kaydedilemedi",
       "deletedAnnotation": "Çizim kaldırıldı",
+      "clipsUpdated_one": "{{count}} klipteki çizimler güncellendi",
+      "clipsUpdated_other": "{{count}} klipteki çizimler güncellendi",
       "deleteAnnotationError": "Çizim kaldırılamadı",
       "savedView": "Kaydedilmiş çizim",
       "deleteView": "Kaydedilmiş çizimi kaldır",

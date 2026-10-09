@@ -46,9 +46,13 @@ import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 import {
   Annotation,
   AnnotationTiming,
+  Clip,
   ClipDrawingImage,
+  ClipDrawings,
 } from "../../types/global";
 import { withCause } from "../utils/errors";
+import { clipDrawingsKey, selectClipAnnotations } from "../utils/clipDrawingSync";
+import { useClipDrawingSync } from "../hooks/useClipDrawingSync";
 
 interface VideoPlayerProps {
   videoPath: string | null;
@@ -61,15 +65,15 @@ interface VideoPlayerProps {
   onMarkOut: () => void;
   onClearMarks: () => void;
   onQuickTag?: (keyNumber: number) => void;
+  // The project's clips, kept in step with the saved drawings.
+  clips: Clip[];
+  onClipsUpdated: () => void;
 }
-
-// Mirrors MAX_CLIP_DRAWINGS in src/main/clipDrawings.ts, which main enforces.
-const MAX_CLIP_DRAWINGS = 20;
 
 interface VideoPlayerRef {
   seekTo: (time: number) => void;
   getOverlay: () => string | null;
-  getClipDrawings: (start: number, end: number) => ClipDrawingImage[];
+  getClipDrawings: (start: number, end: number) => ClipDrawings;
 }
 
 export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
@@ -85,6 +89,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onMarkOut,
       onClearMarks,
       onQuickTag,
+      clips,
+      onClipsUpdated,
     },
     ref
   ) => {
@@ -97,6 +103,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [shapes, setShapes] = useState<TelestrationShape[]>([]);
     const [savingStill, setSavingStill] = useState(false);
     const [savedAnnotations, setSavedAnnotations] = useState<Annotation[]>([]);
+    // The video savedAnnotations were loaded for, which lags videoPath.
+    const [annotationsVideo, setAnnotationsVideo] = useState<string | null>(null);
     // Mirror shapes into a ref so getOverlay() always reads the latest drawing
     // regardless of how the imperative handle is memoized.
     const shapesRef = useRef(shapes);
@@ -145,6 +153,34 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         ? stored
         : DEFAULT_REPLAY_SECONDS;
     });
+
+    // Each drawing as a native-resolution PNG, for burning into a clip.
+    const renderClipDrawings = useCallback(
+      (shown: Annotation[]): ClipDrawingImage[] => {
+        const video = videoRef.current;
+        if (!video) return [];
+        return shown.flatMap(a => {
+          let shapes: TelestrationShape[];
+          try {
+            shapes = JSON.parse(a.data);
+          } catch {
+            return [];
+          }
+          const image = shapesToPngDataUrl(shapes, video.videoWidth, video.videoHeight);
+          return image
+            ? [
+                {
+                  image,
+                  timestamp: a.timestamp,
+                  seconds: a.display_seconds ?? replaySeconds,
+                  pause: a.pause_playback === true,
+                },
+              ]
+            : [];
+        });
+      },
+      [replaySeconds]
+    );
 
     const replayLabel = replayEnabled
       ? `${replaySeconds}s`
@@ -243,41 +279,15 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           video.videoHeight
         );
       },
-      // Saved drawings that would replay inside a clip's range, including one
-      // already on screen at mark-in. Nothing when replay is off, since the
-      // coach chose not to see them. Main applies the same rule and cap.
-      getClipDrawings: (start: number, end: number): ClipDrawingImage[] => {
-        const video = videoRef.current;
-        if (!video || !replayEnabled) return [];
-        const shown = savedAnnotations.filter(a => {
-          const seconds = a.display_seconds ?? replaySeconds;
-          if (a.timestamp >= end) return false;
-          if (a.timestamp >= start) return true;
-          return !a.pause_playback && a.timestamp + seconds > start;
-        });
-        return shown.slice(0, MAX_CLIP_DRAWINGS).flatMap(a => {
-          let shapes: TelestrationShape[];
-          try {
-            shapes = JSON.parse(a.data);
-          } catch {
-            return [];
-          }
-          const image = shapesToPngDataUrl(
-            shapes,
-            video.videoWidth,
-            video.videoHeight
-          );
-          return image
-            ? [
-                {
-                  image,
-                  timestamp: a.timestamp,
-                  seconds: a.display_seconds ?? replaySeconds,
-                  pause: a.pause_playback === true,
-                },
-              ]
-            : [];
-        });
+      // Saved drawings that show up inside a clip's range. These follow the
+      // saved drawings whether or not replay is on, since turning replay off
+      // would otherwise strip them from every clip.
+      getClipDrawings: (start: number, end: number): ClipDrawings => {
+        const shown = selectClipAnnotations(savedAnnotations, start, end, replaySeconds);
+        return {
+          drawings: renderClipDrawings(shown),
+          drawingsKey: clipDrawingsKey(shown, replaySeconds),
+        };
       },
     }));
 
@@ -358,12 +368,14 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const loadAnnotations = useCallback(async () => {
       if (!projectId || !videoPath) {
         setSavedAnnotations([]);
+        setAnnotationsVideo(null);
         return;
       }
       try {
         setSavedAnnotations(
           await window.electronAPI.getAnnotations(projectId, videoPath)
         );
+        setAnnotationsVideo(videoPath);
       } catch (error) {
         console.error("Failed to load annotations:", error);
       }
@@ -372,6 +384,24 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     useEffect(() => {
       loadAnnotations();
     }, [loadAnnotations]);
+
+    const handleClipsUpdated = useCallback(
+      (count: number) => {
+        showSuccess(t("app.telestration.clipsUpdated", { count }));
+        onClipsUpdated();
+      },
+      [showSuccess, t, onClipsUpdated]
+    );
+
+    useClipDrawingSync({
+      videoPath,
+      clips,
+      annotations: savedAnnotations,
+      ready: annotationsVideo === videoPath && duration > 0,
+      defaultSeconds: replaySeconds,
+      renderDrawings: renderClipDrawings,
+      onUpdated: handleClipsUpdated,
+    });
 
     const handleSaveAnnotation = useCallback(async (
       timing: AnnotationTiming

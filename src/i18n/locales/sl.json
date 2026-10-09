@@ -334,6 +334,8 @@
       "savedAnnotation": "Risba je shranjena",
       "saveAnnotationError": "Risbe ni bilo mogoče shraniti",
       "deletedAnnotation": "Risba je odstranjena",
+      "clipsUpdated_one": "Risbe posodobljene v {{count}} posnetku",
+      "clipsUpdated_other": "Risbe posodobljene v posnetkih: {{count}}",
       "deleteAnnotationError": "Risbe ni bilo mogoče odstraniti",
       "savedView": "Shranjena risba",
       "deleteView": "Odstrani shranjeno risbo",

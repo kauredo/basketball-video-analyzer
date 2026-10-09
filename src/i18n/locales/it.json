@@ -334,6 +334,8 @@
       "savedAnnotation": "Disegno salvato",
       "saveAnnotationError": "Impossibile salvare il disegno",
       "deletedAnnotation": "Disegno rimosso",
+      "clipsUpdated_one": "Disegni aggiornati in {{count}} clip",
+      "clipsUpdated_other": "Disegni aggiornati in {{count}} clip",
       "deleteAnnotationError": "Impossibile rimuovere il disegno",
       "savedView": "Disegno salvato",
       "deleteView": "Rimuovi disegno salvato",
