@@ -336,6 +336,8 @@
       "deletedAnnotation": "Crtež je uklonjen",
       "clipsUpdated_one": "Crteži ažurirani u {{count}} klipu",
       "clipsUpdated_other": "Crteži ažurirani u klipovima: {{count}}",
+      "clipsUpdateFailed_one": "Nije moguće ažurirati crteže u {{count}} klipu",
+      "clipsUpdateFailed_other": "Nije moguće ažurirati crteže u klipovima: {{count}}",
       "deleteAnnotationError": "Nije moguće ukloniti crtež",
       "savedView": "Sačuvani crtež",
       "deleteView": "Ukloni sačuvani crtež",

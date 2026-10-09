@@ -336,6 +336,8 @@
       "deletedAnnotation": "Piešinys pašalintas",
       "clipsUpdated_one": "Piešiniai atnaujinti {{count}} klipe",
       "clipsUpdated_other": "Piešiniai atnaujinti klipuose: {{count}}",
+      "clipsUpdateFailed_one": "Nepavyko atnaujinti piešinių {{count}} klipe",
+      "clipsUpdateFailed_other": "Nepavyko atnaujinti piešinių klipuose: {{count}}",
       "deleteAnnotationError": "Nepavyko pašalinti piešinio",
       "savedView": "Išsaugotas piešinys",
       "deleteView": "Pašalinti išsaugotą piešinį",

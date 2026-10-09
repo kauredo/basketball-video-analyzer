@@ -337,6 +337,8 @@
       "deletedAnnotation": "Dessin supprimé",
       "clipsUpdated_one": "Dessins mis à jour dans {{count}} clip",
       "clipsUpdated_other": "Dessins mis à jour dans {{count}} clips",
+      "clipsUpdateFailed_one": "Impossible de mettre à jour les dessins dans {{count}} clip",
+      "clipsUpdateFailed_other": "Impossible de mettre à jour les dessins dans {{count}} clips",
       "deleteAnnotationError": "Impossible de supprimer le dessin",
       "savedView": "Dessin enregistré",
       "deleteView": "Supprimer le dessin enregistré",

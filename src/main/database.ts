@@ -96,7 +96,8 @@ export interface Clip {
       renderer relies on. */
   status?: "keep" | "cut" | "review" | null;
   /** Which saved drawings the file was cut with. null = cut before this was
-      tracked, and treated as no drawings. */
+      tracked; the sync compares it as "" (none), so an old clip is re-cut
+      only if a saved drawing overlaps it. */
   drawings_key?: string | null;
   /** The live drawing burned into the whole clip at creation, kept so a
       re-cut can burn it again. */
@@ -146,11 +147,12 @@ export const setupDatabase = () => {
 const migrateClipPaths = () => {
   try {
     const clips = db
-      .prepare("SELECT id, output_path, thumbnail_path FROM clips")
+      .prepare("SELECT id, output_path, thumbnail_path, overlay_path FROM clips")
       .all() as Array<{
       id: number;
       output_path: string;
       thumbnail_path: string | null;
+      overlay_path: string | null;
     }>;
 
     if (clips.length === 0) return;
@@ -175,7 +177,7 @@ const migrateClipPaths = () => {
     };
 
     const updateStmt = db.prepare(
-      "UPDATE clips SET output_path = ?, thumbnail_path = ? WHERE id = ?",
+      "UPDATE clips SET output_path = ?, thumbnail_path = ?, overlay_path = ? WHERE id = ?",
     );
 
     let recovered = 0;
@@ -183,15 +185,18 @@ const migrateClipPaths = () => {
       for (const clip of rows) {
         const newOutput = resolve(clip.output_path);
         const newThumbnail = resolve(clip.thumbnail_path);
+        const newOverlay = resolve(clip.overlay_path);
 
         const outputChanged = newOutput && newOutput !== clip.output_path;
         const thumbnailChanged =
           newThumbnail && newThumbnail !== clip.thumbnail_path;
+        const overlayChanged = newOverlay && newOverlay !== clip.overlay_path;
 
-        if (outputChanged || thumbnailChanged) {
+        if (outputChanged || thumbnailChanged || overlayChanged) {
           updateStmt.run(
             newOutput ?? clip.output_path,
             newThumbnail ?? clip.thumbnail_path,
+            newOverlay ?? clip.overlay_path,
             clip.id,
           );
           recovered++;
@@ -1452,6 +1457,9 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
     throw error;
   }
 };
+
+export const getClipById = (id: number): Clip | undefined =>
+  db.prepare("SELECT * FROM clips WHERE id = ?").get(id) as Clip | undefined;
 
 export const setClipDrawingsKey = (id: number, key: string): void => {
   db.prepare("UPDATE clips SET drawings_key = ? WHERE id = ?").run(key, id);

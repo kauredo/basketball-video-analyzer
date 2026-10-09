@@ -336,6 +336,8 @@
       "deletedAnnotation": "Το σχέδιο αφαιρέθηκε",
       "clipsUpdated_one": "Τα σχέδια ενημερώθηκαν σε {{count}} κλιπ",
       "clipsUpdated_other": "Τα σχέδια ενημερώθηκαν σε {{count}} κλιπ",
+      "clipsUpdateFailed_one": "Δεν ήταν δυνατή η ενημέρωση των σχεδίων σε {{count}} κλιπ",
+      "clipsUpdateFailed_other": "Δεν ήταν δυνατή η ενημέρωση των σχεδίων σε {{count}} κλιπ",
       "deleteAnnotationError": "Δεν ήταν δυνατή η αφαίρεση του σχεδίου",
       "savedView": "Αποθηκευμένο σχέδιο",
       "deleteView": "Αφαίρεση αποθηκευμένου σχεδίου",

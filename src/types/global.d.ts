@@ -34,17 +34,17 @@ export type AnnotationTiming = Pick<
 
 /** Review state a coach sets after watching the cut back. */
 // A saved drawing rendered for burning into an exported clip.
-// What a new clip is cut with: the drawing images and the key naming them.
-export interface ClipDrawings {
-  drawings: ClipDrawingImage[];
-  drawingsKey: string;
-}
-
 export interface ClipDrawingImage {
   image: string; // native-resolution transparent PNG data URL
   timestamp: number; // source video seconds
   seconds: number;
   pause: boolean;
+}
+
+// What a new clip is cut with: the drawing images and the key naming them.
+export interface ClipDrawings {
+  drawings: ClipDrawingImage[];
+  drawingsKey: string;
 }
 
 export type ClipStatus = "keep" | "cut" | "review";

@@ -19,7 +19,7 @@
     "prepare-deps": "electron-forge import && npm exec --package=@electron/rebuild -- electron-rebuild -f",
     "stats:downloads": "node scripts/download-stats.mjs",
     "lint:locales": "node scripts/lint-locales.mjs",
-    "test": "node --test src/main/*.test.mts src/renderer/utils/*.test.mts",
+    "test": "node --test src/main/*.test.mts src/shared/*.test.mts",
     "prebuild": "npm run lint:locales"
   },
   "keywords": [

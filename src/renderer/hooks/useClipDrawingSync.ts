@@ -1,16 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { Annotation, Clip, ClipDrawingImage } from "../../types/global";
-import { clipDrawingsKey, samePath, selectClipAnnotations } from "../utils/clipDrawingSync";
+import { isSamePath, savedDrawingsKey, selectSavedDrawings } from "../../shared/clipDrawings";
+
+// Lets a run of edits (stepping through replay durations, say) settle into
+// one pass instead of one re-cut per step.
+const SETTLE_MS = 1500;
 
 interface Options {
   videoPath: string | null;
   clips: Clip[];
   annotations: Annotation[];
-  // False until `annotations` belong to videoPath and the video's size is known.
+  // False until `annotations` and the video's size both belong to videoPath.
   ready: boolean;
   defaultSeconds: number;
-  renderDrawings: (shown: Annotation[]) => ClipDrawingImage[];
-  onUpdated: (count: number) => void;
+  renderDrawing: (annotation: Annotation) => ClipDrawingImage | null;
+  onFinished: (updated: number, failed: number) => void;
 }
 
 // Re-cuts, one at a time, every clip whose file was made with different saved
@@ -22,8 +26,8 @@ export const useClipDrawingSync = ({
   annotations,
   ready,
   defaultSeconds,
-  renderDrawings,
-  onUpdated,
+  renderDrawing,
+  onFinished,
 }: Options) => {
   const attempted = useRef(new Map<number, string>());
   const running = useRef(false);
@@ -34,36 +38,47 @@ export const useClipDrawingSync = ({
   useEffect(() => {
     if (!ready || !videoPath || running.current) return;
     const stale = clips.flatMap(clip => {
-      if (!samePath(clip.video_path, videoPath)) return [];
-      const shown = selectClipAnnotations(annotations, clip.start_time, clip.end_time, defaultSeconds);
-      const key = clipDrawingsKey(shown, defaultSeconds);
+      if (!isSamePath(clip.video_path, videoPath)) return [];
+      const shown = selectSavedDrawings(annotations, clip.start_time, clip.end_time, defaultSeconds);
+      const key = savedDrawingsKey(shown, defaultSeconds);
       if (key === (clip.drawings_key ?? "") || attempted.current.get(clip.id) === key) return [];
       return [{ clip, shown, key }];
     });
     if (stale.length === 0) return;
 
-    running.current = true;
-    (async () => {
+    const timer = window.setTimeout(async () => {
+      running.current = true;
+      const images = new Map<number, ClipDrawingImage | null>();
+      const imageFor = (a: Annotation) => {
+        if (!images.has(a.id)) images.set(a.id, renderDrawing(a));
+        return images.get(a.id) ?? null;
+      };
       let updated = 0;
+      let failed = 0;
       for (const { clip, shown, key } of stale) {
         // The images are sized to the open video, so stop if it changed.
         if (currentVideo.current !== videoPath) break;
+        const drawings = shown.map(imageFor);
+        // A drawing that didn't render would leave the file short of its key.
+        if (drawings.some(d => d === null)) continue;
         attempted.current.set(clip.id, key);
         try {
           await window.electronAPI.rerenderClipDrawings({
             clipId: clip.id,
-            drawings: renderDrawings(shown),
+            drawings: drawings as ClipDrawingImage[],
             drawingsKey: key,
           });
           updated++;
         } catch (error) {
+          failed++;
           console.error(`Could not update drawings in clip ${clip.id}:`, error);
         }
       }
       running.current = false;
-      if (updated > 0) onUpdated(updated);
+      if (updated > 0 || failed > 0) onFinished(updated, failed);
       // Drawings saved during the run are picked up on the next pass.
       setFinishedRuns(n => n + 1);
-    })();
-  }, [ready, videoPath, clips, annotations, defaultSeconds, renderDrawings, onUpdated, finishedRuns]);
+    }, SETTLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [ready, videoPath, clips, annotations, defaultSeconds, renderDrawing, onFinished, finishedRuns]);
 };

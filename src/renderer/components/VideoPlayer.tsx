@@ -51,7 +51,7 @@ import {
   ClipDrawings,
 } from "../../types/global";
 import { withCause } from "../utils/errors";
-import { clipDrawingsKey, selectClipAnnotations } from "../utils/clipDrawingSync";
+import { savedDrawingsKey, selectSavedDrawings } from "../../shared/clipDrawings";
 import { useClipDrawingSync } from "../hooks/useClipDrawingSync";
 
 interface VideoPlayerProps {
@@ -65,7 +65,7 @@ interface VideoPlayerProps {
   onMarkOut: () => void;
   onClearMarks: () => void;
   onQuickTag?: (keyNumber: number) => void;
-  // The project's clips, kept in step with the saved drawings.
+  /** The project's clips, kept in step with the saved drawings. */
   clips: Clip[];
   onClipsUpdated: () => void;
 }
@@ -95,7 +95,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     ref
   ) => {
     const { t } = useTranslation();
-    const { showSuccess, showError } = useToastContext();
+    const { showSuccess, showError, showWarning } = useToastContext();
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const timeSearchInputRef = useRef<HTMLInputElement>(null);
@@ -103,8 +103,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [shapes, setShapes] = useState<TelestrationShape[]>([]);
     const [savingStill, setSavingStill] = useState(false);
     const [savedAnnotations, setSavedAnnotations] = useState<Annotation[]>([]);
-    // The video savedAnnotations were loaded for, which lags videoPath.
+    // The videos savedAnnotations and the video's metadata were loaded for.
+    // Both lag videoPath after a switch.
     const [annotationsVideo, setAnnotationsVideo] = useState<string | null>(null);
+    const [metadataVideo, setMetadataVideo] = useState<string | null>(null);
     // Mirror shapes into a ref so getOverlay() always reads the latest drawing
     // regardless of how the imperative handle is memoized.
     const shapesRef = useRef(shapes);
@@ -154,30 +156,26 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         : DEFAULT_REPLAY_SECONDS;
     });
 
-    // Each drawing as a native-resolution PNG, for burning into a clip.
-    const renderClipDrawings = useCallback(
-      (shown: Annotation[]): ClipDrawingImage[] => {
+    // A saved drawing as a native-resolution PNG, for burning into a clip.
+    const renderClipDrawing = useCallback(
+      (a: Annotation): ClipDrawingImage | null => {
         const video = videoRef.current;
-        if (!video) return [];
-        return shown.flatMap(a => {
-          let shapes: TelestrationShape[];
-          try {
-            shapes = JSON.parse(a.data);
-          } catch {
-            return [];
-          }
-          const image = shapesToPngDataUrl(shapes, video.videoWidth, video.videoHeight);
-          return image
-            ? [
-                {
-                  image,
-                  timestamp: a.timestamp,
-                  seconds: a.display_seconds ?? replaySeconds,
-                  pause: a.pause_playback === true,
-                },
-              ]
-            : [];
-        });
+        if (!video) return null;
+        let shapes: TelestrationShape[];
+        try {
+          shapes = JSON.parse(a.data);
+        } catch {
+          return null;
+        }
+        const image = shapesToPngDataUrl(shapes, video.videoWidth, video.videoHeight);
+        return image
+          ? {
+              image,
+              timestamp: a.timestamp,
+              seconds: a.display_seconds ?? replaySeconds,
+              pause: a.pause_playback === true,
+            }
+          : null;
       },
       [replaySeconds]
     );
@@ -283,10 +281,16 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       // saved drawings whether or not replay is on, since turning replay off
       // would otherwise strip them from every clip.
       getClipDrawings: (start: number, end: number): ClipDrawings => {
-        const shown = selectClipAnnotations(savedAnnotations, start, end, replaySeconds);
+        const shown = selectSavedDrawings(savedAnnotations, start, end, replaySeconds);
+        const drawings = shown.map(renderClipDrawing);
         return {
-          drawings: renderClipDrawings(shown),
-          drawingsKey: clipDrawingsKey(shown, replaySeconds),
+          drawings: drawings.filter((d): d is ClipDrawingImage => d !== null),
+          // A drawing that didn't render isn't in the file, so it can't be in
+          // the key either; the sync will retry it.
+          drawingsKey: savedDrawingsKey(
+            shown.filter((_, i) => drawings[i] !== null),
+            replaySeconds
+          ),
         };
       },
     }));
@@ -385,22 +389,25 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       loadAnnotations();
     }, [loadAnnotations]);
 
-    const handleClipsUpdated = useCallback(
-      (count: number) => {
-        showSuccess(t("app.telestration.clipsUpdated", { count }));
-        onClipsUpdated();
+    const handleClipSyncFinished = useCallback(
+      (updated: number, failed: number) => {
+        if (updated > 0) {
+          showSuccess(t("app.telestration.clipsUpdated", { count: updated }));
+          onClipsUpdated();
+        }
+        if (failed > 0) showWarning(t("app.telestration.clipsUpdateFailed", { count: failed }));
       },
-      [showSuccess, t, onClipsUpdated]
+      [showSuccess, showWarning, t, onClipsUpdated]
     );
 
     useClipDrawingSync({
       videoPath,
       clips,
       annotations: savedAnnotations,
-      ready: annotationsVideo === videoPath && duration > 0,
+      ready: annotationsVideo === videoPath && metadataVideo === videoPath,
       defaultSeconds: replaySeconds,
-      renderDrawings: renderClipDrawings,
-      onUpdated: handleClipsUpdated,
+      renderDrawing: renderClipDrawing,
+      onFinished: handleClipSyncFinished,
     });
 
     const handleSaveAnnotation = useCallback(async (
@@ -569,6 +576,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       if (videoRef.current) {
         const dur = videoRef.current.duration;
         setDuration(dur);
+        setMetadataVideo(videoPath);
         onDurationChange(dur);
         setVideoError(null);
         // Show first-video hint 2s after video loads

@@ -336,6 +336,8 @@
       "deletedAnnotation": "Zeichnung entfernt",
       "clipsUpdated_one": "Zeichnungen in {{count}} Clip aktualisiert",
       "clipsUpdated_other": "Zeichnungen in {{count}} Clips aktualisiert",
+      "clipsUpdateFailed_one": "Zeichnungen in {{count}} Clip konnten nicht aktualisiert werden",
+      "clipsUpdateFailed_other": "Zeichnungen in {{count}} Clips konnten nicht aktualisiert werden",
       "deleteAnnotationError": "Zeichnung konnte nicht entfernt werden",
       "savedView": "Gespeicherte Zeichnung",
       "deleteView": "Gespeicherte Zeichnung entfernen",

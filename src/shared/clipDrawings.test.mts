@@ -2,7 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   buildDrawingGraph,
+  isSamePath,
+  savedDrawingsKey,
   selectClipDrawings,
+  selectSavedDrawings,
   MAX_CLIP_DRAWINGS,
 } from "./clipDrawings.ts";
 
@@ -121,4 +124,46 @@ test("selection follows replay rules and the cap", () => {
     pause: false,
   }));
   assert.equal(selectClipDrawings(10, 5, many).length, MAX_CLIP_DRAWINGS);
+});
+
+const saved = (id: number, timestamp: number, extra = {}) => ({ id, timestamp, ...extra });
+
+test("saved drawings: inside the clip, plus one still showing at mark-in", () => {
+  const picked = selectSavedDrawings(
+    [
+      saved(1, 12),
+      saved(2, 8), // up until 11 with the 3s default
+      saved(3, 8, { pause_playback: true }), // its pause happened before the clip
+      saved(4, 7), // ends exactly at mark-in
+      saved(5, 10, { pause_playback: true }), // pause exactly at mark-in
+      saved(6, 15), // at mark-out
+      saved(7, 13, { display_seconds: 0 }), // never on screen
+      saved(8, 14, { display_seconds: null }), // falls back to the default
+    ],
+    10,
+    15,
+    3
+  );
+  assert.deepEqual(picked.map(d => d.id), [2, 5, 1, 8]);
+});
+
+test("saved drawings: capped like main", () => {
+  const many = Array.from({ length: 30 }, (_, i) => saved(i, 10 + i * 0.1));
+  assert.equal(selectSavedDrawings(many, 10, 15, 3).length, MAX_CLIP_DRAWINGS);
+});
+
+test("key follows timing and pause, not input order", () => {
+  const a = saved(1, 11);
+  const b = saved(2, 12, { display_seconds: 5 });
+  const key = savedDrawingsKey(selectSavedDrawings([b, a], 10, 15, 3), 3);
+  assert.equal(key, "1:3:0,2:5:0");
+  assert.equal(savedDrawingsKey(selectSavedDrawings([a, b], 10, 15, 3), 3), key);
+  assert.notEqual(savedDrawingsKey([a, b], 4), key);
+  assert.notEqual(savedDrawingsKey([a, { ...b, pause_playback: true }], 3), key);
+  assert.equal(savedDrawingsKey(selectSavedDrawings([saved(9, 30)], 10, 15, 3), 3), "");
+});
+
+test("paths match across separators", () => {
+  assert.ok(isSamePath("C:\\games\\a.mp4", "C:/games/a.mp4"));
+  assert.ok(!isSamePath("/games/a.mp4", "/games/b.mp4"));
 });

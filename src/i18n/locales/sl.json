@@ -336,6 +336,8 @@
       "deletedAnnotation": "Risba je odstranjena",
       "clipsUpdated_one": "Risbe posodobljene v {{count}} posnetku",
       "clipsUpdated_other": "Risbe posodobljene v posnetkih: {{count}}",
+      "clipsUpdateFailed_one": "Risb v {{count}} posnetku ni bilo mogoče posodobiti",
+      "clipsUpdateFailed_other": "Risb v posnetkih ni bilo mogoče posodobiti: {{count}}",
       "deleteAnnotationError": "Risbe ni bilo mogoče odstraniti",
       "savedView": "Shranjena risba",
       "deleteView": "Odstrani shranjeno risbo",

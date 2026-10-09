@@ -337,6 +337,8 @@
       "deletedAnnotation": "Çizim kaldırıldı",
       "clipsUpdated_one": "{{count}} klipteki çizimler güncellendi",
       "clipsUpdated_other": "{{count}} klipteki çizimler güncellendi",
+      "clipsUpdateFailed_one": "{{count}} klipteki çizimler güncellenemedi",
+      "clipsUpdateFailed_other": "{{count}} klipteki çizimler güncellenemedi",
       "deleteAnnotationError": "Çizim kaldırılamadı",
       "savedView": "Kaydedilmiş çizim",
       "deleteView": "Kaydedilmiş çizimi kaldır",
