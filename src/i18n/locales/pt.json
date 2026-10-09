@@ -326,6 +326,8 @@
       "clearAndPlayShort": "Limpar e reproduzir",
       "moveToolbar": "Mover barra",
       "moveToolbarHint": "Arraste para mover a barra. As setas ajustam-na, duplo clique ou Home repõe-na.",
+      "collapseToolbar": "Minimizar barra",
+      "expandToolbar": "Mostrar ferramentas de desenho",
       "done": "Concluir desenho",
       "undo": "Anular",
       "clear": "Limpar tudo",

@@ -325,6 +325,8 @@
       "clearAndPlayShort": "Effacer et lire",
       "moveToolbar": "Déplacer la barre",
       "moveToolbarHint": "Glissez pour déplacer la barre. Les flèches l'ajustent, double-clic ou Début la remet en place.",
+      "collapseToolbar": "Réduire la barre",
+      "expandToolbar": "Afficher les outils de dessin",
       "done": "Terminer le dessin",
       "undo": "Annuler",
       "clear": "Tout effacer",

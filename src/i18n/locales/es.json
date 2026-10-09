@@ -324,6 +324,8 @@
       "clearAndPlayShort": "Borrar y reproducir",
       "moveToolbar": "Mover barra",
       "moveToolbarHint": "Arrastra para mover la barra. Las flechas la ajustan; doble clic o Inicio la restablece.",
+      "collapseToolbar": "Minimizar barra",
+      "expandToolbar": "Mostrar herramientas de dibujo",
       "done": "Finalizar dibujo",
       "undo": "Deshacer",
       "clear": "Borrar todo",

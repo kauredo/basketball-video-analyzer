@@ -21,10 +21,12 @@ import {
   faXmark,
   faPlay,
   faGripVertical,
+  faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/Telestration.module.css";
 import { AnnotationTimingControl } from "./AnnotationTimingControl";
 import { useToolbarDrag } from "../hooks/useToolbarDrag";
+import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 import { AnnotationTiming } from "../../types/global";
 import {
   TelestrationShape,
@@ -94,6 +96,13 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     toolbarRef,
     toolbarLaneRef
   );
+  const [collapsed, setCollapsed] = useState(() =>
+    loadPref(STORAGE_KEYS.DRAW_TOOLBAR_COLLAPSED, false)
+  );
+  const toggleCollapsed = () => {
+    setCollapsed(!collapsed);
+    savePref(STORAGE_KEYS.DRAW_TOOLBAR_COLLAPSED, !collapsed);
+  };
   const [saveTiming, setSaveTiming] = useState<AnnotationTiming>({
     display_seconds: null,
     pause_playback: false,
@@ -435,138 +444,158 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
           >
             <FontAwesomeIcon icon={faGripVertical} />
           </button>
-          <div className={styles.divider} />
-          <div className={styles.toolGroup}>
-            {TOOLS.map(ti => (
-              <button
-                key={ti.tool}
-                type="button"
-                className={`${styles.toolBtn} ${
-                  tool === ti.tool ? styles.toolBtnActive : ""
-                }`}
-                onClick={() => setTool(ti.tool)}
-                title={t(ti.labelKey)}
-                aria-label={t(ti.labelKey)}
-                aria-pressed={tool === ti.tool}
-              >
-                <FontAwesomeIcon icon={ti.icon} />
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.divider} />
-
-          <div className={styles.toolGroup}>
-            {TELESTRATION_COLORS.map(c => (
-              <button
-                key={c.hex}
-                type="button"
-                className={`${styles.colorBtn} ${
-                  color === c.hex ? styles.colorBtnActive : ""
-                }`}
-                style={{ backgroundColor: c.hex }}
-                onClick={() => setColor(c.hex)}
-                title={c.name}
-                aria-label={c.name}
-                aria-pressed={color === c.hex}
-              />
-            ))}
-          </div>
-
-          <div className={styles.divider} />
-
-          <div className={styles.toolGroup}>
-            {TELESTRATION_WIDTHS.map((w, i) => (
-              <button
-                key={w}
-                type="button"
-                className={`${styles.widthBtn} ${
-                  widthFrac === w ? styles.widthBtnActive : ""
-                }`}
-                onClick={() => setWidthFrac(w)}
-                title={t(`app.telestration.widths.${["thin", "medium", "thick"][i]}`)}
-                aria-label={t(
-                  `app.telestration.widths.${["thin", "medium", "thick"][i]}`
-                )}
-                aria-pressed={widthFrac === w}
-              >
-                <span
-                  className={styles.widthDot}
-                  style={{ width: 4 + i * 4, height: 4 + i * 4 }}
-                />
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.divider} />
-
-          <div className={styles.toolGroup}>
-            <button
-              type="button"
-              className={styles.toolBtn}
-              onClick={undo}
-              disabled={shapes.length === 0}
-              title={t("app.telestration.undo")}
-              aria-label={t("app.telestration.undo")}
-            >
-              <FontAwesomeIcon icon={faRotateLeft} />
-            </button>
-            <button
-              type="button"
-              className={styles.toolBtn}
-              onClick={clearAll}
-              disabled={shapes.length === 0}
-              title={t("app.telestration.clear")}
-              aria-label={t("app.telestration.clear")}
-            >
-              <FontAwesomeIcon icon={faTrash} />
-            </button>
-            {onSaveAnnotation && (
-              <>
-                <div className={styles.divider} />
-                <AnnotationTimingControl
-                  value={saveTiming}
-                  onChange={changes =>
-                    setSaveTiming(prev => ({ ...prev, ...changes }))
-                  }
-                  defaultSeconds={defaultReplaySeconds}
-                />
-                <button
-                  type="button"
-                  className={`${styles.toolBtn} ${styles.saveBtn}`}
-                  onClick={() => onSaveAnnotation(saveTiming)}
-                  disabled={shapes.length === 0}
-                  title={t("app.telestration.saveAnnotation")}
-                  aria-label={t("app.telestration.saveAnnotation")}
-                >
-                  <FontAwesomeIcon icon={faBookmark} />
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              className={`${styles.toolBtn} ${styles.saveBtn}`}
-              onClick={onSaveStill}
-              disabled={shapes.length === 0 || saving}
-              title={t("app.telestration.saveStill")}
-              aria-label={t("app.telestration.saveStill")}
-            >
-              <FontAwesomeIcon icon={faCamera} />
-            </button>
-          </div>
-
-          <div className={styles.divider} />
-
+          {/* Collapsed, the button shows the pen in the current colour, so the
+              coach can still tell what the next stroke will look like. */}
           <button
             type="button"
-            className={`${styles.toolBtn} ${styles.resumeBtn}`}
-            onClick={onClearAndPlay}
-            aria-keyshortcuts="Space"
-            title={t("app.telestration.clearAndPlay")}
+            className={styles.toolBtn}
+            onClick={toggleCollapsed}
+            aria-expanded={!collapsed}
+            title={t(collapsed ? "app.telestration.expandToolbar" : "app.telestration.collapseToolbar")}
+            aria-label={t(collapsed ? "app.telestration.expandToolbar" : "app.telestration.collapseToolbar")}
           >
-            <FontAwesomeIcon icon={faPlay} aria-hidden />
-            {t("app.telestration.clearAndPlayShort")}
+            {collapsed ? (
+              <FontAwesomeIcon icon={faPen} style={{ color }} />
+            ) : (
+              <FontAwesomeIcon icon={faChevronLeft} />
+            )}
           </button>
+          {!collapsed && (
+            <>
+            <div className={styles.divider} />
+            <div className={styles.toolGroup}>
+              {TOOLS.map(ti => (
+                <button
+                  key={ti.tool}
+                  type="button"
+                  className={`${styles.toolBtn} ${
+                    tool === ti.tool ? styles.toolBtnActive : ""
+                  }`}
+                  onClick={() => setTool(ti.tool)}
+                  title={t(ti.labelKey)}
+                  aria-label={t(ti.labelKey)}
+                  aria-pressed={tool === ti.tool}
+                >
+                  <FontAwesomeIcon icon={ti.icon} />
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.divider} />
+
+            <div className={styles.toolGroup}>
+              {TELESTRATION_COLORS.map(c => (
+                <button
+                  key={c.hex}
+                  type="button"
+                  className={`${styles.colorBtn} ${
+                    color === c.hex ? styles.colorBtnActive : ""
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                  onClick={() => setColor(c.hex)}
+                  title={c.name}
+                  aria-label={c.name}
+                  aria-pressed={color === c.hex}
+                />
+              ))}
+            </div>
+
+            <div className={styles.divider} />
+
+            <div className={styles.toolGroup}>
+              {TELESTRATION_WIDTHS.map((w, i) => (
+                <button
+                  key={w}
+                  type="button"
+                  className={`${styles.widthBtn} ${
+                    widthFrac === w ? styles.widthBtnActive : ""
+                  }`}
+                  onClick={() => setWidthFrac(w)}
+                  title={t(`app.telestration.widths.${["thin", "medium", "thick"][i]}`)}
+                  aria-label={t(
+                    `app.telestration.widths.${["thin", "medium", "thick"][i]}`
+                  )}
+                  aria-pressed={widthFrac === w}
+                >
+                  <span
+                    className={styles.widthDot}
+                    style={{ width: 4 + i * 4, height: 4 + i * 4 }}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.divider} />
+
+            <div className={styles.toolGroup}>
+              <button
+                type="button"
+                className={styles.toolBtn}
+                onClick={undo}
+                disabled={shapes.length === 0}
+                title={t("app.telestration.undo")}
+                aria-label={t("app.telestration.undo")}
+              >
+                <FontAwesomeIcon icon={faRotateLeft} />
+              </button>
+              <button
+                type="button"
+                className={styles.toolBtn}
+                onClick={clearAll}
+                disabled={shapes.length === 0}
+                title={t("app.telestration.clear")}
+                aria-label={t("app.telestration.clear")}
+              >
+                <FontAwesomeIcon icon={faTrash} />
+              </button>
+              {onSaveAnnotation && (
+                <>
+                  <div className={styles.divider} />
+                  <AnnotationTimingControl
+                    value={saveTiming}
+                    onChange={changes =>
+                      setSaveTiming(prev => ({ ...prev, ...changes }))
+                    }
+                    defaultSeconds={defaultReplaySeconds}
+                  />
+                  <button
+                    type="button"
+                    className={`${styles.toolBtn} ${styles.saveBtn}`}
+                    onClick={() => onSaveAnnotation(saveTiming)}
+                    disabled={shapes.length === 0}
+                    title={t("app.telestration.saveAnnotation")}
+                    aria-label={t("app.telestration.saveAnnotation")}
+                  >
+                    <FontAwesomeIcon icon={faBookmark} />
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                className={`${styles.toolBtn} ${styles.saveBtn}`}
+                onClick={onSaveStill}
+                disabled={shapes.length === 0 || saving}
+                title={t("app.telestration.saveStill")}
+                aria-label={t("app.telestration.saveStill")}
+              >
+                <FontAwesomeIcon icon={faCamera} />
+              </button>
+            </div>
+
+            <div className={styles.divider} />
+
+            <button
+              type="button"
+              className={`${styles.toolBtn} ${styles.resumeBtn}`}
+              onClick={onClearAndPlay}
+              aria-keyshortcuts="Space"
+              title={t("app.telestration.clearAndPlay")}
+            >
+              <FontAwesomeIcon icon={faPlay} aria-hidden />
+              {t("app.telestration.clearAndPlayShort")}
+            </button>
+            </>
+          )}
           <button
             type="button"
             className={`${styles.toolBtn} ${styles.closeBtn}`}

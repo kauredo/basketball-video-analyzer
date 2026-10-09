@@ -324,6 +324,8 @@
       "clearAndPlayShort": "Počisti in predvajaj",
       "moveToolbar": "Premakni vrstico",
       "moveToolbarHint": "Povlecite za premik vrstice. Puščice jo premaknejo, dvoklik ali Home jo vrne na mesto.",
+      "collapseToolbar": "Pomanjšaj vrstico",
+      "expandToolbar": "Pokaži orodja za risanje",
       "done": "Končaj risanje",
       "undo": "Razveljavi",
       "clear": "Počisti vse",
