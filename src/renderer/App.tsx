@@ -484,12 +484,13 @@ export const App: React.FC = () => {
     setShowClipCreator(false);
   }, []);
 
+  const refreshClips = useCallback(() => setRefreshTrigger(prev => prev + 1), []);
+
   const handleClipCreated = useCallback(() => {
-    // Refresh the clip library
-    setRefreshTrigger((prev) => prev + 1);
+    refreshClips();
     setShowClipCreator(false);
     handleClearMarks();
-  }, [handleClearMarks]);
+  }, [refreshClips, handleClearMarks]);
 
   const handleQuickTag = useCallback(
     async (keyNumber: number) => {
@@ -717,6 +718,7 @@ export const App: React.FC = () => {
               <ClipLibrary
                 onRefresh={refreshTrigger}
                 currentProject={currentProject}
+                onClipsChanged={refreshClips}
                 onRequestWidth={ensureSidePanelWidth}
               />
             </div>
