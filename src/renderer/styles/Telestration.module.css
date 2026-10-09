@@ -163,6 +163,15 @@
   background: var(--text-secondary);
 }
 
+.penSwatch {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  margin-left: 4px;
+  border-radius: var(--radius-round);
+  box-shadow: 0 0 0 1.5px var(--text-secondary);
+}
+
 .widthBtnActive .widthDot {
   background: var(--text-white);
 }

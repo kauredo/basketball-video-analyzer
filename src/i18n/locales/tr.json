@@ -325,6 +325,8 @@
       "clearAndPlayShort": "Temizle ve oynat",
       "moveToolbar": "Araç çubuğunu taşı",
       "moveToolbarHint": "Araç çubuğunu taşımak için sürükleyin. Ok tuşları kaydırır, çift tıklama veya Home geri getirir.",
+      "collapseToolbar": "Araç çubuğunu küçült",
+      "expandToolbar": "Çizim araçlarını göster",
       "done": "Çizimi bitir",
       "undo": "Geri al",
       "clear": "Tümünü temizle",

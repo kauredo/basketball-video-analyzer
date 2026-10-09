@@ -324,6 +324,8 @@
       "clearAndPlayShort": "Cancella e riproduci",
       "moveToolbar": "Sposta barra",
       "moveToolbarHint": "Trascina per spostare la barra. Le frecce la spostano, doppio clic o Home la rimette a posto.",
+      "collapseToolbar": "Riduci la barra",
+      "expandToolbar": "Mostra gli strumenti di disegno",
       "done": "Fine disegno",
       "undo": "Annulla",
       "clear": "Cancella tutto",

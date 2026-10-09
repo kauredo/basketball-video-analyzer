@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   ANNOTATION_REPLAY: "annotationReplay",
   ANNOTATION_REPLAY_SECONDS: "annotationReplaySeconds",
   DRAW_TOOLBAR_POSITION: "drawToolbarPosition",
+  DRAW_TOOLBAR_COLLAPSED: "drawToolbarCollapsed",
   EXPORTED_CLIPS_TOTAL: "exportedClipsTotal",
   DONATION_NUDGE_SHOWN: "donationNudgeShown",
 } as const;

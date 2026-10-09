@@ -324,6 +324,8 @@
       "clearAndPlayShort": "Löschen & abspielen",
       "moveToolbar": "Leiste verschieben",
       "moveToolbarHint": "Ziehen, um die Leiste zu verschieben. Pfeiltasten verschieben sie schrittweise, Doppelklick oder Pos1 setzt sie zurück.",
+      "collapseToolbar": "Leiste minimieren",
+      "expandToolbar": "Zeichenwerkzeuge anzeigen",
       "done": "Zeichnen beenden",
       "undo": "Rückgängig",
       "clear": "Alles löschen",
