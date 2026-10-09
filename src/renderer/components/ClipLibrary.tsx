@@ -82,6 +82,8 @@ export interface Clip {
 interface ClipLibraryProps {
   onRefresh: number; // Trigger refresh when this changes
   currentProject: any | null;
+  /** Clips were deleted here, so the timeline's copy is stale. */
+  onClipsChanged: () => void;
   /** Ask the side panel for at least this many pixels. */
   onRequestWidth?: (minimum: number) => void;
 }
@@ -93,6 +95,7 @@ const TABLE_MIN_PANEL_WIDTH = 790;
 export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   onRefresh,
   currentProject,
+  onClipsChanged,
   onRequestWidth,
 }) => {
   const { t } = useTranslation();
@@ -272,7 +275,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
     try {
       await window.electronAPI.deleteClip(clipId);
-      await loadData();
+      onClipsChanged();
     } catch (error) {
       console.error("Error deleting clip:", error);
       showError(withCause(t("app.clips.errorDeletingClip"), error));
@@ -350,7 +353,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     } else {
       showSuccess(t("app.clips.table.bulkDeleteSuccess", { count: ids.length }));
     }
-    await loadData();
+    onClipsChanged();
   };
 
   const handleExportCategory = async () => {
