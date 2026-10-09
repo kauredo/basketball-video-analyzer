@@ -448,8 +448,8 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
           >
             <FontAwesomeIcon icon={faGripVertical} />
           </button>
-          {/* Collapsed, the button shows the pen in the current colour, so the
-              coach can still tell what the next stroke will look like. */}
+          {/* Collapsed, the button shows the current colour, so the coach can
+              still tell what the next stroke will look like. */}
           <button
             type="button"
             className={styles.toolBtn}
@@ -459,7 +459,10 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
             aria-label={collapseLabel}
           >
             {collapsed ? (
-              <FontAwesomeIcon icon={faPen} style={{ color }} />
+              <>
+                <FontAwesomeIcon icon={faPen} />
+                <span className={styles.penSwatch} style={{ backgroundColor: color }} />
+              </>
             ) : (
               <FontAwesomeIcon icon={faChevronLeft} />
             )}
