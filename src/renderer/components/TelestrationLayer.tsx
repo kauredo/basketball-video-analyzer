@@ -100,9 +100,13 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
     loadPref(STORAGE_KEYS.DRAW_TOOLBAR_COLLAPSED, false)
   );
   const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
-    savePref(STORAGE_KEYS.DRAW_TOOLBAR_COLLAPSED, !collapsed);
+    const next = !collapsed;
+    setCollapsed(next);
+    savePref(STORAGE_KEYS.DRAW_TOOLBAR_COLLAPSED, next);
   };
+  const collapseLabel = t(
+    collapsed ? "app.telestration.expandToolbar" : "app.telestration.collapseToolbar"
+  );
   const [saveTiming, setSaveTiming] = useState<AnnotationTiming>({
     display_seconds: null,
     pause_playback: false,
@@ -451,8 +455,8 @@ export const TelestrationLayer: React.FC<TelestrationLayerProps> = ({
             className={styles.toolBtn}
             onClick={toggleCollapsed}
             aria-expanded={!collapsed}
-            title={t(collapsed ? "app.telestration.expandToolbar" : "app.telestration.collapseToolbar")}
-            aria-label={t(collapsed ? "app.telestration.expandToolbar" : "app.telestration.collapseToolbar")}
+            title={collapseLabel}
+            aria-label={collapseLabel}
           >
             {collapsed ? (
               <FontAwesomeIcon icon={faPen} style={{ color }} />
