@@ -17,7 +17,7 @@
 - **Depends on**: none
 - **Category**: docs
 - **Planned at**: commit `fa4bc39`, 2026-09-07
-- **Executor's tool**: `/clarify`, against `~/.claude/writing-style.md`
+- **Executor's tool**: `/impeccable clarify`, against `~/.claude/writing-style.md`
 
 ## Why this matters
 
