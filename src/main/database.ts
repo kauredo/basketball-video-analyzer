@@ -95,6 +95,13 @@ export interface Clip {
       that file in as a module here breaks the ambient Window augmentation the
       renderer relies on. */
   status?: "keep" | "cut" | "review" | null;
+  /** Which saved drawings the file was cut with. null = cut before this was
+      tracked; the sync compares it as "" (none), so an old clip is re-cut
+      only if a saved drawing overlaps it. */
+  drawings_key?: string | null;
+  /** The live drawing burned into the whole clip at creation, kept so a
+      re-cut can burn it again. */
+  overlay_path?: string | null;
   created_at?: string;
 }
 
@@ -140,11 +147,12 @@ export const setupDatabase = () => {
 const migrateClipPaths = () => {
   try {
     const clips = db
-      .prepare("SELECT id, output_path, thumbnail_path FROM clips")
+      .prepare("SELECT id, output_path, thumbnail_path, overlay_path FROM clips")
       .all() as Array<{
       id: number;
       output_path: string;
       thumbnail_path: string | null;
+      overlay_path: string | null;
     }>;
 
     if (clips.length === 0) return;
@@ -169,7 +177,7 @@ const migrateClipPaths = () => {
     };
 
     const updateStmt = db.prepare(
-      "UPDATE clips SET output_path = ?, thumbnail_path = ? WHERE id = ?",
+      "UPDATE clips SET output_path = ?, thumbnail_path = ?, overlay_path = ? WHERE id = ?",
     );
 
     let recovered = 0;
@@ -177,15 +185,18 @@ const migrateClipPaths = () => {
       for (const clip of rows) {
         const newOutput = resolve(clip.output_path);
         const newThumbnail = resolve(clip.thumbnail_path);
+        const newOverlay = resolve(clip.overlay_path);
 
         const outputChanged = newOutput && newOutput !== clip.output_path;
         const thumbnailChanged =
           newThumbnail && newThumbnail !== clip.thumbnail_path;
+        const overlayChanged = newOverlay && newOverlay !== clip.overlay_path;
 
-        if (outputChanged || thumbnailChanged) {
+        if (outputChanged || thumbnailChanged || overlayChanged) {
           updateStmt.run(
             newOutput ?? clip.output_path,
             newThumbnail ?? clip.thumbnail_path,
+            newOverlay ?? clip.overlay_path,
             clip.id,
           );
           recovered++;
@@ -762,6 +773,14 @@ const migrateClipColumns = () => {
     if (!has("status")) {
       db.exec("ALTER TABLE clips ADD COLUMN status TEXT");
       console.log("Added status column to clips");
+    }
+    if (!has("drawings_key")) {
+      db.exec("ALTER TABLE clips ADD COLUMN drawings_key TEXT");
+      console.log("Added drawings_key column to clips");
+    }
+    if (!has("overlay_path")) {
+      db.exec("ALTER TABLE clips ADD COLUMN overlay_path TEXT");
+      console.log("Added overlay_path column to clips");
     }
   } catch (error) {
     console.error("Error migrating clip columns:", error);
@@ -1405,8 +1424,8 @@ export const getClips = (projectId?: number): Clip[] => {
 export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes, drawings_key, overlay_path)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -1424,6 +1443,8 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
       clip.court_x ?? null,
       clip.court_y ?? null,
       clip.notes || null,
+      clip.drawings_key ?? null,
+      clip.overlay_path ?? null,
     );
 
     return {
@@ -1435,6 +1456,13 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
     console.error("Error creating clip:", error);
     throw error;
   }
+};
+
+export const getClipById = (id: number): Clip | undefined =>
+  db.prepare("SELECT * FROM clips WHERE id = ?").get(id) as Clip | undefined;
+
+export const setClipDrawingsKey = (id: number, key: string): void => {
+  db.prepare("UPDATE clips SET drawings_key = ? WHERE id = ?").run(key, id);
 };
 
 /**

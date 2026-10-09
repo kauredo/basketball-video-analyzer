@@ -76,6 +76,8 @@ export interface Clip {
   quarter?: string | null;
   notes?: string;
   status?: ClipStatus | null;
+  drawings_key?: string | null;
+  overlay_path?: string | null;
   created_at: string;
 }
 

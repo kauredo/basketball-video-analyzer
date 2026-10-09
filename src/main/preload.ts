@@ -39,6 +39,17 @@ export interface ElectronAPI {
       seconds: number;
       pause: boolean;
     }>;
+    drawingsKey?: string;
+  }) => Promise<any>;
+  rerenderClipDrawings: (params: {
+    clipId: number;
+    drawings: Array<{
+      image: string;
+      timestamp: number;
+      seconds: number;
+      pause: boolean;
+    }>;
+    drawingsKey: string;
   }) => Promise<any>;
   exportAnnotatedFrame: (params: {
     inputPath: string;
@@ -231,6 +242,7 @@ const electronAPI: ElectronAPI = {
   getClips: projectId => ipcRenderer.invoke("get-clips", projectId),
   updateClip: (id, updates) => ipcRenderer.invoke("update-clip", id, updates),
   deleteClip: id => ipcRenderer.invoke("delete-clip", id),
+  rerenderClipDrawings: params => ipcRenderer.invoke("rerender-clip-drawings", params),
   getClipsByCategory: categoryId =>
     ipcRenderer.invoke("get-clips-by-category", categoryId),
 

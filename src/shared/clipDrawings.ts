@@ -153,3 +153,44 @@ export const buildDrawingGraph = (
   filters.push(`${pieces.join("")}concat=n=${pieces.length}:v=0:a=1[aout]`);
   return { filters, videoOut: label, audioMap: "[aout]", addedSeconds };
 };
+
+// A drawing as the database stores it. Typed here rather than imported, since
+// main can't import the renderer's types.
+interface SavedDrawing {
+  id: number;
+  timestamp: number;
+  display_seconds?: number | null; // null = the global replay default
+  pause_playback?: boolean;
+}
+
+// The saved drawings that go into a clip of [start, end), by the same rule
+// main burns them in with.
+export const selectSavedDrawings = <T extends SavedDrawing>(
+  saved: T[],
+  start: number,
+  end: number,
+  defaultSeconds: number
+): T[] =>
+  selectClipDrawings(
+    start,
+    end - start,
+    saved.map(drawing => ({
+      drawing,
+      timestamp: drawing.timestamp,
+      seconds: drawing.display_seconds ?? defaultSeconds,
+      pause: drawing.pause_playback === true,
+    }))
+  ).map(d => d.drawing);
+
+// Names the drawings a clip file was cut with, so an out-of-date file shows up
+// as a key mismatch. "" means none. The timestamp is left out because a saved
+// drawing's moment and shapes never change; only its timing can be edited.
+export const savedDrawingsKey = (shown: SavedDrawing[], defaultSeconds: number): string =>
+  shown
+    .map(d => `${d.id}:${d.display_seconds ?? defaultSeconds}:${d.pause_playback ? 1 : 0}`)
+    .join(",");
+
+// main stores clip paths through path.normalize, which uses backslashes on
+// Windows.
+export const isSamePath = (a: string, b: string): boolean =>
+  a.replace(/\\/g, "/") === b.replace(/\\/g, "/");

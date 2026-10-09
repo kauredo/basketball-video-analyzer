@@ -41,6 +41,12 @@ export interface ClipDrawingImage {
   pause: boolean;
 }
 
+// What a new clip is cut with: the drawing images and the key naming them.
+export interface ClipDrawings {
+  drawings: ClipDrawingImage[];
+  drawingsKey: string;
+}
+
 export type ClipStatus = "keep" | "cut" | "review";
 
 export interface Clip {
@@ -60,6 +66,8 @@ export interface Clip {
   notes?: string;
   /** null or absent means no status has been set. */
   status?: ClipStatus | null;
+  drawings_key?: string | null;
+  overlay_path?: string | null;
   created_at: string;
 }
 
@@ -97,7 +105,13 @@ export interface ElectronAPI {
     projectId: number;
     overlayImage?: string;
     drawings?: ClipDrawingImage[];
+    drawingsKey?: string;
   }) => Promise<any>;
+  rerenderClipDrawings: (params: {
+    clipId: number;
+    drawings: ClipDrawingImage[];
+    drawingsKey: string;
+  }) => Promise<Clip>;
   exportAnnotatedFrame: (params: {
     inputPath: string;
     time: number;
