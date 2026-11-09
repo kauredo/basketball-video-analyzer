@@ -451,7 +451,15 @@
       "videoMissingMessage": "Le fichier vidéo de ce projet n'est plus à l'emplacement « {{path}} ». Voulez-vous le localiser ?",
       "videoMissingLocate": "Localiser la vidéo",
       "videoRelinkSuccess": "Fichier vidéo mis à jour.",
-      "videoRelinkError": "Impossible de mettre à jour la vidéo. Veuillez réessayer."
+      "videoRelinkError": "Impossible de mettre à jour la vidéo. Veuillez réessayer.",
+      "chooserTitle": "Choisissez un projet pour cette vidéo",
+      "chooserOpenHeading": "Ouvrir un projet",
+      "chooserMessage": "Fichier vidéo : {{video}}",
+      "chooserNewProject": "Nouveau projet pour cette vidéo",
+      "chooserNameLabel": "Nom du projet",
+      "chooserNameHint": "Donnez un nom au projet pour le créer.",
+      "chooserCreate": "Créer le projet",
+      "chooserCreateError": "Impossible de créer le projet. Veuillez réessayer."
     },
     "timeline": {
       "title": "Timeline",

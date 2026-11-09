@@ -450,7 +450,15 @@
       "videoMissingMessage": "El archivo de vídeo de este proyecto ya no se encuentra en \"{{path}}\". ¿Quieres localizarlo?",
       "videoMissingLocate": "Localizar vídeo",
       "videoRelinkSuccess": "Archivo de vídeo actualizado.",
-      "videoRelinkError": "No se pudo actualizar el vídeo. Inténtalo de nuevo."
+      "videoRelinkError": "No se pudo actualizar el vídeo. Inténtalo de nuevo.",
+      "chooserTitle": "Elige un proyecto para este vídeo",
+      "chooserOpenHeading": "Abrir un proyecto",
+      "chooserMessage": "Archivo de vídeo: {{video}}",
+      "chooserNewProject": "Nuevo proyecto para este vídeo",
+      "chooserNameLabel": "Nombre del proyecto",
+      "chooserNameHint": "Ponle un nombre al proyecto para crearlo.",
+      "chooserCreate": "Crear proyecto",
+      "chooserCreateError": "No se pudo crear el proyecto. Inténtalo de nuevo."
     },
     "timeline": {
       "title": "Línea de tiempo",

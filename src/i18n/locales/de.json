@@ -450,7 +450,15 @@
       "videoMissingMessage": "Die Videodatei für dieses Projekt befindet sich nicht mehr unter „{{path}}“. Möchtest du sie suchen?",
       "videoMissingLocate": "Video suchen",
       "videoRelinkSuccess": "Videodatei aktualisiert.",
-      "videoRelinkError": "Video konnte nicht aktualisiert werden. Bitte erneut versuchen."
+      "videoRelinkError": "Video konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+      "chooserTitle": "Wähle ein Projekt für dieses Video",
+      "chooserOpenHeading": "Projekt öffnen",
+      "chooserMessage": "Videodatei: {{video}}",
+      "chooserNewProject": "Neues Projekt für dieses Video",
+      "chooserNameLabel": "Projektname",
+      "chooserNameHint": "Gib dem Projekt einen Namen, um es zu erstellen.",
+      "chooserCreate": "Projekt erstellen",
+      "chooserCreateError": "Projekt konnte nicht erstellt werden. Versuch es noch einmal."
     },
     "timeline": {
       "title": "Timeline",

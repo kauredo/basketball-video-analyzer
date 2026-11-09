@@ -18,8 +18,9 @@ import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { withCause } from "../utils/errors";
+import { formatDateTime } from "../utils/format";
 
-interface Project {
+export interface Project {
   id: number;
   name: string;
   video_path: string;
@@ -87,15 +88,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     }
   };
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString(i18n.language, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatDate = (dateString: string) => formatDateTime(dateString, i18n.language);
 
   const handleDeleteProject = async (
     project: Project,

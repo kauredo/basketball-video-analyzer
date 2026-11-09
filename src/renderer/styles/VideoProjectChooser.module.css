@@ -1,0 +1,135 @@
+@import "./variables.css";
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.videoName {
+  margin: 0 0 var(--spacing-lg);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.projectList {
+  list-style: none;
+  margin: 0 0 var(--spacing-lg);
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.projectList li + li {
+  border-top: 1px solid var(--border-color);
+}
+
+.projectButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-height: var(--min-interactive-size);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.projectButton:hover {
+  background: var(--bg-hover);
+}
+
+/* Inset, because the list scrolls and would clip an outer ring. */
+.projectButton:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+.projectText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.projectName {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.chevron {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.projectButton:hover .chevron {
+  color: var(--color-accent-ink);
+}
+
+.projectMeta {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.newProject {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-md);
+}
+
+.sectionHeading {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.createRow {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: var(--input-height);
+  padding: var(--input-padding);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  box-sizing: border-box;
+}
+
+.input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+.hint {
+  margin: var(--spacing-xs) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}

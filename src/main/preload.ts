@@ -75,7 +75,7 @@ export interface ElectronAPI {
     video_name: string;
     description?: string;
   }) => Promise<any>;
-  getProject: (videoPath: string) => Promise<any | null>;
+  getProjectsByVideoPath: (videoPath: string) => Promise<any[]>;
   getProjects: () => Promise<any[]>;
   getDbStatus: () => Promise<{
     ok: boolean;
@@ -84,8 +84,8 @@ export interface ElectronAPI {
     logPath: string;
   }>;
   updateProjectLastOpened: (projectId: number) => Promise<boolean>;
-  updateProjectVideoPath: (
-    projectId: number,
+  relinkVideoPath: (
+    oldVideoPath: string,
     newVideoPath: string,
     newVideoName: string
   ) => Promise<boolean>;
@@ -189,15 +189,16 @@ const electronAPI: ElectronAPI = {
 
   // Project operations
   createProject: project => ipcRenderer.invoke("create-project", project),
-  getProject: videoPath => ipcRenderer.invoke("get-project", videoPath),
+  getProjectsByVideoPath: videoPath =>
+    ipcRenderer.invoke("get-projects-by-video-path", videoPath),
   getProjects: () => ipcRenderer.invoke("get-projects"),
   getDbStatus: () => ipcRenderer.invoke("get-db-status"),
   updateProjectLastOpened: projectId =>
     ipcRenderer.invoke("update-project-last-opened", projectId),
-  updateProjectVideoPath: (projectId, newVideoPath, newVideoName) =>
+  relinkVideoPath: (oldVideoPath, newVideoPath, newVideoName) =>
     ipcRenderer.invoke(
-      "update-project-video-path",
-      projectId,
+      "relink-video-path",
+      oldVideoPath,
       newVideoPath,
       newVideoName
     ),

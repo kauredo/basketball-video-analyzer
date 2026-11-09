@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { app } from "electron";
 import log from "electron-log";
+import { dropProjectsVideoPathUnique } from "./projectsMigration";
 
 let db: Database.Database;
 
@@ -121,6 +122,9 @@ export const setupDatabase = () => {
 
     migrateDatabase();
     createTables();
+    if (dropProjectsVideoPathUnique(db)) {
+      console.log("Dropped UNIQUE on projects.video_path");
+    }
     migrateClipColumns();
     migrateAnnotationColumns();
     insertDefaultCategories();
@@ -241,7 +245,7 @@ const migrateDatabase = () => {
         CREATE TABLE IF NOT EXISTS projects (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
-          video_path TEXT NOT NULL UNIQUE,
+          video_path TEXT NOT NULL,
           video_name TEXT NOT NULL,
           description TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -642,7 +646,7 @@ const createTables = () => {
     CREATE TABLE IF NOT EXISTS projects (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      video_path TEXT NOT NULL UNIQUE,
+      video_path TEXT NOT NULL,
       video_name TEXT NOT NULL,
       description TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -916,13 +920,15 @@ export const createProject = (
   }
 };
 
-export const getProject = (videoPath: string): Project | null => {
+export const getProjectsByVideoPath = (videoPath: string): Project[] => {
   try {
-    const stmt = db.prepare("SELECT * FROM projects WHERE video_path = ?");
-    return (stmt.get(videoPath) as Project) || null;
+    const stmt = db.prepare(
+      "SELECT * FROM projects WHERE video_path = ? ORDER BY last_opened DESC",
+    );
+    return stmt.all(videoPath) as Project[];
   } catch (error) {
-    console.error("Error getting project:", error);
-    return null;
+    console.error("Error getting projects by video path:", error);
+    return [];
   }
 };
 
@@ -957,16 +963,18 @@ export const updateProjectLastOpened = (projectId: number): void => {
   }
 };
 
-export const updateProjectVideoPath = (
-  projectId: number,
+// Every project on the old path is moved: they share one file, so a missing
+// file is missing for all of them.
+export const relinkVideoPath = (
+  oldVideoPath: string,
   newVideoPath: string,
   newVideoName: string,
-): void => {
+): number => {
   try {
     const stmt = db.prepare(
-      "UPDATE projects SET video_path = ?, video_name = ? WHERE id = ?",
+      "UPDATE projects SET video_path = ?, video_name = ? WHERE video_path = ?",
     );
-    stmt.run(newVideoPath, newVideoName, projectId);
+    return stmt.run(newVideoPath, newVideoName, oldVideoPath).changes;
   } catch (error) {
     console.error("Error updating project video path:", error);
     throw error;

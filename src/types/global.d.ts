@@ -51,6 +51,7 @@ export type ClipStatus = "keep" | "cut" | "review";
 
 export interface Clip {
   id: number;
+  project_id?: number;
   video_path: string;
   output_path: string;
   thumbnail_path?: string;

@@ -88,6 +88,7 @@ downloading the electron and ffmpeg binaries by running each package's
 | 037 | App copy drift: two nouns, Title Case, marketing register | app | P3 | M | 005 (coordinate) | DONE (on main 2026-09-08) |
 | 038 | Aphoristic closer, em dashes in four titles, rule of three | website | P3 | S | 015 (coordinate) | DONE (2026-09-07) |
 | 039 | Clips are frozen after the cut: an editable table view | app | P1 | L | — | DONE, [PR #36](https://github.com/kauredo/basketball-video-analyzer/pull/36) squashed to `d9ce7ad` on main, shipped in v1.9.0 (`8b79536`); export gap closed by [#37](https://github.com/kauredo/basketball-video-analyzer/pull/37), CI drift by [#38](https://github.com/kauredo/basketball-video-analyzer/pull/38) |
+| 040 | One video, several projects: drop UNIQUE on `projects.video_path` and add a chooser | app | P1 | M | — | IN PROGRESS, [PR #55](https://github.com/kauredo/basketball-video-analyzer/pull/55) open: table rebuild with tests, chooser modal, relink moves every project on the path |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) |
 REJECTED (with one-line rationale).
