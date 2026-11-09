@@ -429,7 +429,13 @@
       "videoMissingMessage": "The video file for this project is no longer at \"{{path}}\". Would you like to locate it?",
       "videoMissingLocate": "Locate video",
       "videoRelinkSuccess": "Video file updated.",
-      "videoRelinkError": "Couldn't update the video. Please try again."
+      "videoRelinkError": "Couldn't update the video. Please try again.",
+      "chooserTitle": "This video is already in a project",
+      "chooserMessage": "Open a project that uses \"{{video}}\", or start a new one on the same video.",
+      "chooserNewProject": "New project for this video",
+      "chooserNameLabel": "Project name",
+      "chooserCreate": "Create project",
+      "chooserCreateError": "Couldn't create the project. Please try again."
     },
     "timeline": {
       "title": "Timeline",

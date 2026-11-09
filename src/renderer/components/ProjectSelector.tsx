@@ -19,7 +19,7 @@ import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { withCause } from "../utils/errors";
 
-interface Project {
+export interface Project {
   id: number;
   name: string;
   video_path: string;

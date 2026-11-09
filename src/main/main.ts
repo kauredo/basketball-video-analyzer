@@ -35,11 +35,11 @@ import {
   setClipDrawingsKey,
   getClipsByCategory,
   createProject,
-  getProject,
+  getProjectsByVideoPath,
   getProjectById,
   getProjects,
   updateProjectLastOpened,
-  updateProjectVideoPath,
+  relinkVideoPath,
   deleteProject,
   Category,
   Clip,
@@ -1355,13 +1355,8 @@ ipcMain.handle(
   }
 );
 
-ipcMain.handle("get-project", async (_event, videoPath: string) => {
-  try {
-    return getProject(videoPath);
-  } catch (error) {
-    console.error("Error getting project:", error);
-    return null;
-  }
+ipcMain.handle("get-projects-by-video-path", async (_event, videoPath: string) => {
+  return getProjectsByVideoPath(videoPath);
 });
 
 ipcMain.handle("get-projects", async () => {
@@ -1391,16 +1386,15 @@ ipcMain.handle(
 );
 
 ipcMain.handle(
-  "update-project-video-path",
+  "relink-video-path",
   async (
     _event,
-    projectId: number,
+    oldVideoPath: string,
     newVideoPath: string,
     newVideoName: string
   ) => {
     try {
-      updateProjectVideoPath(projectId, newVideoPath, newVideoName);
-      return true;
+      return relinkVideoPath(oldVideoPath, newVideoPath, newVideoName) > 0;
     } catch (error) {
       console.error("Error updating project video path:", error);
       return false;

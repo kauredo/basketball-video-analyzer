@@ -450,7 +450,13 @@
       "videoMissingMessage": "Video datoteka za ta projekt ni več na »{{path}}«. Ali jo želite poiskati?",
       "videoMissingLocate": "Poišči video",
       "videoRelinkSuccess": "Video datoteka je bila posodobljena.",
-      "videoRelinkError": "Videa ni bilo mogoče posodobiti. Poskusite znova."
+      "videoRelinkError": "Videa ni bilo mogoče posodobiti. Poskusite znova.",
+      "chooserTitle": "Ta video je že v projektu",
+      "chooserMessage": "Odprite projekt, ki uporablja \"{{video}}\", ali začnite novega z istim videom.",
+      "chooserNewProject": "Nov projekt za ta video",
+      "chooserNameLabel": "Ime projekta",
+      "chooserCreate": "Ustvari projekt",
+      "chooserCreateError": "Projekta ni bilo mogoče ustvariti. Poskusite znova."
     },
     "timeline": {
       "title": "Časovnica",

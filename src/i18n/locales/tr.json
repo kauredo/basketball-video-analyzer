@@ -451,7 +451,13 @@
       "videoMissingMessage": "Bu projenin video dosyası artık \"{{path}}\" konumunda değil. Konumunu bulmak ister misiniz?",
       "videoMissingLocate": "Videoyu bul",
       "videoRelinkSuccess": "Video dosyası güncellendi.",
-      "videoRelinkError": "Video güncellenemedi. Lütfen tekrar deneyin."
+      "videoRelinkError": "Video güncellenemedi. Lütfen tekrar deneyin.",
+      "chooserTitle": "Bu video zaten bir projede",
+      "chooserMessage": "\"{{video}}\" kullanan bir projeyi açın ya da aynı videoyla yeni bir proje başlatın.",
+      "chooserNewProject": "Bu video için yeni proje",
+      "chooserNameLabel": "Proje adı",
+      "chooserCreate": "Proje oluştur",
+      "chooserCreateError": "Proje oluşturulamadı. Lütfen tekrar deneyin."
     },
     "timeline": {
       "title": "Zaman Çizelgesi",

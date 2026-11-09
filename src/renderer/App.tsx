@@ -36,7 +36,8 @@ import { ClipLibrary } from "./components/ClipLibrary";
 import { Timeline } from "./components/Timeline";
 import { LanguageSelector } from "./components/LanguageSelector";
 import { InstructionsModal } from "./components/InstructionsModal";
-import { ProjectSelector } from "./components/ProjectSelector";
+import { ProjectSelector, type Project } from "./components/ProjectSelector";
+import { VideoProjectChooser } from "./components/VideoProjectChooser";
 import { KeyBindingEditor } from "./components/KeyBindingEditor";
 import { ShortcutsModal } from "./components/ShortcutsModal";
 import { FeedbackModal } from "./components/FeedbackModal";
@@ -66,6 +67,11 @@ export const App: React.FC = () => {
   const [appVersion, setAppVersion] = useState("");
   const [showInstructions, setShowInstructions] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [chooser, setChooser] = useState<{
+    filePath: string;
+    videoName: string;
+    projects: Project[];
+  } | null>(null);
   const [startupError, setStartupError] = useState<string | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -359,31 +365,59 @@ export const App: React.FC = () => {
     [sidePanelWidth],
   );
 
+  const openProject = (project: Project, filePath: string) => {
+    setCurrentProject(project);
+    setVideoPath(filePath);
+    setRefreshTrigger((prev) => prev + 1);
+    setShowProjectSelector(false);
+    setShowInstructions(false);
+  };
+
+  const handleChooserOpen = async (project: Project) => {
+    if (!chooser) return;
+    await window.electronAPI.updateProjectLastOpened(project.id);
+    openProject(project, chooser.filePath);
+    setChooser(null);
+  };
+
+  const handleChooserCreate = async (name: string) => {
+    if (!chooser) return;
+    try {
+      setIsLoading(true);
+      const project = await window.electronAPI.createProject({
+        name,
+        video_path: chooser.filePath,
+        video_name: chooser.videoName,
+        description: `Project for ${chooser.videoName}`,
+      });
+      openProject(project, chooser.filePath);
+      setChooser(null);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      showError(t("app.projects.chooserCreateError"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleLoadVideoByPath = async (filePath: string) => {
     try {
       setIsLoading(true);
       const videoName = filePath.split("/").pop() || filePath.split("\\").pop() || "Unknown Video";
 
-      // Check if a project already exists for this video
-      let project = await window.electronAPI.getProject(filePath);
-
-      if (!project) {
-        const projectName = videoName.replace(/\.[^/.]+$/, "");
-        project = await window.electronAPI.createProject({
-          name: projectName,
-          video_path: filePath,
-          video_name: videoName,
-          description: `Project for ${videoName}`,
-        });
-      } else {
-        await window.electronAPI.updateProjectLastOpened(project.id);
+      const existing = await window.electronAPI.getProjectsByVideoPath(filePath);
+      if (existing.length > 0) {
+        setChooser({ filePath, videoName, projects: existing });
+        return;
       }
 
-      setCurrentProject(project);
-      setVideoPath(filePath);
-      setRefreshTrigger((prev) => prev + 1);
-      setShowProjectSelector(false);
-      setShowInstructions(false);
+      const project = await window.electronAPI.createProject({
+        name: videoName.replace(/\.[^/.]+$/, ""),
+        video_path: filePath,
+        video_name: videoName,
+        description: `Project for ${videoName}`,
+      });
+      openProject(project, filePath);
     } catch (error) {
       console.error("Error loading video:", error);
     } finally {
@@ -428,8 +462,8 @@ export const App: React.FC = () => {
         }
         const newName =
           newPath.split("/").pop() || newPath.split("\\").pop() || newPath;
-        const ok = await window.electronAPI.updateProjectVideoPath(
-          project.id,
+        const ok = await window.electronAPI.relinkVideoPath(
+          project.video_path,
           newPath,
           newName,
         );
@@ -924,6 +958,16 @@ export const App: React.FC = () => {
         onCreateNew={handleCreateNewProject}
         onLoadVideoByPath={handleLoadVideoByPath}
       />
+
+      {chooser && (
+        <VideoProjectChooser
+          videoName={chooser.videoName}
+          projects={chooser.projects}
+          onOpen={handleChooserOpen}
+          onCreate={handleChooserCreate}
+          onCancel={() => setChooser(null)}
+        />
+      )}
 
       {/* Shortcuts Modal */}
       <ShortcutsModal

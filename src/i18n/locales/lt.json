@@ -450,7 +450,13 @@
       "videoMissingMessage": "Šio projekto vaizdo įrašo failo nebėra vietoje „{{path}}“. Ar norite jį surasti?",
       "videoMissingLocate": "Surasti vaizdo įrašą",
       "videoRelinkSuccess": "Vaizdo įrašo failas atnaujintas.",
-      "videoRelinkError": "Nepavyko atnaujinti vaizdo įrašo. Bandykite dar kartą."
+      "videoRelinkError": "Nepavyko atnaujinti vaizdo įrašo. Bandykite dar kartą.",
+      "chooserTitle": "Šis vaizdo įrašas jau yra projekte",
+      "chooserMessage": "Atidarykite projektą, kuriame naudojamas „{{video}}“, arba pradėkite naują su tuo pačiu vaizdo įrašu.",
+      "chooserNewProject": "Naujas projektas šiam vaizdo įrašui",
+      "chooserNameLabel": "Projekto pavadinimas",
+      "chooserCreate": "Sukurti projektą",
+      "chooserCreateError": "Nepavyko sukurti projekto. Bandykite dar kartą."
     },
     "timeline": {
       "title": "Laiko juosta",

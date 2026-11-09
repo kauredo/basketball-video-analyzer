@@ -450,7 +450,13 @@
       "videoMissingMessage": "Video fajl za ovaj projekat više nije na „{{path}}“. Želite li da ga pronađete?",
       "videoMissingLocate": "Pronađi snimak",
       "videoRelinkSuccess": "Video fajl ažuriran.",
-      "videoRelinkError": "Nije moguće ažurirati snimak. Pokušajte ponovo."
+      "videoRelinkError": "Nije moguće ažurirati snimak. Pokušajte ponovo.",
+      "chooserTitle": "Ovaj snimak je već u projektu",
+      "chooserMessage": "Otvorite projekat koji koristi \"{{video}}\" ili započnite novi sa istim snimkom.",
+      "chooserNewProject": "Novi projekat za ovaj snimak",
+      "chooserNameLabel": "Naziv projekta",
+      "chooserCreate": "Napravi projekat",
+      "chooserCreateError": "Nije moguće napraviti projekat. Pokušajte ponovo."
     },
     "timeline": {
       "title": "Vremenska linija",
