@@ -46,14 +46,25 @@
 }
 
 .projectIcon {
-  color: var(--color-primary);
+  color: var(--color-accent-ink);
   flex-shrink: 0;
+}
+
+.projectText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .projectName {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.projectMeta {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
 }
 
 .newProject {

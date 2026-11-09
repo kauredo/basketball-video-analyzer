@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilm, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useFocusTrap } from "../hooks/useFocusTrap";
+import { formatDateTime } from "../utils/format";
 import type { Project } from "./ProjectSelector";
 import dialogStyles from "../styles/ConfirmDialog.module.css";
 import styles from "../styles/VideoProjectChooser.module.css";
@@ -26,7 +27,7 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
   onCreate,
   onCancel,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const trapRef = useFocusTrap(true);
   const [name, setName] = useState(defaultName);
   const trimmed = name.trim();
@@ -72,7 +73,15 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
                 onClick={() => onOpen(project)}
               >
                 <FontAwesomeIcon icon={faFilm} className={styles.projectIcon} />
-                <span className={styles.projectName}>{project.name}</span>
+                <span className={styles.projectText}>
+                  <span className={styles.projectName} title={project.name}>
+                    {project.name}
+                  </span>
+                  <span className={styles.projectMeta}>
+                    {t("app.projects.lastOpened")}:{" "}
+                    {formatDateTime(project.last_opened, i18n.language)}
+                  </span>
+                </span>
               </button>
             </li>
           ))}
