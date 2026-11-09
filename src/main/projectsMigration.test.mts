@@ -105,3 +105,39 @@ test("an orphan row that was already there does not block the rebuild", () => {
   assert.equal(dropProjectsVideoPathUnique(db), true);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM clips").get()?.n, 3);
 });
+
+test("leaves a projects table with a missing column alone", () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(OLD_PROJECTS_SQL.replace("description TEXT,", ""));
+  assert.equal(dropProjectsVideoPathUnique(db), false);
+});
+
+test("ids of deleted projects are not handed out again", () => {
+  const db = oldDatabase();
+  db.exec("INSERT INTO projects (id, name, video_path, video_name) VALUES (12, 'Gone', '/films/gone.mp4', 'gone.mp4')");
+  db.exec("DELETE FROM projects WHERE id = 12");
+  dropProjectsVideoPathUnique(db);
+  const { id } = db
+    .prepare("INSERT INTO projects (name, video_path, video_name) VALUES ('New', '/films/game.mp4', 'game.mp4') RETURNING id")
+    .get() as { id: number };
+  assert.equal(id, 13);
+});
+
+test("a failed rebuild rolls back and restores foreign keys", () => {
+  const db = oldDatabase();
+  db.exec("CREATE TABLE projects_new (x INTEGER)");
+  const sql = db.prepare("SELECT sql FROM sqlite_master WHERE name='projects'").get()?.sql;
+  assert.throws(() => dropProjectsVideoPathUnique(db));
+  assert.equal(db.prepare("SELECT sql FROM sqlite_master WHERE name='projects'").get()?.sql, sql);
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM projects").get()?.n, 2);
+  assert.equal(db.prepare("PRAGMA foreign_keys").get()?.foreign_keys, 1);
+  db.exec("BEGIN");
+  db.exec("ROLLBACK");
+});
+
+test("foreign keys stay off when they started off", () => {
+  const db = oldDatabase();
+  db.exec("PRAGMA foreign_keys = OFF");
+  dropProjectsVideoPathUnique(db);
+  assert.equal(db.prepare("PRAGMA foreign_keys").get()?.foreign_keys, 0);
+});

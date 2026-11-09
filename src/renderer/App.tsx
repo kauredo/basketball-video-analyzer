@@ -72,6 +72,7 @@ export const App: React.FC = () => {
     videoName: string;
     projects: Project[];
   } | null>(null);
+  const creatingProject = useRef(false);
   const [startupError, setStartupError] = useState<string | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -365,6 +366,8 @@ export const App: React.FC = () => {
     [sidePanelWidth],
   );
 
+  const projectNameFor = (videoName: string) => videoName.replace(/\.[^/.]+$/, "");
+
   const openProject = (project: Project, filePath: string) => {
     setCurrentProject(project);
     setVideoPath(filePath);
@@ -381,7 +384,8 @@ export const App: React.FC = () => {
   };
 
   const handleChooserCreate = async (name: string) => {
-    if (!chooser) return;
+    if (!chooser || creatingProject.current) return;
+    creatingProject.current = true;
     try {
       setIsLoading(true);
       const project = await window.electronAPI.createProject({
@@ -396,6 +400,7 @@ export const App: React.FC = () => {
       console.error("Error creating project:", error);
       showError(t("app.projects.chooserCreateError"));
     } finally {
+      creatingProject.current = false;
       setIsLoading(false);
     }
   };
@@ -412,7 +417,7 @@ export const App: React.FC = () => {
       }
 
       const project = await window.electronAPI.createProject({
-        name: videoName.replace(/\.[^/.]+$/, ""),
+        name: projectNameFor(videoName),
         video_path: filePath,
         video_name: videoName,
         description: `Project for ${videoName}`,
@@ -962,7 +967,9 @@ export const App: React.FC = () => {
       {chooser && (
         <VideoProjectChooser
           videoName={chooser.videoName}
+          defaultName={projectNameFor(chooser.videoName)}
           projects={chooser.projects}
+          busy={isLoading}
           onOpen={handleChooserOpen}
           onCreate={handleChooserCreate}
           onCancel={() => setChooser(null)}

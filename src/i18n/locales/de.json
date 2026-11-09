@@ -452,11 +452,11 @@
       "videoRelinkSuccess": "Videodatei aktualisiert.",
       "videoRelinkError": "Video konnte nicht aktualisiert werden. Bitte erneut versuchen.",
       "chooserTitle": "Dieses Video ist bereits in einem Projekt",
-      "chooserMessage": "Öffnen Sie ein Projekt mit „{{video}}“ oder beginnen Sie ein neues mit demselben Video.",
+      "chooserMessage": "Öffne ein Projekt mit „{{video}}“ oder beginne ein neues mit demselben Video.",
       "chooserNewProject": "Neues Projekt für dieses Video",
       "chooserNameLabel": "Projektname",
       "chooserCreate": "Projekt erstellen",
-      "chooserCreateError": "Projekt konnte nicht erstellt werden. Bitte erneut versuchen."
+      "chooserCreateError": "Projekt konnte nicht erstellt werden. Versuch es noch einmal."
     },
     "timeline": {
       "title": "Timeline",

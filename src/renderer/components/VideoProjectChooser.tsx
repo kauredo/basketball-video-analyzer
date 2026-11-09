@@ -9,7 +9,9 @@ import styles from "../styles/VideoProjectChooser.module.css";
 
 interface VideoProjectChooserProps {
   videoName: string;
+  defaultName: string;
   projects: Project[];
+  busy: boolean;
   onOpen: (project: Project) => void;
   onCreate: (name: string) => void;
   onCancel: () => void;
@@ -17,14 +19,16 @@ interface VideoProjectChooserProps {
 
 export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
   videoName,
+  defaultName,
   projects,
+  busy,
   onOpen,
   onCreate,
   onCancel,
 }) => {
   const { t } = useTranslation();
   const trapRef = useFocusTrap(true);
-  const [name, setName] = useState(videoName.replace(/\.[^/.]+$/, ""));
+  const [name, setName] = useState(defaultName);
   const trimmed = name.trim();
 
   return (
@@ -78,7 +82,7 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
           className={styles.newProject}
           onSubmit={(e) => {
             e.preventDefault();
-            if (trimmed) onCreate(trimmed);
+            if (trimmed && !busy) onCreate(trimmed);
           }}
         >
           <h3 className={styles.newProjectHeading}>
@@ -104,7 +108,7 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
             <button
               type="submit"
               className={dialogStyles.confirmButton}
-              disabled={!trimmed}
+              disabled={!trimmed || busy}
             >
               {t("app.projects.chooserCreate")}
             </button>

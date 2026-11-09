@@ -3,6 +3,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -103,9 +104,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [shapes, setShapes] = useState<TelestrationShape[]>([]);
     const [savingStill, setSavingStill] = useState(false);
     const [savedAnnotations, setSavedAnnotations] = useState<Annotation[]>([]);
-    // The videos savedAnnotations and the video's metadata were loaded for.
-    // Both lag videoPath after a switch.
-    const [annotationsVideo, setAnnotationsVideo] = useState<string | null>(null);
+    // What savedAnnotations (project and video) and the video's metadata were
+    // loaded for. Both lag the props after a switch, and two projects can
+    // share one video.
+    const [annotationsFor, setAnnotationsFor] = useState<string | null>(null);
     const [metadataVideo, setMetadataVideo] = useState<string | null>(null);
     // Mirror shapes into a ref so getOverlay() always reads the latest drawing
     // regardless of how the imperative handle is memoized.
@@ -372,14 +374,14 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const loadAnnotations = useCallback(async () => {
       if (!projectId || !videoPath) {
         setSavedAnnotations([]);
-        setAnnotationsVideo(null);
+        setAnnotationsFor(null);
         return;
       }
       try {
         setSavedAnnotations(
           await window.electronAPI.getAnnotations(projectId, videoPath)
         );
-        setAnnotationsVideo(videoPath);
+        setAnnotationsFor(`${projectId}|${videoPath}`);
       } catch (error) {
         console.error("Failed to load annotations:", error);
       }
@@ -400,11 +402,17 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       [showSuccess, showWarning, t, onClipsUpdated]
     );
 
+    const projectClips = useMemo(
+      () => clips.filter(clip => clip.project_id === projectId),
+      [clips, projectId]
+    );
+
     useClipDrawingSync({
       videoPath,
-      clips,
+      clips: projectClips,
       annotations: savedAnnotations,
-      ready: annotationsVideo === videoPath && metadataVideo === videoPath,
+      ready:
+        annotationsFor === `${projectId}|${videoPath}` && metadataVideo === videoPath,
       defaultSeconds: replaySeconds,
       renderDrawing: renderClipDrawing,
       onFinished: handleClipSyncFinished,

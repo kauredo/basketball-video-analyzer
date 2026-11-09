@@ -55,10 +55,19 @@ export const dropProjectsVideoPathUnique = (db: MigrationDb): boolean => {
 
     db.exec("BEGIN");
     try {
+      // Copying the rows resets AUTOINCREMENT to the highest surviving id; keep
+      // the old counter so ids of deleted projects are never handed out again.
+      const sequence = db
+        .prepare("SELECT seq FROM sqlite_sequence WHERE name = 'projects'")
+        .get() as { seq: number } | undefined;
       db.exec(NEW_PROJECTS_SQL);
       db.exec(`INSERT INTO projects_new (${columnList}) SELECT ${columnList} FROM projects`);
       db.exec("DROP TABLE projects");
       db.exec("ALTER TABLE projects_new RENAME TO projects");
+      if (sequence) {
+        db.exec("DELETE FROM sqlite_sequence WHERE name = 'projects'");
+        db.exec(`INSERT INTO sqlite_sequence (name, seq) VALUES ('projects', ${Number(sequence.seq)})`);
+      }
       db.exec("CREATE INDEX IF NOT EXISTS idx_projects_video_path ON projects(video_path)");
       if (db.prepare("PRAGMA foreign_key_check").all().length > danglingBefore) {
         throw new Error("projects rebuild left dangling foreign keys");

@@ -963,6 +963,8 @@ export const updateProjectLastOpened = (projectId: number): void => {
   }
 };
 
+// Every project on the old path is moved: they share one file, so a missing
+// file is missing for all of them.
 export const relinkVideoPath = (
   oldVideoPath: string,
   newVideoPath: string,
