@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilm, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faChevronRight, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { formatDateTime } from "../utils/format";
 import type { Project } from "./ProjectSelector";
@@ -31,6 +31,9 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
   const trapRef = useFocusTrap(true);
   const [name, setName] = useState(defaultName);
   const trimmed = name.trim();
+  const dismiss = () => {
+    if (!busy) onCancel();
+  };
 
   return (
     <div
@@ -40,10 +43,10 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
       aria-modal="true"
       aria-labelledby="video-project-chooser-title"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onCancel();
+        if (e.target === e.currentTarget) dismiss();
       }}
       onKeyDown={(e) => {
-        if (e.key === "Escape") onCancel();
+        if (e.key === "Escape" && !e.nativeEvent.isComposing) dismiss();
       }}
     >
       <div className={dialogStyles.dialog}>
@@ -54,16 +57,19 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
           <button
             type="button"
             className={dialogStyles.closeButton}
-            onClick={onCancel}
+            onClick={dismiss}
             aria-label={t("app.buttons.close")}
           >
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
-        <p className={dialogStyles.message}>
+        <p className={styles.videoName}>
           {t("app.projects.chooserMessage", { video: videoName })}
         </p>
 
+        <h3 className={styles.sectionHeading}>
+          {t("app.projects.chooserOpenHeading")}
+        </h3>
         <ul className={styles.projectList}>
           {projects.map((project) => (
             <li key={project.id}>
@@ -72,7 +78,6 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
                 className={styles.projectButton}
                 onClick={() => onOpen(project)}
               >
-                <FontAwesomeIcon icon={faFilm} className={styles.projectIcon} />
                 <span className={styles.projectText}>
                   <span className={styles.projectName} title={project.name}>
                     {project.name}
@@ -82,6 +87,7 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
                     {formatDateTime(project.last_opened, i18n.language)}
                   </span>
                 </span>
+                <FontAwesomeIcon icon={faChevronRight} className={styles.chevron} />
               </button>
             </li>
           ))}
@@ -94,26 +100,20 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
             if (trimmed && !busy) onCreate(trimmed);
           }}
         >
-          <h3 className={styles.newProjectHeading}>
+          <h3 className={styles.sectionHeading}>
             {t("app.projects.chooserNewProject")}
           </h3>
           <label htmlFor="video-project-chooser-name" className={styles.label}>
             {t("app.projects.chooserNameLabel")}
           </label>
-          <input
-            id="video-project-chooser-name"
-            className={styles.input}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <div className={dialogStyles.actions}>
-            <button
-              type="button"
-              className={dialogStyles.cancelButton}
-              onClick={onCancel}
-            >
-              {t("app.buttons.cancel")}
-            </button>
+          <div className={styles.createRow}>
+            <input
+              id="video-project-chooser-name"
+              className={styles.input}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              aria-describedby={trimmed ? undefined : "video-project-chooser-hint"}
+            />
             <button
               type="submit"
               className={dialogStyles.confirmButton}
@@ -122,6 +122,11 @@ export const VideoProjectChooser: React.FC<VideoProjectChooserProps> = ({
               {t("app.projects.chooserCreate")}
             </button>
           </div>
+          {!trimmed && (
+            <p id="video-project-chooser-hint" className={styles.hint}>
+              {t("app.projects.chooserNameHint")}
+            </p>
+          )}
         </form>
       </div>
     </div>
