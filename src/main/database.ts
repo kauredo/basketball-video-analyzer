@@ -1522,20 +1522,6 @@ export const deleteClip = (id: number): void => {
   }
 };
 
-export const getClipsByCategory = (categoryId: number): Clip[] => {
-  try {
-    const stmt = db.prepare(`
-      SELECT * FROM clips
-      WHERE categories LIKE ?
-      ORDER BY created_at DESC
-    `);
-
-    return stmt.all(`%"${categoryId}"%`) as Clip[];
-  } catch (error) {
-    console.error("Error getting clips by category:", error);
-    return [];
-  }
-};
 
 export const getKeyBindings = (): KeyBindings => {
   const rows = db.prepare("SELECT key, value FROM key_bindings").all() as {

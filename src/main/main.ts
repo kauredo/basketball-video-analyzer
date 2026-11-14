@@ -33,7 +33,6 @@ import {
   deleteClip,
   getClipById,
   setClipDrawingsKey,
-  getClipsByCategory,
   createProject,
   getProjectsByVideoPath,
   getProjectById,
@@ -1543,14 +1542,6 @@ ipcMain.handle("play-clip", async (_event, clipPath: string) => {
   }
 });
 
-ipcMain.handle("get-clips-by-category", async (_event, categoryId: number) => {
-  try {
-    return getClipsByCategory(categoryId);
-  } catch (error) {
-    console.error("Error getting clips by category:", error);
-    return [];
-  }
-});
 
 ipcMain.handle("reset-database", async () => {
   try {
