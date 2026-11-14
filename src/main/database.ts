@@ -4,6 +4,7 @@ import path from "path";
 import { app } from "electron";
 import log from "electron-log";
 import { dropProjectsVideoPathUnique } from "./projectsMigration";
+import { relinkVideoRows } from "./relink";
 
 let db: Database.Database;
 
@@ -971,10 +972,9 @@ export const relinkVideoPath = (
   newVideoName: string,
 ): number => {
   try {
-    const stmt = db.prepare(
-      "UPDATE projects SET video_path = ?, video_name = ? WHERE video_path = ?",
-    );
-    return stmt.run(newVideoPath, newVideoName, oldVideoPath).changes;
+    return db.transaction(() =>
+      relinkVideoRows(db, oldVideoPath, newVideoPath, newVideoName),
+    )();
   } catch (error) {
     console.error("Error updating project video path:", error);
     throw error;
