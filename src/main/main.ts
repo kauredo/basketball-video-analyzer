@@ -57,6 +57,7 @@ import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
 import { parseYoutubeUrl } from "./youtubeUrl";
 import { cancelClipProcess } from "./clipProcesses";
+import { clipFileTitle, clipInputError } from "../shared/clipInput";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -583,6 +584,20 @@ const removeClipFiles = (...paths: Array<string | null>): void => {
   }
 };
 
+// Normalized path of a source video the app may read, or null. Symlinks are
+// resolved before the allowlist check so a link can't point outside it.
+const allowedInputPath = (inputPath: unknown): string | null => {
+  if (typeof inputPath !== "string" || inputPath.length === 0) return null;
+  const normalized = path.normalize(inputPath);
+  let resolved = path.resolve(normalized);
+  try {
+    resolved = fs.realpathSync(resolved);
+  } catch {
+    // Falls through to the existence check below.
+  }
+  return isAllowedMediaPath(resolved) && fs.existsSync(normalized) ? normalized : null;
+};
+
 // Save a single annotated frame: extract the frame at `time` from the source
 // video and composite the drawing (a native-resolution transparent PNG) on top.
 // Compositing happens here via ffmpeg so the renderer never has to draw the
@@ -597,15 +612,8 @@ ipcMain.handle(
     if (!Number.isFinite(time) || time < 0) {
       throw new Error("ERROR_INVALID_TIME");
     }
-    const normalizedInputPath = path.normalize(inputPath);
-
-    let resolvedInput = path.resolve(normalizedInputPath);
-    try {
-      resolvedInput = fs.realpathSync(resolvedInput);
-    } catch {
-      // Falls through to the existence check below.
-    }
-    if (!isAllowedMediaPath(resolvedInput) || !fs.existsSync(normalizedInputPath)) {
+    const normalizedInputPath = allowedInputPath(inputPath);
+    if (!normalizedInputPath) {
       throw new Error("ERROR_FILE_NOT_FOUND");
     }
 
@@ -816,8 +824,20 @@ ipcMain.handle(
           drawingsKey,
         } = params;
 
+        const inputError = clipInputError(startTime, endTime, title);
+        if (inputError) {
+          console.error("Invalid clip input:", inputError, { startTime, endTime });
+          reject(new Error(inputError));
+          return;
+        }
+
         // Use native path separators for file system operations
-        const normalizedInputPath = path.normalize(inputPath);
+        const normalizedInputPath = allowedInputPath(inputPath);
+        if (!normalizedInputPath) {
+          console.error("Input file is missing or not allowed:", inputPath);
+          reject(new Error("ERROR_FILE_NOT_FOUND"));
+          return;
+        }
         const clipsDir = getClipsDirectory();
         const normalizedClipsDir = path.normalize(clipsDir);
 
@@ -836,7 +856,7 @@ ipcMain.handle(
         // Generate unique filename with Windows-safe characters
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
         const clipId = uuidv4().slice(0, 8);
-        const safeTitle = title.replace(/[^a-zA-Z0-9]/g, "_");
+        const safeTitle = clipFileTitle(title);
         const outputFileName = `${safeTitle}_${timestamp}_${clipId}.mp4`;
         const thumbnailFileName = `${safeTitle}_${timestamp}_${clipId}_thumb.jpg`;
         const outputPath = path.join(normalizedClipsDir, outputFileName);
@@ -850,40 +870,9 @@ ipcMain.handle(
 
         const duration = endTime - startTime;
 
-        // Validate input parameters
-        if (duration <= 0) {
-          console.error("Invalid duration:", duration);
-          reject(new Error("ERROR_INVALID_DURATION"));
-          return;
-        }
-
-        if (startTime < 0 || endTime < 0) {
-          console.error(
-            "Invalid time values - startTime:",
-            startTime,
-            "endTime:",
-            endTime
-          );
-          reject(new Error("ERROR_INVALID_TIME"));
-          return;
-        }
-
-        if (!title || title.trim().length === 0) {
-          console.error("Empty or invalid title provided");
-          reject(new Error("ERROR_INVALID_TITLE"));
-          return;
-        }
-
         if (!categories || categories.length === 0) {
           console.error("No categories provided");
           reject(new Error("ERROR_NO_CATEGORIES"));
-          return;
-        }
-
-        // Validate that input file exists and is accessible
-        if (!fs.existsSync(normalizedInputPath)) {
-          console.error("Input file does not exist:", normalizedInputPath);
-          reject(new Error("ERROR_FILE_NOT_FOUND"));
           return;
         }
 
