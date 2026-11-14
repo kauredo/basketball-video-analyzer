@@ -58,6 +58,7 @@ import { parseYoutubeUrl } from "./youtubeUrl";
 import { ClipCuts } from "./clipProcesses";
 import { clipFileTitle, clipInputError } from "../shared/clipInput";
 import { safeFolderName } from "../shared/safeFolderName";
+import { hasVideoExtension } from "../shared/videoPath";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -581,6 +582,17 @@ const deleteTempFile = (filePath: string): void => {
 const removeClipFiles = (...paths: Array<string | null>): void => {
   for (const filePath of paths) {
     if (filePath) deleteTempFile(filePath);
+  }
+};
+
+// A project's video path comes from the renderer and later passes the media
+// allowlist, so it has to be an existing video file.
+const isVideoFile = (filePath: unknown): boolean => {
+  if (!hasVideoExtension(filePath)) return false;
+  try {
+    return fs.statSync(filePath).isFile();
+  } catch {
+    return false;
   }
 };
 
@@ -1355,6 +1367,9 @@ ipcMain.handle(
     projectData: Omit<Project, "id" | "created_at" | "last_opened">
   ) => {
     try {
+      if (!isVideoFile(projectData?.video_path)) {
+        throw new Error("ERROR_FILE_NOT_FOUND");
+      }
       return createProject(projectData);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -1402,6 +1417,7 @@ ipcMain.handle(
     newVideoName: string
   ) => {
     try {
+      if (!isVideoFile(newVideoPath)) return false;
       return relinkVideoPath(oldVideoPath, newVideoPath, newVideoName) > 0;
     } catch (error) {
       console.error("Error updating project video path:", error);
