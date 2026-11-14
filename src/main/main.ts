@@ -58,6 +58,7 @@ import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../sha
 import { parseYoutubeUrl } from "./youtubeUrl";
 import { cancelClipProcess } from "./clipProcesses";
 import { clipFileTitle, clipInputError } from "../shared/clipInput";
+import { safeFolderName } from "../shared/safeFolderName";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -1082,23 +1083,22 @@ ipcMain.handle(
       const exportDir = result.filePaths[0];
       const exportedFiles: string[] = [];
 
-      // Get project ID from the first clip (all clips should be from same project)
-      const firstClip = params.clips[0];
-      if (!firstClip) {
-        throw new Error("No clips provided for export");
-      }
+      // Paths and titles come from the database, never from the renderer.
+      const storedClips = params.clips
+        .map(clip => getClipById(clip.id))
+        .filter((clip): clip is NonNullable<typeof clip> => !!clip);
 
-      // Get the project ID from the clip
-      const clipData = getClips(undefined).find(c => c.id === firstClip.id);
+      // Get project ID from the first clip (all clips should be from same project)
+      const clipData = storedClips[0];
       if (!clipData) {
-        throw new Error("Could not find clip data to determine project");
+        throw new Error("No clips provided for export");
       }
 
       const categories = getCategories(clipData.project_id);
 
       // Group clips by their categories
-      const clipsByCategory = new Map<number, typeof params.clips>();
-      params.clips.forEach(clip => {
+      const clipsByCategory = new Map<number, typeof storedClips>();
+      storedClips.forEach(clip => {
         try {
           const clipCategories = JSON.parse(clip.categories);
           clipCategories.forEach((catId: number) => {
@@ -1120,7 +1120,7 @@ ipcMain.handle(
         if (!category || clips.length === 0) continue;
 
         // Create category folder
-        const categoryDir = path.join(exportDir, category.name);
+        const categoryDir = path.join(exportDir, safeFolderName(category.name));
         if (!fs.existsSync(categoryDir)) {
           fs.mkdirSync(categoryDir, { recursive: true });
         }
