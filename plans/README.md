@@ -23,9 +23,10 @@ your row when done.
 This is a monorepo of **three separate git repos**: `app/` (Electron app,
 planned at `717500b`), `website/` (Astro site, planned at `6c6cf68`),
 `worker/` (Cloudflare Worker, `0be4f9e`, untouched by these plans). Branch and
-commit in the repo each plan names. Repo-wide constants: no test suites exist —
+commit in the repo each plan names. Repo-wide constants: the app has a few
+unit tests (`npm test`, Node's test runner) and the website has none;
 `npm run build` (app) and `npm run build` (website) are the verification
-gates; the app has 11 i18n locales and every new UI string goes into all of
+gates, with `npm test` as well for the app; the app has 11 i18n locales and every new UI string goes into all of
 them; never mention AI tools in commit messages or add AI co-author lines.
 
 **2026-09-07 update.** Plans **010-038** were added from the design audit at
