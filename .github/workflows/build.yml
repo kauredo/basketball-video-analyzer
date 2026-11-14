@@ -29,7 +29,11 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        # Linux stays on 24.04 (rpm 4.18). From rpm 4.20 on, %install runs in a
+        # per-package build directory, and the spec electron-installer-redhat
+        # writes copies `usr/*` from the old one, so the RPM maker fails.
+        # Keep release.yml on the same image.
+        os: [macos-latest, windows-latest, ubuntu-24.04]
 
     runs-on: ${{ matrix.os }}
 
@@ -128,7 +132,7 @@ jobs:
           ELECTRON_FORGE_MAKERS: '["@electron-forge/maker-squirrel"]'
 
       - name: Build for Linux
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         run: |
           npm run make
         env:
@@ -157,7 +161,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Linux artifacts
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         uses: actions/upload-artifact@v4
         with:
           name: basketball-video-analyzer-linux
