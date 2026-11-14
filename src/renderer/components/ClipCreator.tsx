@@ -67,6 +67,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   const [progress, setProgress] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
   const [currentProcessId, setCurrentProcessId] = useState<string | null>(null);
+  const [waitingToRetry, setWaitingToRetry] = useState(false);
 
   // Refs for input focus management
   const clipTitleInputRef = useRef<HTMLInputElement>(null);
@@ -138,6 +139,15 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   };
 
   const handleCancelCreation = async () => {
+    if (!currentProcessId && waitingToRetry) {
+      // No ffmpeg runs between attempts; the flag stops the pending retry.
+      cancelledRef.current = true;
+      setWaitingToRetry(false);
+      setIsCreating(false);
+      setProgress(0);
+      showWarning(t("app.clips.creator.clipCreationCancelled"));
+      return;
+    }
     if (currentProcessId) {
       // Set before the call: the killed cut can reject before the cancel
       // answers, and its catch must not retry it.
@@ -361,7 +371,12 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           })
         );
 
+        // The failed attempt's id is dead; cancelling it would be refused.
+        setCurrentProcessId(null);
+        setWaitingToRetry(true);
         await sleep(delay);
+        setWaitingToRetry(false);
+        if (cancelledRef.current) return;
         return attemptCreateClip(attempt + 1);
       }
 
@@ -689,7 +704,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
               type="button"
               onClick={handleCancelCreation}
               className={styles.cancelBtn}
-              disabled={!currentProcessId}
+              disabled={!currentProcessId && !waitingToRetry}
             >
               {t("app.clips.creator.cancel")}
             </button>
