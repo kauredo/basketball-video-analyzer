@@ -15,7 +15,7 @@ import { useToastContext } from "../contexts/ToastContext";
 import { formatVideoTime } from "../utils/format";
 import { Court } from "./Court";
 import { ClipDrawings, Player } from "../../types/global";
-import { withCause } from "../utils/errors";
+import { errorCode, withCause } from "../utils/errors";
 
 interface Category {
   id: number;
@@ -71,6 +71,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   // Refs for input focus management
   const clipTitleInputRef = useRef<HTMLInputElement>(null);
   const clipNotesInputRef = useRef<HTMLTextAreaElement>(null);
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
     loadCategories();
@@ -138,6 +139,9 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
 
   const handleCancelCreation = async () => {
     if (currentProcessId) {
+      // Set before the call: the killed cut can reject before the cancel
+      // answers, and its catch must not retry it.
+      cancelledRef.current = true;
       try {
         const result = await window.electronAPI.cancelClipCreation(
           currentProcessId
@@ -148,6 +152,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           setCurrentProcessId(null);
           showWarning(t("app.clips.creator.clipCreationCancelled"));
         } else {
+          cancelledRef.current = false;
           // The main process reports a refusal as { success: false, reason },
           // not as a throw, so the cause is on the result rather than in a
           // catch.
@@ -156,6 +161,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           );
         }
       } catch (error) {
+        cancelledRef.current = false;
         console.error("Error cancelling clip creation:", error);
         showError(withCause(t("app.clips.creator.clipCancellationFailed"), error));
       }
@@ -281,6 +287,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       return;
     }
 
+    cancelledRef.current = false;
     await attemptCreateClip();
   };
 
@@ -308,6 +315,11 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         ...getClipDrawings?.(markInTime!, markOutTime!),
       });
     } catch (error) {
+      if (cancelledRef.current) {
+        setIsCreating(false);
+        setRetryCount(0);
+        return;
+      }
       // Enhanced error logging for diagnostics
       const errorInfo = {
         attempt,
@@ -336,11 +348,10 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       };
 
       console.error(`Error creating clip (attempt ${attempt}):`, errorInfo);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const code = errorCode(error) ?? "";
 
       // Check if error is retryable and we haven't exceeded max retries
-      if (isRetryableError(errorMessage) && attempt < maxRetries) {
+      if (isRetryableError(code) && attempt < maxRetries) {
         const delay = Math.pow(2, attempt - 1) * 1000; // Exponential backoff: 1s, 2s, 4s
         showWarning(
           t("app.clips.creator.retryingClipCreation", {
@@ -357,7 +368,7 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
       // Handle specific error codes with appropriate translations
       let translationKey = "app.clips.creator.errorCreating";
 
-      switch (errorMessage) {
+      switch (code) {
         case "ERROR_NO_WRITE_ACCESS":
           translationKey = "app.clips.creator.errorNoWriteAccess";
           break;

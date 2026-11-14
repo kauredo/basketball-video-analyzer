@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/YouTubeImport.module.css";
+import { errorCode } from "../utils/errors";
 
 interface YouTubeImportProps {
   onVideoDownloaded: (filePath: string) => void;
@@ -41,8 +42,7 @@ export const YouTubeImport: React.FC<YouTubeImportProps> = ({
         onVideoDownloaded(result.filePath);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      if (message === "INVALID_YOUTUBE_URL") {
+      if (errorCode(err) === "INVALID_YOUTUBE_URL") {
         setError(t("app.projects.youtubeInvalidUrl"));
       } else {
         setError(t("app.projects.youtubeDownloadError"));
