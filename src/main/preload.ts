@@ -130,7 +130,6 @@ export interface ElectronAPI {
   getClips: (projectId?: number) => Promise<any[]>;
   updateClip: (id: number, updates: any) => Promise<boolean>;
   deleteClip: (id: number) => Promise<boolean>;
-  getClipsByCategory: (categoryId: number) => Promise<any[]>;
 
   // Export clips data
   exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
@@ -244,8 +243,6 @@ const electronAPI: ElectronAPI = {
   updateClip: (id, updates) => ipcRenderer.invoke("update-clip", id, updates),
   deleteClip: id => ipcRenderer.invoke("delete-clip", id),
   rerenderClipDrawings: params => ipcRenderer.invoke("rerender-clip-drawings", params),
-  getClipsByCategory: categoryId =>
-    ipcRenderer.invoke("get-clips-by-category", categoryId),
 
   // Export clips data
   exportClipsData: (projectId: number) =>

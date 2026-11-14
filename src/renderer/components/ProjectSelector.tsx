@@ -17,7 +17,7 @@ import { YouTubeImport } from "./YouTubeImport";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
-import { withCause } from "../utils/errors";
+import { errorCode, withCause } from "../utils/errors";
 import { formatDateTime } from "../utils/format";
 
 export interface Project {
@@ -121,7 +121,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       }
     } catch (error) {
       console.error("Error importing session:", error);
-      const message = error instanceof Error && error.message === "INVALID_SESSION_FILE"
+      const message = errorCode(error) === "INVALID_SESSION_FILE"
         ? t("app.projects.importSessionInvalidFile")
         : t("app.projects.importSessionError");
       showError(message);

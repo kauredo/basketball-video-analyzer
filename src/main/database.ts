@@ -4,6 +4,8 @@ import path from "path";
 import { app } from "electron";
 import log from "electron-log";
 import { dropProjectsVideoPathUnique } from "./projectsMigration";
+import { relinkVideoRows } from "./relink";
+import { categoryUpdateFields } from "./categoryColumns";
 
 let db: Database.Database;
 
@@ -971,10 +973,9 @@ export const relinkVideoPath = (
   newVideoName: string,
 ): number => {
   try {
-    const stmt = db.prepare(
-      "UPDATE projects SET video_path = ?, video_name = ? WHERE video_path = ?",
-    );
-    return stmt.run(newVideoPath, newVideoName, oldVideoPath).changes;
+    return db.transaction(() =>
+      relinkVideoRows(db, oldVideoPath, newVideoPath, newVideoName),
+    )();
   } catch (error) {
     console.error("Error updating project video path:", error);
     throw error;
@@ -1192,9 +1193,9 @@ export const updateCategory = (
   updates: Partial<Category>,
 ): void => {
   try {
-    const fields = Object.keys(updates).filter(
-      (key) => key !== "id" && key !== "created_at",
-    );
+    const fields = categoryUpdateFields(updates);
+    if (fields.length === 0) return;
+
     const setClause = fields.map((field) => `${field} = ?`).join(", ");
     const values = fields.map((field) => updates[field as keyof Category]);
 
@@ -1521,20 +1522,6 @@ export const deleteClip = (id: number): void => {
   }
 };
 
-export const getClipsByCategory = (categoryId: number): Clip[] => {
-  try {
-    const stmt = db.prepare(`
-      SELECT * FROM clips
-      WHERE categories LIKE ?
-      ORDER BY created_at DESC
-    `);
-
-    return stmt.all(`%"${categoryId}"%`) as Clip[];
-  } catch (error) {
-    console.error("Error getting clips by category:", error);
-    return [];
-  }
-};
 
 export const getKeyBindings = (): KeyBindings => {
   const rows = db.prepare("SELECT key, value FROM key_bindings").all() as {

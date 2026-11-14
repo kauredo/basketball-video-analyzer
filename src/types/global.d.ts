@@ -183,7 +183,6 @@ export interface ElectronAPI {
   getClips: (videoPath?: string) => Promise<any[]>;
   updateClip: (id: number, updates: any) => Promise<boolean>;
   deleteClip: (id: number) => Promise<boolean>;
-  getClipsByCategory: (categoryId: number) => Promise<any[]>;
 
   // Event listeners
   onClipProgress: (callback: (data: any) => void) => void;

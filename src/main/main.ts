@@ -5,7 +5,7 @@ import { Readable } from "stream";
 import { spawn } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
 import {
   setupDatabase,
@@ -33,7 +33,6 @@ import {
   deleteClip,
   getClipById,
   setClipDrawingsKey,
-  getClipsByCategory,
   createProject,
   getProjectsByVideoPath,
   getProjectById,
@@ -56,6 +55,11 @@ import {
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
 import { parseYoutubeUrl } from "./youtubeUrl";
+import { ClipCuts } from "./clipProcesses";
+import { clipFileTitle, clipInputError } from "../shared/clipInput";
+import { safeFolderName } from "../shared/safeFolderName";
+import { hasVideoExtension } from "../shared/videoPath";
+import { isInsideDir } from "./insideDir";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -105,7 +109,7 @@ if (ffmpegPath) {
 let mainWindow: BrowserWindow;
 
 // Track active clip creation processes
-const activeClipProcesses = new Map<string, any>();
+const clipCuts = new ClipCuts();
 
 const createMenu = (mainWindow: BrowserWindow): void => {
   const isMac = process.platform === "darwin";
@@ -483,10 +487,7 @@ ipcMain.handle("system-check", async () => {
 // Cancel clip creation
 ipcMain.handle("cancel-clip-creation", async (_event, processId: string) => {
   try {
-    const process = activeClipProcesses.get(processId);
-    if (process) {
-      process.kill();
-      activeClipProcesses.delete(processId);
+    if (clipCuts.cancel(processId)) {
       return { success: true };
     }
     return { success: false, reason: "Process not found" };
@@ -537,7 +538,7 @@ const MAX_OVERLAY_BYTES = 64 * 1024 * 1024;
 const PNG_DATA_URL_PREFIX = "data:image/png;base64,";
 
 const tempPngPath = () =>
-  path.join(app.getPath("temp"), `telestration-${uuidv4().slice(0, 8)}.png`);
+  path.join(app.getPath("temp"), `telestration-${randomUUID().slice(0, 8)}.png`);
 
 // Decode a base64 PNG data URL to overlayPath and return the path. Rejects
 // anything that isn't a PNG data URL or exceeds the size cap.
@@ -577,6 +578,39 @@ const deleteTempFile = (filePath: string): void => {
   }
 };
 
+// A cut that never reaches the database leaves nothing that lists or deletes
+// its files later, so they go now.
+const removeClipFiles = (...paths: Array<string | null>): void => {
+  for (const filePath of paths) {
+    if (filePath) deleteTempFile(filePath);
+  }
+};
+
+// A project's video path comes from the renderer and later passes the media
+// allowlist, so it has to be an existing video file.
+const isVideoFile = (filePath: unknown): boolean => {
+  if (!hasVideoExtension(filePath)) return false;
+  try {
+    return fs.statSync(filePath).isFile();
+  } catch {
+    return false;
+  }
+};
+
+// Normalized path of a source video the app may read, or null. Symlinks are
+// resolved before the allowlist check so a link can't point outside it.
+const allowedInputPath = (inputPath: unknown): string | null => {
+  if (typeof inputPath !== "string" || inputPath.length === 0) return null;
+  const normalized = path.normalize(inputPath);
+  let resolved = path.resolve(normalized);
+  try {
+    resolved = fs.realpathSync(resolved);
+  } catch {
+    // Falls through to the existence check below.
+  }
+  return isAllowedMediaPath(resolved) && fs.existsSync(normalized) ? normalized : null;
+};
+
 // Save a single annotated frame: extract the frame at `time` from the source
 // video and composite the drawing (a native-resolution transparent PNG) on top.
 // Compositing happens here via ffmpeg so the renderer never has to draw the
@@ -591,15 +625,8 @@ ipcMain.handle(
     if (!Number.isFinite(time) || time < 0) {
       throw new Error("ERROR_INVALID_TIME");
     }
-    const normalizedInputPath = path.normalize(inputPath);
-
-    let resolvedInput = path.resolve(normalizedInputPath);
-    try {
-      resolvedInput = fs.realpathSync(resolvedInput);
-    } catch {
-      // Falls through to the existence check below.
-    }
-    if (!isAllowedMediaPath(resolvedInput) || !fs.existsSync(normalizedInputPath)) {
+    const normalizedInputPath = allowedInputPath(inputPath);
+    if (!normalizedInputPath) {
       throw new Error("ERROR_FILE_NOT_FOUND");
     }
 
@@ -810,8 +837,20 @@ ipcMain.handle(
           drawingsKey,
         } = params;
 
+        const inputError = clipInputError(startTime, endTime, title);
+        if (inputError) {
+          console.error("Invalid clip input:", inputError, { startTime, endTime });
+          reject(new Error(inputError));
+          return;
+        }
+
         // Use native path separators for file system operations
-        const normalizedInputPath = path.normalize(inputPath);
+        const normalizedInputPath = allowedInputPath(inputPath);
+        if (!normalizedInputPath) {
+          console.error("Input file is missing or not allowed:", inputPath);
+          reject(new Error("ERROR_FILE_NOT_FOUND"));
+          return;
+        }
         const clipsDir = getClipsDirectory();
         const normalizedClipsDir = path.normalize(clipsDir);
 
@@ -829,8 +868,8 @@ ipcMain.handle(
 
         // Generate unique filename with Windows-safe characters
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const clipId = uuidv4().slice(0, 8);
-        const safeTitle = title.replace(/[^a-zA-Z0-9]/g, "_");
+        const clipId = randomUUID().slice(0, 8);
+        const safeTitle = clipFileTitle(title);
         const outputFileName = `${safeTitle}_${timestamp}_${clipId}.mp4`;
         const thumbnailFileName = `${safeTitle}_${timestamp}_${clipId}_thumb.jpg`;
         const outputPath = path.join(normalizedClipsDir, outputFileName);
@@ -844,40 +883,9 @@ ipcMain.handle(
 
         const duration = endTime - startTime;
 
-        // Validate input parameters
-        if (duration <= 0) {
-          console.error("Invalid duration:", duration);
-          reject(new Error("ERROR_INVALID_DURATION"));
-          return;
-        }
-
-        if (startTime < 0 || endTime < 0) {
-          console.error(
-            "Invalid time values - startTime:",
-            startTime,
-            "endTime:",
-            endTime
-          );
-          reject(new Error("ERROR_INVALID_TIME"));
-          return;
-        }
-
-        if (!title || title.trim().length === 0) {
-          console.error("Empty or invalid title provided");
-          reject(new Error("ERROR_INVALID_TITLE"));
-          return;
-        }
-
         if (!categories || categories.length === 0) {
           console.error("No categories provided");
           reject(new Error("ERROR_NO_CATEGORIES"));
-          return;
-        }
-
-        // Validate that input file exists and is accessible
-        if (!fs.existsSync(normalizedInputPath)) {
-          console.error("Input file does not exist:", normalizedInputPath);
-          reject(new Error("ERROR_FILE_NOT_FOUND"));
           return;
         }
 
@@ -920,7 +928,8 @@ ipcMain.handle(
         console.log("Using the globally configured FFmpeg path");
 
         // Generate process ID for cancellation support
-        const processId = uuidv4().slice(0, 8);
+        const processId = randomUUID().slice(0, 8);
+        clipCuts.start(processId);
         mainWindow.webContents.send("clip-process-id", { processId });
 
         // First, generate the thumbnail
@@ -939,18 +948,25 @@ ipcMain.handle(
           .on("start", commandLine => {
             console.log("Thumbnail FFmpeg command:", commandLine);
             // Store the thumbnail process for potential cancellation
-            activeClipProcesses.set(`${processId}-thumb`, thumbnailCommand);
+            clipCuts.track(processId, "thumb", thumbnailCommand);
           })
           .on("error", error => {
             console.error("Thumbnail creation error:", error);
             console.error("Thumbnail error message:", error.message);
             console.error("FFmpeg input path:", ffmpegInputPath);
             console.error("FFmpeg thumbnail path:", ffmpegThumbnailPath);
-            activeClipProcesses.delete(`${processId}-thumb`);
+            clipCuts.finish(processId);
+            removeClipFiles(thumbnailPath);
             reject(new Error("ERROR_THUMBNAIL_FAILED"));
           })
           .on("end", async () => {
-            activeClipProcesses.delete(`${processId}-thumb`);
+            clipCuts.untrack(processId, "thumb");
+            if (clipCuts.isCancelled(processId)) {
+              clipCuts.finish(processId);
+              removeClipFiles(thumbnailPath);
+              reject(new Error("ERROR_CLIP_CANCELLED"));
+              return;
+            }
             console.log("Thumbnail created successfully");
             // The live drawing on screen at creation covers the whole clip.
             // It is kept next to the clip so a re-cut can burn it in again.
@@ -975,12 +991,18 @@ ipcMain.handle(
               duration,
               drawings: drawings ?? [],
               overlayPath,
-              onStart: command => activeClipProcesses.set(processId, command),
+              onStart: command => clipCuts.track(processId, "encode", command),
               onProgress: (percent, timemark) =>
                 mainWindow.webContents.send("clip-progress", { percent, timemark }),
             })
               .then(() => {
-                activeClipProcesses.delete(processId);
+                const cancelled = clipCuts.isCancelled(processId);
+                clipCuts.finish(processId);
+                if (cancelled) {
+                  removeClipFiles(outputPath, thumbnailPath, overlayPath);
+                  reject(new Error("ERROR_CLIP_CANCELLED"));
+                  return;
+                }
                 try {
                   console.log("Clip created successfully");
                   // Save clip to database with thumbnail path
@@ -1013,13 +1035,13 @@ ipcMain.handle(
                   });
                 } catch (dbError) {
                   console.error("Database error:", dbError);
-                  if (overlayPath) deleteTempFile(overlayPath);
+                  removeClipFiles(outputPath, thumbnailPath, overlayPath);
                   reject(new Error("ERROR_DATABASE_FAILED"));
                 }
               })
               .catch(error => {
-                activeClipProcesses.delete(processId);
-                if (overlayPath) deleteTempFile(overlayPath);
+                clipCuts.finish(processId);
+                removeClipFiles(outputPath, thumbnailPath, overlayPath);
                 console.error("FFmpeg clip creation error:", error);
                 console.error("Error stack:", error.stack);
                 console.error("Input path:", normalizedInputPath);
@@ -1086,23 +1108,22 @@ ipcMain.handle(
       const exportDir = result.filePaths[0];
       const exportedFiles: string[] = [];
 
-      // Get project ID from the first clip (all clips should be from same project)
-      const firstClip = params.clips[0];
-      if (!firstClip) {
-        throw new Error("No clips provided for export");
-      }
+      // Paths and titles come from the database, never from the renderer.
+      const storedClips = params.clips
+        .map(clip => getClipById(clip.id))
+        .filter((clip): clip is NonNullable<typeof clip> => !!clip);
 
-      // Get the project ID from the clip
-      const clipData = getClips(undefined).find(c => c.id === firstClip.id);
+      // Get project ID from the first clip (all clips should be from same project)
+      const clipData = storedClips[0];
       if (!clipData) {
-        throw new Error("Could not find clip data to determine project");
+        throw new Error("No clips provided for export");
       }
 
       const categories = getCategories(clipData.project_id);
 
       // Group clips by their categories
-      const clipsByCategory = new Map<number, typeof params.clips>();
-      params.clips.forEach(clip => {
+      const clipsByCategory = new Map<number, typeof storedClips>();
+      storedClips.forEach(clip => {
         try {
           const clipCategories = JSON.parse(clip.categories);
           clipCategories.forEach((catId: number) => {
@@ -1124,7 +1145,7 @@ ipcMain.handle(
         if (!category || clips.length === 0) continue;
 
         // Create category folder
-        const categoryDir = path.join(exportDir, category.name);
+        const categoryDir = path.join(exportDir, safeFolderName(category.name));
         if (!fs.existsSync(categoryDir)) {
           fs.mkdirSync(categoryDir, { recursive: true });
         }
@@ -1347,6 +1368,9 @@ ipcMain.handle(
     projectData: Omit<Project, "id" | "created_at" | "last_opened">
   ) => {
     try {
+      if (!isVideoFile(projectData?.video_path)) {
+        throw new Error("ERROR_FILE_NOT_FOUND");
+      }
       return createProject(projectData);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -1394,6 +1418,7 @@ ipcMain.handle(
     newVideoName: string
   ) => {
     try {
+      if (!isVideoFile(newVideoPath)) return false;
       return relinkVideoPath(oldVideoPath, newVideoPath, newVideoName) > 0;
     } catch (error) {
       console.error("Error updating project video path:", error);
@@ -1486,7 +1511,7 @@ ipcMain.handle(
 
     const tempPath = path.join(
       path.dirname(clip.output_path),
-      `.rerender-${uuidv4().slice(0, 8)}.mp4`
+      `.rerender-${randomUUID().slice(0, 8)}.mp4`
     );
     try {
       await encodeClip({
@@ -1539,7 +1564,15 @@ ipcMain.handle("delete-clip", async (_event, id: number) => {
 
 ipcMain.handle("play-clip", async (_event, clipPath: string) => {
   try {
-    if (fs.existsSync(clipPath)) {
+    if (typeof clipPath !== "string" || !fs.existsSync(clipPath)) return;
+    // openPath launches whatever it is given, so only clip files go through.
+    const resolved = fs.realpathSync(clipPath);
+    const known =
+      isInsideDir(resolved, fs.realpathSync(getClipsDirectory())) ||
+      getClips(undefined).some(
+        clip => !!clip.output_path && path.resolve(clip.output_path) === path.resolve(clipPath)
+      );
+    if (known) {
       shell.openPath(clipPath);
     }
   } catch (error) {
@@ -1547,14 +1580,6 @@ ipcMain.handle("play-clip", async (_event, clipPath: string) => {
   }
 });
 
-ipcMain.handle("get-clips-by-category", async (_event, categoryId: number) => {
-  try {
-    return getClipsByCategory(categoryId);
-  } catch (error) {
-    console.error("Error getting clips by category:", error);
-    return [];
-  }
-});
 
 ipcMain.handle("reset-database", async () => {
   try {
