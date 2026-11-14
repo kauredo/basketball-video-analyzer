@@ -56,6 +56,7 @@ import {
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
 import { parseYoutubeUrl } from "./youtubeUrl";
+import { cancelClipProcess } from "./clipProcesses";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -483,10 +484,7 @@ ipcMain.handle("system-check", async () => {
 // Cancel clip creation
 ipcMain.handle("cancel-clip-creation", async (_event, processId: string) => {
   try {
-    const process = activeClipProcesses.get(processId);
-    if (process) {
-      process.kill();
-      activeClipProcesses.delete(processId);
+    if (cancelClipProcess(activeClipProcesses, processId)) {
       return { success: true };
     }
     return { success: false, reason: "Process not found" };
@@ -574,6 +572,14 @@ const deleteTempFile = (filePath: string): void => {
     fs.unlinkSync(filePath);
   } catch {
     // best-effort temp cleanup
+  }
+};
+
+// A cut that never reaches the database leaves nothing that lists or deletes
+// its files later, so they go now.
+const removeClipFiles = (...paths: Array<string | null>): void => {
+  for (const filePath of paths) {
+    if (filePath) deleteTempFile(filePath);
   }
 };
 
@@ -947,6 +953,7 @@ ipcMain.handle(
             console.error("FFmpeg input path:", ffmpegInputPath);
             console.error("FFmpeg thumbnail path:", ffmpegThumbnailPath);
             activeClipProcesses.delete(`${processId}-thumb`);
+            removeClipFiles(thumbnailPath);
             reject(new Error("ERROR_THUMBNAIL_FAILED"));
           })
           .on("end", async () => {
@@ -1013,13 +1020,13 @@ ipcMain.handle(
                   });
                 } catch (dbError) {
                   console.error("Database error:", dbError);
-                  if (overlayPath) deleteTempFile(overlayPath);
+                  removeClipFiles(outputPath, thumbnailPath, overlayPath);
                   reject(new Error("ERROR_DATABASE_FAILED"));
                 }
               })
               .catch(error => {
                 activeClipProcesses.delete(processId);
-                if (overlayPath) deleteTempFile(overlayPath);
+                removeClipFiles(outputPath, thumbnailPath, overlayPath);
                 console.error("FFmpeg clip creation error:", error);
                 console.error("Error stack:", error.stack);
                 console.error("Input path:", normalizedInputPath);
