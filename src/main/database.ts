@@ -5,6 +5,7 @@ import { app } from "electron";
 import log from "electron-log";
 import { dropProjectsVideoPathUnique } from "./projectsMigration";
 import { relinkVideoRows } from "./relink";
+import { categoryUpdateFields } from "./categoryColumns";
 
 let db: Database.Database;
 
@@ -1192,9 +1193,9 @@ export const updateCategory = (
   updates: Partial<Category>,
 ): void => {
   try {
-    const fields = Object.keys(updates).filter(
-      (key) => key !== "id" && key !== "created_at",
-    );
+    const fields = categoryUpdateFields(updates);
+    if (fields.length === 0) return;
+
     const setClause = fields.map((field) => `${field} = ?`).join(", ");
     const values = fields.map((field) => updates[field as keyof Category]);
 
