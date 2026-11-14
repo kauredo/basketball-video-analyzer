@@ -55,7 +55,7 @@ import {
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
 import { parseYoutubeUrl } from "./youtubeUrl";
-import { cancelClipProcess } from "./clipProcesses";
+import { ClipCuts } from "./clipProcesses";
 import { clipFileTitle, clipInputError } from "../shared/clipInput";
 import { safeFolderName } from "../shared/safeFolderName";
 
@@ -107,7 +107,7 @@ if (ffmpegPath) {
 let mainWindow: BrowserWindow;
 
 // Track active clip creation processes
-const activeClipProcesses = new Map<string, any>();
+const clipCuts = new ClipCuts();
 
 const createMenu = (mainWindow: BrowserWindow): void => {
   const isMac = process.platform === "darwin";
@@ -485,7 +485,7 @@ ipcMain.handle("system-check", async () => {
 // Cancel clip creation
 ipcMain.handle("cancel-clip-creation", async (_event, processId: string) => {
   try {
-    if (cancelClipProcess(activeClipProcesses, processId)) {
+    if (clipCuts.cancel(processId)) {
       return { success: true };
     }
     return { success: false, reason: "Process not found" };
@@ -916,6 +916,7 @@ ipcMain.handle(
 
         // Generate process ID for cancellation support
         const processId = randomUUID().slice(0, 8);
+        clipCuts.start(processId);
         mainWindow.webContents.send("clip-process-id", { processId });
 
         // First, generate the thumbnail
@@ -934,19 +935,25 @@ ipcMain.handle(
           .on("start", commandLine => {
             console.log("Thumbnail FFmpeg command:", commandLine);
             // Store the thumbnail process for potential cancellation
-            activeClipProcesses.set(`${processId}-thumb`, thumbnailCommand);
+            clipCuts.track(processId, "thumb", thumbnailCommand);
           })
           .on("error", error => {
             console.error("Thumbnail creation error:", error);
             console.error("Thumbnail error message:", error.message);
             console.error("FFmpeg input path:", ffmpegInputPath);
             console.error("FFmpeg thumbnail path:", ffmpegThumbnailPath);
-            activeClipProcesses.delete(`${processId}-thumb`);
+            clipCuts.finish(processId);
             removeClipFiles(thumbnailPath);
             reject(new Error("ERROR_THUMBNAIL_FAILED"));
           })
           .on("end", async () => {
-            activeClipProcesses.delete(`${processId}-thumb`);
+            clipCuts.untrack(processId, "thumb");
+            if (clipCuts.isCancelled(processId)) {
+              clipCuts.finish(processId);
+              removeClipFiles(thumbnailPath);
+              reject(new Error("ERROR_CLIP_CANCELLED"));
+              return;
+            }
             console.log("Thumbnail created successfully");
             // The live drawing on screen at creation covers the whole clip.
             // It is kept next to the clip so a re-cut can burn it in again.
@@ -971,12 +978,18 @@ ipcMain.handle(
               duration,
               drawings: drawings ?? [],
               overlayPath,
-              onStart: command => activeClipProcesses.set(processId, command),
+              onStart: command => clipCuts.track(processId, "encode", command),
               onProgress: (percent, timemark) =>
                 mainWindow.webContents.send("clip-progress", { percent, timemark }),
             })
               .then(() => {
-                activeClipProcesses.delete(processId);
+                const cancelled = clipCuts.isCancelled(processId);
+                clipCuts.finish(processId);
+                if (cancelled) {
+                  removeClipFiles(outputPath, thumbnailPath, overlayPath);
+                  reject(new Error("ERROR_CLIP_CANCELLED"));
+                  return;
+                }
                 try {
                   console.log("Clip created successfully");
                   // Save clip to database with thumbnail path
@@ -1014,7 +1027,7 @@ ipcMain.handle(
                 }
               })
               .catch(error => {
-                activeClipProcesses.delete(processId);
+                clipCuts.finish(processId);
                 removeClipFiles(outputPath, thumbnailPath, overlayPath);
                 console.error("FFmpeg clip creation error:", error);
                 console.error("Error stack:", error.stack);
