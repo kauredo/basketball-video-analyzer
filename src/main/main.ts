@@ -59,6 +59,7 @@ import { ClipCuts } from "./clipProcesses";
 import { clipFileTitle, clipInputError } from "../shared/clipInput";
 import { safeFolderName } from "../shared/safeFolderName";
 import { hasVideoExtension } from "../shared/videoPath";
+import { isInsideDir } from "./insideDir";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -1563,7 +1564,15 @@ ipcMain.handle("delete-clip", async (_event, id: number) => {
 
 ipcMain.handle("play-clip", async (_event, clipPath: string) => {
   try {
-    if (fs.existsSync(clipPath)) {
+    if (typeof clipPath !== "string" || !fs.existsSync(clipPath)) return;
+    // openPath launches whatever it is given, so only clip files go through.
+    const resolved = fs.realpathSync(clipPath);
+    const known =
+      isInsideDir(resolved, fs.realpathSync(getClipsDirectory())) ||
+      getClips(undefined).some(
+        clip => !!clip.output_path && path.resolve(clip.output_path) === path.resolve(clipPath)
+      );
+    if (known) {
       shell.openPath(clipPath);
     }
   } catch (error) {
