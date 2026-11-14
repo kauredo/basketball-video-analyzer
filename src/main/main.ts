@@ -5,7 +5,7 @@ import { Readable } from "stream";
 import { spawn } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
 import {
   setupDatabase,
@@ -536,7 +536,7 @@ const MAX_OVERLAY_BYTES = 64 * 1024 * 1024;
 const PNG_DATA_URL_PREFIX = "data:image/png;base64,";
 
 const tempPngPath = () =>
-  path.join(app.getPath("temp"), `telestration-${uuidv4().slice(0, 8)}.png`);
+  path.join(app.getPath("temp"), `telestration-${randomUUID().slice(0, 8)}.png`);
 
 // Decode a base64 PNG data URL to overlayPath and return the path. Rejects
 // anything that isn't a PNG data URL or exceeds the size cap.
@@ -855,7 +855,7 @@ ipcMain.handle(
 
         // Generate unique filename with Windows-safe characters
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const clipId = uuidv4().slice(0, 8);
+        const clipId = randomUUID().slice(0, 8);
         const safeTitle = clipFileTitle(title);
         const outputFileName = `${safeTitle}_${timestamp}_${clipId}.mp4`;
         const thumbnailFileName = `${safeTitle}_${timestamp}_${clipId}_thumb.jpg`;
@@ -915,7 +915,7 @@ ipcMain.handle(
         console.log("Using the globally configured FFmpeg path");
 
         // Generate process ID for cancellation support
-        const processId = uuidv4().slice(0, 8);
+        const processId = randomUUID().slice(0, 8);
         mainWindow.webContents.send("clip-process-id", { processId });
 
         // First, generate the thumbnail
@@ -1481,7 +1481,7 @@ ipcMain.handle(
 
     const tempPath = path.join(
       path.dirname(clip.output_path),
-      `.rerender-${uuidv4().slice(0, 8)}.mp4`
+      `.rerender-${randomUUID().slice(0, 8)}.mp4`
     );
     try {
       await encodeClip({
