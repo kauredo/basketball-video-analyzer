@@ -79,7 +79,6 @@ jobs:
           npm_config_registry: "https://registry.npmjs.org/"
         run: |
           npm config list
-          npm install -g @electron/rebuild
           npm ci
 
       - name: Download yt-dlp and deno
@@ -93,9 +92,14 @@ jobs:
       # the only one whose ABI has to match it. lzma-native used to be listed
       # here too, but the Squirrel maker runs it under Node at build time, so
       # rebuilding it against Electron was wrong as well as slow.
+      # --no makes npx use the @electron/rebuild that package-lock.json pins
+      # instead of fetching one. Without the bare --, npm keeps -f and
+      # --which-module for itself. bash because PowerShell drops that -- when
+      # it runs npx.ps1 on Windows.
       - name: Rebuild native modules
+        shell: bash
         run: |
-          electron-rebuild -f --which better-sqlite3
+          npx --no -- electron-rebuild -f --which-module better-sqlite3
         env:
           ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
           ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
