@@ -143,6 +143,16 @@ jobs:
           DEBUG: "electron-forge:*"
           ELECTRON_FORGE_MAKERS: '["@electron-forge/maker-deb","@electron-forge/maker-rpm"]'
 
+      # Loads the SQLite binding that went into the packaged app with the
+      # Electron in node_modules, so an ABI mismatch fails here, not on a
+      # user's machine.
+      - name: Check the packaged SQLite module loads in Electron
+        shell: bash
+        run: |
+          NODE_FILE=$(find out -path '*app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node' | head -1)
+          test -n "$NODE_FILE"
+          ELECTRON_RUN_AS_NODE=1 npx --no -- electron -e "require(require('path').resolve(process.argv[1])); console.log('Packaged better-sqlite3 loads in Electron', process.versions.electron)" "$NODE_FILE"
+
       - name: Upload macOS artifacts
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
