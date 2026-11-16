@@ -1,6 +1,7 @@
 import { autoUpdater, dialog, BrowserWindow } from "electron";
 import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 import log from "electron-log";
+import { nt } from "./nativeStrings";
 
 // Configure logging
 log.transports.file.level = "info";
@@ -45,16 +46,16 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
   // download-progress event, so there is no live percentage to show.
   autoUpdater.on("update-available", () => {
     log.info("Update available; downloading in background");
-    // Show this on both automatic and manual checks — otherwise a manual
-    // "Check for Updates" that finds one just goes silent until the download
-    // finishes minutes later.
+    // Only a manual check gets this dialog, so it does not go silent until the
+    // download finishes. The automatic check runs every 6 hours and waits for
+    // the restart prompt instead.
+    if (!isManualCheck) return;
     isManualCheck = false;
     dialog.showMessageBox(mainWindow, {
       type: "info",
-      title: "Update Available",
-      message:
-        "A new version is available and is downloading in the background. You'll be asked to restart when it's ready.",
-      buttons: ["OK"],
+      title: nt("updateAvailableTitle"),
+      message: nt("updateAvailable"),
+      buttons: [nt("ok")],
     });
   });
 
@@ -64,9 +65,9 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
       isManualCheck = false;
       dialog.showMessageBox(mainWindow, {
         type: "info",
-        title: "No Updates Available",
-        message: "You're already running the latest version!",
-        buttons: ["OK"],
+        title: nt("noUpdateTitle"),
+        message: nt("noUpdate"),
+        buttons: [nt("ok")],
       });
     }
   });
@@ -82,9 +83,9 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
       dialog
         .showMessageBox(mainWindow, {
           type: "info",
-          title: "Update Ready to Install",
-          message: `Version ${releaseName ?? ""} has been downloaded and is ready to install.\n\nRestart now to finish updating? If you choose "Install Later", it will be applied the next time you open the app.`,
-          buttons: ["Restart Now", "Install Later"],
+          title: nt("updateReadyTitle"),
+          message: nt("updateReady", { version: releaseName ?? "" }),
+          buttons: [nt("restartNow"), nt("installLater")],
           defaultId: 0,
           cancelId: 1,
         })
@@ -120,10 +121,9 @@ export function checkForUpdates(mainWindow: BrowserWindow) {
   if (!AUTO_UPDATE_SUPPORTED || !updatesStarted) {
     dialog.showMessageBox(mainWindow, {
       type: "info",
-      title: "Updates",
-      message:
-        "Automatic updates aren't available on this platform. Please download the latest version from the website.",
-      buttons: ["OK"],
+      title: nt("updatesTitle"),
+      message: nt("updatesUnsupported"),
+      buttons: [nt("ok")],
     });
     return;
   }
@@ -131,17 +131,17 @@ export function checkForUpdates(mainWindow: BrowserWindow) {
   isManualCheck = true;
   dialog.showMessageBox(mainWindow, {
     type: "info",
-    title: "Checking for Updates",
-    message: "Checking for updates...",
-    buttons: ["OK"],
+    title: nt("checkingTitle"),
+    message: nt("checking"),
+    buttons: [nt("ok")],
   });
   try {
     autoUpdater.checkForUpdates();
   } catch (err) {
     isManualCheck = false;
     dialog.showErrorBox(
-      "Update Check Failed",
-      "Failed to check for updates: " + (err as Error)?.message
+      nt("checkFailedTitle"),
+      nt("checkFailed", { message: (err as Error)?.message ?? String(err) })
     );
   }
 }

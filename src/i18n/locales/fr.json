@@ -564,6 +564,30 @@
       "dbFailed": "L'application n'a pas pu ouvrir sa base de données, vos projets ne peuvent donc pas être chargés. Erreur : {{error}}. Fichier journal : {{logPath}}",
       "checkFailed": "L'application a rencontré une erreur au démarrage. {{error}}",
       "apiUnavailable": "L'application n'a pas démarré correctement. Réinstallez la version la plus récente."
+    },
+    "native": {
+      "checkForUpdates": "Rechercher des Mises à Jour...",
+      "file": "Fichier",
+      "edit": "Édition",
+      "view": "Affichage",
+      "help": "Aide",
+      "sendFeedback": "Envoyer un Commentaire...",
+      "learnMore": "En Savoir Plus",
+      "updateAvailableTitle": "Mise à Jour Disponible",
+      "updateAvailable": "Une nouvelle version se télécharge en arrière-plan. Quand elle sera prête, l'application proposera de redémarrer.",
+      "noUpdateTitle": "Aucune Mise à Jour",
+      "noUpdate": "Ceci est la version la plus récente.",
+      "updateReadyTitle": "Mise à Jour Prête à Installer",
+      "updateReady": "La version {{version}} est téléchargée et prête à installer.\n\nRedémarrer maintenant pour terminer la mise à jour ? « Installer Plus Tard » l'applique au prochain lancement de l'application.",
+      "restartNow": "Redémarrer Maintenant",
+      "installLater": "Installer Plus Tard",
+      "ok": "OK",
+      "updatesTitle": "Mises à Jour",
+      "updatesUnsupported": "Les mises à jour automatiques ne sont pas disponibles sur cette plateforme. La dernière version est sur le site web.",
+      "checkingTitle": "Recherche de Mises à Jour",
+      "checking": "Recherche de mises à jour...",
+      "checkFailedTitle": "Échec de la Recherche de Mises à Jour",
+      "checkFailed": "Impossible de rechercher des mises à jour : {{message}}"
     }
   }
 }

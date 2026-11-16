@@ -7,6 +7,7 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { randomUUID } from "crypto";
 import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
+import { nt, setNativeLanguage } from "./nativeStrings";
 import {
   setupDatabase,
   getDbStatus,
@@ -124,7 +125,7 @@ const createMenu = (mainWindow: BrowserWindow): void => {
               { role: "about" },
               { type: "separator" },
               {
-                label: "Check for Updates...",
+                label: nt("checkForUpdates"),
                 click: () => checkForUpdates(mainWindow),
               },
               { type: "separator" },
@@ -141,12 +142,12 @@ const createMenu = (mainWindow: BrowserWindow): void => {
       : []),
     // File menu
     {
-      label: "File",
+      label: nt("file"),
       submenu: [isMac ? { role: "close" } : { role: "quit" }],
     },
     // Edit menu
     {
-      label: "Edit",
+      label: nt("edit"),
       submenu: [
         { role: "undo" },
         { role: "redo" },
@@ -165,7 +166,7 @@ const createMenu = (mainWindow: BrowserWindow): void => {
     },
     // View menu
     {
-      label: "View",
+      label: nt("view"),
       submenu: [
         { role: "reload" },
         { role: "forceReload" },
@@ -180,19 +181,19 @@ const createMenu = (mainWindow: BrowserWindow): void => {
     },
     // Help menu
     {
-      label: "Help",
+      label: nt("help"),
       submenu: [
         ...(!isMac
           ? [
               {
-                label: "Check for Updates...",
+                label: nt("checkForUpdates"),
                 click: () => checkForUpdates(mainWindow),
               },
               { type: "separator" },
             ]
           : []),
         {
-          label: "Send Feedback...",
+          label: nt("sendFeedback"),
           click: () => {
             if (mainWindow) {
               mainWindow.webContents.send("open-feedback");
@@ -201,7 +202,7 @@ const createMenu = (mainWindow: BrowserWindow): void => {
         },
         { type: "separator" },
         {
-          label: "Learn More",
+          label: nt("learnMore"),
           click: async () => {
             await shell.openExternal(
               "https://github.com/kauredo/basketball-video-analyzer"
@@ -1629,6 +1630,13 @@ ipcMain.handle("open-external", async (_event, url: string) => {
 });
 
 ipcMain.handle("get-app-version", () => app.getVersion());
+
+// The renderer reports its language so menus and update dialogs match it.
+ipcMain.handle("set-app-language", (_event, code: unknown) => {
+  if (!setNativeLanguage(code)) return false;
+  if (mainWindow) createMenu(mainWindow);
+  return true;
+});
 
 ipcMain.handle(
   "setKeyBinding",

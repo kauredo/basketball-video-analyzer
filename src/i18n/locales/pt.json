@@ -560,6 +560,30 @@
     },
     "donation": {
       "nudge": "Já exportaste mais de {{count}} clipes com esta aplicação gratuita. Se te poupa tempo, há um link para um café em Definições → Sobre."
+    },
+    "native": {
+      "checkForUpdates": "Procurar Atualizações...",
+      "file": "Ficheiro",
+      "edit": "Editar",
+      "view": "Ver",
+      "help": "Ajuda",
+      "sendFeedback": "Enviar Feedback...",
+      "learnMore": "Saber Mais",
+      "updateAvailableTitle": "Atualização Disponível",
+      "updateAvailable": "Uma nova versão está a ser descarregada em segundo plano. Quando estiver pronta, a aplicação propõe reiniciar.",
+      "noUpdateTitle": "Sem Atualizações",
+      "noUpdate": "Esta é a versão mais recente.",
+      "updateReadyTitle": "Atualização Pronta a Instalar",
+      "updateReady": "A versão {{version}} foi descarregada e está pronta a instalar.\n\nReiniciar agora para concluir a atualização? \"Instalar Mais Tarde\" aplica-a da próxima vez que a aplicação abrir.",
+      "restartNow": "Reiniciar Agora",
+      "installLater": "Instalar Mais Tarde",
+      "ok": "OK",
+      "updatesTitle": "Atualizações",
+      "updatesUnsupported": "As atualizações automáticas não estão disponíveis nesta plataforma. A versão mais recente está no site.",
+      "checkingTitle": "A Procurar Atualizações",
+      "checking": "A procurar atualizações...",
+      "checkFailedTitle": "Falha ao Procurar Atualizações",
+      "checkFailed": "Não foi possível procurar atualizações: {{message}}"
     }
   }
 }

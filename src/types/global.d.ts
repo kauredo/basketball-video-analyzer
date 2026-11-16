@@ -170,6 +170,7 @@ export interface ElectronAPI {
   exportClipsXml: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
   openExternal: (url: string) => Promise<boolean>;
   getAppVersion: () => Promise<string>;
+  setAppLanguage: (code: string) => Promise<boolean>;
 
   // Session operations
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;

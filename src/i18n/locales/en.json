@@ -537,6 +537,30 @@
     },
     "donation": {
       "nudge": "You've exported {{count}}+ clips with this free app. If it saves you time, there's a coffee link in Settings → About."
+    },
+    "native": {
+      "checkForUpdates": "Check for Updates...",
+      "file": "File",
+      "edit": "Edit",
+      "view": "View",
+      "help": "Help",
+      "sendFeedback": "Send Feedback...",
+      "learnMore": "Learn More",
+      "updateAvailableTitle": "Update Available",
+      "updateAvailable": "A new version is downloading in the background. When it is ready, the app offers to restart.",
+      "noUpdateTitle": "No Updates Available",
+      "noUpdate": "This is the latest version.",
+      "updateReadyTitle": "Update Ready to Install",
+      "updateReady": "Version {{version}} is downloaded and ready to install.\n\nRestart now to finish updating? \"Install Later\" applies it the next time the app opens.",
+      "restartNow": "Restart Now",
+      "installLater": "Install Later",
+      "ok": "OK",
+      "updatesTitle": "Updates",
+      "updatesUnsupported": "Automatic updates are not available on this platform. The latest version is on the website.",
+      "checkingTitle": "Checking for Updates",
+      "checking": "Checking for updates...",
+      "checkFailedTitle": "Update Check Failed",
+      "checkFailed": "Could not check for updates: {{message}}"
     }
   }
 }

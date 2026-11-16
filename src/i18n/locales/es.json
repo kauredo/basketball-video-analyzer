@@ -563,6 +563,30 @@
       "dbFailed": "La aplicación no pudo abrir su base de datos, así que no se pueden cargar tus proyectos. Error: {{error}}. Archivo de registro: {{logPath}}",
       "checkFailed": "La aplicación encontró un error al iniciarse. {{error}}",
       "apiUnavailable": "La aplicación no se inició correctamente. Reinstala la versión más reciente."
+    },
+    "native": {
+      "checkForUpdates": "Buscar Actualizaciones...",
+      "file": "Archivo",
+      "edit": "Editar",
+      "view": "Ver",
+      "help": "Ayuda",
+      "sendFeedback": "Enviar Comentarios...",
+      "learnMore": "Más Información",
+      "updateAvailableTitle": "Actualización Disponible",
+      "updateAvailable": "Se está descargando una nueva versión en segundo plano. Cuando esté lista, la aplicación ofrecerá reiniciar.",
+      "noUpdateTitle": "No Hay Actualizaciones",
+      "noUpdate": "Esta es la versión más reciente.",
+      "updateReadyTitle": "Actualización Lista para Instalar",
+      "updateReady": "La versión {{version}} se ha descargado y está lista para instalar.\n\n¿Reiniciar ahora para terminar la actualización? \"Instalar Más Tarde\" la aplica la próxima vez que se abra la aplicación.",
+      "restartNow": "Reiniciar Ahora",
+      "installLater": "Instalar Más Tarde",
+      "ok": "OK",
+      "updatesTitle": "Actualizaciones",
+      "updatesUnsupported": "Las actualizaciones automáticas no están disponibles en esta plataforma. La versión más reciente está en el sitio web.",
+      "checkingTitle": "Buscando Actualizaciones",
+      "checking": "Buscando actualizaciones...",
+      "checkFailedTitle": "Error al Buscar Actualizaciones",
+      "checkFailed": "No se pudo buscar actualizaciones: {{message}}"
     }
   }
 }

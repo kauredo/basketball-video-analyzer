@@ -563,6 +563,30 @@
       "dbFailed": "Die App konnte ihre Datenbank nicht öffnen, daher können deine Projekte nicht geladen werden. Fehler: {{error}}. Protokolldatei: {{logPath}}",
       "checkFailed": "Die App ist beim Start auf einen Fehler gestoßen. {{error}}",
       "apiUnavailable": "Die App ist nicht richtig gestartet. Installiere die neueste Version neu."
+    },
+    "native": {
+      "checkForUpdates": "Nach Updates Suchen...",
+      "file": "Datei",
+      "edit": "Bearbeiten",
+      "view": "Ansicht",
+      "help": "Hilfe",
+      "sendFeedback": "Feedback Senden...",
+      "learnMore": "Mehr Erfahren",
+      "updateAvailableTitle": "Update Verfügbar",
+      "updateAvailable": "Eine neue Version wird im Hintergrund heruntergeladen. Sobald sie bereit ist, bietet die App einen Neustart an.",
+      "noUpdateTitle": "Keine Updates Verfügbar",
+      "noUpdate": "Dies ist die neueste Version.",
+      "updateReadyTitle": "Update Bereit zur Installation",
+      "updateReady": "Version {{version}} ist heruntergeladen und bereit zur Installation.\n\nJetzt neu starten, um das Update abzuschließen? \"Später Installieren\" wendet es beim nächsten Öffnen der App an.",
+      "restartNow": "Jetzt Neu Starten",
+      "installLater": "Später Installieren",
+      "ok": "OK",
+      "updatesTitle": "Updates",
+      "updatesUnsupported": "Automatische Updates sind auf dieser Plattform nicht verfügbar. Die neueste Version gibt es auf der Website.",
+      "checkingTitle": "Suche nach Updates",
+      "checking": "Suche nach Updates...",
+      "checkFailedTitle": "Update-Prüfung Fehlgeschlagen",
+      "checkFailed": "Updates konnten nicht geprüft werden: {{message}}"
     }
   }
 }

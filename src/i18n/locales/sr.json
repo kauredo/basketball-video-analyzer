@@ -563,6 +563,30 @@
       "dbFailed": "Aplikacija nije mogla da otvori svoju bazu podataka, pa vaši projekti ne mogu da se učitaju. Greška: {{error}}. Datoteka dnevnika: {{logPath}}",
       "checkFailed": "Aplikacija je naišla na grešku pri pokretanju. {{error}}",
       "apiUnavailable": "Aplikacija se nije pokrenula ispravno. Ponovo instalirajte najnoviju verziju."
+    },
+    "native": {
+      "checkForUpdates": "Proveri Ažuriranja...",
+      "file": "Datoteka",
+      "edit": "Uredi",
+      "view": "Prikaz",
+      "help": "Pomoć",
+      "sendFeedback": "Pošalji Povratne Informacije...",
+      "learnMore": "Saznaj Više",
+      "updateAvailableTitle": "Ažuriranje Dostupno",
+      "updateAvailable": "Nova verzija se preuzima u pozadini. Kada bude spremna, aplikacija će ponuditi ponovno pokretanje.",
+      "noUpdateTitle": "Nema Ažuriranja",
+      "noUpdate": "Ovo je najnovija verzija.",
+      "updateReadyTitle": "Ažuriranje Spremno za Instalaciju",
+      "updateReady": "Verzija {{version}} je preuzeta i spremna za instalaciju.\n\nPonovo pokrenuti sada i završiti ažuriranje? \"Instaliraj Kasnije\" ga primenjuje pri sledećem otvaranju aplikacije.",
+      "restartNow": "Ponovo Pokreni Sada",
+      "installLater": "Instaliraj Kasnije",
+      "ok": "U redu",
+      "updatesTitle": "Ažuriranja",
+      "updatesUnsupported": "Automatska ažuriranja nisu dostupna na ovoj platformi. Najnovija verzija je na veb-sajtu.",
+      "checkingTitle": "Provera Ažuriranja",
+      "checking": "Provera ažuriranja...",
+      "checkFailedTitle": "Provera Ažuriranja Nije Uspela",
+      "checkFailed": "Provera ažuriranja nije uspela: {{message}}"
     }
   }
 }
