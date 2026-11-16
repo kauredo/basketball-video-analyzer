@@ -18,7 +18,7 @@ Electron 28 + React + better-sqlite3. Free and AGPL. One active coach drives mos
 - Conventional commits, squash-merged PRs, stacked when a change splits. Screenshots for PRs go on the `pr-assets` branch. Never delete it.
 
 ## Releasing
-Bump `version` in `package.json`, commit `chore(release): X.Y.Z`, tag `vX.Y.Z` and push the tag. `release.yml` builds all three platforms, signs the macOS build and publishes the release. Auto-update reads it through update.electronjs.org (`AUTOUPDATE.md`).
+Bump `version` in `package.json`, commit `chore(release): X.Y.Z`, tag `vX.Y.Z` and push the tag. `release.yml` refuses a tag that does not match `package.json`, runs the tests, then builds all three platforms, signs the macOS build and publishes the release. Auto-update reads it through update.electronjs.org (`AUTOUPDATE.md`).
 
 ## Running the packaged app on scratch data
 `npm run package`, then launch the binary in `out/` with `--user-data-dir=<scratch>` and `--remote-debugging-port=<port>` and drive it over CDP. Playwright's Electron launcher times out because a fuse is off. The log file still goes to the real `~/Library/Logs/basketball-video-analyzer/main.log`.

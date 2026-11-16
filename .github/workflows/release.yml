@@ -9,7 +9,33 @@ permissions:
   contents: write
 
 jobs:
+  # A tag on a stale package.json would ship installers that report the old
+  # version, and auto-update would offer the same release forever.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      # Same Node as the test job in build.yml (the tests need type stripping).
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Check the tag matches package.json
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "${GITHUB_REF_NAME#v}" != "$VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $VERSION"
+            exit 1
+          fi
+
+      - name: Run unit tests
+        run: npm test
+
   build:
+    needs: verify
     runs-on: ${{ matrix.os }}
 
     strategy:
