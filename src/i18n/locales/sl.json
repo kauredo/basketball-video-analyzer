@@ -557,7 +557,8 @@
       "errorDeleting": "Igralca ni bilo mogoče izbrisati."
     },
     "donation": {
-      "nudge": "S to brezplačno aplikacijo ste izvozili več kot {{count}} posnetkov. Če vam prihrani čas, je povezava za kavo na voljo v Nastavitve → O programu."
+      "nudge": "S to brezplačno aplikacijo ste izvozili več kot {{count}} posnetkov. Če vam prihrani čas, kava na Ko-fi pomaga pri njenem razvoju.",
+      "nudgeAction": "Podarite kavo"
     },
     "startup": {
       "dbFailed": "Aplikacija ni mogla odpreti svoje zbirke podatkov, zato vaših projektov ni mogoče naložiti. Napaka: {{error}}. Dnevniška datoteka: {{logPath}}",

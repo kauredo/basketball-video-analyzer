@@ -558,7 +558,8 @@
       "errorDeleting": "Impossible de supprimer le joueur."
     },
     "donation": {
-      "nudge": "Vous avez exporté plus de {{count}} clips avec cette application gratuite. Si elle vous fait gagner du temps, un lien pour offrir un café se trouve dans Réglages → À propos."
+      "nudge": "Vous avez exporté plus de {{count}} clips avec cette application gratuite. Si elle vous fait gagner du temps, un café sur Ko-fi aide à la faire vivre.",
+      "nudgeAction": "Offrir un café"
     },
     "startup": {
       "dbFailed": "L'application n'a pas pu ouvrir sa base de données, vos projets ne peuvent donc pas être chargés. Erreur : {{error}}. Fichier journal : {{logPath}}",

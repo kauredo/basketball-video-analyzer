@@ -81,6 +81,29 @@
   line-height: var(--line-height-normal);
 }
 
+.toastAction {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: currentColor;
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+
+.toastAction:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.toastAction:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
 .toastClose {
   background: transparent;
   border: none;

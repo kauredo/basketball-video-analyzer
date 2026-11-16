@@ -557,7 +557,8 @@
       "errorDeleting": "Nije moguće obrisati igrača."
     },
     "donation": {
-      "nudge": "Izvezli ste više od {{count}} klipova sa ovom besplatnom aplikacijom. Ako vam štedi vreme, link za kafu se nalazi u Podešavanja → O programu."
+      "nudge": "Izvezli ste više od {{count}} klipova sa ovom besplatnom aplikacijom. Ako vam štedi vreme, kafa na Ko-fi pomaže da se održi.",
+      "nudgeAction": "Častite kafom"
     },
     "startup": {
       "dbFailed": "Aplikacija nije mogla da otvori svoju bazu podataka, pa vaši projekti ne mogu da se učitaju. Greška: {{error}}. Datoteka dnevnika: {{logPath}}",

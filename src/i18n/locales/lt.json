@@ -557,7 +557,8 @@
       "errorDeleting": "Nepavyko ištrinti žaidėjo."
     },
     "donation": {
-      "nudge": "Su šia nemokama programa eksportavote daugiau nei {{count}} klipų. Jei ji taupo jūsų laiką, nuorodą kavai rasite Nustatymai → Apie."
+      "nudge": "Su šia nemokama programa eksportavote daugiau nei {{count}} klipų. Jei ji taupo jūsų laiką, kava per Ko-fi padeda ją palaikyti.",
+      "nudgeAction": "Nupirkti kavos"
     },
     "startup": {
       "dbFailed": "Programai nepavyko atidaryti duomenų bazės, todėl jūsų projektai negali būti įkelti. Klaida: {{error}}. Žurnalo failas: {{logPath}}",

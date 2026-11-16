@@ -36,6 +36,7 @@ import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
 import {
   CLIP_STATUSES,
   DONATION_NUDGE_THRESHOLD,
+  DONATION_URL,
   statusLabelKey,
 } from "../utils/constants";
 import { formatVideoSrc } from "../utils/paths";
@@ -116,7 +117,11 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       savePref(STORAGE_KEYS.DONATION_NUDGE_SHOWN, true);
       showInfo(
         t("app.donation.nudge", { count: DONATION_NUDGE_THRESHOLD }),
-        12000
+        20000,
+        {
+          label: t("app.donation.nudgeAction"),
+          onClick: () => window.electronAPI.openExternal(DONATION_URL),
+        }
       );
     }
   };

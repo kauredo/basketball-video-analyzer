@@ -557,7 +557,8 @@
       "errorDeleting": "Impossibile eliminare il giocatore."
     },
     "donation": {
-      "nudge": "Hai esportato più di {{count}} clip con questa app gratuita. Se ti fa risparmiare tempo, trovi un link per offrire un caffè in Impostazioni → Informazioni."
+      "nudge": "Hai esportato più di {{count}} clip con questa app gratuita. Se ti fa risparmiare tempo, un caffè su Ko-fi aiuta a mantenerla.",
+      "nudgeAction": "Offri un caffè"
     },
     "startup": {
       "dbFailed": "L'applicazione non è riuscita ad aprire il database, quindi i tuoi progetti non possono essere caricati. Errore: {{error}}. File di log: {{logPath}}",
