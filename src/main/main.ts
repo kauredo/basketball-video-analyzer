@@ -62,6 +62,7 @@ import { clipFileTitle, clipInputError } from "../shared/clipInput";
 import { safeFolderName } from "../shared/safeFolderName";
 import { hasVideoExtension } from "../shared/videoPath";
 import { isInsideDir } from "./insideDir";
+import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -1669,6 +1670,14 @@ ipcMain.handle("delete-preset", (_event, presetName: string) => {
   return deletePreset(presetName);
 });
 
+const projectClipRows = (projectId: number, clips: Clip[]) => {
+  const categoryNames = new Map<number, string>();
+  getCategories(projectId).forEach(cat => categoryNames.set(cat.id!, cat.name));
+  const playerNames = new Map<number, string>();
+  getPlayers(projectId).forEach(p => playerNames.set(p.id!, p.name));
+  return clipRows(clips, categoryNames, playerNames);
+};
+
 // Export clips data as CSV or JSON
 ipcMain.handle(
   "export-clips-data",
@@ -1687,88 +1696,14 @@ ipcMain.handle(
         return null;
       }
 
-      const clips = getClips(projectId);
-      const categories = getCategories(projectId);
-      const categoryMap = new Map<number, string>();
-      categories.forEach(cat => categoryMap.set(cat.id!, cat.name));
-      const players = getPlayers(projectId);
-      const playerMap = new Map<number, string>();
-      players.forEach(p => playerMap.set(p.id!, p.name));
-
       const ext = path.extname(result.filePath).toLowerCase();
       if (ext !== ".csv" && ext !== ".json") {
         return null;
       }
-      const isCSV = ext === ".csv";
 
-      if (isCSV) {
-        const header = "Title,Categories,Players,Quarter,Start Time,End Time,Duration,Notes,Created At,Status";
-        const rows = clips.map(clip => {
-          let categoryNames: string[] = [];
-          try {
-            const ids = JSON.parse(clip.categories) as number[];
-            categoryNames = ids.map(id => categoryMap.get(id) || "Unknown");
-          } catch { /* empty */ }
-
-          let playerNames: string[] = [];
-          try {
-            const ids = JSON.parse(clip.players || "[]") as number[];
-            playerNames = ids.map(id => playerMap.get(id) || "Unknown");
-          } catch { /* empty */ }
-
-          const escapeCsv = (val: string) => {
-            const safeVal = /^[=+\-@\t\r]/.test(val) ? `'${val}` : val;
-            if (/[,"\n\r]/.test(safeVal)) {
-              return `"${safeVal.replace(/"/g, '""')}"`;
-            }
-            return safeVal;
-          };
-
-          return [
-            escapeCsv(clip.title),
-            escapeCsv(categoryNames.join("; ")),
-            escapeCsv(playerNames.join("; ")),
-            escapeCsv(clip.quarter || ""),
-            clip.start_time.toFixed(2),
-            clip.end_time.toFixed(2),
-            clip.duration.toFixed(2),
-            escapeCsv(clip.notes || ""),
-            clip.created_at || "",
-            escapeCsv(clip.status || ""),
-          ].join(",");
-        });
-
-        fs.writeFileSync(result.filePath, [header, ...rows].join("\n"), "utf-8");
-      } else {
-        const data = clips.map(clip => {
-          let categoryNames: string[] = [];
-          try {
-            const ids = JSON.parse(clip.categories) as number[];
-            categoryNames = ids.map(id => categoryMap.get(id) || "Unknown");
-          } catch { /* empty */ }
-
-          let playerNames: string[] = [];
-          try {
-            const ids = JSON.parse(clip.players || "[]") as number[];
-            playerNames = ids.map(id => playerMap.get(id) || "Unknown");
-          } catch { /* empty */ }
-
-          return {
-            title: clip.title,
-            categories: categoryNames,
-            players: playerNames,
-            quarter: clip.quarter || null,
-            start_time: clip.start_time,
-            end_time: clip.end_time,
-            duration: clip.duration,
-            notes: clip.notes || "",
-            created_at: clip.created_at || "",
-            status: clip.status || null,
-          };
-        });
-
-        fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), "utf-8");
-      }
+      const clips = getClips(projectId);
+      const rows = projectClipRows(projectId, clips);
+      fs.writeFileSync(result.filePath, ext === ".csv" ? clipsCsv(rows) : clipsJson(rows), "utf-8");
 
       return { filePath: result.filePath, count: clips.length };
     } catch (error) {
