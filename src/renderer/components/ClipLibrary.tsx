@@ -22,6 +22,7 @@ import {
   faVideo as faVideoFile,
   faFloppyDisk,
   faFileCode,
+  faFileZipper,
   faPlayCircle,
   faTableCells,
   faList,
@@ -530,6 +531,31 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
   };
 
+  const handleExportZip = async () => {
+    if (!currentProject || filteredClips.length === 0) return;
+
+    try {
+      setIsExporting(true);
+      const result = await window.electronAPI.exportClipsZip({
+        projectId: currentProject.id,
+        clipIds: filteredClips.map(clip => clip.id),
+        untagged: t("app.clips.exportZipUntagged"),
+      });
+      if (result) {
+        showSuccess(t("app.clips.exportZipSuccess", { count: result.count, path: result.filePath }));
+        if (result.skipped > 0) {
+          showWarning(t("app.clips.exportZipSkipped", { count: result.skipped }));
+        }
+        recordExportedClips(result.count);
+      }
+    } catch (error) {
+      console.error("Error exporting clips zip:", error);
+      showError(withCause(t("app.clips.exportDataError"), error));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleSaveSession = async () => {
     if (!currentProject) return;
 
@@ -666,6 +692,19 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 >
                   <FontAwesomeIcon icon={faVideoFile} />
                   {t("app.clips.exportVideoFiles")}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={styles.exportMenuItem}
+                  disabled={filteredClips.length === 0}
+                  onClick={() => {
+                    setExportMenuOpen(false);
+                    handleExportZip();
+                  }}
+                >
+                  <FontAwesomeIcon icon={faFileZipper} />
+                  {t("app.clips.exportZip")}
                 </button>
                 <button
                   type="button"

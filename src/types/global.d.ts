@@ -168,6 +168,11 @@ export interface ElectronAPI {
   // Export clips data
   exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
   exportClipsXml: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
+  exportClipsZip: (params: {
+    projectId: number;
+    clipIds: number[];
+    untagged: string;
+  }) => Promise<{ filePath: string; count: number; skipped: number } | null>;
   openExternal: (url: string) => Promise<boolean>;
   getAppVersion: () => Promise<string>;
   setAppLanguage: (code: string) => Promise<boolean>;

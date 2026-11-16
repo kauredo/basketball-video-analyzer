@@ -63,6 +63,8 @@ import { safeFolderName } from "../shared/safeFolderName";
 import { hasVideoExtension } from "../shared/videoPath";
 import { isInsideDir } from "./insideDir";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
+import { zipEntries } from "./zipEntries";
+import yazl from "yazl";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
 // runs Squirrel launches the app with a --squirrel-* flag; this creates or
@@ -1710,6 +1712,94 @@ ipcMain.handle(
       console.error("Error exporting clips data:", error);
       throw error;
     }
+  }
+);
+
+// Export clips plus the clip list as one zip, to send to players or staff.
+// Clip ids come from the renderer; paths come from the database.
+ipcMain.handle(
+  "export-clips-zip",
+  async (_event, params: { projectId: number; clipIds: number[]; untagged: string }) => {
+    const { projectId, clipIds } = params;
+    if (!Number.isInteger(projectId) || !Array.isArray(clipIds)) {
+      throw new Error("ERROR_INVALID_INPUT");
+    }
+    const project = getProjectById(projectId);
+    if (!project) throw new Error("ERROR_INVALID_INPUT");
+    const untagged =
+      typeof params.untagged === "string" && params.untagged.trim()
+        ? params.untagged.slice(0, 100)
+        : "Untagged";
+
+    const wanted = new Set(clipIds.filter(id => Number.isInteger(id)));
+    const clips = getClips(projectId).filter(clip => wanted.has(clip.id!));
+    if (clips.length === 0) return null;
+
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: "Export Clips as Zip",
+      defaultPath: path.join(
+        app.getPath("documents"),
+        `${project.name.replace(/[^a-zA-Z0-9]/g, "_")}-clips.zip`
+      ),
+      filters: [{ name: "Zip", extensions: ["zip"] }],
+    });
+    if (result.canceled || !result.filePath) return null;
+    const zipPath = result.filePath;
+
+    const categoryNames = new Map<number, string>();
+    getCategories(projectId).forEach(cat => categoryNames.set(cat.id!, cat.name));
+    const withFiles = clips.filter(clip => clip.output_path && fs.existsSync(clip.output_path));
+    const entries = zipEntries(
+      withFiles.map(clip => {
+        let first: string | undefined;
+        try {
+          first = categoryNames.get((JSON.parse(clip.categories) as number[])[0]);
+        } catch { /* untagged */ }
+        return {
+          title: clip.title,
+          output_path: clip.output_path,
+          folder: safeFolderName(first ?? untagged),
+        };
+      })
+    );
+
+    const rows = projectClipRows(projectId, clips);
+    const zip = new yazl.ZipFile();
+    // Video is already compressed; deflating it again only costs time.
+    entries.forEach(entry => zip.addFile(entry.source, entry.name, { compress: false }));
+    zip.addBuffer(Buffer.from(clipsCsv(rows), "utf-8"), "clips.csv");
+    zip.addBuffer(Buffer.from(clipsJson(rows), "utf-8"), "clips.json");
+
+    // Write next to the target and rename at the end, so a failure never
+    // leaves a half-written zip under the name the user picked.
+    const partPath = `${zipPath}.part`;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const out = fs.createWriteStream(partPath);
+        // Reject once the file is closed, so the cleanup below can delete it
+        // on Windows too.
+        const fail = (error: Error) => {
+          out.removeAllListeners("close");
+          out.once("close", () => reject(error));
+          out.destroy();
+        };
+        // A clip file that cannot be read is reported on the ZipFile itself.
+        zip.on("error", fail);
+        zip.outputStream.on("error", fail);
+        out.on("error", fail);
+        out.on("close", () => resolve());
+        zip.outputStream.pipe(out);
+        zip.end();
+      });
+      fs.renameSync(partPath, zipPath);
+    } catch (error) {
+      deleteTempFile(partPath);
+      console.error("Error exporting clips zip:", error);
+      throw new Error("ERROR_EXPORT_FAILED");
+    }
+
+    shell.showItemInFolder(zipPath);
+    return { filePath: zipPath, count: entries.length, skipped: clips.length - entries.length };
   }
 );
 

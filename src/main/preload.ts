@@ -134,6 +134,11 @@ export interface ElectronAPI {
   // Export clips data
   exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
   exportClipsXml: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
+  exportClipsZip: (params: {
+    projectId: number;
+    clipIds: number[];
+    untagged: string;
+  }) => Promise<{ filePath: string; count: number; skipped: number } | null>;
   openExternal: (url: string) => Promise<boolean>;
   getAppVersion: () => Promise<string>;
   setAppLanguage: (code: string) => Promise<boolean>;
@@ -251,6 +256,7 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.invoke("export-clips-data", projectId),
   exportClipsXml: (projectId: number) =>
     ipcRenderer.invoke("export-clips-xml", projectId),
+  exportClipsZip: params => ipcRenderer.invoke("export-clips-zip", params),
   openExternal: (url: string) => ipcRenderer.invoke("open-external", url),
   setAppLanguage: code => ipcRenderer.invoke("set-app-language", code),
   getAppVersion: () => ipcRenderer.invoke("get-app-version"),
