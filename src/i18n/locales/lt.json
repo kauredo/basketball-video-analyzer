@@ -563,6 +563,30 @@
       "dbFailed": "Programai nepavyko atidaryti duomenų bazės, todėl jūsų projektai negali būti įkelti. Klaida: {{error}}. Žurnalo failas: {{logPath}}",
       "checkFailed": "Paleidžiant programą įvyko klaida. {{error}}",
       "apiUnavailable": "Programa nepasileido tinkamai. Įdiekite naujausią versiją iš naujo."
+    },
+    "native": {
+      "checkForUpdates": "Tikrinti Atnaujinimus...",
+      "file": "Failas",
+      "edit": "Redaguoti",
+      "view": "Rodinys",
+      "help": "Pagalba",
+      "sendFeedback": "Siųsti Atsiliepimą...",
+      "learnMore": "Sužinoti Daugiau",
+      "updateAvailableTitle": "Yra Atnaujinimas",
+      "updateAvailable": "Nauja versija atsisiunčiama fone. Kai ji bus paruošta, programa pasiūlys paleisti iš naujo.",
+      "noUpdateTitle": "Atnaujinimų Nėra",
+      "noUpdate": "Tai naujausia versija.",
+      "updateReadyTitle": "Atnaujinimas Paruoštas Įdiegti",
+      "updateReady": "Versija {{version}} atsisiųsta ir paruošta įdiegti.\n\nPaleisti iš naujo dabar ir baigti atnaujinimą? \"Įdiegti Vėliau\" pritaikys ją kitą kartą atidarius programą.",
+      "restartNow": "Paleisti iš Naujo Dabar",
+      "installLater": "Įdiegti Vėliau",
+      "ok": "Gerai",
+      "updatesTitle": "Atnaujinimai",
+      "updatesUnsupported": "Automatiniai atnaujinimai šioje platformoje negalimi. Naujausia versija yra svetainėje.",
+      "checkingTitle": "Tikrinami Atnaujinimai",
+      "checking": "Tikrinami atnaujinimai...",
+      "checkFailedTitle": "Nepavyko Patikrinti Atnaujinimų",
+      "checkFailed": "Nepavyko patikrinti atnaujinimų: {{message}}"
     }
   }
 }

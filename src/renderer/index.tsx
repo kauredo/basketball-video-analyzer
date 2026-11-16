@@ -10,7 +10,14 @@ import "@fontsource/ibm-plex-mono/latin-400.css";
 import "@fontsource/ibm-plex-mono/latin-500.css";
 import "@fontsource/ibm-plex-mono/latin-600.css";
 import "./styles/variables.css";
-import "../i18n";
+import i18n from "../i18n";
+
+// Menus and update dialogs come from the main process, which follows this.
+const reportLanguage = (code: string | undefined) => {
+  if (code) window.electronAPI?.setAppLanguage(code).catch(() => {});
+};
+reportLanguage(i18n.resolvedLanguage ?? i18n.language);
+i18n.on("languageChanged", reportLanguage);
 
 // Find the root element
 const container = document.getElementById("root");

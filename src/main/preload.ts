@@ -136,6 +136,7 @@ export interface ElectronAPI {
   exportClipsXml: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
   openExternal: (url: string) => Promise<boolean>;
   getAppVersion: () => Promise<string>;
+  setAppLanguage: (code: string) => Promise<boolean>;
 
   // Session operations
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
@@ -250,6 +251,7 @@ const electronAPI: ElectronAPI = {
   exportClipsXml: (projectId: number) =>
     ipcRenderer.invoke("export-clips-xml", projectId),
   openExternal: (url: string) => ipcRenderer.invoke("open-external", url),
+  setAppLanguage: code => ipcRenderer.invoke("set-app-language", code),
   getAppVersion: () => ipcRenderer.invoke("get-app-version"),
 
   // Session operations

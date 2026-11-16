@@ -563,6 +563,30 @@
       "dbFailed": "L'applicazione non è riuscita ad aprire il database, quindi i tuoi progetti non possono essere caricati. Errore: {{error}}. File di log: {{logPath}}",
       "checkFailed": "L'applicazione ha riscontrato un errore all'avvio. {{error}}",
       "apiUnavailable": "L'applicazione non si è avviata correttamente. Reinstalla la versione più recente."
+    },
+    "native": {
+      "checkForUpdates": "Cerca Aggiornamenti...",
+      "file": "File",
+      "edit": "Modifica",
+      "view": "Visualizza",
+      "help": "Aiuto",
+      "sendFeedback": "Invia Feedback...",
+      "learnMore": "Scopri di Più",
+      "updateAvailableTitle": "Aggiornamento Disponibile",
+      "updateAvailable": "Una nuova versione è in download in background. Quando sarà pronta, l'applicazione proporrà di riavviare.",
+      "noUpdateTitle": "Nessun Aggiornamento",
+      "noUpdate": "Questa è la versione più recente.",
+      "updateReadyTitle": "Aggiornamento Pronto per l'Installazione",
+      "updateReady": "La versione {{version}} è scaricata e pronta per l'installazione.\n\nRiavviare ora per completare l'aggiornamento? \"Installa Più Tardi\" la applica alla prossima apertura dell'applicazione.",
+      "restartNow": "Riavvia Ora",
+      "installLater": "Installa Più Tardi",
+      "ok": "OK",
+      "updatesTitle": "Aggiornamenti",
+      "updatesUnsupported": "Gli aggiornamenti automatici non sono disponibili su questa piattaforma. La versione più recente è sul sito web.",
+      "checkingTitle": "Ricerca Aggiornamenti",
+      "checking": "Ricerca aggiornamenti in corso...",
+      "checkFailedTitle": "Ricerca Aggiornamenti Non Riuscita",
+      "checkFailed": "Impossibile cercare aggiornamenti: {{message}}"
     }
   }
 }

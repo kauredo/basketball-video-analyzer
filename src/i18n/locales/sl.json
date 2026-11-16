@@ -563,6 +563,30 @@
       "dbFailed": "Aplikacija ni mogla odpreti svoje zbirke podatkov, zato vaših projektov ni mogoče naložiti. Napaka: {{error}}. Dnevniška datoteka: {{logPath}}",
       "checkFailed": "Aplikacija je ob zagonu naletela na napako. {{error}}",
       "apiUnavailable": "Aplikacija se ni pravilno zagnala. Znova namestite najnovejšo različico."
+    },
+    "native": {
+      "checkForUpdates": "Preveri Posodobitve...",
+      "file": "Datoteka",
+      "edit": "Uredi",
+      "view": "Pogled",
+      "help": "Pomoč",
+      "sendFeedback": "Pošlji Povratne Informacije...",
+      "learnMore": "Več o Tem",
+      "updateAvailableTitle": "Posodobitev na Voljo",
+      "updateAvailable": "Nova različica se prenaša v ozadju. Ko bo pripravljena, bo aplikacija ponudila ponovni zagon.",
+      "noUpdateTitle": "Ni Posodobitev",
+      "noUpdate": "To je najnovejša različica.",
+      "updateReadyTitle": "Posodobitev Pripravljena za Namestitev",
+      "updateReady": "Različica {{version}} je prenesena in pripravljena za namestitev.\n\nŽelite znova zagnati zdaj in dokončati posodobitev? \"Namesti Pozneje\" jo uveljavi ob naslednjem odprtju aplikacije.",
+      "restartNow": "Znova Zaženi Zdaj",
+      "installLater": "Namesti Pozneje",
+      "ok": "V redu",
+      "updatesTitle": "Posodobitve",
+      "updatesUnsupported": "Samodejne posodobitve na tej platformi niso na voljo. Najnovejša različica je na spletni strani.",
+      "checkingTitle": "Preverjanje Posodobitev",
+      "checking": "Preverjanje posodobitev...",
+      "checkFailedTitle": "Preverjanje Posodobitev ni Uspelo",
+      "checkFailed": "Posodobitev ni bilo mogoče preveriti: {{message}}"
     }
   }
 }
