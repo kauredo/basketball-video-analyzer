@@ -64,6 +64,8 @@ import { hasVideoExtension } from "../shared/videoPath";
 import { isInsideDir } from "./insideDir";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
+import { courtSvg, CourtDot, CourtLegendItem } from "../shared/courtSvg";
+import { normalizeReport, scoutingReportHtml } from "../shared/scoutingReport";
 import yazl from "yazl";
 
 // Handle Squirrel.Windows lifecycle events (install/update/uninstall). On those
@@ -1833,6 +1835,78 @@ ipcMain.handle(
     if (result.canceled || !result.filePath) return null;
     fs.writeFileSync(result.filePath, png);
     return { filePath: result.filePath };
+  }
+);
+
+// Print the scouting report to PDF. The renderer sends the numbers it already
+// shows on the stats tab; the page is built here, escaped, and loaded in a
+// hidden window with JavaScript off, from a temp file, with no network use.
+ipcMain.handle(
+  "export-scouting-report",
+  async (
+    _event,
+    params: { projectId: number; report: unknown; dots: CourtDot[]; legend: CourtLegendItem[] }
+  ) => {
+    const project = getProjectById(params?.projectId);
+    if (!project) throw new Error("ERROR_INVALID_INPUT");
+    const { data, labels } = normalizeReport(params.report);
+    data.projectName = project.name;
+    data.videoName = project.video_name;
+    const dots = (Array.isArray(params.dots) ? params.dots : []).slice(0, 5000).map(d => ({
+      x: Number(d?.x),
+      y: Number(d?.y),
+      color: String(d?.color ?? ""),
+      label: String(d?.label ?? "").slice(0, 300),
+    }));
+    const legend = (Array.isArray(params.legend) ? params.legend : []).slice(0, 100).map(item => ({
+      color: String(item?.color ?? ""),
+      label: String(item?.label ?? "").slice(0, 200),
+    }));
+    const chart = dots.length
+      ? courtSvg(dots, { background: "#ffffff", lines: "#4a4a4a", text: "#1f1f1f", legend })
+      : null;
+
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: "Save Scouting Report",
+      defaultPath: path.join(
+        app.getPath("documents"),
+        `${project.name.replace(/[^a-zA-Z0-9]/g, "_")}-scouting-report.pdf`
+      ),
+      filters: [{ name: "PDF", extensions: ["pdf"] }],
+    });
+    if (result.canceled || !result.filePath) return null;
+
+    const htmlPath = path.join(app.getPath("temp"), `bva-report-${randomUUID()}.html`);
+    const win = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        javascript: false,
+        sandbox: true,
+        contextIsolation: true,
+        nodeIntegration: false,
+        // Its own in-memory session, so the request block below never
+        // touches the main window.
+        partition: "report-print",
+      },
+    });
+    // Nothing on the page links anywhere; refuse any web request it makes.
+    win.webContents.session.webRequest.onBeforeRequest({ urls: ["*://*/*"] }, (_details, callback) =>
+      callback({ cancel: true })
+    );
+    win.webContents.on("will-navigate", e => e.preventDefault());
+    try {
+      fs.writeFileSync(htmlPath, scoutingReportHtml(data, labels, chart), "utf-8");
+      await win.loadFile(htmlPath);
+      const pdf = await win.webContents.printToPDF({ printBackground: true, preferCSSPageSize: true });
+      fs.writeFileSync(result.filePath, pdf);
+      return { filePath: result.filePath };
+    } catch (error) {
+      console.error("Error exporting scouting report:", error);
+      throw new Error("ERROR_EXPORT_FAILED");
+    } finally {
+      win.destroy();
+      deleteTempFile(htmlPath);
+    }
   }
 );
 

@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilm, faClock, faStopwatch, faTags, faImage } from "@fortawesome/free-solid-svg-icons";
+import { faFilm, faClock, faStopwatch, faTags, faImage, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/StatsDashboard.module.css";
 import { Court, COURT_VB_W, COURT_VB_H } from "./Court";
 import { courtSvg, courtSvgHeight, CourtDot, CourtLegendItem } from "../../shared/courtSvg";
@@ -199,17 +199,88 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 
   // One dot per located clip, coloured by its first category, and a legend of
   // the categories that appear.
-  const chart = useMemo(() => {
-    const legend = new Map<string, CourtLegendItem>();
-    const dots: CourtDot[] = chartClips.map(c => {
-      const firstCat = parseCategoryIds(c)[0];
-      const cat = firstCat != null ? flatCategories.find(fc => fc.id === firstCat) : undefined;
-      const color = cat?.color || PRIMARY;
-      if (cat) legend.set(String(cat.id), { color, label: cat.name });
-      return { x: c.court_x as number, y: c.court_y as number, color, label: c.title };
-    });
-    return { dots, legend: [...legend.values()] };
-  }, [chartClips, flatCategories]);
+  const chartOf = useCallback(
+    (located: Clip[]) => {
+      const legend = new Map<string, CourtLegendItem>();
+      const dots: CourtDot[] = located.map(c => {
+        const firstCat = parseCategoryIds(c)[0];
+        const cat = firstCat != null ? flatCategories.find(fc => fc.id === firstCat) : undefined;
+        const color = cat?.color || PRIMARY;
+        if (cat) legend.set(String(cat.id), { color, label: cat.name });
+        return { x: c.court_x as number, y: c.court_y as number, color, label: c.title };
+      });
+      return { dots, legend: [...legend.values()] };
+    },
+    [flatCategories]
+  );
+  const chart = useMemo(() => chartOf(chartClips), [chartOf, chartClips]);
+
+  // The report covers the whole project, whatever the chart filters say.
+  const handleExportReport = async () => {
+    if (!projectId) return;
+    const catName = new Map(flatCategories.map(c => [c.id, c.name]));
+    const playerLabel = new Map(players.map(p => [p.id, p.number ? `${p.number} ${p.name}` : p.name]));
+    const playerCounts = new Map<number, number>();
+    clips.forEach(c => parsePlayerIds(c).forEach(id => playerCounts.set(id, (playerCounts.get(id) ?? 0) + 1)));
+    const { dots, legend } = chartOf(locatedClips);
+    try {
+      const result = await window.electronAPI.exportScoutingReport({
+        projectId,
+        dots,
+        legend,
+        report: {
+          labels: {
+            title: t("app.stats.reportTitle"),
+            madeWith: t("app.stats.reportMadeWith", { date: new Date().toLocaleDateString() }),
+            totalClips: t("app.stats.totalClips"),
+            totalDuration: t("app.stats.totalDuration"),
+            avgDuration: t("app.stats.avgDuration"),
+            categoriesUsed: t("app.stats.categoriesUsed"),
+            clipsByCategory: t("app.stats.clipsByCategory"),
+            byQuarter: t("app.stats.byQuarter"),
+            byPlayer: t("app.stats.reportByPlayer"),
+            shotChart: t("app.stats.tabShotChart"),
+            noLocatedClips: t("app.stats.reportNoLocated"),
+            clipList: t("app.stats.reportClipList"),
+            time: t("app.stats.reportTime"),
+            clip: t("app.clips.table.columnTitle"),
+            categories: t("app.stats.reportCategories"),
+            players: t("app.stats.reportPlayers"),
+            quarter: t("app.stats.filterQuarter"),
+            notes: t("app.clips.table.columnNotes"),
+          },
+          data: {
+            summary: {
+              clips: String(summary.count),
+              totalDuration: formatDuration(summary.totalDuration),
+              avgDuration: formatDuration(summary.avgDuration),
+              categoriesUsed: String(summary.categoriesUsed),
+            },
+            byCategory: byCategory.rows.map(r => ({ name: r.name, color: r.color, count: r.count, duration: formatDuration(r.duration) })),
+            byQuarter: byQuarter.rows,
+            byPlayer: [...playerCounts.entries()]
+              .filter(([id]) => playerLabel.has(id))
+              .map(([id, count]) => ({ label: playerLabel.get(id)!, count }))
+              .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)),
+            clips: [...clips]
+              .sort((a, b) => a.start_time - b.start_time)
+              .map(c => ({
+                time: formatDuration(c.start_time),
+                title: c.title,
+                categories: parseCategoryIds(c).map(id => catName.get(id)).filter(Boolean).join(", "),
+                players: parsePlayerIds(c).map(id => playerLabel.get(id)).filter(Boolean).join(", "),
+                quarter: c.quarter ?? "",
+                notes: c.notes ?? "",
+              })),
+          },
+        },
+      });
+      if (result) showSuccess(t("app.stats.reportSuccess", { path: result.filePath }));
+    } catch (error) {
+      console.error("Error exporting scouting report:", error);
+      showError(withCause(t("app.stats.reportError"), error));
+    }
+  };
 
   const handleSaveChartImage = async () => {
     if (!projectId) return;
@@ -254,6 +325,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 
   return (
     <div className={styles.dashboard}>
+      <div className={styles.tabRow}>
       <div className={styles.tabBar} role="tablist">
         <button
           type="button"
@@ -272,6 +344,10 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           onClick={() => setTab("shotChart")}
         >
           {t("app.stats.tabShotChart")}
+        </button>
+      </div>
+        <button type="button" className={styles.chartAction} onClick={handleExportReport}>
+          <FontAwesomeIcon icon={faFilePdf} /> {t("app.stats.exportReport")}
         </button>
       </div>
 
