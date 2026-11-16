@@ -1895,7 +1895,8 @@ ipcMain.handle(
     );
     win.webContents.on("will-navigate", e => e.preventDefault());
     try {
-      fs.writeFileSync(htmlPath, scoutingReportHtml(data, labels, chart), "utf-8");
+      // Readable by this user only: Linux shares /tmp between users.
+      fs.writeFileSync(htmlPath, scoutingReportHtml(data, labels, chart), { encoding: "utf-8", mode: 0o600 });
       await win.loadFile(htmlPath);
       const pdf = await win.webContents.printToPDF({ printBackground: true, preferCSSPageSize: true });
       fs.writeFileSync(result.filePath, pdf);
