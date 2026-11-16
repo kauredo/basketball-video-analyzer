@@ -8,7 +8,7 @@ Electron 28 + React + better-sqlite3. Free and AGPL. One active coach drives mos
 - `worker/` (`kauredo/basketball-video-analyzer-worker`): the Cloudflare Worker that turns in-app feedback into GitHub issues.
 
 ## Checks
-- Node 22 (`.nvmrc`). `npm test` runs `.mts` files with Node's type stripping and imports nothing from `node_modules`.
+- Node 22 (`.nvmrc`) for the build; CI runs the tests on Node 24. `npm test` runs `.mts` files with Node's type stripping and imports nothing from `node_modules`.
 - `npm run build` runs `lint:locales`, `tsc` and webpack. CI (`build.yml`) runs the tests plus a three-OS package build on every PR.
 
 ## Rules

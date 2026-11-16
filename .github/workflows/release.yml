@@ -13,6 +13,8 @@ jobs:
   # version, and auto-update would offer the same release forever.
   verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
