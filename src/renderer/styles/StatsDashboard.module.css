@@ -227,6 +227,31 @@
   font-size: var(--font-size-sm);
 }
 
+/* Sits at the end of the filter row, level with the selects. */
+.chartAction {
+  align-self: flex-end;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.chartAction:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.chartAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .courtWrap {
   display: flex;
   flex-direction: column;

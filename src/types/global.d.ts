@@ -168,6 +168,7 @@ export interface ElectronAPI {
   // Export clips data
   exportClipsData: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
   exportClipsXml: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
+  saveShotChart: (params: { projectId: number; png: Uint8Array }) => Promise<{ filePath: string } | null>;
   exportClipsZip: (params: {
     projectId: number;
     clipIds: number[];
