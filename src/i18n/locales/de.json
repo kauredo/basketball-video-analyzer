@@ -557,7 +557,8 @@
       "errorDeleting": "Spieler konnte nicht gelöscht werden."
     },
     "donation": {
-      "nudge": "Du hast mit dieser kostenlosen App bereits über {{count}} Clips exportiert. Wenn sie dir Zeit spart, findest du unter Einstellungen → Über einen Link für einen Kaffee."
+      "nudge": "Du hast mit dieser kostenlosen App bereits über {{count}} Clips exportiert. Wenn sie dir Zeit spart, hilft ein Kaffee auf Ko-fi, sie weiterzuentwickeln.",
+      "nudgeAction": "Kaffee spendieren"
     },
     "startup": {
       "dbFailed": "Die App konnte ihre Datenbank nicht öffnen, daher können deine Projekte nicht geladen werden. Fehler: {{error}}. Protokolldatei: {{logPath}}",

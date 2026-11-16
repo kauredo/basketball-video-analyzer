@@ -558,7 +558,8 @@
       "errorDeleting": "Oyuncu silinemedi."
     },
     "donation": {
-      "nudge": "Bu ücretsiz uygulamayla {{count}}+ klip dışa aktardınız. Zaman kazandırıyorsa, Ayarlar → Hakkında bölümünde bir kahve bağlantısı var."
+      "nudge": "Bu ücretsiz uygulamayla {{count}}+ klip dışa aktardınız. Zaman kazandırıyorsa, Ko-fi'de bir kahve uygulamanın sürmesine yardım eder.",
+      "nudgeAction": "Kahve ısmarla"
     },
     "startup": {
       "dbFailed": "Uygulama veritabanını açamadı, bu yüzden projeleriniz yüklenemiyor. Hata: {{error}}. Günlük dosyası: {{logPath}}",

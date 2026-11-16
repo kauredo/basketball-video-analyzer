@@ -1,12 +1,12 @@
 import React, { createContext, useContext } from "react";
 import { useToast } from "../hooks/useToast";
-import { ToastContainer } from "../components/Toast";
+import { ToastContainer, ToastAction } from "../components/Toast";
 
 interface ToastContextValue {
   showSuccess: (message: string, duration?: number) => string;
   showError: (message: string, duration?: number) => string;
   showWarning: (message: string, duration?: number) => string;
-  showInfo: (message: string, duration?: number) => string;
+  showInfo: (message: string, duration?: number, action?: ToastAction) => string;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);

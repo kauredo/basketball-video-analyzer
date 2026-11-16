@@ -10,10 +10,16 @@ import styles from "../styles/Toast.module.css";
 
 export type ToastType = "success" | "error" | "info" | "warning";
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface ToastProps {
   message: string;
   type: ToastType;
   duration?: number;
+  action?: ToastAction;
   onClose: () => void;
 }
 
@@ -21,6 +27,7 @@ export const Toast: React.FC<ToastProps> = ({
   message,
   type,
   duration = 5000,
+  action,
   onClose,
 }) => {
   useEffect(() => {
@@ -47,6 +54,18 @@ export const Toast: React.FC<ToastProps> = ({
       <div className={styles.toastContent}>
         <FontAwesomeIcon icon={getIcon()} className={styles.toastIcon} />
         <span className={styles.toastMessage}>{message}</span>
+        {action && (
+          <button
+            type="button"
+            className={styles.toastAction}
+            onClick={() => {
+              action.onClick();
+              onClose();
+            }}
+          >
+            {action.label}
+          </button>
+        )}
       </div>
       <button type="button" onClick={onClose} className={styles.toastClose}>
         <FontAwesomeIcon icon={faTimes} />
@@ -61,6 +80,7 @@ interface ToastContainerProps {
     message: string;
     type: ToastType;
     duration?: number;
+    action?: ToastAction;
   }>;
   onRemoveToast: (id: string) => void;
 }
@@ -77,6 +97,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
           message={toast.message}
           type={toast.type}
           duration={toast.duration}
+          action={toast.action}
           onClose={() => onRemoveToast(toast.id)}
         />
       ))}

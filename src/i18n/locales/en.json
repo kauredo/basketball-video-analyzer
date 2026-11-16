@@ -536,7 +536,8 @@
       "errorDeleting": "Could not delete player."
     },
     "donation": {
-      "nudge": "You've exported {{count}}+ clips with this free app. If it saves you time, there's a coffee link in Settings → About."
+      "nudge": "You've exported {{count}}+ clips with this free app. If it saves you time, a coffee on Ko-fi helps keep it going.",
+      "nudgeAction": "Buy a coffee"
     },
     "native": {
       "checkForUpdates": "Check for Updates...",

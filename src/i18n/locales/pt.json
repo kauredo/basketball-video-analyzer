@@ -559,7 +559,8 @@
       "errorDeleting": "Não foi possível eliminar o jogador."
     },
     "donation": {
-      "nudge": "Já exportaste mais de {{count}} clipes com esta aplicação gratuita. Se te poupa tempo, há um link para um café em Definições → Sobre."
+      "nudge": "Já exportaste mais de {{count}} clipes com esta aplicação gratuita. Se te poupa tempo, um café no Ko-fi ajuda a mantê-la.",
+      "nudgeAction": "Oferecer um café"
     },
     "native": {
       "checkForUpdates": "Procurar Atualizações...",
