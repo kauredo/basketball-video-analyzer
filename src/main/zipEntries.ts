@@ -24,7 +24,13 @@ const extension = (file: string) => {
 export const zipEntries = (clips: ZipClip[]): ZipEntry[] => {
   const taken = new Set<string>();
   return clips.map(clip => {
-    const title = clip.title.replace(/[^a-zA-Z0-9 \-()]/g, "_").trim() || "clip";
+    // Keep letters in any script (coaches title clips in Greek, Serbian,
+    // Turkish...); replace only what file systems refuse, then cap the length.
+    const title =
+      clip.title
+        .replace(/[\\/:*?"<>|\u0000-\u001f]/g, "_")
+        .replace(/^[\s.]+|[\s.]+$/g, "")
+        .slice(0, 100) || "clip";
     const ext = extension(clip.output_path);
     let name = `clips/${clip.folder}/${title}${ext}`;
     for (let n = 1; taken.has(name.toLowerCase()); n++) {

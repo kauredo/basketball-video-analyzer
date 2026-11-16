@@ -5,7 +5,7 @@ import { zipEntries } from "./zipEntries.ts";
 test("clips go into their folder, named after the title, keeping the extension", () => {
   assert.deepEqual(
     zipEntries([{ title: "Pick & roll: left", output_path: "/c/a1b2.mp4", folder: "Offense" }]),
-    [{ source: "/c/a1b2.mp4", name: "clips/Offense/Pick _ roll_ left.mp4" }],
+    [{ source: "/c/a1b2.mp4", name: "clips/Offense/Pick & roll_ left.mp4" }],
   );
 });
 
@@ -33,5 +33,19 @@ test("a title with nothing usable still gets a name", () => {
 
 test("names never climb out of the zip", () => {
   const [entry] = zipEntries([{ title: "../../etc/passwd", output_path: "/c/x.mp4", folder: "A" }]);
-  assert.equal(entry.name, "clips/A/______etc_passwd.mp4");
+  assert.equal(entry.name, "clips/A/_.._etc_passwd.mp4");
+  assert.ok(!entry.name.slice("clips/A/".length).includes("/"));
+});
+
+test("titles in other scripts keep their letters", () => {
+  const names = zipEntries([
+    { title: "Ξεκίνημα", output_path: "/c/1.mp4", folder: "Επίθεση" },
+    { title: "Šut iz ugla", output_path: "/c/2.mp4", folder: "Napad" },
+  ]).map(e => e.name);
+  assert.deepEqual(names, ["clips/Επίθεση/Ξεκίνημα.mp4", "clips/Napad/Šut iz ugla.mp4"]);
+});
+
+test("long titles are cut to 100 characters", () => {
+  const [entry] = zipEntries([{ title: "x".repeat(300), output_path: "/c/1.mp4", folder: "A" }]);
+  assert.equal(entry.name, `clips/A/${"x".repeat(100)}.mp4`);
 });
