@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LineBuffer, progressPercent, lastPrintedPath, templateLiteral } from "./ytdlpOutput.ts";
+import { LineBuffer, progressPercent, lastPrintedPath, templateLiteral, downloadOutcome } from "./ytdlpOutput.ts";
 
 test("LineBuffer keeps a split line until it is complete", () => {
   const buffer = new LineBuffer();
@@ -20,6 +20,16 @@ test("lastPrintedPath takes the last non-empty line", () => {
   assert.equal(lastPrintedPath("/d/Jogo Ação.mp4\n"), "/d/Jogo Ação.mp4");
   assert.equal(lastPrintedPath("/d/a.mp4\r\n/d/b.mp4\r\n\r\n"), "/d/b.mp4");
   assert.equal(lastPrintedPath(""), null);
+});
+
+test("downloadOutcome puts cancel first, then failure, then the file", () => {
+  const ok = { cancelled: false, failed: false, filePath: "/d/a.mp4", fileExists: true };
+  assert.deepEqual(downloadOutcome(ok), { filePath: "/d/a.mp4" });
+  assert.equal(downloadOutcome({ ...ok, cancelled: true }), "cancelled");
+  assert.equal(downloadOutcome({ ...ok, cancelled: true, failed: true }), "cancelled");
+  assert.equal(downloadOutcome({ ...ok, failed: true }), "failed");
+  assert.equal(downloadOutcome({ ...ok, filePath: null }), "failed");
+  assert.equal(downloadOutcome({ ...ok, fileExists: false }), "failed");
 });
 
 test("templateLiteral doubles percent signs", () => {

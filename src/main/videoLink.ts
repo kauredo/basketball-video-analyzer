@@ -17,29 +17,24 @@ const youtubeVideo = (url: URL): string | null => {
   return isVideo ? url.href : null;
 };
 
+// The Vimeo link shapes that point at one video. Showcases and albums also
+// end in a number, but it is not a video id, so they are refused.
+const VIMEO_PAGE_PATHS = [
+  /^\/(\d+)(?:\/([0-9a-f]+))?\/?$/i, // /ID and /ID/HASH (unlisted)
+  /^\/channels\/[^/]+\/(\d+)\/?$/,
+  /^\/groups\/[^/]+\/videos\/(\d+)\/?$/,
+];
+const VIMEO_PLAYER_PATH = /^\/video\/(\d+)\/?$/;
+
 // yt-dlp refuses vimeo.com page links without a login but downloads the same
 // video from its player URL, so every Vimeo link is rewritten to that.
 // Unlisted videos carry a hash, either as a path segment or as ?h=.
 const vimeoVideo = (url: URL): string | null => {
-  const segments = url.pathname.split("/").filter(Boolean);
-  let id: string | undefined;
-  let hash = url.searchParams.get("h") ?? undefined;
-  if (url.hostname === "player.vimeo.com") {
-    if (segments[0] === "video" && /^\d+$/.test(segments[1] ?? "")) id = segments[1];
-  } else {
-    let at = segments.length - 1;
-    while (at >= 0 && !/^\d+$/.test(segments[at])) at--;
-    if (at >= 0 && at >= segments.length - 2) {
-      id = segments[at];
-      const next = segments[at + 1];
-      if (next !== undefined) {
-        if (!/^[0-9a-f]+$/i.test(next)) return null;
-        hash = next;
-      }
-    }
-  }
-  if (!id) return null;
-  const player = new URL(`https://player.vimeo.com/video/${id}`);
+  const patterns = url.hostname === "player.vimeo.com" ? [VIMEO_PLAYER_PATH] : VIMEO_PAGE_PATHS;
+  const match = patterns.map(pattern => url.pathname.match(pattern)).find(Boolean);
+  if (!match) return null;
+  const hash = match[2] ?? url.searchParams.get("h");
+  const player = new URL(`https://player.vimeo.com/video/${match[1]}`);
   if (hash && /^[0-9a-f]+$/i.test(hash)) player.searchParams.set("h", hash);
   return player.href;
 };

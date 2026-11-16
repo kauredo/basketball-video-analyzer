@@ -32,6 +32,9 @@ test("Vimeo links become player links", () => {
     ["https://vimeo.com/1084537/ab12cd34ef", "https://player.vimeo.com/video/1084537?h=ab12cd34ef"],
     ["https://player.vimeo.com/video/1084537", "https://player.vimeo.com/video/1084537"],
     ["https://player.vimeo.com/video/1084537?h=ab12&autoplay=1", "https://player.vimeo.com/video/1084537?h=ab12"],
+    ["https://vimeo.com/1084537/1234567890", "https://player.vimeo.com/video/1084537?h=1234567890"],
+    ["https://vimeo.com/groups/coaches/videos/1084537", "https://player.vimeo.com/video/1084537"],
+    ["http://vimeo.com/1084537?h=zz!", "https://player.vimeo.com/video/1084537"],
   ];
   for (const [link, expected] of cases) {
     assert.equal(parseVideoLink(link), expected, link);
@@ -54,6 +57,11 @@ test("rejects anything that is not an https YouTube or Vimeo video link", () => 
     "https://vimeo.com/1084537/ab12/extra",
     "https://player.vimeo.com/video/",
     "https://vimeo.com.evil.example/1084537",
+    "https://vimeo.com/showcase/1084537",
+    "https://vimeo.com/album/1084537",
+    "https://vimeo.com/channels/x/y/1084537",
+    "https://player.vimeo.com/video/abc",
+    "https://player.vimeo.com/video/1084537/extra",
     "https://www.hudl.com/video/3/123/abc",
     "",
   ]) {

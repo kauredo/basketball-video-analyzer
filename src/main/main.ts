@@ -56,7 +56,7 @@ import {
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
 import { parseVideoLink } from "./videoLink";
-import { LineBuffer, lastPrintedPath, progressPercent, templateLiteral } from "./ytdlpOutput";
+import { LineBuffer, downloadOutcome, lastPrintedPath, progressPercent, templateLiteral } from "./ytdlpOutput";
 import { ClipCuts } from "./clipProcesses";
 import { clipFileTitle, clipInputError } from "../shared/clipInput";
 import { safeFolderName } from "../shared/safeFolderName";
@@ -2119,14 +2119,26 @@ const getDenoPath = (): string | null => {
 // The import running now, so the renderer can cancel it.
 let activeDownload: { process: ChildProcess; cancelled: boolean } | null = null;
 
+const stopDownload = (download: { process: ChildProcess; cancelled: boolean }) => {
+  download.cancelled = true;
+  const { pid } = download.process;
+  // The Windows yt-dlp build runs in a child of the process we started, and
+  // Windows does not pass the kill down, so end the whole tree there.
+  if (process.platform === "win32" && pid) {
+    spawn("taskkill", ["/pid", String(pid), "/T", "/F"]).on("error", () => download.process.kill());
+  } else {
+    download.process.kill();
+  }
+};
+
 // Download a YouTube or Vimeo video using the bundled yt-dlp
-ipcMain.handle("download-youtube-video", async (_event, url: string) => {
+ipcMain.handle("download-youtube-video", async (event, url: string) => {
   const videoUrl = parseVideoLink(url);
   if (!videoUrl) {
     throw new Error("INVALID_YOUTUBE_URL");
   }
   if (activeDownload) {
-    throw new Error("DOWNLOAD_FAILED");
+    throw new Error("DOWNLOAD_BUSY");
   }
 
   const downloadsDir = path.join(app.getPath("userData"), "downloads");
@@ -2155,6 +2167,13 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
     const download = { process: ytdlp, cancelled: false };
     activeDownload = download;
 
+    // A reload drops the progress bar and its Cancel button, so stop the
+    // download with it instead of leaving it running unseen.
+    const onNavigate = (_e: unknown, _url: string, isInPlace: boolean, isMainFrame: boolean) => {
+      if (isMainFrame && !isInPlace) stopDownload(download);
+    };
+    event.sender.on("did-start-navigation", onNavigate);
+
     const lines = new LineBuffer();
     ytdlp.stdout.on("data", (data: Buffer) => {
       for (const line of lines.push(data.toString())) {
@@ -2174,6 +2193,7 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
 
     const finish = (error: Error | null) => {
       if (activeDownload === download) activeDownload = null;
+      event.sender.removeListener("did-start-navigation", onNavigate);
       let filePath: string | null = null;
       try {
         filePath = lastPrintedPath(fs.readFileSync(pathFile, "utf8"));
@@ -2181,13 +2201,15 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
       } catch {
         // No path file: yt-dlp failed or was stopped before the move.
       }
-      if (download.cancelled) {
-        reject(new Error("DOWNLOAD_CANCELLED"));
-      } else if (error || !filePath || !fs.existsSync(filePath)) {
-        reject(new Error("DOWNLOAD_FAILED"));
-      } else {
-        resolve({ filePath, fileName: path.basename(filePath), success: true });
-      }
+      const outcome = downloadOutcome({
+        cancelled: download.cancelled,
+        failed: error !== null,
+        filePath,
+        fileExists: !!filePath && fs.existsSync(filePath),
+      });
+      if (outcome === "cancelled") reject(new Error("DOWNLOAD_CANCELLED"));
+      else if (outcome === "failed") reject(new Error("DOWNLOAD_FAILED"));
+      else resolve({ filePath: outcome.filePath, fileName: path.basename(outcome.filePath), success: true });
     };
 
     ytdlp.on("close", code => finish(code === 0 ? null : new Error(`yt-dlp exited ${code}`)));
@@ -2197,14 +2219,6 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
 
 ipcMain.handle("cancel-youtube-download", () => {
   if (!activeDownload) return false;
-  activeDownload.cancelled = true;
-  const { pid } = activeDownload.process;
-  // The Windows yt-dlp build runs in a child of the process we started, and
-  // Windows does not pass the kill down, so end the whole tree there.
-  if (process.platform === "win32" && pid) {
-    spawn("taskkill", ["/pid", String(pid), "/T", "/F"]);
-  } else {
-    activeDownload.process.kill();
-  }
+  stopDownload(activeDownload);
   return true;
 });

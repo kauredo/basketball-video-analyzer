@@ -21,6 +21,21 @@ export const progressPercent = (line: string): number | null => {
 export const lastPrintedPath = (contents: string): string | null =>
   contents.split(/\r?\n/).filter(line => line.trim()).pop() ?? null;
 
+export type DownloadOutcome = "cancelled" | "failed" | { filePath: string };
+
+// A cancel wins over everything, so a run that the user stopped never imports
+// a file even if yt-dlp managed to exit cleanly.
+export const downloadOutcome = (state: {
+  cancelled: boolean;
+  failed: boolean;
+  filePath: string | null;
+  fileExists: boolean;
+}): DownloadOutcome => {
+  if (state.cancelled) return "cancelled";
+  if (state.failed || !state.filePath || !state.fileExists) return "failed";
+  return { filePath: state.filePath };
+};
+
 // The file argument of --print-to-file is an output template, so a literal %
 // in the path has to be doubled.
 export const templateLiteral = (filePath: string): string => filePath.replace(/%/g, "%%");
