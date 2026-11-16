@@ -38,13 +38,13 @@ export function causeOf(error: unknown): string | null {
 }
 
 /**
- * The app's own code (ERROR_*, INVALID_*, DOWNLOAD_FAILED) from an error the
+ * The app's own code (ERROR_*, INVALID_*, DOWNLOAD_*) from an error the
  * main process threw, or null. Compare this, never the raw message: Electron
  * hands the renderer "Error invoking remote method '...': Error: <code>".
  */
 export function errorCode(error: unknown): string | null {
   const match = causeOf(error)?.match(
-    /\b(ERROR_[A-Z_]+|INVALID_[A-Z_]+|DOWNLOAD_FAILED)\b/
+    /\b(ERROR_[A-Z_]+|INVALID_[A-Z_]+|DOWNLOAD_[A-Z_]+)\b/
   );
   return match ? match[1] : null;
 }
