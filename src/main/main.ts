@@ -1040,8 +1040,14 @@ ipcMain.handle(
                 }
               })
               .catch(error => {
+                // Cancel kills ffmpeg mid-encode, which lands here as an error.
+                const cancelled = clipCuts.isCancelled(processId);
                 clipCuts.finish(processId);
                 removeClipFiles(outputPath, thumbnailPath, overlayPath);
+                if (cancelled) {
+                  reject(new Error("ERROR_CLIP_CANCELLED"));
+                  return;
+                }
                 console.error("FFmpeg clip creation error:", error);
                 console.error("Error stack:", error.stack);
                 console.error("Input path:", normalizedInputPath);
@@ -1419,7 +1425,10 @@ ipcMain.handle(
   ) => {
     try {
       if (!isVideoFile(newVideoPath)) return false;
-      return relinkVideoPath(oldVideoPath, newVideoPath, newVideoName) > 0;
+      const relinked = relinkVideoPath(oldVideoPath, newVideoPath, newVideoName) > 0;
+      // The old path is no longer a project video, so it must stop being served.
+      if (relinked) allowedMediaPaths.clear();
+      return relinked;
     } catch (error) {
       console.error("Error updating project video path:", error);
       return false;
@@ -1454,6 +1463,7 @@ ipcMain.handle("delete-project", async (_event, id: number) => {
 
     // Delete project from database (CASCADE will delete clips and categories)
     deleteProject(id);
+    allowedMediaPaths.clear();
     return true;
   } catch (error) {
     console.error("Error deleting project:", error);
