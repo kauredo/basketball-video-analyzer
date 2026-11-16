@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faSpinner, faXmark } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/YouTubeImport.module.css";
 import { errorCode } from "../utils/errors";
 
@@ -42,7 +42,10 @@ export const YouTubeImport: React.FC<YouTubeImportProps> = ({
         onVideoDownloaded(result.filePath);
       }
     } catch (err) {
-      if (errorCode(err) === "INVALID_YOUTUBE_URL") {
+      const code = errorCode(err);
+      if (code === "DOWNLOAD_CANCELLED") {
+        // The user asked for this; nothing to report.
+      } else if (code === "INVALID_YOUTUBE_URL") {
         setError(t("app.projects.youtubeInvalidUrl"));
       } else {
         setError(t("app.projects.youtubeDownloadError"));
@@ -98,6 +101,14 @@ export const YouTubeImport: React.FC<YouTubeImportProps> = ({
             <div className={styles.progressFill} style={{ width: `${progress}%` }} />
           </div>
           <span className={styles.progressText}>{Math.round(progress)}%</span>
+          <button
+            type="button"
+            onClick={() => window.electronAPI.cancelYoutubeDownload()}
+            className={styles.cancelBtn}
+          >
+            <FontAwesomeIcon icon={faXmark} />
+            {t("app.buttons.cancel")}
+          </button>
         </div>
       )}
       {error && <p className={styles.errorText} role="alert">{error}</p>}

@@ -144,6 +144,7 @@ export interface ElectronAPI {
 
   // YouTube operations
   downloadYoutubeVideo: (url: string) => Promise<{ filePath: string; fileName: string; success: boolean }>;
+  cancelYoutubeDownload: () => Promise<boolean>;
   onYoutubeDownloadProgress: (callback: (data: { percent: number; status: string }) => void) => void;
 
   // Event listeners
@@ -262,6 +263,7 @@ const electronAPI: ElectronAPI = {
   // YouTube operations
   downloadYoutubeVideo: (url: string) =>
     ipcRenderer.invoke("download-youtube-video", url),
+  cancelYoutubeDownload: () => ipcRenderer.invoke("cancel-youtube-download"),
   onYoutubeDownloadProgress: (callback: (data: { percent: number; status: string }) => void) => {
     ipcRenderer.on("youtube-download-progress", (_event, data) => callback(data));
   },

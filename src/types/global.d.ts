@@ -178,6 +178,7 @@ export interface ElectronAPI {
 
   // YouTube operations
   downloadYoutubeVideo: (url: string) => Promise<{ filePath: string; fileName: string; success: boolean }>;
+  cancelYoutubeDownload: () => Promise<boolean>;
   onYoutubeDownloadProgress: (callback: (data: { percent: number; status: string }) => void) => void;
 
   // Clip operations

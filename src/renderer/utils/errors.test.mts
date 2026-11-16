@@ -10,6 +10,7 @@ test("codes are found inside Electron's invoke wrapper", () => {
   assert.equal(errorCode(wrapped("cut-video-clip", "ERROR_FFMPEG_FAILED")), "ERROR_FFMPEG_FAILED");
   assert.equal(errorCode(wrapped("download-youtube", "INVALID_YOUTUBE_URL")), "INVALID_YOUTUBE_URL");
   assert.equal(errorCode(wrapped("load-session", "INVALID_SESSION_FILE")), "INVALID_SESSION_FILE");
+  assert.equal(errorCode(wrapped("download-youtube-video", "DOWNLOAD_CANCELLED")), "DOWNLOAD_CANCELLED");
 });
 
 test("bare codes are found", () => {
