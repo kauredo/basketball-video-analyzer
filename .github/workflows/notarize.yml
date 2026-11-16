@@ -152,7 +152,12 @@ jobs:
                 size: buf.length,
               };
             });
-          const primary = files.find(f => f.url.endsWith(".zip")) || files[0];
+          // Both Mac builds are listed; the Apple Silicon zip is the primary,
+          // as in the manifest forge.config.js writes at build time.
+          const primary =
+            files.find(f => f.url.endsWith(".zip") && f.url.includes("arm64")) ||
+            files.find(f => f.url.endsWith(".zip")) ||
+            files[0];
           const version = process.env.RELEASE_TAG.replace(/^v/, "");
           const lines = [
             `version: ${version}`,
