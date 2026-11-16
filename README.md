@@ -139,7 +139,7 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 
 - **Present Mode**: Play a filtered set of clips back to back for a team film session
 - **Telestration**: Draw arrows, circles, and freehand over paused video, then replay the annotations
-- **YouTube Import**: Pull game footage in from a YouTube URL
+- **YouTube and Vimeo Import**: Pull game footage in from a YouTube or Vimeo link, with a Cancel button while it downloads
 
 ### 📤 Flexible Export System
 

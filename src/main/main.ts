@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "elec
 import path from "path";
 import fs from "fs";
 import { Readable } from "stream";
-import { spawn } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { randomUUID } from "crypto";
@@ -55,7 +55,8 @@ import {
 } from "./database";
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
-import { parseYoutubeUrl } from "./youtubeUrl";
+import { parseVideoLink } from "./videoLink";
+import { LineBuffer, lastPrintedPath, progressPercent, templateLiteral } from "./ytdlpOutput";
 import { ClipCuts } from "./clipProcesses";
 import { clipFileTitle, clipInputError } from "../shared/clipInput";
 import { safeFolderName } from "../shared/safeFolderName";
@@ -2115,11 +2116,17 @@ const getDenoPath = (): string | null => {
   return fs.existsSync(deno) ? deno : null;
 };
 
-// Download YouTube video using bundled yt-dlp
+// The import running now, so the renderer can cancel it.
+let activeDownload: { process: ChildProcess; cancelled: boolean } | null = null;
+
+// Download a YouTube or Vimeo video using the bundled yt-dlp
 ipcMain.handle("download-youtube-video", async (_event, url: string) => {
-  const youtubeUrl = parseYoutubeUrl(url);
-  if (!youtubeUrl) {
+  const videoUrl = parseVideoLink(url);
+  if (!videoUrl) {
     throw new Error("INVALID_YOUTUBE_URL");
+  }
+  if (activeDownload) {
+    throw new Error("DOWNLOAD_FAILED");
   }
 
   const downloadsDir = path.join(app.getPath("userData"), "downloads");
@@ -2129,45 +2136,35 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
 
   const ytdlpPath = getYtdlpPath();
   const denoPath = getDenoPath();
+  const pathFile = path.join(downloadsDir, `.download-${randomUUID()}.txt`);
 
   return new Promise<{ filePath: string; fileName: string; success: boolean }>((resolve, reject) => {
-    let outputFilePath = "";
-
     const ytdlp = spawn(ytdlpPath, [
       "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
       "--merge-output-format", "mp4",
       "-o", path.join(downloadsDir, "%(title)s.%(ext)s"),
       "--no-playlist",
       "--newline",
+      "--print-to-file", "after_move:filepath", templateLiteral(pathFile),
       // Merging video and audio needs ffmpeg, and most users have none on PATH.
       ...(ffmpegPath ? ["--ffmpeg-location", ffmpegPath] : []),
       ...(denoPath ? ["--js-runtimes", `deno:${denoPath}`] : []),
       "--",
-      youtubeUrl,
+      videoUrl,
     ]);
+    const download = { process: ytdlp, cancelled: false };
+    activeDownload = download;
 
+    const lines = new LineBuffer();
     ytdlp.stdout.on("data", (data: Buffer) => {
-      const line = data.toString();
-
-      // Parse progress
-      const progressMatch = line.match(/\[download\]\s+(\d+(?:\.\d+)?)%/);
-      if (progressMatch) {
-        const percent = parseFloat(progressMatch[1]);
-        mainWindow?.webContents.send("youtube-download-progress", {
-          percent,
-          status: "downloading",
-        });
-      }
-
-      // Capture output file path
-      const destMatch = line.match(/\[download\] Destination: (.+)/);
-      if (destMatch) {
-        outputFilePath = destMatch[1].trim();
-      }
-
-      const mergerMatch = line.match(/\[Merger\] Merging formats into "(.+)"/);
-      if (mergerMatch) {
-        outputFilePath = mergerMatch[1].trim();
+      for (const line of lines.push(data.toString())) {
+        const percent = progressPercent(line);
+        if (percent !== null) {
+          mainWindow?.webContents.send("youtube-download-progress", {
+            percent,
+            status: "downloading",
+          });
+        }
       }
     });
 
@@ -2175,30 +2172,39 @@ ipcMain.handle("download-youtube-video", async (_event, url: string) => {
       console.error("yt-dlp stderr:", data.toString());
     });
 
-    ytdlp.on("close", (code) => {
-      if (code === 0 && outputFilePath) {
-        const fileName = path.basename(outputFilePath);
-        resolve({ filePath: outputFilePath, fileName, success: true });
-      } else if (code === 0) {
-        // Try to find the downloaded file
-        const files = fs.readdirSync(downloadsDir)
-          .filter(f => f.endsWith(".mp4"))
-          .map(f => ({ name: f, time: fs.statSync(path.join(downloadsDir, f)).mtimeMs }))
-          .sort((a, b) => b.time - a.time);
-
-        if (files.length > 0) {
-          const filePath = path.join(downloadsDir, files[0].name);
-          resolve({ filePath, fileName: files[0].name, success: true });
-        } else {
-          reject(new Error("DOWNLOAD_FAILED"));
-        }
-      } else {
-        reject(new Error("DOWNLOAD_FAILED"));
+    const finish = (error: Error | null) => {
+      if (activeDownload === download) activeDownload = null;
+      let filePath: string | null = null;
+      try {
+        filePath = lastPrintedPath(fs.readFileSync(pathFile, "utf8"));
+        fs.unlinkSync(pathFile);
+      } catch {
+        // No path file: yt-dlp failed or was stopped before the move.
       }
-    });
+      if (download.cancelled) {
+        reject(new Error("DOWNLOAD_CANCELLED"));
+      } else if (error || !filePath || !fs.existsSync(filePath)) {
+        reject(new Error("DOWNLOAD_FAILED"));
+      } else {
+        resolve({ filePath, fileName: path.basename(filePath), success: true });
+      }
+    };
 
-    ytdlp.on("error", () => {
-      reject(new Error("DOWNLOAD_FAILED"));
-    });
+    ytdlp.on("close", code => finish(code === 0 ? null : new Error(`yt-dlp exited ${code}`)));
+    ytdlp.on("error", error => finish(error));
   });
+});
+
+ipcMain.handle("cancel-youtube-download", () => {
+  if (!activeDownload) return false;
+  activeDownload.cancelled = true;
+  const { pid } = activeDownload.process;
+  // The Windows yt-dlp build runs in a child of the process we started, and
+  // Windows does not pass the kill down, so end the whole tree there.
+  if (process.platform === "win32" && pid) {
+    spawn("taskkill", ["/pid", String(pid), "/T", "/F"]);
+  } else {
+    activeDownload.process.kill();
+  }
+  return true;
 });

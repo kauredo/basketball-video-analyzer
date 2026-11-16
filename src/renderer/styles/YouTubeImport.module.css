@@ -83,6 +83,32 @@
   outline-offset: 2px;
 }
 
+.cancelBtn {
+  height: var(--button-height);
+  padding: 0 var(--spacing-md);
+  background: transparent;
+  border: 1px solid var(--border-color-light);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.cancelBtn:hover {
+  border-color: var(--border-color-hover);
+  color: var(--text-primary);
+}
+
+.cancelBtn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
 .progressSection {
   margin-top: var(--spacing-sm);
   display: flex;
