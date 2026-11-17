@@ -1734,6 +1734,9 @@ ipcMain.handle(
     const wanted = new Set(clipIds.filter(id => Number.isInteger(id)));
     const clips = getClips(projectId).filter(clip => wanted.has(clip.id!));
     if (clips.length === 0) return null;
+    const withFiles = clips.filter(clip => clip.output_path && fs.existsSync(clip.output_path));
+    // A zip with only the two list files would report a success with no clips.
+    if (withFiles.length === 0) throw new Error("ERROR_EXPORT_FAILED");
 
     const result = await dialog.showSaveDialog(mainWindow, {
       title: "Export Clips as Zip",
@@ -1748,7 +1751,6 @@ ipcMain.handle(
 
     const categoryNames = new Map<number, string>();
     getCategories(projectId).forEach(cat => categoryNames.set(cat.id!, cat.name));
-    const withFiles = clips.filter(clip => clip.output_path && fs.existsSync(clip.output_path));
     const entries = zipEntries(
       withFiles.map(clip => {
         let first: string | undefined;
