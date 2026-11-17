@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - "v*"
+  # A manual run builds every platform and uploads the artifacts to the run,
+  # without signing, notarizing or publishing anything.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,6 +29,7 @@ jobs:
           node-version: "24"
 
       - name: Check the tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION=$(node -p "require('./package.json').version")
           if [ "${GITHUB_REF_NAME#v}" != "$VERSION" ]; then
@@ -43,7 +47,9 @@ jobs:
     strategy:
       matrix:
         # Linux pinned to 24.04 for the RPM maker; see the note in build.yml.
-        os: [macos-latest, ubuntu-24.04, windows-latest]
+        # Each architecture builds on its own runner, because ffmpeg-static,
+        # yt-dlp, deno and better-sqlite3 all install for the host machine.
+        os: [macos-latest, macos-15-intel, ubuntu-24.04, ubuntu-24.04-arm, windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -89,7 +95,7 @@ jobs:
         run: npm run build
 
       - name: Import macOS signing certificate
-        if: matrix.os == 'macos-latest'
+        if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
@@ -116,7 +122,7 @@ jobs:
           security list-keychain -d user -s "$KEYCHAIN_PATH" $EXISTING_KEYCHAINS
 
       - name: Package application (macOS) — sign only, defer notarize
-        if: matrix.os == 'macos-latest'
+        if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY }}
@@ -130,7 +136,7 @@ jobs:
           APPLE_API_KEY_PATH="$P8_PATH" npm run make
 
       - name: Submit macOS DMG for notarization (no wait)
-        if: matrix.os == 'macos-latest'
+        if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
         env:
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
@@ -148,10 +154,10 @@ jobs:
           SUBMISSION_ID=$(echo "$OUTPUT" | awk '/^[[:space:]]*id:/ {print $2; exit}')
           [ -n "$SUBMISSION_ID" ] || { echo "::error::Could not parse submission ID"; exit 1; }
           echo "Submission ID: $SUBMISSION_ID"
-          echo "$SUBMISSION_ID" > out/make/notarization-submission-id.txt
+          echo "$SUBMISSION_ID" > out/make/notarization-submission-id-${{ matrix.os }}.txt
 
       - name: Clean up signing keychain
-        if: always() && matrix.os == 'macos-latest'
+        if: always() && runner.os == 'macOS'
         run: |
           if [ -n "${KEYCHAIN_PATH:-}" ] && [ -f "$KEYCHAIN_PATH" ]; then
             security delete-keychain "$KEYCHAIN_PATH" || true
@@ -163,6 +169,10 @@ jobs:
             rm -f "$P8_PATH"
           fi
 
+      - name: Package application (macOS, unsigned manual run)
+        if: runner.os == 'macOS' && !startsWith(github.ref, 'refs/tags/')
+        run: npm run make
+
       - name: Package application (Windows)
         if: matrix.os == 'windows-latest'
         run: npm run make
@@ -170,7 +180,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package application (Linux)
-        if: matrix.os == 'ubuntu-24.04'
+        if: runner.os == 'Linux'
         run: npm run make
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -185,6 +195,7 @@ jobs:
 
   release:
     needs: build
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -193,7 +204,8 @@ jobs:
       - name: Build release body with notarization status
         id: body
         run: |
-          SUB_ID=$(cat release-macos-latest/notarization-submission-id.txt 2>/dev/null | tr -d '[:space:]')
+          # One submission per Mac build (Apple Silicon and Intel).
+          SUB_ID=$(cat release-macos-*/notarization-submission-id-*.txt 2>/dev/null | tr -s '[:space:]' ' ' | sed 's/ *$//')
           if [ -n "$SUB_ID" ]; then
             cat > release-body.md <<EOF
           ## ⏳ macOS notarization pending
@@ -202,7 +214,7 @@ jobs:
 
           On first launch macOS users may see an "unidentified developer" prompt. Right-click the app → **Open** to bypass (one time).
 
-          A re-released, stapled build will be published automatically when notarization completes. Notarization submission id: \`$SUB_ID\`.
+          A re-released, stapled build will be published automatically when notarization completes. Notarization submission ids: \`$SUB_ID\`.
           EOF
           else
             : > release-body.md
@@ -210,7 +222,7 @@ jobs:
           # Don't ship the submission id file as a public release asset — it's
           # already embedded in the body above and the upload step below would
           # otherwise pick it up via the release-*/**/* glob.
-          rm -f release-macos-latest/notarization-submission-id.txt
+          rm -f release-macos-*/notarization-submission-id-*.txt
           echo "Built release body:"
           cat release-body.md
 

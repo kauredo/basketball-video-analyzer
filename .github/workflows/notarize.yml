@@ -21,8 +21,9 @@ permissions:
 jobs:
   staple:
     runs-on: macos-latest
-    # On auto-chain, only staple when the Release build actually succeeded.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # On auto-chain, only staple when the Release build actually succeeded and
+    # came from a tag push. A manual Release run publishes nothing to staple.
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') }}
     steps:
       - name: Resolve release tag
         id: tag
@@ -44,22 +45,23 @@ jobs:
           echo "Resolved tag: $TAG"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Read notarization submission id from release body
+      - name: Read notarization submission ids from release body
         id: sub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BODY=$(gh release view "${{ steps.tag.outputs.tag }}" \
             --json body -q .body --repo "$GITHUB_REPOSITORY")
-          SUB_ID=$(echo "$BODY" \
+          # One id per Mac build (Apple Silicon and Intel).
+          SUB_IDS=$(echo "$BODY" \
             | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' \
-            | head -1)
-          if [ -z "$SUB_ID" ]; then
+            | sort -u | tr '\n' ' ')
+          if [ -z "$SUB_IDS" ]; then
             echo "::error::No notarization submission id found in release body for ${{ steps.tag.outputs.tag }}"
             exit 1
           fi
-          echo "Submission id: $SUB_ID"
-          echo "id=$SUB_ID" >> "$GITHUB_OUTPUT"
+          echo "Submission ids: $SUB_IDS"
+          echo "ids=$SUB_IDS" >> "$GITHUB_OUTPUT"
 
       - name: Download release assets
         env:
@@ -86,38 +88,39 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
         run: |
           set -e
-          xcrun notarytool wait "${{ steps.sub.outputs.id }}" \
-            --key "$P8_PATH" \
-            --key-id "$APPLE_API_KEY_ID" \
-            --issuer "$APPLE_API_ISSUER" \
-            --timeout 55m
-          STATUS=$(xcrun notarytool info "${{ steps.sub.outputs.id }}" \
-            --key "$P8_PATH" \
-            --key-id "$APPLE_API_KEY_ID" \
-            --issuer "$APPLE_API_ISSUER" \
-            --output-format json | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
-          echo "Final status: $STATUS"
-          if [ "$STATUS" != "Accepted" ]; then
-            echo "::error::Notarization did not succeed (status=$STATUS); fetching log"
-            xcrun notarytool log "${{ steps.sub.outputs.id }}" \
+          for SUB_ID in ${{ steps.sub.outputs.ids }}; do
+            xcrun notarytool wait "$SUB_ID" \
               --key "$P8_PATH" \
               --key-id "$APPLE_API_KEY_ID" \
-              --issuer "$APPLE_API_ISSUER" || true
-            exit 1
-          fi
+              --issuer "$APPLE_API_ISSUER" \
+              --timeout 55m
+            STATUS=$(xcrun notarytool info "$SUB_ID" \
+              --key "$P8_PATH" \
+              --key-id "$APPLE_API_KEY_ID" \
+              --issuer "$APPLE_API_ISSUER" \
+              --output-format json | python3 -c 'import json,sys;print(json.load(sys.stdin)["status"])')
+            echo "Final status for $SUB_ID: $STATUS"
+            if [ "$STATUS" != "Accepted" ]; then
+              echo "::error::Notarization did not succeed (status=$STATUS); fetching log"
+              xcrun notarytool log "$SUB_ID" \
+                --key "$P8_PATH" \
+                --key-id "$APPLE_API_KEY_ID" \
+                --issuer "$APPLE_API_ISSUER" || true
+              exit 1
+            fi
+          done
 
-      - name: Staple DMG and re-staple .app inside .zip
+      - name: Staple each DMG and re-staple the .app inside each .zip
         run: |
           set -e
-          DMG=$(find staging -name "*.dmg" -type f | head -1)
-          ZIP=$(find staging -name "*.zip" -type f | head -1)
-
-          if [ -n "$DMG" ]; then
+          for DMG in staging/*.dmg; do
+            [ -f "$DMG" ] || continue
             echo "Stapling $DMG"
             xcrun stapler staple "$DMG"
-          fi
+          done
 
-          if [ -n "$ZIP" ]; then
+          for ZIP in staging/*.zip; do
+            [ -f "$ZIP" ] || continue
             WORK=$(mktemp -d)
             ZIP_ABS=$(cd "$(dirname "$ZIP")" && pwd)/$(basename "$ZIP")
             (cd "$WORK" && ditto -x -k "$ZIP_ABS" .)
@@ -129,7 +132,7 @@ jobs:
               (cd "$WORK" && ditto -c -k --sequesterRsrc --keepParent \
                 "$(basename "$APP")" "$ZIP_ABS")
             fi
-          fi
+          done
 
       - name: Regenerate latest-mac.yml with stapled hashes
         run: |
@@ -149,7 +152,12 @@ jobs:
                 size: buf.length,
               };
             });
-          const primary = files.find(f => f.url.endsWith(".zip")) || files[0];
+          // Both Mac builds are listed; the Apple Silicon zip is the primary,
+          // as in the manifest forge.config.js writes at build time.
+          const primary =
+            files.find(f => f.url.endsWith(".zip") && f.url.includes("arm64")) ||
+            files.find(f => f.url.endsWith(".zip")) ||
+            files[0];
           const version = process.env.RELEASE_TAG.replace(/^v/, "");
           const lines = [
             `version: ${version}`,

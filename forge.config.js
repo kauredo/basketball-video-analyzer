@@ -72,7 +72,12 @@ module.exports = {
       name: "@electron-forge/maker-dmg",
       config: {
         format: "ULFO",
-        name: "BasketballVideoAnalyzer",
+        // The Apple Silicon DMG keeps its old name, which the website and
+        // older links expect; the Intel one says what it is.
+        name:
+          process.arch === "x64"
+            ? "BasketballVideoAnalyzer-x64"
+            : "BasketballVideoAnalyzer",
       },
     },
     process.platform === "darwin" && {
@@ -145,6 +150,10 @@ module.exports = {
       const yaml = require("js-yaml");
 
       if (makeResults.length === 0) return;
+      // Intel Mac and arm64 Linux builds would write a manifest with the same
+      // name as the main build's and overwrite it in the release.
+      const mainArch = process.platform === "darwin" ? "arm64" : "x64";
+      if (process.arch !== mainArch) return;
 
       const allArtifacts = makeResults.flatMap(r => r.artifacts);
       const outPath = path.dirname(allArtifacts[0]);
