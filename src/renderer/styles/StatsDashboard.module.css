@@ -166,11 +166,22 @@
   }
 }
 
+/* The tabs and the report button share the rule under them. */
+.tabRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-lg);
+}
+
+.tabRow .chartAction {
+  align-self: center;
+}
+
 .tabBar {
   display: flex;
   gap: var(--spacing-xs);
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: var(--spacing-lg);
 }
 
 .tab {
