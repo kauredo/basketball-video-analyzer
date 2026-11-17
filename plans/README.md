@@ -91,6 +91,7 @@ downloading the electron and ffmpeg binaries by running each package's
 | 039 | Clips are frozen after the cut: an editable table view | app | P1 | L | — | DONE, [PR #36](https://github.com/kauredo/basketball-video-analyzer/pull/36) squashed to `d9ce7ad` on main, shipped in v1.9.0 (`8b79536`); export gap closed by [#37](https://github.com/kauredo/basketball-video-analyzer/pull/37), CI drift by [#38](https://github.com/kauredo/basketball-video-analyzer/pull/38) |
 | 040 | One video, several projects: drop UNIQUE on `projects.video_path` and add a chooser | app | P1 | M | — | DONE, [PR #55](https://github.com/kauredo/basketball-video-analyzer/pull/55) squashed to `0b7d07b` on main, shipped in v1.13.0 |
 | 041 | Electron 28 to 45 in seven small steps, content security policy first | app | P1 | L | — (Step 4 waits for the Linux build fix in the workflows) | TODO |
+| 042 | Session format v3 (drawings, court position, status), one-transaction load, re-cut loaded clips | app | P2 | L | — | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) |
 REJECTED (with one-line rationale).
