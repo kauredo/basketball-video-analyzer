@@ -1805,6 +1805,37 @@ ipcMain.handle(
   }
 );
 
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
+
+// Save the shot chart the renderer drew to a canvas. Only PNG bytes are
+// accepted; the path comes from the save dialog here, never from the renderer.
+ipcMain.handle(
+  "save-shot-chart",
+  async (_event, params: { projectId: number; png: Uint8Array }) => {
+    const png = params?.png instanceof Uint8Array ? Buffer.from(params.png) : null;
+    if (
+      !png ||
+      png.length > MAX_IMAGE_BYTES ||
+      !png.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)
+    ) {
+      throw new Error("ERROR_INVALID_INPUT");
+    }
+    const project = getProjectById(params.projectId);
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: "Save Shot Chart",
+      defaultPath: path.join(
+        app.getPath("documents"),
+        `${(project?.name || "shot").replace(/[^a-zA-Z0-9]/g, "_")}-shot-chart.png`
+      ),
+      filters: [{ name: "PNG Image", extensions: ["png"] }],
+    });
+    if (result.canceled || !result.filePath) return null;
+    fs.writeFileSync(result.filePath, png);
+    return { filePath: result.filePath };
+  }
+);
+
 // Export clips as a Sportscode-compatible timeline XML
 ipcMain.handle("export-clips-xml", async (_event, projectId: number) => {
   try {

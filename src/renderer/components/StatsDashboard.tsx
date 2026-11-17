@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilm, faClock, faStopwatch, faTags } from "@fortawesome/free-solid-svg-icons";
+import { faFilm, faClock, faStopwatch, faTags, faImage } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/StatsDashboard.module.css";
 import { Court, COURT_VB_W, COURT_VB_H } from "./Court";
+import { courtSvg, courtSvgHeight, CourtDot, CourtLegendItem } from "../../shared/courtSvg";
+import { svgToPng } from "../utils/svgToPng";
+import { withCause } from "../utils/errors";
+import { useToastContext } from "../contexts/ToastContext";
 import { Clip, Category, Player } from "../../types/global";
 
 interface StatsDashboardProps {
@@ -14,6 +18,10 @@ interface StatsDashboardProps {
 }
 
 const NUM_BUCKETS = 8;
+const PRIMARY = "#0b7972";
+// The exported chart is printed or pasted into slides, so it uses fixed
+// light colours whatever theme the app is in.
+const EXPORT_COLORS = { background: "#ffffff", lines: "#4a4a4a", text: "#1f1f1f" };
 
 const parseCategoryIds = (clip: Clip): number[] => {
   try {
@@ -52,6 +60,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   projectId,
 }) => {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToastContext();
   const [tab, setTab] = useState<"overview" | "shotChart">("overview");
   const [players, setPlayers] = useState<Player[]>([]);
   const [filterPlayer, setFilterPlayer] = useState<number | "all">("all");
@@ -166,14 +175,6 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     return { buckets, maxBucket, span };
   }, [clips, videoDuration]);
 
-  const catColorMap = useMemo(() => {
-    const m = new Map<number, string>();
-    flatCategories.forEach(c => {
-      if (c.id != null) m.set(c.id, c.color);
-    });
-    return m;
-  }, [flatCategories]);
-
   const locatedClips = useMemo(
     () => clips.filter(c => c.court_x != null && c.court_y != null),
     [clips]
@@ -195,6 +196,33 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       }),
     [locatedClips, filterQuarter, filterCategory, filterPlayer]
   );
+
+  // One dot per located clip, coloured by its first category, and a legend of
+  // the categories that appear.
+  const chart = useMemo(() => {
+    const legend = new Map<string, CourtLegendItem>();
+    const dots: CourtDot[] = chartClips.map(c => {
+      const firstCat = parseCategoryIds(c)[0];
+      const cat = firstCat != null ? flatCategories.find(fc => fc.id === firstCat) : undefined;
+      const color = cat?.color || PRIMARY;
+      if (cat) legend.set(String(cat.id), { color, label: cat.name });
+      return { x: c.court_x as number, y: c.court_y as number, color, label: c.title };
+    });
+    return { dots, legend: [...legend.values()] };
+  }, [chartClips, flatCategories]);
+
+  const handleSaveChartImage = async () => {
+    if (!projectId) return;
+    try {
+      const svg = courtSvg(chart.dots, { ...EXPORT_COLORS, legend: chart.legend });
+      const png = await svgToPng(svg, COURT_VB_W, courtSvgHeight(chart.legend.length));
+      const result = await window.electronAPI.saveShotChart({ projectId, png });
+      if (result) showSuccess(t("app.stats.saveChartImageSuccess", { path: result.filePath }));
+    } catch (error) {
+      console.error("Error saving shot chart:", error);
+      showError(withCause(t("app.stats.saveChartImageError"), error));
+    }
+  };
 
   const chartQuarters = useMemo(() => {
     const set = new Set<string>();
@@ -382,6 +410,14 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                 ))}
               </select>
             </label>
+            <button
+              type="button"
+              className={styles.chartAction}
+              onClick={handleSaveChartImage}
+              disabled={chart.dots.length === 0}
+            >
+              <FontAwesomeIcon icon={faImage} /> {t("app.stats.saveChartImage")}
+            </button>
           </div>
 
           {locatedClips.length === 0 ? (
@@ -392,26 +428,20 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           ) : (
             <div className={styles.courtWrap}>
               <Court>
-                {chartClips.map(c => {
-                  const firstCat = parseCategoryIds(c)[0];
-                  const color =
-                    (firstCat != null && catColorMap.get(firstCat)) ||
-                    "var(--color-primary)";
-                  return (
-                    <circle
-                      key={c.id}
-                      cx={(c.court_x as number) * COURT_VB_W}
-                      cy={(c.court_y as number) * COURT_VB_H}
-                      r={8}
-                      fill={color}
-                      fillOpacity={0.85}
-                      stroke="var(--bg-main)"
-                      strokeWidth={1}
-                    >
-                      <title>{c.title}</title>
-                    </circle>
-                  );
-                })}
+                {chart.dots.map((d, i) => (
+                  <circle
+                    key={chartClips[i].id}
+                    cx={d.x * COURT_VB_W}
+                    cy={d.y * COURT_VB_H}
+                    r={8}
+                    fill={d.color}
+                    fillOpacity={0.85}
+                    stroke="var(--bg-main)"
+                    strokeWidth={1}
+                  >
+                    <title>{d.label}</title>
+                  </circle>
+                ))}
               </Court>
               {clips.length - locatedClips.length > 0 && (
                 <p className={styles.unlocatedNote}>
