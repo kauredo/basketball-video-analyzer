@@ -92,6 +92,7 @@ downloading the electron and ffmpeg binaries by running each package's
 | 040 | One video, several projects: drop UNIQUE on `projects.video_path` and add a chooser | app | P1 | M | — | DONE, [PR #55](https://github.com/kauredo/basketball-video-analyzer/pull/55) squashed to `0b7d07b` on main, shipped in v1.13.0 |
 | 041 | Electron 28 to 45 in seven small steps, content security policy first | app | P1 | L | — (Step 4 waits for the Linux build fix in the workflows) | TODO |
 | 042 | Session format v3 (drawings, court position, status), one-transaction load, re-cut loaded clips | app | P2 | L | — | TODO |
+| 043 | Feedback form platform field, and `check-paths-exist` answers only for saved projects | app | P2 | S | — | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) |
 REJECTED (with one-line rationale).

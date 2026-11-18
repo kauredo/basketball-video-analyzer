@@ -22,3 +22,6 @@ Bump `version` in `package.json`, commit `chore(release): X.Y.Z`, tag `vX.Y.Z` a
 
 ## Running the packaged app on scratch data
 `npm run package`, then launch the binary in `out/` with `--user-data-dir=<scratch>` and `--remote-debugging-port=<port>` and drive it over CDP. Playwright's Electron launcher times out because a fuse is off. The log file still goes to the real `~/Library/Logs/basketball-video-analyzer/main.log`.
+
+## Audit
+- Audit, Nov 2026: `docs/audit-2026-11.md` lists open work, won't-do decisions and competitors; open work has plans in `plans/`.
