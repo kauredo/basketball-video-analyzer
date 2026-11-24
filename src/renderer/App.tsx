@@ -369,6 +369,12 @@ export const App: React.FC = () => {
   const projectNameFor = (videoName: string) => videoName.replace(/\.[^/.]+$/, "");
 
   const openProject = (project: Project, filePath: string) => {
+    if (currentProject?.id !== project.id || videoPath !== filePath) {
+      setCurrentTime(0);
+      setDuration(0);
+      setMarkInTime(null);
+      setMarkOutTime(null);
+    }
     setCurrentProject(project);
     setVideoPath(filePath);
     setRefreshTrigger((prev) => prev + 1);
@@ -483,10 +489,7 @@ export const App: React.FC = () => {
 
       await window.electronAPI.updateProjectLastOpened(project.id);
 
-      setCurrentProject(projectToUse);
-      setVideoPath(videoPathToUse);
-      setRefreshTrigger((prev) => prev + 1);
-      setShowProjectSelector(false);
+      openProject(projectToUse, videoPathToUse);
     } catch (error) {
       console.error("Error selecting project:", error);
     } finally {
@@ -684,6 +687,7 @@ export const App: React.FC = () => {
           <div className={styles.videoContainer}>
             <div className={styles.videoSection}>
               <VideoPlayer
+                key={`${currentProject?.id}:${videoPath}`}
                 ref={videoPlayerRef}
                 videoPath={videoPath}
                 projectId={currentProject?.id}

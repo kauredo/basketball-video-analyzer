@@ -53,6 +53,7 @@ import {
 } from "../../types/global";
 import { withCause } from "../utils/errors";
 import { savedDrawingsKey, selectSavedDrawings } from "../../shared/clipDrawings";
+import { projectPlaybackKey, resumePosition } from "../utils/projectPlayback";
 import { useClipDrawingSync } from "../hooks/useClipDrawingSync";
 
 interface VideoPlayerProps {
@@ -116,8 +117,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(1);
-    const [playbackRate, setPlaybackRate] = useState(1);
+    const [volume, setVolume] = useState(() => loadPref(STORAGE_KEYS.VIDEO_VOLUME, 1));
+    const [playbackRate, setPlaybackRate] = useState(() => loadPref(STORAGE_KEYS.VIDEO_RATE, 1));
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showVolumeMenu, setShowVolumeMenu] = useState(false);
   const [showReplayMenu, setShowReplayMenu] = useState(false);
@@ -572,17 +573,40 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
+    const playbackKey = projectId === undefined ? null : projectPlaybackKey(projectId);
+    const lastSavedSecond = useRef<number | null>(null);
+
+    const savePlayback = (force = false) => {
+      const video = videoRef.current;
+      if (!playbackKey || !video || video.readyState < 1) return;
+      const time = video.ended ? 0 : video.currentTime;
+      const second = Math.floor(time);
+      if (force || second !== lastSavedSecond.current) {
+        savePref(playbackKey, time);
+        lastSavedSecond.current = second;
+      }
+    };
+
     const handleTimeUpdate = () => {
       if (videoRef.current) {
         const time = videoRef.current.currentTime;
         setCurrentTime(time);
         onTimeUpdate(time);
+        savePlayback();
       }
     };
 
     const handleLoadedMetadata = () => {
       if (videoRef.current) {
+        videoRef.current.volume = volume;
+        videoRef.current.playbackRate = playbackRate;
         const dur = videoRef.current.duration;
+        if (playbackKey) {
+          const start = resumePosition(loadPref(playbackKey, 0), dur);
+          if (start > 0) videoRef.current.currentTime = start;
+          setCurrentTime(start);
+          onTimeUpdate(start);
+        }
         setDuration(dur);
         setMetadataVideo(videoPath);
         onDurationChange(dur);
@@ -830,7 +854,12 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               onLoadedMetadata={handleLoadedMetadata}
               onError={handleVideoError}
               onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
+              onPause={() => {
+                setIsPlaying(false);
+                savePlayback(true);
+              }}
+              onSeeked={() => savePlayback(true)}
+              onEnded={() => savePlayback(true)}
               className={styles.videoElement}
               onClick={togglePlay}
             />
@@ -1170,6 +1199,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                         onChange={e => {
                           const newVolume = parseFloat(e.target.value);
                           setVolume(newVolume);
+                          savePref(STORAGE_KEYS.VIDEO_VOLUME, newVolume);
                           if (videoRef.current) {
                             videoRef.current.volume = newVolume;
                           }
@@ -1206,6 +1236,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                           }`}
                           onClick={() => {
                             setPlaybackRate(rate);
+                            savePref(STORAGE_KEYS.VIDEO_RATE, rate);
                             if (videoRef.current) {
                               videoRef.current.playbackRate = rate;
                             }
