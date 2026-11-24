@@ -1,3 +1,4 @@
+import { insertProjectVideo, listProjectVideos, migrateProjectVideos } from "./projectVideos";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -127,6 +128,7 @@ export const setupDatabase = () => {
     if (dropProjectsVideoPathUnique(db)) {
       console.log("Dropped UNIQUE on projects.video_path");
     }
+    migrateProjectVideos(db);
     migrateClipColumns();
     migrateAnnotationColumns();
     insertDefaultCategories();
@@ -903,12 +905,11 @@ export const createProject = (
       VALUES (?, ?, ?, ?, STRFTIME('%Y-%m-%d %H:%M:%f', 'now'))
     `);
 
-    const result = stmt.run(
-      project.name,
-      project.video_path,
-      project.video_name,
-      project.description || null,
-    );
+    const result = db.transaction(() => {
+      const created = stmt.run(project.name, project.video_path, project.video_name, project.description || null);
+      insertProjectVideo(db, Number(created.lastInsertRowid), project.video_path, project.video_name);
+      return created;
+    })();
 
     return {
       id: result.lastInsertRowid as number,
@@ -922,10 +923,20 @@ export const createProject = (
   }
 };
 
+export const getProjectVideos = (projectId: number) => listProjectVideos(db, projectId);
+
+export const addProjectVideo = (projectId: number, videoPath: string, videoName: string) =>
+  insertProjectVideo(db, projectId, videoPath, videoName);
+
+export const getProjectVideoPaths = (): string[] =>
+  (db.prepare("SELECT DISTINCT video_path FROM project_videos").all() as { video_path: string }[])
+    .map(row => row.video_path);
+
 export const getProjectsByVideoPath = (videoPath: string): Project[] => {
   try {
     const stmt = db.prepare(
-      "SELECT * FROM projects WHERE video_path = ? ORDER BY last_opened DESC",
+      `SELECT projects.* FROM projects JOIN project_videos ON projects.id = project_videos.project_id
+        WHERE project_videos.video_path = ? ORDER BY projects.last_opened DESC`,
     );
     return stmt.all(videoPath) as Project[];
   } catch (error) {
@@ -976,9 +987,13 @@ export const relinkVideoPath = (
   newVideoName: string,
 ): number => {
   try {
-    return db.transaction(() =>
-      relinkVideoRows(db, oldVideoPath, newVideoPath, newVideoName),
-    )();
+    return db.transaction(() => {
+      const { changes } = db.prepare(
+        "UPDATE project_videos SET video_path = ?, video_name = ? WHERE video_path = ?",
+      ).run(newVideoPath, newVideoName, oldVideoPath);
+      relinkVideoRows(db, oldVideoPath, newVideoPath, newVideoName);
+      return changes;
+    })();
   } catch (error) {
     console.error("Error updating project video path:", error);
     throw error;
