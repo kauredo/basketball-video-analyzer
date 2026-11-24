@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -60,6 +60,15 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
 
   const [renaming, setRenaming] = useState<{ id: number; name: string } | null>(null);
   const [isRenaming, setIsRenaming] = useState(false);
+
+  const renameTrigger = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!renaming && !isRenaming) {
+      if (isOpen) renameTrigger.current?.focus();
+      renameTrigger.current = null;
+    }
+  }, [renaming, isRenaming, isOpen]);
 
   const submitRename = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -169,7 +178,14 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="project-selector-title"
-      onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        if (renaming) {
+          if (!isRenaming) setRenaming(null);
+        } else {
+          onClose();
+        }
+      }}
     >
       <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
@@ -286,6 +302,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                             className={styles.renameBtn}
                             onClick={(event) => {
                               event.stopPropagation();
+                              renameTrigger.current = event.currentTarget;
                               setRenaming({ id: project.id, name: project.name });
                             }}
                             disabled={isRenaming}
