@@ -1,8 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ffmpegRelease, licenseFiles } from "./third-party-notices.mjs";
+import { ffmpegRelease, licenseFiles, validateFfmpeg } from "./third-party-notices.mjs";
 
-// The banners the five shipped ffmpeg-static builds print, first line only.
 test("reads the release from each builder's version banner", () => {
   assert.equal(ffmpegRelease("ffmpeg version 6.0 Copyright (c) 2000-2023"), "6.0");
   assert.equal(ffmpegRelease("ffmpeg version 6.1.1-tessus  https://evermeet.cx/ffmpeg/"), "6.1.1");
@@ -22,4 +21,14 @@ test("picks licence, copying and notice files, sorted", () => {
     licenseFiles(["README.md", "NOTICE", "LICENSE-MIT", "index.js", "COPYING", "license.txt", "licensed.js"]),
     ["COPYING", "LICENSE-MIT", "NOTICE", "license.txt"]
   );
+});
+
+
+test("rejects nonfree builds reported by configure or the licence banner", () => {
+  const banner = "ffmpeg version 8.1.3\nconfiguration: --enable-gpl --enable-version3";
+  const licence = "FFmpeg is free software";
+  assert.doesNotThrow(() => validateFfmpeg(banner, licence));
+  assert.throws(() => validateFfmpeg(`${banner} --enable-nonfree`, licence), /nonfree/);
+  assert.throws(() => validateFfmpeg(banner, "This build has nonfree parts compiled in"), /nonfree/);
+  assert.throws(() => validateFfmpeg("ffmpeg version 8.1.3", licence), /Could not identify/);
 });

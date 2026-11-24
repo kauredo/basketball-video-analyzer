@@ -42,11 +42,15 @@ module.exports = {
   packagerConfig: {
     asar: {
       unpack:
-        "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native,youtube-dl-exec}/**/*",
+        "**/node_modules/{fluent-ffmpeg,better-sqlite3,lzma-native,youtube-dl-exec}/**/*",
     },
     // Copied into the app's resources folder. The prePackage hook writes the
     // notices file for the platform being packaged.
-    extraResource: ["LICENSE", "out/notices/THIRD-PARTY-NOTICES.txt"],
+    extraResource: [
+      "LICENSE",
+      "out/notices/THIRD-PARTY-NOTICES.txt",
+      path.join("out", "ffmpeg", process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg"),
+    ],
     name: "BasketballVideoAnalyzer",
     executableName: "basketball-video-analyzer",
     appBundleId: "com.kauredo.basketballvideoanalyzer",
@@ -143,10 +147,10 @@ module.exports = {
     },
   ],
   hooks: {
-    // Licence texts of every bundled binary and production npm package. Runs
-    // on the packaging machine, so the FFmpeg section describes the binary
-    // ffmpeg-static installed for this platform.
-    prePackage: async () => {
+    prePackage: async (_, platform, arch) => {
+      if (platform !== process.platform || arch !== process.arch) {
+        throw new Error("Package on a native runner for the target platform and architecture so FFmpeg matches.");
+      }
       const { writeNotices } = await import("./scripts/third-party-notices.mjs");
       writeNotices();
     },

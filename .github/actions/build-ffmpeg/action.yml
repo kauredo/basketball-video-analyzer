@@ -1,0 +1,30 @@
+name: Build FFmpeg and its libraries
+description: Build FFmpeg and collect the corresponding source for the runner
+runs:
+  using: composite
+  steps:
+    - if: runner.os == 'macOS' && runner.arch == 'X64'
+      shell: bash
+      run: brew install nasm
+    - if: runner.os == 'Linux' && runner.arch == 'X64'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y nasm
+    - if: runner.os != 'Windows'
+      shell: bash
+      run: bash scripts/build-ffmpeg.sh
+    - if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@3c51bf698df1e37b2261f53cb67797b97761185c # v2
+      with:
+        msystem: UCRT64
+        install: >-
+          curl make
+          mingw-w64-ucrt-x86_64-cmake
+          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-ucrt-x86_64-ninja
+          mingw-w64-ucrt-x86_64-nasm
+          mingw-w64-ucrt-x86_64-pkgconf
+    - if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: bash scripts/build-ffmpeg.sh

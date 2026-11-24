@@ -4,7 +4,6 @@ import fs from "fs";
 import { Readable } from "stream";
 import { spawn, ChildProcess } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
-import ffmpegStatic from "ffmpeg-static";
 import { randomUUID } from "crypto";
 import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
 import { nt, setNativeLanguage } from "./nativeStrings";
@@ -103,15 +102,11 @@ const fixAsarPath = (binaryPath: string): string => {
   return fixedPath;
 };
 
-// Set the FFmpeg path
-const ffmpegPath = ffmpegStatic ? fixAsarPath(ffmpegStatic) : null;
-if (ffmpegPath) {
-  console.log("FFmpeg path:", ffmpegPath);
-  console.log("FFmpeg exists:", fs.existsSync(ffmpegPath));
-  ffmpeg.setFfmpegPath(ffmpegPath);
-} else {
-  console.error("FFmpeg static path not found!");
-}
+const ffmpegPath = path.join(
+  app.isPackaged ? process.resourcesPath : path.join(app.getAppPath(), "out", "ffmpeg"),
+  process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg"
+);
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 let mainWindow: BrowserWindow;
 
@@ -125,7 +120,7 @@ const setAboutPanel = (): void => {
     applicationName: "Basketball Video Analyzer",
     applicationVersion: app.getVersion(),
     copyright:
-      "Copyright (C) 2026 Vasco Kaufmann. Free software under the GNU Affero General Public License, version 3. It comes with ABSOLUTELY NO WARRANTY.",
+      "Copyright (C) 2026 Vasco Kaufmann. Free software under the GNU Affero General Public License, version 3 or later. It comes with ABSOLUTELY NO WARRANTY.",
     credits: `Source code: ${SOURCE_URL}`,
     authors: ["Vasco Kaufmann"],
     website: SOURCE_URL,
@@ -458,8 +453,7 @@ ipcMain.handle("system-check", async () => {
 
   try {
     // Check FFmpeg availability
-    const ffmpegPath = ffmpegStatic;
-    if (!ffmpegPath || !fs.existsSync(ffmpegPath)) {
+    if (!fs.existsSync(ffmpegPath)) {
       issues.push("ERROR_FFMPEG_NOT_FOUND");
     }
 
@@ -505,7 +499,7 @@ ipcMain.handle("system-check", async () => {
         platform: process.platform,
         arch: process.arch,
         nodeVersion: process.version,
-        ffmpegPath: ffmpegPath || "not found",
+        ffmpegPath,
         clipsDirectory: clipsDir,
       },
     };
@@ -597,7 +591,6 @@ const writePngDataUrl = (overlayImage: string, overlayPath: string): string => {
 // which is the only stream probe available now ffprobe isn't bundled.
 const hasAudioStream = (inputPath: string): Promise<boolean> =>
   new Promise(resolve => {
-    if (!ffmpegPath) return resolve(false);
     let stderr = "";
     const probe = spawn(ffmpegPath, ["-hide_banner", "-i", inputPath]);
     probe.stderr.on("data", (data: Buffer) => (stderr += data.toString()));
@@ -2321,7 +2314,7 @@ ipcMain.handle("download-youtube-video", async (event, url: string) => {
       "--newline",
       "--print-to-file", "after_move:filepath", templateLiteral(pathFile),
       // Merging video and audio needs ffmpeg, and most users have none on PATH.
-      ...(ffmpegPath ? ["--ffmpeg-location", ffmpegPath] : []),
+      "--ffmpeg-location", ffmpegPath,
       ...(denoPath ? ["--js-runtimes", `deno:${denoPath}`] : []),
       "--",
       videoUrl,

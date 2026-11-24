@@ -14,23 +14,12 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const RULE = "=".repeat(78);
-const CONTACT = "contact@basketballvideoanalyzer.com";
 const SOURCE = "https://github.com/kauredo/basketball-video-analyzer";
-
-// Who builds each ffmpeg-static binary, from the ffmpeg-static README.
-const FFMPEG_BUILDERS = {
-  "win32-x64": "Gyan Doshi, https://www.gyan.dev/ffmpeg/builds/",
-  "darwin-x64": "Helmut K. C. Tessarek, https://evermeet.cx/ffmpeg/",
-  "darwin-arm64": "osxexperts.net, https://osxexperts.net/",
-  "linux-x64": "John Van Sickle, https://johnvansickle.com/ffmpeg/",
-  "linux-arm64": "John Van Sickle, https://johnvansickle.com/ffmpeg/",
-};
 
 const LICENSE_FILE = /^(licen[cs]e|copying|notice)([.\-_]|$)/i;
 
@@ -129,69 +118,48 @@ const npmSection = (dir, pkg) => {
   return section(`${pkg.name} ${pkg.version}`, `${head}\n\n${texts}`);
 };
 
-const ffmpegSection = () => {
-  const require = createRequire(join(ROOT, "package.json"));
-  const dir = dirname(require.resolve("ffmpeg-static/package.json"));
-  const staticPkg = readJson(join(dir, "package.json"));
-  const binary = require("ffmpeg-static");
-  const platform = `${process.platform}-${process.arch}`;
-  let banner = "";
-  try {
-    banner = execFileSync(binary, ["-hide_banner", "-version"], { encoding: "utf8" });
-    const licence = execFileSync(binary, ["-hide_banner", "-L"], { encoding: "utf8" });
-    if (/not legally redistributable/i.test(licence)) {
-      console.warn(`third-party-notices: the ffmpeg binary for ${platform} has nonfree parts and says it is not legally redistributable`);
-    }
-  } catch (error) {
-    console.warn(`third-party-notices: could not run ${binary}: ${error.message}`);
+export const validateFfmpeg = (banner, licence) => {
+  const configuration = /^configuration: (.+)$/m.exec(banner)?.[1];
+  if (/(?:^|\s)--enable-nonfree(?:\s|$)/.test(configuration ?? "") ||
+      /nonfree parts|not legally redistributable/i.test(licence)) {
+    throw new Error("FFmpeg contains nonfree parts");
   }
-  const release = ffmpegRelease(banner);
-  const configuration = /^configuration: (.*)$/m.exec(banner)?.[1] ?? "(not read: the binary could not be run on the packaging machine)";
-  const source = release
-    ? [
-        `  Release archive:  https://ffmpeg.org/releases/ffmpeg-${release}.tar.xz`,
-        `  Git tag:          https://github.com/FFmpeg/FFmpeg/tree/n${release}`,
-      ].join("\n")
-    : "  The FFmpeg version could not be read from the binary. Ask for the source as described below.";
+  if (!configuration || !ffmpegRelease(banner) || !licence.trim()) {
+    throw new Error("Could not identify the FFmpeg build");
+  }
+  return { banner, configuration };
+};
 
-  const body = `
-This app runs FFmpeg as a separate program to cut and convert video. FFmpeg is
-not linked into the app. The FFmpeg binary in this copy comes from the
-ffmpeg-static npm package ${staticPkg.version} (binary release ${staticPkg["ffmpeg-static"]["binary-release-tag"]}). It is a
-static build made by a third party:
+export const inspectFfmpeg = binary => {
+  const options = { encoding: "utf8", timeout: 15000 };
+  const banner = execFileSync(binary, ["-hide_banner", "-version"], options).replaceAll("\r\n", "\n");
+  const licence = execFileSync(binary, ["-hide_banner", "-L"], options);
+  return validateFfmpeg(banner, licence);
+};
 
-  Platform:       ${platform}
-  Built by:       ${FFMPEG_BUILDERS[platform] ?? "see https://github.com/eugeneware/ffmpeg-static#sources-of-the-binaries"}
-  Version line:   ${banner.split("\n")[0] || "(not read)"}
-  Configuration:  ${configuration}
+const ffmpegSection = app => {
+  const dir = join(ROOT, "out", "ffmpeg");
+  const binary = join(dir, process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg");
+  const { banner, configuration } = inspectFfmpeg(binary);
+  const platform = `${process.platform}-${process.arch}`;
+  const source = `${SOURCE}/releases/download/v${app.version}/ffmpeg-source-${platform}.tar.gz`;
 
-The build is configured with --enable-gpl and --enable-version3, so this FFmpeg
-binary as a whole is licensed under the GNU General Public License, version 3
-or later. The full GPL text is in the ffmpeg-static section of this file, and
-FFmpeg's own licence file follows below. The binary is in the app's resources,
-under app.asar.unpacked/node_modules/ffmpeg-static/.
+  return section("FFmpeg, x264 and zlib", `
+The app runs FFmpeg as a separate program to cut and convert video. FFmpeg
+includes statically linked x264 and zlib and is licensed under the GNU General Public
+License, version 3 or later. The release build recipe is scripts/build-ffmpeg.sh
+in the app's source repository.
 
-Source code for FFmpeg ${release ?? "(version not read)"}:
+  Platform:      ${platform}
+  Version line:  ${banner.split("\n")[0]}
+  Configuration: ${configuration}
 
-${source}
+Corresponding Source for FFmpeg and its bundled libraries,
+including the build script: ${source}
 
-The binary also contains third-party libraries linked in statically (for
-example x264, x265 and libvpx, as listed in the configuration above). Their
-builders do not publish one source archive for these exact builds.
-
-Written offer. For at least three years after we last distribute this version
-of Basketball Video Analyzer, we will give anyone who asks a complete copy of
-the Corresponding Source of the FFmpeg binary shipped in it, including the
-libraries it is linked with, on a medium customarily used for software
-interchange or as a download, for no more than our cost of physically
-performing the transfer. Write to ${CONTACT}
-and say which version of the app and which platform you have.
-
-FFmpeg's licence file, as shipped by ffmpeg-static for this platform:
-
-${readFileSync(join(dir, "ffmpeg.LICENSE"), "utf8").trim()}
-`;
-  return section(`FFmpeg (binary, via ffmpeg-static ${staticPkg.version})`, body);
+${["FFmpeg-LICENSE.md", "FFmpeg-COPYING", "x264-COPYING", "zlib-LICENSE"]
+  .map(file => readFileSync(join(dir, file), "utf8").trim()).join("\n\n")}
+`);
 };
 
 const bundledSection = (title, intro, files) =>
@@ -212,9 +180,9 @@ Basketball Video Analyzer ${app.version}
 Copyright (C) 2026 Vasco Kaufmann
 
 This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU Affero General Public License, version 3, as published by
-the Free Software Foundation. The full licence is in the LICENSE file next to
-this one.
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 or (at your option) any later version.
+The full licence is in the LICENSE file next to this one.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
@@ -237,7 +205,7 @@ License 1.1, shipped through the @fontsource packages listed below.
 
   return [
     `${header.trim()}\n\n`,
-    ffmpegSection(),
+    ffmpegSection(app),
     bundledSection(
       `yt-dlp ${ytdlp} (binary)`,
       `The app runs yt-dlp as a separate program to import YouTube and Vimeo videos.
