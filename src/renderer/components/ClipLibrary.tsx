@@ -88,18 +88,19 @@ interface ClipLibraryProps {
   currentProject: any | null;
   /** Clips were deleted here, so the timeline's copy is stale. */
   onClipsChanged: () => void;
+  onJumpToSource: (clip: Clip) => void;
   /** Ask the side panel for at least this many pixels. */
   onRequestWidth?: (minimum: number) => void;
 }
 
-/** What the clip table needs before its play calls stop truncating. Measured:
-    the table's own floor is 737px and the panel's chrome takes another 35. */
-const TABLE_MIN_PANEL_WIDTH = 790;
+/** Allow room for both clip actions and the table's fixed-width fields. */
+const TABLE_MIN_PANEL_WIDTH = 822;
 
 export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   onRefresh,
   currentProject,
   onClipsChanged,
+  onJumpToSource,
   onRequestWidth,
 }) => {
   const { t } = useTranslation();
@@ -614,7 +615,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           <div className={styles.projectInfo}>
             <span className={styles.projectName}>{currentProject.name}</span>
             <span className={styles.projectDetails}>
-              {t("app.clips.clipsSummary", { count: clips.length, video: currentProject.video_name })}
+              {t("app.clips.clipsSummary", { count: clips.length })}
             </span>
           </div>
         )}
@@ -1035,6 +1036,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                 sortOrder={sortOrder}
                 onToggleSort={toggleSort}
                 onPlay={handlePlayClip}
+                onJumpToSource={onJumpToSource}
                 onUpdate={handleUpdateClip}
                 onUpdateEach={handleUpdateEach}
                 onDeleteMany={handleDeleteMany}
@@ -1128,6 +1130,15 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
                       {/* Actions */}
                       <div className={styles.clipActions}>
+                        <button
+                          type="button"
+                          onClick={() => onJumpToSource(clip)}
+                          className={styles.playBtn}
+                          title={t("app.projects.jumpToSource")}
+                          aria-label={t("app.projects.jumpToSource")}
+                        >
+                          <FontAwesomeIcon icon={faFilm} />
+                        </button>
                         <button
                           type="button"
                           onClick={() => handlePlayClip(clip.output_path)}

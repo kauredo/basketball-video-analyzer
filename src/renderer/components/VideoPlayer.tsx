@@ -59,6 +59,9 @@ import { useClipDrawingSync } from "../hooks/useClipDrawingSync";
 interface VideoPlayerProps {
   videoPath: string | null;
   projectId?: number;
+  recordingId?: number;
+  startAt?: number | null;
+  firstRecording?: boolean;
   onTimeUpdate: (currentTime: number) => void;
   onDurationChange: (duration: number) => void;
   markInTime: number | null;
@@ -83,6 +86,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     {
       videoPath,
       projectId,
+      recordingId,
+      startAt,
+      firstRecording,
       onTimeUpdate,
       onDurationChange,
       markInTime,
@@ -573,7 +579,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
-    const playbackKey = projectId === undefined ? null : projectPlaybackKey(projectId);
+    const playbackKey = projectId === undefined ? null : projectPlaybackKey(projectId, recordingId);
     const lastSavedSecond = useRef<number | null>(null);
 
     const savePlayback = (force = false) => {
@@ -602,7 +608,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         videoRef.current.playbackRate = playbackRate;
         const dur = videoRef.current.duration;
         if (playbackKey) {
-          const start = resumePosition(loadPref(playbackKey, 0), dur);
+          const legacy = firstRecording && projectId !== undefined
+            ? loadPref(projectPlaybackKey(projectId), 0)
+            : 0;
+          const start = resumePosition(startAt ?? loadPref(playbackKey, legacy), dur);
           if (start > 0) videoRef.current.currentTime = start;
           setCurrentTime(start);
           onTimeUpdate(start);

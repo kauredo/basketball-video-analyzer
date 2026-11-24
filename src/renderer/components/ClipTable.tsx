@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlay,
+  faFilm,
   faSortUp,
   faSortDown,
   faTrash,
@@ -45,6 +46,7 @@ interface ClipTableProps {
   sortOrder: "asc" | "desc";
   onToggleSort: (field: SortField) => void;
   onPlay: (outputPath: string) => void;
+  onJumpToSource: (clip: Clip) => void;
   onUpdate: (id: number, updates: Partial<Clip>) => Promise<void>;
   /** One IPC round per entry, reported as a single result. */
   onUpdateEach: (
@@ -60,6 +62,7 @@ export const ClipTable: React.FC<ClipTableProps> = ({
   sortOrder,
   onToggleSort,
   onPlay,
+  onJumpToSource,
   onUpdate,
   onUpdateEach,
   onDeleteMany,
@@ -529,6 +532,15 @@ export const ClipTable: React.FC<ClipTableProps> = ({
                   </td>
 
                   <td className={styles.playCell}>
+                    <button
+                      type="button"
+                      className={styles.playBtn}
+                      onClick={() => onJumpToSource(clip)}
+                      aria-label={t("app.projects.jumpToSource")}
+                      title={t("app.projects.jumpToSource")}
+                    >
+                      <FontAwesomeIcon icon={faFilm} />
+                    </button>
                     <button
                       type="button"
                       className={styles.playBtn}

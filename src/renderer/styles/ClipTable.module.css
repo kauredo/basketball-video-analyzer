@@ -138,9 +138,9 @@
 .playCell {
   /* min-width as well as width: the three percentage columns beside it will
      otherwise starve this one down to 16px and clip the button. */
-  width: 2.5rem;
-  min-width: 2.5rem;
-  max-width: 2.5rem;
+  width: 4.5rem;
+  min-width: 4.5rem;
+  max-width: 4.5rem;
   text-align: center;
 }
 
