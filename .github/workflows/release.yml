@@ -9,7 +9,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   # A tag on a stale package.json would ship installers that report the old
@@ -20,16 +24,18 @@ jobs:
       contents: read
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       # Same Node as the test job in build.yml (the tests need type stripping).
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "24"
 
       - name: Check the tag matches package.json
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'push'
         run: |
           VERSION=$(node -p "require('./package.json').version")
           if [ "${GITHUB_REF_NAME#v}" != "$VERSION" ]; then
@@ -53,18 +59,20 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       # Kept in step with build.yml. When these two disagree, build.yml stops
       # being a check on what the release actually does.
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: npm
 
       - name: Cache Electron binaries
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cache/electron
@@ -74,7 +82,7 @@ jobs:
             ${{ runner.os }}-electron-
 
       - name: Install dependencies with retry
-        uses: nick-invision/retry@v2
+        uses: nick-invision/retry@14672906e672a08bd6eeb15720e9ed3ce869cdd4 # v2
         with:
           timeout_minutes: 10
           max_attempts: 3
@@ -98,7 +106,7 @@ jobs:
         run: npm run build
 
       - name: Import macOS signing certificate
-        if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
+        if: runner.os == 'macOS' && github.event_name == 'push'
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
@@ -109,7 +117,7 @@ jobs:
           echo "CERT_PATH=$CERT_PATH" >> "$GITHUB_ENV"
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
 
-          echo -n "$MACOS_CERTIFICATE" | base64 -d > "$CERT_PATH"
+          (umask 077; printf '%s' "$MACOS_CERTIFICATE" | base64 -d > "$CERT_PATH")
 
           security create-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
@@ -122,10 +130,11 @@ jobs:
             -k "$KEYCHAIN_PWD" "$KEYCHAIN_PATH" >/dev/null
 
           EXISTING_KEYCHAINS=$(security list-keychain -d user | sed -e 's/[[:space:]]*"//g' -e 's/"$//g' | tr '\n' ' ')
+          # shellcheck disable=SC2086
           security list-keychain -d user -s "$KEYCHAIN_PATH" $EXISTING_KEYCHAINS
 
-      - name: Package application (macOS) — sign only, defer notarize
-        if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
+      - name: Package signed macOS application
+        if: runner.os == 'macOS' && github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY }}
@@ -134,12 +143,12 @@ jobs:
           SKIP_NOTARIZE: "1"
         run: |
           P8_PATH="$RUNNER_TEMP/AuthKey.p8"
-          echo "$APPLE_API_KEY_BASE64" | base64 -d > "$P8_PATH"
+          (umask 077; printf '%s' "$APPLE_API_KEY_BASE64" | base64 -d > "$P8_PATH")
           echo "P8_PATH=$P8_PATH" >> "$GITHUB_ENV"
           APPLE_API_KEY_PATH="$P8_PATH" npm run make
 
       - name: Submit macOS DMG for notarization (no wait)
-        if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/')
+        if: runner.os == 'macOS' && github.event_name == 'push'
         env:
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
@@ -148,16 +157,12 @@ jobs:
           DMG=$(find out/make -name "*.dmg" -type f | head -1)
           [ -n "$DMG" ] || { echo "::error::No .dmg found under out/make"; exit 1; }
           echo "Submitting $DMG to Apple notary (async, won't block on result)..."
-          OUTPUT=$(xcrun notarytool submit "$DMG" \
+          xcrun notarytool submit "$DMG" \
             --key "$P8_PATH" \
             --key-id "$APPLE_API_KEY_ID" \
             --issuer "$APPLE_API_ISSUER" \
-            --no-wait)
-          echo "$OUTPUT"
-          SUBMISSION_ID=$(echo "$OUTPUT" | awk '/^[[:space:]]*id:/ {print $2; exit}')
-          [ -n "$SUBMISSION_ID" ] || { echo "::error::Could not parse submission ID"; exit 1; }
-          echo "Submission ID: $SUBMISSION_ID"
-          echo "$SUBMISSION_ID" > out/make/notarization-submission-id-${{ matrix.os }}.txt
+            --no-wait --output-format json > out/make/notarization.json
+          jq -e '.id | strings | select(length > 0)' out/make/notarization.json
 
       - name: Clean up signing keychain
         if: always() && runner.os == 'macOS'
@@ -173,7 +178,7 @@ jobs:
           fi
 
       - name: Package application (macOS, unsigned manual run)
-        if: runner.os == 'macOS' && !startsWith(github.ref, 'refs/tags/')
+        if: runner.os == 'macOS' && github.event_name != 'push'
         run: npm run make
 
       - name: Package application (Windows)
@@ -198,45 +203,57 @@ jobs:
           cp out/ffmpeg/ffmpeg-source.tar.gz "out/make/ffmpeg-source-$platform.tar.gz"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: release-${{ matrix.os }}
+          if-no-files-found: error
+          name: ${{ runner.os == 'macOS' && github.event_name == 'push' && 'unstapled' || 'release' }}-${{ matrix.os }}
           path: out/make/
           compression-level: 6
           retention-days: 90
 
-  release:
+  staple:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macos-15-intel]
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
-      - name: Build release body with notarization status
-        id: body
-        run: |
-          # One submission per Mac build (Apple Silicon and Intel).
-          SUB_ID=$(cat release-macos-*/notarization-submission-id-*.txt 2>/dev/null | tr -s '[:space:]' ' ' | sed 's/ *$//')
-          if [ -n "$SUB_ID" ]; then
-            cat > release-body.md <<EOF
-          ## ⏳ macOS notarization pending
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: unstapled-${{ matrix.os }}
+          path: staging
 
-          macOS artifacts are signed with a Developer ID certificate but **not yet stapled** — Apple's notary service is running deep-scan analysis on this app. First-time submissions for a developer/app typically complete in 1–2 days; subsequent releases are usually fast.
+      - name: Wait for Apple and staple the installers
+        timeout-minutes: 60
+        env:
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: bash scripts/staple-release.sh staging
 
-          On first launch macOS users may see an "unidentified developer" prompt. Right-click the app → **Open** to bypass (one time).
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-${{ matrix.os }}
+          path: staging/
+          if-no-files-found: error
 
-          A re-released, stapled build will be published automatically when notarization completes. Notarization submission ids: \`$SUB_ID\`.
-          EOF
-          else
-            : > release-body.md
-          fi
-          # Don't ship the submission id file as a public release asset — it's
-          # already embedded in the body above and the upload step below would
-          # otherwise pick it up via the release-*/**/* glob.
-          rm -f release-macos-*/notarization-submission-id-*.txt
-          echo "Built release body:"
-          cat release-body.md
+  release:
+    needs: staple
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download final artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: release-*
 
       - name: Verify corresponding source for all release targets
         run: |
@@ -258,34 +275,22 @@ jobs:
           fi
 
       - name: Publish release with corresponding source
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        if: github.event_name == 'push'
         with:
           files: |
             release-*/**/*
           fail_on_unmatched_files: true
-          body_path: release-body.md
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # The marketing site is a static Astro build that reads the latest release
-      # from the GitHub API at build time, so it advertises whatever version was
-      # current when it was last built. Ping its deploy hook so a release also
-      # refreshes the download button.
-      #
-      # The empty-secret guard is in the script, not in `if:`, and it has to be.
-      # GitHub's context-availability table gives jobs.<job_id>.steps.if
-      # github, needs, strategy, matrix, job, runner, env, vars, steps, inputs,
-      # and `secrets` is the one context every other steps.* row carries and
-      # this one does not. Naming it here does not evaluate false, it makes the
-      # whole file invalid, so every run of this workflow fails before a job is
-      # created and the tag produces no release at all.
-      #
-      # Passing the URL through env rather than interpolating it into the
-      # command also keeps it out of the process list.
+  website:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
       - name: Rebuild the marketing site
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           DEPLOY_HOOK: ${{ secrets.WEBSITE_DEPLOY_HOOK }}
         run: |

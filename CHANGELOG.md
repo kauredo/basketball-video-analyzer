@@ -5,6 +5,62 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.13.0) - 2026-11-09
+
+- Let several projects share one video file. [#55](https://github.com/kauredo/basketball-video-analyzer/pull/55)
+
+## [1.12.0](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.12.0) - 2026-10-09
+
+- Run the unit tests on every push and pull request. [#50](https://github.com/kauredo/basketball-video-analyzer/pull/50)
+- Refresh the timeline after deleting clips in the side panel. [#51](https://github.com/kauredo/basketball-video-analyzer/pull/51)
+- Keep clip files in step with saved drawings. [#52](https://github.com/kauredo/basketball-video-analyzer/pull/52)
+- Minimize the drawing toolbar. [#53](https://github.com/kauredo/basketball-video-analyzer/pull/53)
+
+## [1.11.1](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.11.1) - 2026-10-08
+
+- Bundle deno for yt-dlp and only pass real YouTube links. [#49](https://github.com/kauredo/basketball-video-analyzer/pull/49)
+
+## [1.11.0](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.11.0) - 2026-10-08
+
+- Make YouTube import work without Python or ffmpeg installed. [#44](https://github.com/kauredo/basketball-video-analyzer/pull/44)
+- Clear the sketch and resume play in one step. [#45](https://github.com/kauredo/basketball-video-analyzer/pull/45)
+- Let coaches drag the drawing toolbar out of the way. [#46](https://github.com/kauredo/basketball-video-analyzer/pull/46)
+- Burn saved drawings into exported clips, freezes included. [#47](https://github.com/kauredo/basketball-video-analyzer/pull/47)
+
+## [1.10.0](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.10.0) - 2026-10-08
+
+- Let coaches choose how long saved drawings replay. [#41](https://github.com/kauredo/basketball-video-analyzer/pull/41)
+- Let each saved drawing set its own replay time. [#42](https://github.com/kauredo/basketball-video-analyzer/pull/42)
+- Let a saved drawing pause the video while it shows. [#43](https://github.com/kauredo/basketball-video-analyzer/pull/43)
+
+## [1.9.2](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.9.2) - 2026-09-17
+
+- Bring the README back in line with the app. [#39](https://github.com/kauredo/basketball-video-analyzer/pull/39)
+- Fix clip cutting on Macs without Rosetta, and parent category filters. [#40](https://github.com/kauredo/basketball-video-analyzer/pull/40)
+
+## [1.9.1](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.9.1) - 2026-09-09
+
+- Carry the clip status into the exports. [#37](https://github.com/kauredo/basketball-video-analyzer/pull/37)
+- Stop build.yml and release.yml from disagreeing. [#38](https://github.com/kauredo/basketball-video-analyzer/pull/38)
+
+## [1.9.0](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.9.0) - 2026-09-09
+
+- Lint the locales, since no native speaker ever will. [#35](https://github.com/kauredo/basketball-video-analyzer/pull/35)
+- Edit clips after the cut, in a table view. [#36](https://github.com/kauredo/basketball-video-analyzer/pull/36)
+
+## [1.8.2](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.8.2) - 2026-09-08
+
+- Show the user the cause the console already had. [#34](https://github.com/kauredo/basketball-video-analyzer/pull/34)
+
+## [1.8.1](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.8.1) - 2026-09-08
+
+- Fixed the small Windows icon frames and updated the app colours and translations.
+
+## [1.8.0](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.8.0) - 2026-09-08
+
+- Updated the interface with the Scorebook design, a new app mark and clearer playback controls.
+- Fixed fullscreen in Present mode and connected app releases to the website rebuild.
+
 ## [1.7.2] - 2026-07-13
 
 ### Fixed

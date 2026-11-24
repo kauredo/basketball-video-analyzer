@@ -438,11 +438,8 @@ npm run dev
 # Build the application
 npm run build
 
-# Create distributable packages for all platforms
-npm run make:all
-
-# Create a release (bump version + build + package)
-npm run release
+# Make installers for this platform
+npm run make
 ```
 
 #### Project Structure
