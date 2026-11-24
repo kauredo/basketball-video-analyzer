@@ -38,6 +38,7 @@ import {
   getProjectById,
   getProjects,
   updateProjectLastOpened,
+  renameProject,
   relinkVideoPath,
   deleteProject,
   Category,
@@ -1430,6 +1431,12 @@ ipcMain.handle("get-projects", async () => {
 // Lets the renderer distinguish a real "no projects yet" state from a fatal
 // database failure, so a broken DB shows an error instead of a blank window.
 ipcMain.handle("get-db-status", async () => getDbStatus());
+
+ipcMain.handle("rename-project", (_event, id: number, name: string) => {
+  if (!Number.isSafeInteger(id) || id < 1 || typeof name !== "string") return false;
+  const trimmed = name.trim();
+  return trimmed.length > 0 && trimmed.length <= 200 && renameProject(id, trimmed);
+});
 
 ipcMain.handle(
   "update-project-last-opened",

@@ -83,6 +83,7 @@ export interface ElectronAPI {
     dbPath: string;
     logPath: string;
   }>;
+  renameProject: (id: number, name: string) => Promise<boolean>;
   updateProjectLastOpened: (projectId: number) => Promise<boolean>;
   relinkVideoPath: (
     oldVideoPath: string,
@@ -206,6 +207,7 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.invoke("get-projects-by-video-path", videoPath),
   getProjects: () => ipcRenderer.invoke("get-projects"),
   getDbStatus: () => ipcRenderer.invoke("get-db-status"),
+  renameProject: (id, name) => ipcRenderer.invoke("rename-project", id, name),
   updateProjectLastOpened: projectId =>
     ipcRenderer.invoke("update-project-last-opened", projectId),
   relinkVideoPath: (oldVideoPath, newVideoPath, newVideoName) =>

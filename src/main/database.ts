@@ -954,6 +954,9 @@ export const getProjects = (): Project[] => {
   }
 };
 
+export const renameProject = (id: number, name: string): boolean =>
+  db.prepare("UPDATE projects SET name = ? WHERE id = ?").run(name, id).changes === 1;
+
 export const updateProjectLastOpened = (projectId: number): void => {
   try {
     const stmt = db.prepare(

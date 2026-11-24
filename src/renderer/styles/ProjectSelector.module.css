@@ -338,6 +338,7 @@
   flex-shrink: 0;
 }
 
+.renameBtn,
 .deleteBtn {
   width: 36px;
   height: 36px;
@@ -360,9 +361,45 @@
 
 .createNewBtn:focus-visible,
 .projectCard:focus-visible,
+.renameBtn:focus-visible,
 .deleteBtn:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;
+}
+
+.renameBtn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.renameForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+.renameForm input {
+  min-width: 8rem;
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+.renameForm button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.renameForm button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .emptyState {

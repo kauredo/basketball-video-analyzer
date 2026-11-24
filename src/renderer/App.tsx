@@ -964,6 +964,9 @@ export const App: React.FC = () => {
         isOpen={showProjectSelector}
         onClose={() => setShowProjectSelector(false)}
         onSelectProject={handleSelectProject}
+        onRenameProject={(id, name) => {
+          setCurrentProject((project: Project | null) => project?.id === id ? { ...project, name } : project);
+        }}
         onCreateNew={handleCreateNewProject}
         onLoadVideoByPath={handleLoadVideoByPath}
       />

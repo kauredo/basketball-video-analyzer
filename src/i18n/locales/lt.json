@@ -431,6 +431,8 @@
       "lastProjectOpened": "Paskutinis atidarytas projektas",
       "lastOpened": "Paskutinį kartą atidaryta",
       "created": "Sukurta",
+      "renameProject": "Pervadinti projektą",
+      "renameError": "Nepavyko pervadinti projekto.",
       "deleteProject": "Ištrinti projektą",
       "confirmDelete": "Ar tikrai norite ištrinti projektą „{{name}}“? Taip pat bus ištrinti visi susiję klipai.",
       "deleteError": "Klaida trinant projektą. Bandykite dar kartą.",

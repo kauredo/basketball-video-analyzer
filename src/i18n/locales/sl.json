@@ -431,6 +431,8 @@
       "lastProjectOpened": "Nazadnje odprti projekt",
       "lastOpened": "Nazadnje odprto",
       "created": "Ustvarjeno",
+      "renameProject": "Preimenuj projekt",
+      "renameError": "Projekta ni bilo mogoče preimenovati.",
       "deleteProject": "Izbriši projekt",
       "confirmDelete": "Ali ste prepričani, da želite izbrisati projekt »{{name}}«? S tem boste izbrisali tudi vse povezane posnetke.",
       "deleteError": "Napaka pri brisanju projekta. Poskusite znova.",

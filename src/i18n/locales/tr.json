@@ -432,6 +432,8 @@
       "lastProjectOpened": "Son açılan proje",
       "lastOpened": "Son açılma",
       "created": "Oluşturulma",
+      "renameProject": "Projeyi yeniden adlandır",
+      "renameError": "Proje yeniden adlandırılamadı.",
       "deleteProject": "Projeyi sil",
       "confirmDelete": "\"{{name}}\" projesini silmek istediğinizden emin misiniz? Bu işlem ilişkili tüm klipleri de silecektir.",
       "deleteError": "Proje silinirken hata oluştu. Lütfen tekrar deneyin.",
