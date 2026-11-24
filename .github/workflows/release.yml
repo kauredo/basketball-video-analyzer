@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         # Linux pinned to 24.04 for the RPM maker; see the note in build.yml.
-        # Each architecture builds on its own runner, because ffmpeg-static,
+        # Each architecture builds on its own runner, because FFmpeg,
         # yt-dlp, deno and better-sqlite3 all install for the host machine.
         os: [macos-latest, macos-15-intel, ubuntu-24.04, ubuntu-24.04-arm, windows-latest]
 
@@ -84,6 +84,9 @@ jobs:
           ELECTRON_CACHE: ~/.cache/electron
           ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
           npm_config_cache: ~/.npm
+
+      - name: Build FFmpeg and x264
+        uses: ./.github/actions/build-ffmpeg
 
       - name: Download yt-dlp and deno
         run: bash scripts/fetch-yt-dlp.sh
@@ -185,6 +188,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Verify packaged licences and FFmpeg
+        run: node scripts/check-packaged-ffmpeg.mjs
+
+      - name: Stage FFmpeg source
+        shell: bash
+        run: |
+          platform=$(node -p 'process.platform + "-" + process.arch')
+          cp out/ffmpeg/ffmpeg-source.tar.gz "out/make/ffmpeg-source-$platform.tar.gz"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -226,12 +238,32 @@ jobs:
           echo "Built release body:"
           cat release-body.md
 
-      - name: Create Release
+      - name: Verify corresponding source for all release targets
+        run: |
+          test -s release-macos-latest/ffmpeg-source-darwin-arm64.tar.gz
+          test -s release-macos-15-intel/ffmpeg-source-darwin-x64.tar.gz
+          test -s release-ubuntu-24.04/ffmpeg-source-linux-x64.tar.gz
+          test -s release-ubuntu-24.04-arm/ffmpeg-source-linux-arm64.tar.gz
+          test -s release-windows-latest/ffmpeg-source-win32-x64.tar.gz
+
+      - name: Check the tag has no published release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          published=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \
+            --jq '.[] | select(.draft == false) | .tag_name')
+          if grep -Fxq -- "$GITHUB_REF_NAME" <<< "$published"; then
+            echo "::error::A published release already exists for $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - name: Publish release with corresponding source
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             release-*/**/*
+          fail_on_unmatched_files: true
           body_path: release-body.md
           generate_release_notes: true
         env:

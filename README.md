@@ -4,7 +4,7 @@
 
 ![Version](https://img.shields.io/github/v/release/kauredo/basketball-video-analyzer)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
-![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
+![License](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg)
 
 A powerful desktop application designed specifically for basketball coaches and analysts to cut, categorize, and organize video clips across multiple projects with reusable preset templates.
 
@@ -387,8 +387,8 @@ We welcome contributions from the basketball and developer communities:
 
 ## 📄 License
 
-Basketball Video Analyzer is licensed under the **GNU Affero General Public
-License v3.0**. In practice that means:
+Copyright (C) 2026 Vasco Kaufmann. Basketball Video Analyzer is licensed under
+the **GNU Affero General Public License v3.0 or later**. In practice that means:
 
 - ✅ Free to use for anything, including commercially. Coaches, clubs, schools, and federations all qualify, at any level.
 - ✅ Free to modify and to redistribute.
@@ -396,6 +396,13 @@ License v3.0**. In practice that means:
 
 The full terms are in the [LICENSE](LICENSE) file, and they are what governs.
 Questions about the licence: contact@basketballvideoanalyzer.com
+
+The app ships FFmpeg, yt-dlp, deno and a set of npm packages, each under its
+own licence. Packaged builds carry `LICENSE` and `THIRD-PARTY-NOTICES.txt` in
+their resources folder, and **Help > Licenses** opens the notices. The notices
+file links to the corresponding FFmpeg and bundled library source archive on the GitHub
+release. `npm run notices` writes it to
+`out/notices/`.
 
 ---
 
@@ -417,6 +424,9 @@ cd basketball-video-analyzer
 
 # Install dependencies
 npm install
+
+# Build the FFmpeg binary (requires a C compiler, make, CMake, pkg-config and NASM on x86)
+bash scripts/build-ffmpeg.sh
 
 # Start development environment
 npm run dev

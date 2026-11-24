@@ -18,7 +18,8 @@
     "postinstall": "electron-rebuild -f -w better-sqlite3",
     "stats:downloads": "node scripts/download-stats.mjs",
     "lint:locales": "node scripts/lint-locales.mjs",
-    "test": "node --experimental-strip-types --test src/main/*.test.mts src/shared/*.test.mts src/renderer/utils/*.test.mts",
+    "test": "node --experimental-strip-types --test src/main/*.test.mts src/shared/*.test.mts src/renderer/utils/*.test.mts scripts/*.test.mts",
+    "notices": "node scripts/third-party-notices.mjs",
     "prebuild": "npm run lint:locales"
   },
   "keywords": [
@@ -41,7 +42,7 @@
     "name": "Basketball Video Analyzer Team",
     "email": "contact@basketballvideoanalyzer.com"
   },
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "AGPL-3.0-or-later",
   "homepage": "https://github.com/kauredo/basketball-video-analyzer",
   "repository": {
     "type": "git",
@@ -90,7 +91,6 @@
     "better-sqlite3": "^9.2.2",
     "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
-    "ffmpeg-static": "^5.2.0",
     "fluent-ffmpeg": "^2.1.2",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.2.0",

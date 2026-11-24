@@ -42,8 +42,15 @@ module.exports = {
   packagerConfig: {
     asar: {
       unpack:
-        "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native,youtube-dl-exec}/**/*",
+        "**/node_modules/{fluent-ffmpeg,better-sqlite3,lzma-native,youtube-dl-exec}/**/*",
     },
+    // Copied into the app's resources folder. The prePackage hook writes the
+    // notices file for the platform being packaged.
+    extraResource: [
+      "LICENSE",
+      "out/notices/THIRD-PARTY-NOTICES.txt",
+      path.join("out", "ffmpeg", process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg"),
+    ],
     name: "BasketballVideoAnalyzer",
     executableName: "basketball-video-analyzer",
     appBundleId: "com.kauredo.basketballvideoanalyzer",
@@ -139,10 +146,17 @@ module.exports = {
       },
     },
   ],
-  // Legacy: generates latest*.yml update manifests. The app now updates via
-  // update-electron-app (update.electronjs.org), which reads GitHub releases
-  // directly and ignores these files — kept for now, harmless, remove later.
   hooks: {
+    prePackage: async (_, platform, arch) => {
+      if (platform !== process.platform || arch !== process.arch) {
+        throw new Error("Package on a native runner for the target platform and architecture so FFmpeg matches.");
+      }
+      const { writeNotices } = await import("./scripts/third-party-notices.mjs");
+      writeNotices();
+    },
+    // Legacy: generates latest*.yml update manifests. The app now updates via
+    // update-electron-app (update.electronjs.org), which reads GitHub releases
+    // directly and ignores these files — kept for now, harmless, remove later.
     postMake: async (forgeConfig, makeResults) => {
       const crypto = require("crypto");
       const fs = require("fs");
