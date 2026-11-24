@@ -18,7 +18,8 @@
     "postinstall": "electron-rebuild -f -w better-sqlite3",
     "stats:downloads": "node scripts/download-stats.mjs",
     "lint:locales": "node scripts/lint-locales.mjs",
-    "test": "node --experimental-strip-types --test src/main/*.test.mts src/shared/*.test.mts src/renderer/utils/*.test.mts",
+    "test": "node --experimental-strip-types --test src/main/*.test.mts src/shared/*.test.mts src/renderer/utils/*.test.mts scripts/*.test.mts",
+    "notices": "node scripts/third-party-notices.mjs",
     "prebuild": "npm run lint:locales"
   },
   "keywords": [

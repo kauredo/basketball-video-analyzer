@@ -44,6 +44,9 @@ module.exports = {
       unpack:
         "**/node_modules/{fluent-ffmpeg,ffmpeg-static,better-sqlite3,lzma-native,youtube-dl-exec}/**/*",
     },
+    // Copied into the app's resources folder. The prePackage hook writes the
+    // notices file for the platform being packaged.
+    extraResource: ["LICENSE", "out/notices/THIRD-PARTY-NOTICES.txt"],
     name: "BasketballVideoAnalyzer",
     executableName: "basketball-video-analyzer",
     appBundleId: "com.kauredo.basketballvideoanalyzer",
@@ -139,10 +142,17 @@ module.exports = {
       },
     },
   ],
-  // Legacy: generates latest*.yml update manifests. The app now updates via
-  // update-electron-app (update.electronjs.org), which reads GitHub releases
-  // directly and ignores these files — kept for now, harmless, remove later.
   hooks: {
+    // Licence texts of every bundled binary and production npm package. Runs
+    // on the packaging machine, so the FFmpeg section describes the binary
+    // ffmpeg-static installed for this platform.
+    prePackage: async () => {
+      const { writeNotices } = await import("./scripts/third-party-notices.mjs");
+      writeNotices();
+    },
+    // Legacy: generates latest*.yml update manifests. The app now updates via
+    // update-electron-app (update.electronjs.org), which reads GitHub releases
+    // directly and ignores these files — kept for now, harmless, remove later.
     postMake: async (forgeConfig, makeResults) => {
       const crypto = require("crypto");
       const fs = require("fs");

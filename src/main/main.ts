@@ -115,6 +115,33 @@ if (ffmpegPath) {
 
 let mainWindow: BrowserWindow;
 
+const SOURCE_URL = "https://github.com/kauredo/basketball-video-analyzer";
+
+// The About panel carries the notices AGPL section 5(d) asks an interactive
+// program to show. macOS shows copyright and credits, Linux shows copyright,
+// authors and website, Windows shows copyright and credits.
+const setAboutPanel = (): void => {
+  app.setAboutPanelOptions({
+    applicationName: "Basketball Video Analyzer",
+    applicationVersion: app.getVersion(),
+    copyright:
+      "Copyright (C) 2026 Vasco Kaufmann. Free software under the GNU Affero General Public License, version 3. It comes with ABSOLUTELY NO WARRANTY.",
+    credits: `Source code: ${SOURCE_URL}`,
+    authors: ["Vasco Kaufmann"],
+    website: SOURCE_URL,
+  });
+};
+
+// Packaging puts LICENSE and THIRD-PARTY-NOTICES.txt in the resources folder.
+const openLicenses = async (): Promise<void> => {
+  const notices = path.join(process.resourcesPath, "THIRD-PARTY-NOTICES.txt");
+  if (app.isPackaged && fs.existsSync(notices)) {
+    await shell.openPath(notices);
+  } else {
+    await shell.openExternal(`${SOURCE_URL}/blob/main/LICENSE`);
+  }
+};
+
 // Track active clip creation processes
 const clipCuts = new ClipCuts();
 
@@ -210,11 +237,12 @@ const createMenu = (mainWindow: BrowserWindow): void => {
         {
           label: nt("learnMore"),
           click: async () => {
-            await shell.openExternal(
-              "https://github.com/kauredo/basketball-video-analyzer"
-            );
+            await shell.openExternal(SOURCE_URL);
           },
         },
+        { label: nt("licenses"), click: openLicenses },
+        // macOS has About in the app menu.
+        ...(!isMac ? [{ role: "about" }] : []),
       ],
     },
   ];
@@ -334,6 +362,7 @@ const isAllowedMediaPath = (resolved: string): boolean => {
 
 app.whenReady().then(() => {
   setupDatabase();
+  setAboutPanel();
 
   // Serve local media through the validated custom scheme. We handle Range
   // requests explicitly (206 + Content-Range) so <video> can seek — Electron's

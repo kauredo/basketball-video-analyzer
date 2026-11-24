@@ -4,7 +4,9 @@
 #
 # Both tools are pinned to a version and to the SHA-256 GitHub records for each
 # release asset. To update, bump the version and copy the new digests from the
-# release's asset list.
+# release's asset list. Also refresh licenses/yt-dlp-*.txt (LICENSE and
+# THIRD_PARTY_LICENSES.txt) and licenses/deno-LICENSE.md from the same tags;
+# scripts/third-party-notices.mjs ships them with the app.
 set -euo pipefail
 
 YTDLP_VERSION=2026.08.19

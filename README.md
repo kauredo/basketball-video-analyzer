@@ -387,8 +387,8 @@ We welcome contributions from the basketball and developer communities:
 
 ## 📄 License
 
-Basketball Video Analyzer is licensed under the **GNU Affero General Public
-License v3.0**. In practice that means:
+Copyright (C) 2026 Vasco Kaufmann. Basketball Video Analyzer is licensed under
+the **GNU Affero General Public License v3.0**. In practice that means:
 
 - ✅ Free to use for anything, including commercially. Coaches, clubs, schools, and federations all qualify, at any level.
 - ✅ Free to modify and to redistribute.
@@ -396,6 +396,13 @@ License v3.0**. In practice that means:
 
 The full terms are in the [LICENSE](LICENSE) file, and they are what governs.
 Questions about the licence: contact@basketballvideoanalyzer.com
+
+The app ships FFmpeg, yt-dlp, deno and a set of npm packages, each under its
+own licence. Packaged builds carry `LICENSE` and `THIRD-PARTY-NOTICES.txt` in
+their resources folder, and **Help > Licenses** opens the notices. The notices
+file includes where to get FFmpeg's source and a written offer for the
+complete source of the FFmpeg binary. `npm run notices` writes it to
+`out/notices/`.
 
 ---
 
