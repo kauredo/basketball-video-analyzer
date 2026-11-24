@@ -8,11 +8,6 @@ const signMac = !!(
   process.env.APPLE_API_ISSUER
 );
 
-// CI sets SKIP_NOTARIZE=1 to defer notarization to a separate workflow step,
-// avoiding the multi-hour wait inside @electron/notarize when Apple's queue
-// is backlogged. Signing still happens during make.
-const notarizeMac = signMac && process.env.SKIP_NOTARIZE !== "1";
-
 const osxSignConfig = signMac
   ? {
       optionsForFile: filePath =>
@@ -29,7 +24,7 @@ const osxSignConfig = signMac
     }
   : false;
 
-const osxNotarizeConfig = notarizeMac
+const osxNotarizeConfig = signMac && process.env.SKIP_NOTARIZE !== "1"
   ? {
       tool: "notarytool",
       appleApiKey: process.env.APPLE_API_KEY_PATH,
@@ -133,19 +128,6 @@ module.exports = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
-  publishers: [
-    {
-      name: "@electron-forge/publisher-github",
-      config: {
-        repository: {
-          owner: "kauredo",
-          name: "basketball-video-analyzer",
-        },
-        prerelease: false,
-        draft: true,
-      },
-    },
-  ],
   hooks: {
     prePackage: async (_, platform, arch) => {
       if (platform !== process.platform || arch !== process.arch) {
@@ -153,60 +135,6 @@ module.exports = {
       }
       const { writeNotices } = await import("./scripts/third-party-notices.mjs");
       writeNotices();
-    },
-    // Legacy: generates latest*.yml update manifests. The app now updates via
-    // update-electron-app (update.electronjs.org), which reads GitHub releases
-    // directly and ignores these files — kept for now, harmless, remove later.
-    postMake: async (forgeConfig, makeResults) => {
-      const crypto = require("crypto");
-      const fs = require("fs");
-      const path = require("path");
-      const yaml = require("js-yaml");
-
-      if (makeResults.length === 0) return;
-      // Intel Mac and arm64 Linux builds would write a manifest with the same
-      // name as the main build's and overwrite it in the release.
-      const mainArch = process.platform === "darwin" ? "arm64" : "x64";
-      if (process.arch !== mainArch) return;
-
-      const allArtifacts = makeResults.flatMap(r => r.artifacts);
-      const outPath = path.dirname(allArtifacts[0]);
-      const version = require("./package.json").version;
-
-      const files = allArtifacts.map(artifact => {
-        const buf = fs.readFileSync(artifact);
-        return {
-          url: path.basename(artifact),
-          sha512: crypto.createHash("sha512").update(buf).digest("base64"),
-          size: buf.length,
-        };
-      });
-
-      // electron-updater's macOS flow extracts the .zip in-place;
-      // Windows uses Setup.exe; Linux uses the .deb (when supported).
-      const pickPrimary = ext =>
-        files.find(f => f.url.toLowerCase().endsWith(ext.toLowerCase())) ||
-        files[0];
-
-      const writeYml = (ymlName, primary) =>
-        fs.writeFileSync(
-          path.join(outPath, ymlName),
-          yaml.dump({
-            version,
-            files,
-            path: primary.url,
-            sha512: primary.sha512,
-            releaseDate: new Date().toISOString(),
-          })
-        );
-
-      if (process.platform === "darwin") {
-        writeYml("latest-mac.yml", pickPrimary(".zip"));
-      } else if (process.platform === "win32") {
-        writeYml("latest.yml", pickPrimary("Setup.exe"));
-      } else if (process.platform === "linux") {
-        writeYml("latest-linux.yml", pickPrimary(".deb"));
-      }
     },
   },
 };
