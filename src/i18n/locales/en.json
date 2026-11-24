@@ -407,6 +407,7 @@
       "createNew": "Create New Project",
       "createNewDescription": "Start with a new video file",
       "recentProjects": "Recent Projects",
+      "lastProjectOpened": "Last project opened",
       "lastOpened": "Last opened",
       "created": "Created",
       "deleteProject": "Delete project",

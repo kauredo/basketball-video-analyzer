@@ -428,6 +428,7 @@
       "createNew": "Neues Projekt erstellen",
       "createNewDescription": "Mit einer neuen Videodatei beginnen",
       "recentProjects": "Letzte Projekte",
+      "lastProjectOpened": "Zuletzt geöffnetes Projekt",
       "lastOpened": "Zuletzt geöffnet",
       "created": "Erstellt",
       "deleteProject": "Projekt löschen",

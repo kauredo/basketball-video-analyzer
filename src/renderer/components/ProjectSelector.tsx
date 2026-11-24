@@ -238,7 +238,9 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                           <div className={styles.projectMeta}>
                             <span className={styles.metaItem}>
                               <FontAwesomeIcon icon={faClock} />
-                              {t("app.projects.lastOpened")}: {formatDate(project.last_opened)}
+                              {t(project.id === projects[0].id
+                                ? "app.projects.lastProjectOpened"
+                                : "app.projects.lastOpened")}: {formatDate(project.last_opened)}
                             </span>
                             <span className={styles.metaItem}>
                               <FontAwesomeIcon icon={faCalendar} />
