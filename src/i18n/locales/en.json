@@ -408,6 +408,7 @@
       "createNewDescription": "Start with a new video file",
       "recentProjects": "Recent Projects",
       "gameRecording": "Game recording",
+      "allGames": "All games",
       "addGame": "Add game",
       "recordingError": "Could not open the recording.",
       "jumpToSource": "Jump to source video",

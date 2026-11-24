@@ -140,6 +140,7 @@ export interface ElectronAPI {
   exportClipsXml: (projectId: number) => Promise<{ filePath: string; count: number } | null>;
   exportScoutingReport: (params: {
     projectId: number;
+    recordingId?: number;
     report: unknown;
     dots: Array<{ x: number; y: number; color: string; label: string }>;
     legend: Array<{ color: string; label: string }>;

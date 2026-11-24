@@ -923,6 +923,8 @@ export const createProject = (
   }
 };
 
+export const inProjectTransaction = <T>(operation: () => T): T => db.transaction(operation)();
+
 export const getProjectVideos = (projectId: number) => listProjectVideos(db, projectId);
 
 export const addProjectVideo = (projectId: number, videoPath: string, videoName: string) =>
@@ -1451,8 +1453,8 @@ export const getClips = (projectId?: number): Clip[] => {
 export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes, drawings_key, overlay_path)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes, drawings_key, overlay_path, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -1472,6 +1474,7 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
       clip.notes || null,
       clip.drawings_key ?? null,
       clip.overlay_path ?? null,
+      clip.status ?? null,
     );
 
     return {
