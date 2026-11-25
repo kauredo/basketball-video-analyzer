@@ -463,6 +463,7 @@
       "videoMissingLocate": "Pronađi snimak",
       "videoRelinkSuccess": "Video fajl ažuriran.",
       "videoRelinkError": "Nije moguće ažurirati snimak. Pokušajte ponovo.",
+      "videoRelinkDuplicate": "Ova datoteka je već utakmica u ovom projektu. Izaberite datoteku utakmice koja nedostaje.",
       "chooserTitle": "Izaberite projekat za ovaj snimak",
       "chooserOpenHeading": "Otvori projekat",
       "chooserMessage": "Video fajl: {{video}}",

@@ -989,13 +989,8 @@ export const relinkVideoPath = (
   newVideoName: string,
 ): number => {
   try {
-    return db.transaction(() => {
-      const { changes } = db.prepare(
-        "UPDATE project_videos SET video_path = ?, video_name = ? WHERE video_path = ?",
-      ).run(newVideoPath, newVideoName, oldVideoPath);
-      relinkVideoRows(db, oldVideoPath, newVideoPath, newVideoName);
-      return changes;
-    })();
+    return db.transaction(() =>
+      relinkVideoRows(db, oldVideoPath, newVideoPath, newVideoName))();
   } catch (error) {
     console.error("Error updating project video path:", error);
     throw error;

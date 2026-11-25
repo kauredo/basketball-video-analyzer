@@ -463,6 +463,7 @@
       "videoMissingLocate": "Individua video",
       "videoRelinkSuccess": "File video aggiornato.",
       "videoRelinkError": "Impossibile aggiornare il video. Riprova.",
+      "videoRelinkDuplicate": "Questo file è già una partita del progetto. Scegli il file della partita mancante.",
       "chooserTitle": "Scegli un progetto per questo video",
       "chooserOpenHeading": "Apri un progetto",
       "chooserMessage": "File video: {{video}}",

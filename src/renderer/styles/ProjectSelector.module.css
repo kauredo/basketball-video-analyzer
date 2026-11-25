@@ -362,7 +362,9 @@
 .createNewBtn:focus-visible,
 .projectCard:focus-visible,
 .renameBtn:focus-visible,
-.deleteBtn:focus-visible {
+.deleteBtn:focus-visible,
+.renameForm input:focus-visible,
+.renameForm button:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;
 }

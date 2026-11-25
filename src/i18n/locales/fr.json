@@ -464,6 +464,7 @@
       "videoMissingLocate": "Localiser la vidéo",
       "videoRelinkSuccess": "Fichier vidéo mis à jour.",
       "videoRelinkError": "Impossible de mettre à jour la vidéo. Veuillez réessayer.",
+      "videoRelinkDuplicate": "Ce fichier est déjà un match de ce projet. Choisissez le fichier du match manquant.",
       "chooserTitle": "Choisissez un projet pour cette vidéo",
       "chooserOpenHeading": "Ouvrir un projet",
       "chooserMessage": "Fichier vidéo : {{video}}",

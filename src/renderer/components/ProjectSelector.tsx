@@ -19,8 +19,8 @@ import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { errorCode, withCause } from "../utils/errors";
-import { savePref } from "../utils/storage";
-import { projectPlaybackKey } from "../utils/projectPlayback";
+import { removePref } from "../utils/storage";
+import { projectPrefKeys } from "../utils/projectPlayback";
 import { formatDateTime } from "../utils/format";
 
 export interface Project {
@@ -143,8 +143,9 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       })
     ) {
       try {
+        const videos = await window.electronAPI.getProjectVideos(project.id);
         await window.electronAPI.deleteProject(project.id);
-        savePref(projectPlaybackKey(project.id), 0);
+        projectPrefKeys(project.id, videos.map(video => video.id)).forEach(removePref);
         loadProjects();
       } catch (error) {
         console.error("Error deleting project:", error);

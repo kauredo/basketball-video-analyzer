@@ -463,6 +463,7 @@
       "videoMissingLocate": "Localizar vídeo",
       "videoRelinkSuccess": "Archivo de vídeo actualizado.",
       "videoRelinkError": "No se pudo actualizar el vídeo. Inténtalo de nuevo.",
+      "videoRelinkDuplicate": "Ese archivo ya es un partido de este proyecto. Elige el archivo del partido que falta.",
       "chooserTitle": "Elige un proyecto para este vídeo",
       "chooserOpenHeading": "Abrir un proyecto",
       "chooserMessage": "Archivo de vídeo: {{video}}",

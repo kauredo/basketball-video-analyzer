@@ -465,6 +465,7 @@
       "videoMissingLocate": "Localizar vídeo",
       "videoRelinkSuccess": "Vídeo atualizado com sucesso.",
       "videoRelinkError": "Não foi possível atualizar o vídeo. Tenta novamente.",
+      "videoRelinkDuplicate": "Esse ficheiro já é um jogo deste projeto. Escolhe o ficheiro do jogo em falta.",
       "chooserTitle": "Escolhe um projeto para este vídeo",
       "chooserOpenHeading": "Abrir um projeto",
       "chooserMessage": "Ficheiro de vídeo: {{video}}",

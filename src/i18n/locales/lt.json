@@ -463,6 +463,7 @@
       "videoMissingLocate": "Surasti vaizdo įrašą",
       "videoRelinkSuccess": "Vaizdo įrašo failas atnaujintas.",
       "videoRelinkError": "Nepavyko atnaujinti vaizdo įrašo. Bandykite dar kartą.",
+      "videoRelinkDuplicate": "Šis failas jau yra šio projekto rungtynės. Pasirinkite trūkstamų rungtynių failą.",
       "chooserTitle": "Pasirinkite projektą šiam vaizdo įrašui",
       "chooserOpenHeading": "Atidaryti projektą",
       "chooserMessage": "Vaizdo įrašo failas: {{video}}",
