@@ -18,6 +18,8 @@ import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { errorCode, withCause } from "../utils/errors";
+import { savePref } from "../utils/storage";
+import { projectPlaybackKey } from "../utils/projectPlayback";
 import { formatDateTime } from "../utils/format";
 
 export interface Project {
@@ -104,6 +106,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     ) {
       try {
         await window.electronAPI.deleteProject(project.id);
+        savePref(projectPlaybackKey(project.id), 0);
         loadProjects();
       } catch (error) {
         console.error("Error deleting project:", error);

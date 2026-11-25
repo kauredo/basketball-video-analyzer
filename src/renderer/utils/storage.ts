@@ -7,6 +7,8 @@ export const STORAGE_KEYS = {
   CLIP_SORT_ORDER: "clipSortOrder",
   CLIP_VIEW_MODE: "clipViewMode",
   ONBOARDING_COMPLETE: "onboardingComplete",
+  VIDEO_VOLUME: "videoVolume",
+  VIDEO_RATE: "videoRate",
   ANNOTATION_REPLAY: "annotationReplay",
   ANNOTATION_REPLAY_SECONDS: "annotationReplaySeconds",
   DRAW_TOOLBAR_POSITION: "drawToolbarPosition",
