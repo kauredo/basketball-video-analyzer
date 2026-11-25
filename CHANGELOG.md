@@ -5,6 +5,19 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.1] - 2026-11-25
+
+### Fixed
+
+- A project whose last-watched game had moved would not open if you cancelled the "locate video" prompt. It now opens another game that is still on disk.
+- Relinking a game to a file the project already has explains why it failed.
+- Deleting a project clears its saved playback positions.
+- The game picker and the rename form show the keyboard focus outline.
+
+### Changed
+
+- Importing a session checks every clip, category and player before asking for videos, and rejects files with more than 100 recordings.
+
 ## [1.14.0] - 2026-11-25
 
 ### Added
