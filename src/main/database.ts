@@ -899,8 +899,8 @@ export const createProject = (
 ): Project => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO projects (name, video_path, video_name, description)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO projects (name, video_path, video_name, description, last_opened)
+      VALUES (?, ?, ?, ?, STRFTIME('%Y-%m-%d %H:%M:%f', 'now'))
     `);
 
     const result = stmt.run(
@@ -957,7 +957,7 @@ export const getProjects = (): Project[] => {
 export const updateProjectLastOpened = (projectId: number): void => {
   try {
     const stmt = db.prepare(
-      "UPDATE projects SET last_opened = CURRENT_TIMESTAMP WHERE id = ?",
+      "UPDATE projects SET last_opened = STRFTIME('%Y-%m-%d %H:%M:%f', 'now') WHERE id = ?",
     );
     stmt.run(projectId);
   } catch (error) {
