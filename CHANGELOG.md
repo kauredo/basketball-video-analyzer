@@ -5,6 +5,19 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-11-25
+
+### Added
+
+- Scout several games in one project with a shared roster and categories. Switch recordings, jump from a clip to its source, and filter stats and scouting PDFs by game.
+- Find the last-opened project, rename saved projects, and resume playback where you stopped.
+- Open the app licence and third-party notices from the packaged app.
+
+### Changed
+
+- Session exports track which recording each clip and drawing belongs to. Older single-video sessions still open.
+- Release builds include a redistributable FFmpeg and publish its corresponding source. macOS installers are stapled before publication.
+
 ## [1.13.0](https://github.com/kauredo/basketball-video-analyzer/releases/tag/v1.13.0) - 2026-11-09
 
 - Let several projects share one video file. [#55](https://github.com/kauredo/basketball-video-analyzer/pull/55)
