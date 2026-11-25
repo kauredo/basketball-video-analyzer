@@ -1,3 +1,5 @@
+import type { ProjectVideo } from "../../main/projectVideos";
+import { isSamePath } from "../../shared/clipDrawings";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,6 +16,9 @@ interface StatsDashboardProps {
   clips: Clip[];
   categories: Category[];
   videoDuration: number;
+  showDistribution: boolean;
+  recordingId?: number;
+  recordings: ProjectVideo[];
   projectId?: number;
 }
 
@@ -57,6 +62,9 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   clips,
   categories,
   videoDuration,
+  showDistribution,
+  recordingId,
+  recordings,
   projectId,
 }) => {
   const { t } = useTranslation();
@@ -215,7 +223,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   );
   const chart = useMemo(() => chartOf(chartClips), [chartOf, chartClips]);
 
-  // The report covers the whole project, whatever the chart filters say.
+  // The report uses the selected game scope, independent of shot chart filters.
   const handleExportReport = async () => {
     if (!projectId) return;
     const catName = new Map(flatCategories.map(c => [c.id, c.name]));
@@ -226,6 +234,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     try {
       const result = await window.electronAPI.exportScoutingReport({
         projectId,
+        recordingId,
         dots,
         legend,
         report: {
@@ -250,6 +259,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             notes: t("app.clips.table.columnNotes"),
           },
           data: {
+            videoName: t("app.projects.allGames"),
             summary: {
               clips: String(summary.count),
               totalDuration: formatDuration(summary.totalDuration),
@@ -266,7 +276,9 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
               .sort((a, b) => a.start_time - b.start_time)
               .map(c => ({
                 time: formatDuration(c.start_time),
-                title: c.title,
+                title: recordingId === undefined && recordings.length > 1
+                  ? `${c.title} · ${recordings.find(video => isSamePath(video.video_path, c.video_path))?.video_name ?? ""}`
+                  : c.title,
                 categories: parseCategoryIds(c).map(id => catName.get(id)).filter(Boolean).join(", "),
                 players: parsePlayerIds(c).map(id => playerLabel.get(id)).filter(Boolean).join(", "),
                 quarter: c.quarter ?? "",
@@ -411,7 +423,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       </section>
 
       {/* Distribution across the game */}
-      <section className={styles.section}>
+      {showDistribution && <section className={styles.section}>
         <h3 className={styles.sectionTitle}>{t("app.stats.distribution")}</h3>
         <div className={styles.histogram}>
           {distribution.buckets.map((value, i) => (
@@ -431,7 +443,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             </div>
           ))}
         </div>
-      </section>
+      </section>}
         </>
       ) : (
         <div className={styles.shotChart}>

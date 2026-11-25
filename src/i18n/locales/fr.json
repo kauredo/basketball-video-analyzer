@@ -430,6 +430,7 @@
       "createNewDescription": "Commencer avec un nouveau fichier vidéo",
       "recentProjects": "Projets récents",
       "gameRecording": "Vidéo du match",
+      "allGames": "Tous les matchs",
       "addGame": "Ajouter un match",
       "recordingError": "Impossible d’ouvrir la vidéo.",
       "jumpToSource": "Aller à la vidéo source",

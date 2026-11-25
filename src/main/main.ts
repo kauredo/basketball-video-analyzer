@@ -1,3 +1,5 @@
+import { sessionRecordings } from "../shared/sessionRecordings";
+import { isSamePath } from "../shared/clipDrawings";
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
 import fs from "fs";
@@ -42,6 +44,7 @@ import {
   getProjectVideos,
   addProjectVideo,
   getProjectVideoPaths,
+  inProjectTransaction,
   relinkVideoPath,
   deleteProject,
   Category,
@@ -1889,13 +1892,20 @@ ipcMain.handle(
   "export-scouting-report",
   async (
     _event,
-    params: { projectId: number; report: unknown; dots: CourtDot[]; legend: CourtLegendItem[] }
+    params: { projectId: number; recordingId?: number; report: unknown; dots: CourtDot[]; legend: CourtLegendItem[] }
   ) => {
     const project = getProjectById(params?.projectId);
     if (!project) throw new Error("ERROR_INVALID_INPUT");
     const { data, labels } = normalizeReport(params.report);
     data.projectName = project.name;
-    data.videoName = project.video_name;
+    const recordings = getProjectVideos(params.projectId);
+    if (params.recordingId !== undefined) {
+      const recording = recordings.find(video => video.id === params.recordingId);
+      if (!recording) throw new Error("ERROR_INVALID_INPUT");
+      data.videoName = recording.video_name;
+    } else if (recordings.length <= 1) {
+      data.videoName = project.video_name;
+    }
     const dots = (Array.isArray(params.dots) ? params.dots : []).slice(0, 5000).map(d => ({
       x: Number(d?.x),
       y: Number(d?.y),
@@ -2068,6 +2078,7 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
     const project = getProjectById(projectId);
     if (!project) throw new Error("Project not found");
 
+    const recordings = getProjectVideos(projectId);
     const clips = getClips(projectId);
     const categories = getCategoriesHierarchical(projectId);
 
@@ -2114,7 +2125,10 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
           .filter((n): n is string => Boolean(n));
       } catch { /* empty */ }
 
+      const recording = recordings.findIndex(video => isSamePath(video.video_path, clip.video_path));
+      if (recording < 0) throw new Error("INVALID_SESSION_FILE");
       return {
+        recording,
         title: clip.title,
         startTime: clip.start_time,
         endTime: clip.end_time,
@@ -2123,17 +2137,29 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
         players: playerNames,
         quarter: clip.quarter || null,
         notes: clip.notes || "",
+        courtX: clip.court_x ?? null,
+        courtY: clip.court_y ?? null,
+        status: clip.status ?? null,
       };
     });
 
     const sessionData = {
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       project: {
         name: project.name,
         videoName: project.video_name,
         description: project.description || "",
       },
+      recordings: recordings.map(video => ({ videoName: video.video_name })),
+      drawings: recordings.flatMap((video, recording) =>
+        getAnnotations(projectId, video.video_path).map(annotation => ({
+          recording,
+          timestamp: annotation.timestamp,
+          data: annotation.data,
+          displaySeconds: annotation.display_seconds,
+          pausePlayback: annotation.pause_playback === true,
+        }))),
       players: projectPlayers.map(p => ({
         name: p.name,
         number: p.number || "",
@@ -2171,106 +2197,133 @@ ipcMain.handle("load-session", async () => {
     if (jsonResult.canceled || jsonResult.filePaths.length === 0) return null;
 
     const jsonContent = fs.readFileSync(jsonResult.filePaths[0], "utf-8");
-    const sessionData = JSON.parse(jsonContent);
-
-    // Validate structure
-    if (!sessionData.version || !sessionData.project || !sessionData.categories || !sessionData.clips) {
+    let sessionData;
+    try {
+      sessionData = JSON.parse(jsonContent);
+    } catch {
       throw new Error("INVALID_SESSION_FILE");
     }
-
-    // Step 2: Pick video file
-    const videoResult = await dialog.showOpenDialog(mainWindow, {
-      title: "Select Video File for This Session",
-      properties: ["openFile"],
-      filters: [{ name: "Videos", extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"] }],
-    });
-
-    if (videoResult.canceled || videoResult.filePaths.length === 0) return null;
-
-    const videoPath = videoResult.filePaths[0];
-    const videoName = path.basename(videoPath);
-
-    // Step 3: Create project
-    const project = createProject({
-      name: sessionData.project.name,
-      video_path: videoPath,
-      video_name: videoName,
-      description: sessionData.project.description || undefined,
-    });
-
-    // Step 4: Create categories (two-pass: parents first, then children)
-    const categoryNameToId = new Map<string, number>();
-
-    // Pass 1: Parents
-    for (const cat of sessionData.categories) {
-      if (!cat.parentName) {
-        const created = createCategory({
-          name: cat.name,
-          color: cat.color,
-          description: cat.description || undefined,
-          project_id: project.id as number,
-        });
-        if (created.id) categoryNameToId.set(cat.name, created.id);
-      }
-    }
-
-    // Pass 2: Children
-    for (const cat of sessionData.categories) {
-      if (cat.parentName) {
-        const parentId = categoryNameToId.get(cat.parentName);
-        const created = createCategory({
-          name: cat.name,
-          color: cat.color,
-          description: cat.description || undefined,
-          parent_id: parentId,
-          project_id: project.id as number,
-        });
-        if (created.id) categoryNameToId.set(cat.name, created.id);
-      }
-    }
-
-    // Step 4b: Create players (v2 sessions only) and map names to new IDs
-    const playerNameToId = new Map<string, number>();
-    if (Array.isArray(sessionData.players)) {
-      for (const p of sessionData.players) {
-        const created = createPlayer({
-          name: p.name,
-          number: p.number || null,
-          project_id: project.id as number,
-        });
-        if (created.id) playerNameToId.set(p.name, created.id);
-      }
-    }
-
-    // Step 5: Create clip metadata
-    for (const clip of sessionData.clips) {
-      const categoryIds = clip.categories
-        .map((name: string) => categoryNameToId.get(name))
-        .filter((id: number | undefined): id is number => id !== undefined);
-
-      const playerIds = Array.isArray(clip.players)
-        ? clip.players
-            .map((name: string) => playerNameToId.get(name))
-            .filter((id: number | undefined): id is number => id !== undefined)
-        : [];
-
-      createClip({
-        project_id: project.id as number,
-        video_path: videoPath,
-        output_path: "",
-        thumbnail_path: "",
-        start_time: clip.startTime,
-        end_time: clip.endTime,
-        duration: clip.duration,
-        title: clip.title,
-        categories: JSON.stringify(categoryIds),
-        players: JSON.stringify(playerIds),
-        quarter: clip.quarter ?? null,
-        notes: clip.notes || undefined,
+    const recordingNames = sessionRecordings(sessionData);
+    const paths: string[] = [];
+    for (const [index, name] of recordingNames.entries()) {
+      const videoResult = await dialog.showOpenDialog(mainWindow, {
+        title: recordingNames.length > 1
+          ? `${index + 1}/${recordingNames.length} · ${name}`
+          : name || "Select Video File for This Session",
+        properties: ["openFile"],
+        filters: [{ name: "Videos", extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"] }],
       });
+      const file = videoResult.filePaths[0];
+      if (videoResult.canceled || !file) return null;
+      if (!isVideoFile(file) || paths.some(existing => isSamePath(existing, file))) {
+        throw new Error("INVALID_SESSION_FILE");
+      }
+      paths.push(file);
     }
 
-    return { success: true, project };
+    return inProjectTransaction(() => {
+      const videoPath = paths[0];
+      const videoName = path.basename(videoPath);
+
+      // Step 3: Create project
+      const project = createProject({
+        name: sessionData.project.name,
+        video_path: videoPath,
+        video_name: videoName,
+        description: sessionData.project.description || undefined,
+      });
+
+      if (!project.id) throw new Error("INVALID_SESSION_FILE");
+      for (const file of paths.slice(1)) addProjectVideo(project.id, file, path.basename(file));
+
+      // Step 4: Create categories (two-pass: parents first, then children)
+      const categoryNameToId = new Map<string, number>();
+
+      // Pass 1: Parents
+      for (const cat of sessionData.categories) {
+        if (!cat.parentName) {
+          const created = createCategory({
+            name: cat.name,
+            color: cat.color,
+            description: cat.description || undefined,
+            project_id: project.id as number,
+          });
+          if (created.id) categoryNameToId.set(cat.name, created.id);
+        }
+      }
+
+      // Pass 2: Children
+      for (const cat of sessionData.categories) {
+        if (cat.parentName) {
+          const parentId = categoryNameToId.get(cat.parentName);
+          const created = createCategory({
+            name: cat.name,
+            color: cat.color,
+            description: cat.description || undefined,
+            parent_id: parentId,
+            project_id: project.id as number,
+          });
+          if (created.id) categoryNameToId.set(cat.name, created.id);
+        }
+      }
+
+      // Step 4b: Create players (v2 sessions only) and map names to new IDs
+      const playerNameToId = new Map<string, number>();
+      if (Array.isArray(sessionData.players)) {
+        for (const p of sessionData.players) {
+          const created = createPlayer({
+            name: p.name,
+            number: p.number || null,
+            project_id: project.id as number,
+          });
+          if (created.id) playerNameToId.set(p.name, created.id);
+        }
+      }
+
+      // Step 5: Create clip metadata
+      for (const clip of sessionData.clips) {
+        const categoryIds = clip.categories
+          .map((name: string) => categoryNameToId.get(name))
+          .filter((id: number | undefined): id is number => id !== undefined);
+
+        const playerIds = Array.isArray(clip.players)
+          ? clip.players
+              .map((name: string) => playerNameToId.get(name))
+              .filter((id: number | undefined): id is number => id !== undefined)
+          : [];
+
+        createClip({
+          project_id: project.id as number,
+          video_path: paths[sessionData.version === 3 ? clip.recording : 0],
+          output_path: "",
+          thumbnail_path: "",
+          start_time: clip.startTime,
+          end_time: clip.endTime,
+          duration: clip.duration,
+          title: clip.title,
+          categories: JSON.stringify(categoryIds),
+          players: JSON.stringify(playerIds),
+          quarter: clip.quarter ?? null,
+          notes: clip.notes || undefined,
+          court_x: Number.isFinite(clip.courtX) ? clip.courtX : null,
+          court_y: Number.isFinite(clip.courtY) ? clip.courtY : null,
+          status: ["keep", "cut", "review"].includes(clip.status) ? clip.status : null,
+        });
+      }
+
+      for (const drawing of sessionData.version === 3 ? sessionData.drawings : []) {
+        createAnnotation({
+          project_id: project.id,
+          video_path: paths[drawing.recording],
+          timestamp: drawing.timestamp,
+          data: drawing.data,
+          display_seconds: drawing.displaySeconds,
+          pause_playback: drawing.pausePlayback === true,
+        });
+      }
+
+      return { success: true, project };
+    });
   } catch (error) {
     console.error("Error loading session:", error);
     throw error;

@@ -84,6 +84,7 @@ export const App: React.FC = () => {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [statsGame, setStatsGame] = useState<number | null>(null);
   const [hasExistingProjects, setHasExistingProjects] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_WIDTH, 360));
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_COLLAPSED, true));
@@ -741,7 +742,7 @@ export const App: React.FC = () => {
             <button
               type="button"
               className={styles.btn}
-              onClick={() => setShowStats(true)}
+              onClick={() => { setStatsGame(null); setShowStats(true); }}
             >
               <FontAwesomeIcon icon={faChartColumn} /> {t("app.stats.stats")}
             </button>
@@ -1121,10 +1122,28 @@ export const App: React.FC = () => {
               </button>
             </div>
             <div className={styles.modalBody}>
+              {recordings.length > 1 && (
+                <div className={styles.gamePicker}>
+                  <label htmlFor="stats-game">{t("app.projects.gameRecording")}</label>
+                  <select
+                    id="stats-game"
+                    value={statsGame ?? ""}
+                    onChange={(event) => setStatsGame(event.target.value ? Number(event.target.value) : null)}
+                  >
+                    <option value="">{t("app.projects.allGames")}</option>
+                    {recordings.map(video => <option key={video.id} value={video.id}>{video.video_name}</option>)}
+                  </select>
+                </div>
+              )}
               <StatsDashboard
-                clips={clips}
+                clips={statsGame === null ? clips : clips.filter(clip =>
+                  recordings.some(video => video.id === statsGame && isSamePath(video.video_path, clip.video_path)),
+                )}
                 categories={categories}
-                videoDuration={duration}
+                videoDuration={statsGame === activeRecording?.id || recordings.length <= 1 ? duration : 0}
+                showDistribution={statsGame !== null || recordings.length <= 1}
+                recordingId={statsGame ?? undefined}
+                recordings={recordings}
                 projectId={currentProject?.id}
               />
             </div>
