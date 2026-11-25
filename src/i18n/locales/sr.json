@@ -431,6 +431,8 @@
       "lastProjectOpened": "Poslednji otvoreni projekat",
       "lastOpened": "Poslednje otvoreno",
       "created": "Napravljeno",
+      "renameProject": "Preimenuj projekat",
+      "renameError": "Projekat nije moguće preimenovati.",
       "deleteProject": "Obriši projekat",
       "confirmDelete": "Da li ste sigurni da želite da obrišete projekat „{{name}}“? Ovo će obrisati i sve povezane klipove.",
       "deleteError": "Greška pri brisanju projekta. Pokušajte ponovo.",

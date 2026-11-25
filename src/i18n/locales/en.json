@@ -410,6 +410,8 @@
       "lastProjectOpened": "Last project opened",
       "lastOpened": "Last opened",
       "created": "Created",
+      "renameProject": "Rename project",
+      "renameError": "Could not rename the project.",
       "deleteProject": "Delete project",
       "confirmDelete": "Are you sure you want to delete the project \"{{name}}\"? This will also delete all associated clips.",
       "deleteError": "Error deleting project. Please try again.",

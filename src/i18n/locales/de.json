@@ -431,6 +431,8 @@
       "lastProjectOpened": "Zuletzt geöffnetes Projekt",
       "lastOpened": "Zuletzt geöffnet",
       "created": "Erstellt",
+      "renameProject": "Projekt umbenennen",
+      "renameError": "Das Projekt konnte nicht umbenannt werden.",
       "deleteProject": "Projekt löschen",
       "confirmDelete": "Möchtest du das Projekt „{{name}}“ wirklich löschen? Dabei werden auch alle zugehörigen Clips gelöscht.",
       "deleteError": "Fehler beim Löschen des Projekts. Bitte erneut versuchen.",

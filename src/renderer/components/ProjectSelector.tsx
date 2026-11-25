@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -7,6 +7,7 @@ import {
   faClock,
   faCalendar,
   faTrash,
+  faPen,
   faFilm,
   faTimes,
   faFileImport,
@@ -35,6 +36,7 @@ export interface Project {
 interface ProjectSelectorProps {
   isOpen: boolean;
   onClose: () => void;
+  onRenameProject: (id: number, name: string) => void;
   onSelectProject: (project: Project) => void;
   onCreateNew: () => void;
   onLoadVideoByPath?: (filePath: string) => void;
@@ -44,6 +46,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   isOpen,
   onClose,
   onSelectProject,
+  onRenameProject,
   onCreateNew,
   onLoadVideoByPath,
 }) => {
@@ -55,9 +58,44 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [missingPaths, setMissingPaths] = useState<Record<string, boolean>>({});
 
+  const [renaming, setRenaming] = useState<{ id: number; name: string } | null>(null);
+  const [isRenaming, setIsRenaming] = useState(false);
+
+  const renameTrigger = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!renaming && !isRenaming) {
+      if (isOpen) renameTrigger.current?.focus();
+      renameTrigger.current = null;
+    }
+  }, [renaming, isRenaming, isOpen]);
+
+  const submitRename = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!renaming || !renaming.name.trim() || isRenaming) return;
+    const { id } = renaming;
+    const name = renaming.name.trim();
+    try {
+      setIsRenaming(true);
+      if (!(await window.electronAPI.renameProject(id, name))) {
+        showError(t("app.projects.renameError"));
+        return;
+      }
+      setProjects((list) => list.map((project) => project.id === id ? { ...project, name } : project));
+      onRenameProject(id, name);
+      setRenaming(null);
+    } catch (error) {
+      showError(withCause(t("app.projects.renameError"), error));
+    } finally {
+      setIsRenaming(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       loadProjects();
+    } else {
+      setRenaming(null);
     }
   }, [isOpen]);
 
@@ -140,7 +178,14 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="project-selector-title"
-      onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        if (renaming) {
+          if (!isRenaming) setRenaming(null);
+        } else {
+          onClose();
+        }
+      }}
     >
       <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
@@ -199,8 +244,8 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                     {projects.map((project) => {
                       const isMissing = !!missingPaths[project.video_path];
                       return (
+                      <React.Fragment key={project.id}>
                       <div
-                        key={project.id}
                         className={`${styles.projectCard} ${
                           isMissing ? styles.projectCardMissing : ""
                         }`}
@@ -208,7 +253,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
+                          if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
                             e.preventDefault();
                             onSelectProject(project);
                           }
@@ -254,6 +299,21 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                         <div className={styles.projectActions}>
                           <button
                             type="button"
+                            className={styles.renameBtn}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              renameTrigger.current = event.currentTarget;
+                              setRenaming({ id: project.id, name: project.name });
+                            }}
+                            disabled={isRenaming}
+                            title={t("app.projects.renameProject")}
+                            aria-label={t("app.projects.renameProject")}
+                            aria-expanded={renaming?.id === project.id}
+                          >
+                            <FontAwesomeIcon icon={faPen} />
+                          </button>
+                          <button
+                            type="button"
                             className={styles.deleteBtn}
                             onClick={(e) => handleDeleteProject(project, e)}
                             title={t("app.projects.deleteProject")}
@@ -263,6 +323,27 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                           </button>
                         </div>
                       </div>
+                      {renaming?.id === project.id && (
+                        <form className={styles.renameForm} onSubmit={submitRename}>
+                          <label htmlFor="rename-project">{t("app.projects.chooserNameLabel")}</label>
+                          <input
+                            id="rename-project"
+                            value={renaming.name}
+                            maxLength={200}
+                            autoFocus
+                            onFocus={(event) => event.currentTarget.select()}
+                            onChange={(event) => setRenaming({ id: project.id, name: event.target.value })}
+                            disabled={isRenaming}
+                          />
+                          <button type="submit" disabled={isRenaming || !renaming.name.trim()}>
+                            {t("app.buttons.save")}
+                          </button>
+                          <button type="button" disabled={isRenaming} onClick={() => setRenaming(null)}>
+                            {t("app.buttons.cancel")}
+                          </button>
+                        </form>
+                      )}
+                      </React.Fragment>
                       );
                     })}
                   </div>
