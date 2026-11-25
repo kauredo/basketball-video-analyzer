@@ -464,6 +464,7 @@
       "videoMissingLocate": "Videoyu bul",
       "videoRelinkSuccess": "Video dosyası güncellendi.",
       "videoRelinkError": "Video güncellenemedi. Lütfen tekrar deneyin.",
+      "videoRelinkDuplicate": "Bu dosya zaten bu projede bir maç. Eksik maçın dosyasını seçin.",
       "chooserTitle": "Bu video için bir proje seçin",
       "chooserOpenHeading": "Bir proje açın",
       "chooserMessage": "Video dosyası: {{video}}",

@@ -545,7 +545,8 @@
 .settingsButton:focus-visible,
 .selectVideoBtn:focus-visible,
 .getStartedBtn:focus-visible,
-.themeToggle:focus-visible {
+.themeToggle:focus-visible,
+.gamePicker select:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;
 }

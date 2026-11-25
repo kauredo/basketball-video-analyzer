@@ -34,3 +34,11 @@ export function savePref<T>(key: string, value: T): void {
     // Silently fail if localStorage is full or unavailable
   }
 }
+
+export function removePref(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Silently fail if localStorage is unavailable
+  }
+}

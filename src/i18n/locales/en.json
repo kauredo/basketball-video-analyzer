@@ -442,6 +442,7 @@
       "videoMissingLocate": "Locate video",
       "videoRelinkSuccess": "Video file updated.",
       "videoRelinkError": "Couldn't update the video. Please try again.",
+      "videoRelinkDuplicate": "That file is already a game in this project. Choose the missing game's file.",
       "chooserTitle": "Choose a project for this video",
       "chooserOpenHeading": "Open a project",
       "chooserMessage": "Video file: {{video}}",

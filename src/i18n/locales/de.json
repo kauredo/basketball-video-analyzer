@@ -463,6 +463,7 @@
       "videoMissingLocate": "Video suchen",
       "videoRelinkSuccess": "Videodatei aktualisiert.",
       "videoRelinkError": "Video konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+      "videoRelinkDuplicate": "Diese Datei ist bereits ein Spiel in diesem Projekt. Wähle die Datei des fehlenden Spiels.",
       "chooserTitle": "Wähle ein Projekt für dieses Video",
       "chooserOpenHeading": "Projekt öffnen",
       "chooserMessage": "Videodatei: {{video}}",

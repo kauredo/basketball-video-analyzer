@@ -396,6 +396,22 @@ export const App: React.FC = () => {
     setShowInstructions(false);
   };
 
+  // Asks for the moved file and relinks the recording to it. Null when the coach gives up or it fails.
+  const locateRecording = async (missingPath: string) => {
+    if (!(await confirm({ message: t("app.projects.videoMissingMessage", { path: missingPath }),
+      confirmLabel: t("app.projects.videoMissingLocate") }))) return null;
+    const path = await window.electronAPI.selectVideoFile();
+    if (!path) return null;
+    const name = path.split(/[/\\]/).pop() ?? path;
+    const result = await window.electronAPI.relinkVideoPath(missingPath, path, name);
+    if (result !== "ok") {
+      showError(t(result === "duplicate" ? "app.projects.videoRelinkDuplicate" : "app.projects.videoRelinkError"));
+      return null;
+    }
+    showSuccess(t("app.projects.videoRelinkSuccess"));
+    return { path, name };
+  };
+
   const switchRecording = async (recording: ProjectVideo, time: number | null = null) => {
     if (!currentProject || recording.project_id !== currentProject.id) return;
     const request = ++recordingRequest.current;
@@ -404,21 +420,14 @@ export const App: React.FC = () => {
       const files = await window.electronAPI.checkPathsExist([recording.video_path]);
       if (request !== recordingRequest.current) return;
       if (!files[recording.video_path]) {
-        if (!(await confirm({ message: t("app.projects.videoMissingMessage", { path: recording.video_path }),
-          confirmLabel: t("app.projects.videoMissingLocate") }))) return;
-        const path = await window.electronAPI.selectVideoFile();
-        if (!path || request !== recordingRequest.current) return;
-        const name = path.split(/[/\\]/).pop() ?? path;
-        if (!(await window.electronAPI.relinkVideoPath(recording.video_path, path, name))) {
-          showError(t("app.projects.videoRelinkError"));
-          return;
-        }
+        const located = await locateRecording(recording.video_path);
+        if (!located || request !== recordingRequest.current) return;
         const videos = await window.electronAPI.getProjectVideos(id);
         const updated = videos.find(video => video.id === recording.id);
         if (!updated || request !== recordingRequest.current) return;
         setRecordings(videos);
         if (currentProject.video_path === recording.video_path) {
-          setCurrentProject({ ...currentProject, video_path: path, video_name: name });
+          setCurrentProject({ ...currentProject, video_path: located.path, video_name: located.name });
         }
         activateRecording(id, updated, time);
         refreshClips();
@@ -536,39 +545,22 @@ export const App: React.FC = () => {
       let videoPathToUse = videos.find(video => video.id === previous)?.video_path ?? project.video_path;
       let projectToUse = project;
 
-      const existence = await window.electronAPI.checkPathsExist([
-        videoPathToUse,
-      ]);
+      const existence = await window.electronAPI.checkPathsExist(
+        [...new Set([videoPathToUse, ...videos.map(video => video.video_path)])],
+      );
       if (!existence[videoPathToUse]) {
-        const relink = await confirm({
-          message: t("app.projects.videoMissingMessage", {
-            path: videoPathToUse,
-          }),
-          confirmLabel: t("app.projects.videoMissingLocate"),
-        });
-        if (!relink) {
-          return;
+        const located = await locateRecording(videoPathToUse);
+        if (located) {
+          if (videoPathToUse === project.video_path) {
+            projectToUse = { ...project, video_path: located.path, video_name: located.name };
+          }
+          videoPathToUse = located.path;
+        } else {
+          // Open another game that is still on disk, so one missing file can't lock the project.
+          const fallback = videos.find(video => existence[video.video_path]);
+          if (!fallback) return;
+          videoPathToUse = fallback.video_path;
         }
-        const newPath = await window.electronAPI.selectVideoFile();
-        if (!newPath) {
-          return;
-        }
-        const newName =
-          newPath.split("/").pop() || newPath.split("\\").pop() || newPath;
-        const ok = await window.electronAPI.relinkVideoPath(
-          videoPathToUse,
-          newPath,
-          newName,
-        );
-        if (!ok) {
-          showError(t("app.projects.videoRelinkError"));
-          return;
-        }
-        if (videoPathToUse === project.video_path) {
-          projectToUse = { ...project, video_path: newPath, video_name: newName };
-        }
-        videoPathToUse = newPath;
-        showSuccess(t("app.projects.videoRelinkSuccess"));
       }
 
       await window.electronAPI.updateProjectLastOpened(project.id);

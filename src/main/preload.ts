@@ -92,7 +92,7 @@ export interface ElectronAPI {
     oldVideoPath: string,
     newVideoPath: string,
     newVideoName: string
-  ) => Promise<boolean>;
+  ) => Promise<"ok" | "duplicate" | "failed">;
   deleteProject: (id: number) => Promise<boolean>;
   checkPathsExist: (paths: string[]) => Promise<Record<string, boolean>>;
 

@@ -1,4 +1,4 @@
-import { sessionRecordings } from "../shared/sessionRecordings";
+import { clipRecording, importedClipPath, sessionRecordings } from "../shared/sessionRecordings";
 import { isSamePath } from "../shared/clipDrawings";
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
@@ -68,6 +68,7 @@ import { clipFileTitle, clipInputError } from "../shared/clipInput";
 import { safeFolderName } from "../shared/safeFolderName";
 import { hasVideoExtension } from "../shared/videoPath";
 import { isInsideDir } from "./insideDir";
+import { RECORDING_ALREADY_IN_PROJECT } from "./relink";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
 import { courtSvg, CourtDot, CourtLegendItem } from "../shared/courtSvg";
@@ -1478,14 +1479,16 @@ ipcMain.handle(
     newVideoName: string
   ) => {
     try {
-      if (!isVideoFile(newVideoPath)) return false;
+      if (!isVideoFile(newVideoPath)) return "failed";
       const relinked = relinkVideoPath(oldVideoPath, newVideoPath, newVideoName) > 0;
       // The old path is no longer a project video, so it must stop being served.
       if (relinked) allowedMediaPaths.clear();
-      return relinked;
+      return relinked ? "ok" : "failed";
     } catch (error) {
       console.error("Error updating project video path:", error);
-      return false;
+      return error instanceof Error && error.message === RECORDING_ALREADY_IN_PROJECT
+        ? "duplicate"
+        : "failed";
     }
   }
 );
@@ -2110,6 +2113,7 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
       if (p.id) playerMap.set(p.id, p.name);
     });
 
+    const recordingPaths = recordings.map(video => video.video_path);
     const exportClips = clips.map(clip => {
       let categoryNames: string[] = [];
       try {
@@ -2125,8 +2129,7 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
           .filter((n): n is string => Boolean(n));
       } catch { /* empty */ }
 
-      const recording = recordings.findIndex(video => isSamePath(video.video_path, clip.video_path));
-      if (recording < 0) throw new Error("INVALID_SESSION_FILE");
+      const recording = clipRecording(recordingPaths, clip.video_path, isSamePath);
       return {
         recording,
         title: clip.title,
@@ -2294,7 +2297,7 @@ ipcMain.handle("load-session", async () => {
 
         createClip({
           project_id: project.id as number,
-          video_path: paths[sessionData.version === 3 ? clip.recording : 0],
+          video_path: importedClipPath(sessionData.version, paths, clip.recording),
           output_path: "",
           thumbnail_path: "",
           start_time: clip.startTime,
