@@ -39,6 +39,9 @@ import {
   getProjects,
   updateProjectLastOpened,
   renameProject,
+  getProjectVideos,
+  addProjectVideo,
+  getProjectVideoPaths,
   relinkVideoPath,
   deleteProject,
   Category,
@@ -340,11 +343,11 @@ const isAllowedMediaPath = (resolved: string): boolean => {
   let allowed = within(getClipsDirectory()) || within(getDownloadsDirectory());
   if (!allowed) {
     try {
-      allowed = getProjects().some((project) => {
+      allowed = getProjectVideoPaths().some((videoPath) => {
         try {
-          return fs.realpathSync(path.resolve(project.video_path)) === resolved;
+          return fs.realpathSync(path.resolve(videoPath)) === resolved;
         } catch {
-          return path.resolve(project.video_path) === resolved;
+          return path.resolve(videoPath) === resolved;
         }
       });
     } catch (error) {
@@ -529,7 +532,7 @@ ipcMain.handle("cancel-clip-creation", async (_event, processId: string) => {
 });
 
 // Video file operations
-ipcMain.handle("select-video-file", async () => {
+const selectVideoFile = async () => {
   try {
     const result = await dialog.showOpenDialog(mainWindow, {
       properties: ["openFile"],
@@ -549,6 +552,18 @@ ipcMain.handle("select-video-file", async () => {
     console.error("Error selecting video file:", error);
     return null;
   }
+};
+
+ipcMain.handle("select-video-file", selectVideoFile);
+
+ipcMain.handle("get-project-videos", (_event, id: number) =>
+  Number.isSafeInteger(id) && id > 0 ? getProjectVideos(id) : []);
+
+ipcMain.handle("add-project-video", async (_event, id: number) => {
+  if (!Number.isSafeInteger(id) || id < 1 || !getProjectById(id)) return null;
+  const file = await selectVideoFile();
+  if (!file || !isVideoFile(file) || !getProjectById(id)) return null;
+  return addProjectVideo(id, file, path.basename(file));
 });
 
 ipcMain.handle("check-paths-exist", async (_event, paths: string[]) => {

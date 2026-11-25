@@ -1,3 +1,4 @@
+import type { ProjectVideo } from "./projectVideos";
 import { contextBridge, ipcRenderer } from "electron";
 
 export interface ElectronAPI {
@@ -77,6 +78,8 @@ export interface ElectronAPI {
   }) => Promise<any>;
   getProjectsByVideoPath: (videoPath: string) => Promise<any[]>;
   getProjects: () => Promise<any[]>;
+  getProjectVideos: (id: number) => Promise<ProjectVideo[]>;
+  addProjectVideo: (id: number) => Promise<ProjectVideo | null>;
   getDbStatus: () => Promise<{
     ok: boolean;
     error: string | null;
@@ -206,6 +209,8 @@ const electronAPI: ElectronAPI = {
   getProjectsByVideoPath: videoPath =>
     ipcRenderer.invoke("get-projects-by-video-path", videoPath),
   getProjects: () => ipcRenderer.invoke("get-projects"),
+  getProjectVideos: id => ipcRenderer.invoke("get-project-videos", id),
+  addProjectVideo: id => ipcRenderer.invoke("add-project-video", id),
   getDbStatus: () => ipcRenderer.invoke("get-db-status"),
   renameProject: (id, name) => ipcRenderer.invoke("rename-project", id, name),
   updateProjectLastOpened: projectId =>

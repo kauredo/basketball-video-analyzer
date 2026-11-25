@@ -1,4 +1,7 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import type { ProjectVideo } from "../main/projectVideos";
+import { isSamePath } from "../shared/clipDrawings";
+import { activeRecordingKey } from "./utils/projectPlayback";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Mark } from "./components/Mark";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -48,12 +51,16 @@ import { useFocusTrap } from "./hooks/useFocusTrap";
 import { useToastContext } from "./contexts/ToastContext";
 import { useConfirm } from "./contexts/ConfirmContext";
 import { loadPref, savePref, STORAGE_KEYS } from "./utils/storage";
+import { withCause } from "./utils/errors";
 import { formatVideoTime } from "./utils/format";
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToastContext();
   const { confirm } = useConfirm();
+  const [recordings, setRecordings] = useState<ProjectVideo[]>([]);
+  const recordingRequest = useRef(0);
+  const [startAt, setStartAt] = useState<number | null>(null);
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [currentProject, setCurrentProject] = useState<any | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -84,7 +91,7 @@ export const App: React.FC = () => {
   const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.BOTTOM_PANEL_COLLAPSED, false));
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
+
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [currentQuarter, setCurrentQuarter] = useState<string | null>(null);
 
@@ -269,15 +276,6 @@ export const App: React.FC = () => {
     setCurrentTime(time);
   }, []);
 
-  // Handle clip selection from timeline
-  const handleClipSelect = useCallback(
-    (clip: Clip) => {
-      setSelectedClip(clip);
-      handleTimeSeek(clip.start_time);
-    },
-    [handleTimeSeek],
-  );
-
   // Handle bottom panel resizing (timeline)
   const startBottomResize = useCallback(
     (e: React.MouseEvent) => {
@@ -368,24 +366,105 @@ export const App: React.FC = () => {
 
   const projectNameFor = (videoName: string) => videoName.replace(/\.[^/.]+$/, "");
 
-  const openProject = (project: Project, filePath: string) => {
-    if (currentProject?.id !== project.id || videoPath !== filePath) {
-      setCurrentTime(0);
-      setDuration(0);
-      setMarkInTime(null);
-      setMarkOutTime(null);
+  const activateRecording = (projectId: number, recording: ProjectVideo, time: number | null = null) => {
+    if (videoPath === recording.video_path && currentProject?.id === projectId) {
+      if (time !== null) handleTimeSeek(time);
+      return;
     }
+    setCurrentTime(0);
+    setDuration(0);
+    setMarkInTime(null);
+    setMarkOutTime(null);
+    setCurrentQuarter(null);
+    setStartAt(time);
+    setVideoPath(recording.video_path);
+    savePref(activeRecordingKey(projectId), recording.id);
+  };
+
+  const openProject = async (project: Project, filePath: string) => {
+    const request = ++recordingRequest.current;
+    const videos = await window.electronAPI.getProjectVideos(project.id);
+    if (request !== recordingRequest.current) return;
+    const video = videos.find(item => isSamePath(item.video_path, filePath));
+    if (!video) throw new Error("Project recording missing");
+    activateRecording(project.id, video);
+    setRecordings(videos);
     setCurrentProject(project);
-    setVideoPath(filePath);
     setRefreshTrigger((prev) => prev + 1);
     setShowProjectSelector(false);
     setShowInstructions(false);
   };
 
+  const switchRecording = async (recording: ProjectVideo, time: number | null = null) => {
+    if (!currentProject || recording.project_id !== currentProject.id) return;
+    const request = ++recordingRequest.current;
+    try {
+      const id = currentProject.id;
+      const files = await window.electronAPI.checkPathsExist([recording.video_path]);
+      if (request !== recordingRequest.current) return;
+      if (!files[recording.video_path]) {
+        if (!(await confirm({ message: t("app.projects.videoMissingMessage", { path: recording.video_path }),
+          confirmLabel: t("app.projects.videoMissingLocate") }))) return;
+        const path = await window.electronAPI.selectVideoFile();
+        if (!path || request !== recordingRequest.current) return;
+        const name = path.split(/[/\\]/).pop() ?? path;
+        if (!(await window.electronAPI.relinkVideoPath(recording.video_path, path, name))) {
+          showError(t("app.projects.videoRelinkError"));
+          return;
+        }
+        const videos = await window.electronAPI.getProjectVideos(id);
+        const updated = videos.find(video => video.id === recording.id);
+        if (!updated || request !== recordingRequest.current) return;
+        setRecordings(videos);
+        if (currentProject.video_path === recording.video_path) {
+          setCurrentProject({ ...currentProject, video_path: path, video_name: name });
+        }
+        activateRecording(id, updated, time);
+        refreshClips();
+        return;
+      }
+      activateRecording(id, recording, time);
+    } catch (error) {
+      showError(withCause(t("app.projects.recordingError"), error));
+    }
+  };
+
+  const handleClipSelect = (clip: Clip) => {
+    if (videoPath && isSamePath(clip.video_path, videoPath)) {
+      handleTimeSeek(clip.start_time);
+      return;
+    }
+    const recording = recordings.find(video => isSamePath(video.video_path, clip.video_path));
+    if (recording) void switchRecording(recording, clip.start_time);
+  };
+
+  const handleAddRecording = async () => {
+    if (!currentProject || isLoading) return;
+    const id = currentProject.id;
+    const request = ++recordingRequest.current;
+    try {
+      setIsLoading(true);
+      const recording = await window.electronAPI.addProjectVideo(id);
+      if (recording) {
+        const videos = await window.electronAPI.getProjectVideos(id);
+        if (request !== recordingRequest.current) return;
+        setRecordings(videos);
+        activateRecording(id, recording);
+      }
+    } catch (error) {
+      showError(withCause(t("app.projects.recordingError"), error));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const activeRecording = recordings.find(recording => recording.video_path === videoPath);
+  const gameClips = useMemo(() => clips.filter(clip => videoPath && isSamePath(clip.video_path, videoPath)), [clips, videoPath]);
+
   const handleChooserOpen = async (project: Project) => {
     if (!chooser) return;
     await window.electronAPI.updateProjectLastOpened(project.id);
-    openProject(project, chooser.filePath);
+    await openProject(project, chooser.filePath);
     setChooser(null);
   };
 
@@ -400,7 +479,7 @@ export const App: React.FC = () => {
         video_name: chooser.videoName,
         description: `Project for ${chooser.videoName}`,
       });
-      openProject(project, chooser.filePath);
+      await openProject(project, chooser.filePath);
       setChooser(null);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -428,7 +507,7 @@ export const App: React.FC = () => {
         video_name: videoName,
         description: `Project for ${videoName}`,
       });
-      openProject(project, filePath);
+      await openProject(project, filePath);
     } catch (error) {
       console.error("Error loading video:", error);
     } finally {
@@ -451,16 +530,18 @@ export const App: React.FC = () => {
     try {
       setIsLoading(true);
 
-      let videoPathToUse = project.video_path;
+      const videos = await window.electronAPI.getProjectVideos(project.id);
+      const previous = loadPref<number | null>(activeRecordingKey(project.id), null);
+      let videoPathToUse = videos.find(video => video.id === previous)?.video_path ?? project.video_path;
       let projectToUse = project;
 
       const existence = await window.electronAPI.checkPathsExist([
-        project.video_path,
+        videoPathToUse,
       ]);
-      if (!existence[project.video_path]) {
+      if (!existence[videoPathToUse]) {
         const relink = await confirm({
           message: t("app.projects.videoMissingMessage", {
-            path: project.video_path,
+            path: videoPathToUse,
           }),
           confirmLabel: t("app.projects.videoMissingLocate"),
         });
@@ -474,7 +555,7 @@ export const App: React.FC = () => {
         const newName =
           newPath.split("/").pop() || newPath.split("\\").pop() || newPath;
         const ok = await window.electronAPI.relinkVideoPath(
-          project.video_path,
+          videoPathToUse,
           newPath,
           newName,
         );
@@ -482,14 +563,16 @@ export const App: React.FC = () => {
           showError(t("app.projects.videoRelinkError"));
           return;
         }
+        if (videoPathToUse === project.video_path) {
+          projectToUse = { ...project, video_path: newPath, video_name: newName };
+        }
         videoPathToUse = newPath;
-        projectToUse = { ...project, video_path: newPath, video_name: newName };
         showSuccess(t("app.projects.videoRelinkSuccess"));
       }
 
       await window.electronAPI.updateProjectLastOpened(project.id);
 
-      openProject(projectToUse, videoPathToUse);
+      await openProject(projectToUse, videoPathToUse);
     } catch (error) {
       console.error("Error selecting project:", error);
     } finally {
@@ -686,11 +769,33 @@ export const App: React.FC = () => {
         <div className={styles.contentWithSidePanel}>
           <div className={styles.videoContainer}>
             <div className={styles.videoSection}>
+              {currentProject && (
+                <div className={styles.gamePicker}>
+                  <label htmlFor="project-game">{t("app.projects.gameRecording")}</label>
+                  <select
+                    id="project-game"
+                    disabled={isLoading}
+                    value={activeRecording?.id ?? ""}
+                    onChange={(event) => {
+                      const recording = recordings.find(video => video.id === Number(event.target.value));
+                      if (recording) void switchRecording(recording);
+                    }}
+                  >
+                    {recordings.map(video => <option key={video.id} value={video.id}>{video.video_name}</option>)}
+                  </select>
+                  <button type="button" className={styles.btn} onClick={handleAddRecording} disabled={isLoading}>
+                    {t("app.projects.addGame")}
+                  </button>
+                </div>
+              )}
               <VideoPlayer
                 key={`${currentProject?.id}:${videoPath}`}
                 ref={videoPlayerRef}
                 videoPath={videoPath}
                 projectId={currentProject?.id}
+                recordingId={activeRecording?.id}
+                firstRecording={activeRecording?.id === recordings[0]?.id}
+                startAt={startAt}
                 onTimeUpdate={setCurrentTime}
                 onDurationChange={setDuration}
                 markInTime={markInTime}
@@ -699,7 +804,7 @@ export const App: React.FC = () => {
                 onMarkOut={handleMarkOut}
                 onClearMarks={handleClearMarks}
                 onQuickTag={handleQuickTag}
-                clips={clips}
+                clips={gameClips}
                 onClipsUpdated={refreshClips}
               />
             </div>
@@ -727,7 +832,7 @@ export const App: React.FC = () => {
               <div className={styles.timelineContent}>
                 {currentProject && (
                   <Timeline
-                    clips={clips}
+                    clips={gameClips}
                     categories={categories}
                     currentTime={currentTime}
                     videoDuration={duration}
@@ -764,6 +869,7 @@ export const App: React.FC = () => {
                 onRefresh={refreshTrigger}
                 currentProject={currentProject}
                 onClipsChanged={refreshClips}
+                onJumpToSource={handleClipSelect}
                 onRequestWidth={ensureSidePanelWidth}
               />
             </div>
