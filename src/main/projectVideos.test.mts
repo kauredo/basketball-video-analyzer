@@ -1,0 +1,23 @@
+import assert from "node:assert/strict";
+import { DatabaseSync } from "node:sqlite";
+import { test } from "node:test";
+import { insertProjectVideo, listProjectVideos, migrateProjectVideos } from "./projectVideos.ts";
+
+test("backfills once, lets projects share a file and isolates each project's recordings", () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(`
+    CREATE TABLE projects (id INTEGER PRIMARY KEY, video_path TEXT, video_name TEXT);
+    INSERT INTO projects VALUES (1, '/shared.mp4', 'shared'), (2, '/shared.mp4', 'shared');
+  `);
+  migrateProjectVideos(db);
+  migrateProjectVideos(db);
+  assert.deepEqual(listProjectVideos(db, 1).map(video => video.video_path), ["/shared.mp4"]);
+  const added = insertProjectVideo(db, 1, "/second.mp4", "second");
+  assert.equal(insertProjectVideo(db, 1, "/second.mp4", "same file").id, added.id);
+  assert.deepEqual(listProjectVideos(db, 1).map(video => video.video_path), ["/shared.mp4", "/second.mp4"]);
+  assert.deepEqual(listProjectVideos(db, 2).map(video => video.video_path), ["/shared.mp4"]);
+  assert.throws(() => insertProjectVideo(db, 3, "/second.mp4", "second"));
+  db.exec("DELETE FROM projects WHERE id = 1");
+  assert.equal(listProjectVideos(db, 1).length, 0);
+  assert.equal(listProjectVideos(db, 2).length, 1);
+});
