@@ -13,9 +13,12 @@ interface CourtProps {
   onSelect?: (pos: { x: number; y: number }) => void;
   // Display mode: dot elements positioned in viewBox units.
   children?: React.ReactNode;
+  // Display mode with focusable children: names the svg as a group, so the
+  // children stay reachable by screen readers (role="img" hides them).
+  ariaLabel?: string;
 }
 
-export const Court: React.FC<CourtProps> = ({ marker, onSelect, children }) => {
+export const Court: React.FC<CourtProps> = ({ marker, onSelect, children, ariaLabel }) => {
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!onSelect) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -34,7 +37,8 @@ export const Court: React.FC<CourtProps> = ({ marker, onSelect, children }) => {
       viewBox={`0 0 ${COURT_VB_W} ${COURT_VB_H}`}
       style={{ width: "100%", height: "auto", display: "block" }}
       onClick={onSelect ? handleClick : undefined}
-      role={onSelect ? "button" : "img"}
+      role={onSelect ? "button" : ariaLabel ? "group" : "img"}
+      aria-label={ariaLabel}
     >
       <g className={styles.lines}>
         {COURT_LINES.map(({ tag: Tag, ...attrs }, i) => (

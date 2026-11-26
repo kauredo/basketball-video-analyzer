@@ -6,10 +6,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilm, faClock, faStopwatch, faTags, faImage, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/StatsDashboard.module.css";
 import { Court, COURT_VB_W, COURT_VB_H } from "./Court";
-import { courtSvg, courtSvgHeight, CourtDot, CourtLegendItem } from "../../shared/courtSvg";
+import { CourtClipDetail } from "./CourtClipDetail";
+import { courtSvg, courtSvgHeight, CourtLegendItem } from "../../shared/courtSvg";
 import { svgToPng } from "../utils/svgToPng";
 import { withCause } from "../utils/errors";
 import { formatDuration } from "../utils/format";
+import {
+  dotCategoryId,
+  legendRows,
+  sameCategoryClips,
+  type CategoryFilter,
+  type CourtMapCategory,
+} from "../utils/courtMap";
+import { categoryFamily, clipInCategory, parseIds, type CategoryNode } from "../utils/clipFilters";
 import { useToastContext } from "../contexts/ToastContext";
 import { Clip, Category, Player } from "../../types/global";
 
@@ -21,6 +30,8 @@ interface StatsDashboardProps {
   recordingId?: number;
   recordings: ProjectVideo[];
   projectId?: number;
+  // Closes Stats and seeks the main video to the clip. Absent: no button.
+  onOpenClip?: (clip: Clip) => void;
 }
 
 const NUM_BUCKETS = 8;
@@ -29,22 +40,16 @@ const PRIMARY = "#0b7972";
 // light colours whatever theme the app is in.
 const EXPORT_COLORS = { background: "#ffffff", lines: "#4a4a4a", text: "#1f1f1f" };
 
-const parseCategoryIds = (clip: Clip): number[] => {
-  try {
-    const ids = JSON.parse(clip.categories);
-    return Array.isArray(ids) ? ids : [];
-  } catch {
-    return [];
-  }
-};
+// A located clip with its category ids parsed once, for the courtMap helpers.
+type MapClip = Clip & { catIds: number[] };
+const toMapClip = (c: Clip): MapClip => ({ ...c, catIds: parseIds(c.categories) });
+const isLocated = (c: Clip) => c.court_x != null && c.court_y != null;
 
-const parsePlayerIds = (clip: Clip): number[] => {
-  try {
-    const ids = JSON.parse(clip.players || "[]");
-    return Array.isArray(ids) ? ids : [];
-  } catch {
-    return [];
-  }
+const focusDot = (id: number) => {
+  // After the state update, so the dot is in the DOM and no longer re-rendering.
+  requestAnimationFrame(() => {
+    document.querySelector<SVGGElement>(`[data-clip-id="${id}"]`)?.focus();
+  });
 };
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({
@@ -55,14 +60,21 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   recordingId,
   recordings,
   projectId,
+  onOpenClip,
 }) => {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToastContext();
-  const [tab, setTab] = useState<"overview" | "shotChart">("overview");
+  const [tab, setTab] = useState<"overview" | "courtMap">("overview");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [filterPlayer, setFilterPlayer] = useState<number | "all">("all");
   const [filterQuarter, setFilterQuarter] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<number | "all">("all");
+
+  const switchTab = (next: "overview" | "courtMap") => {
+    setTab(next);
+    setSelectedId(null);
+  };
 
   useEffect(() => {
     if (!projectId) return;
@@ -91,7 +103,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const summary = useMemo(() => {
     const totalDuration = clips.reduce((sum, c) => sum + c.duration, 0);
     const usedIds = new Set<number>();
-    clips.forEach(c => parseCategoryIds(c).forEach(id => usedIds.add(id)));
+    clips.forEach(c => parseIds(c.categories).forEach(id => usedIds.add(id)));
     return {
       count: clips.length,
       totalDuration,
@@ -105,7 +117,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const byCategory = useMemo(() => {
     const tally = new Map<number, { count: number; duration: number }>();
     clips.forEach(c => {
-      parseCategoryIds(c).forEach(id => {
+      parseIds(c.categories).forEach(id => {
         const cur = tally.get(id) || { count: 0, duration: 0 };
         cur.count += 1;
         cur.duration += c.duration;
@@ -172,54 +184,110 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     return { buckets, maxBucket, span };
   }, [clips, videoDuration]);
 
-  const locatedClips = useMemo(
-    () => clips.filter(c => c.court_x != null && c.court_y != null),
-    [clips]
+  const locatedClips = useMemo(() => clips.filter(isLocated).map(toMapClip), [clips]);
+
+  // A parent category owns its subcategories' clips, as in the clip library.
+  const family = useMemo(() => categoryFamily(categories as CategoryNode[]), [categories]);
+  const catFilter = useMemo<CategoryFilter>(
+    () =>
+      filterCategory === "all"
+        ? "all"
+        : { id: filterCategory, ids: family.get(filterCategory) ?? new Set([filterCategory]) },
+    [filterCategory, family]
   );
 
-  const chartClips = useMemo(
+  // The court map's Player / Quarter / Category filters, location ignored.
+  const filteredClips = useMemo(
     () =>
-      locatedClips.filter(c => {
+      clips.filter(c => {
         if (filterQuarter !== "all" && (c.quarter || "") !== filterQuarter)
           return false;
-        if (
-          filterCategory !== "all" &&
-          !parseCategoryIds(c).includes(filterCategory)
-        )
+        if (filterCategory !== "all" && !clipInCategory(c, filterCategory, family))
           return false;
-        if (filterPlayer !== "all" && !parsePlayerIds(c).includes(filterPlayer))
+        if (filterPlayer !== "all" && !parseIds(c.players).includes(filterPlayer))
           return false;
         return true;
       }),
-    [locatedClips, filterQuarter, filterCategory, filterPlayer]
+    [clips, filterQuarter, filterCategory, filterPlayer, family]
   );
 
-  // One dot per located clip, coloured by its first category, and a legend of
-  // the categories that appear.
-  const chartOf = useCallback(
-    (located: Clip[]) => {
-      const legend = new Map<string, CourtLegendItem>();
-      const dots: CourtDot[] = located.map(c => {
-        const firstCat = parseCategoryIds(c)[0];
-        const cat = firstCat != null ? flatCategories.find(fc => fc.id === firstCat) : undefined;
-        const color = cat?.color || PRIMARY;
-        if (cat) legend.set(String(cat.id), { color, label: cat.name });
-        return { x: c.court_x as number, y: c.court_y as number, color, label: c.title };
-      });
-      return { dots, legend: [...legend.values()] };
-    },
+  const chartClips = useMemo(
+    () => filteredClips.filter(isLocated).map(toMapClip),
+    [filteredClips]
+  );
+  // Dots carry only the clip id.
+  const clipById = useMemo(() => new Map(chartClips.map(c => [c.id, c])), [chartClips]);
+
+  const mapCategories = useMemo<CourtMapCategory[]>(
+    () =>
+      flatCategories
+        .filter((c): c is Category & { id: number } => c.id !== undefined)
+        .map(c => ({ id: c.id, name: c.name, color: c.color })),
     [flatCategories]
   );
-  const chart = useMemo(() => chartOf(chartClips), [chartOf, chartClips]);
+  const knownIds = useMemo(() => new Set(mapCategories.map(c => c.id)), [mapCategories]);
 
-  // The report uses the selected game scope, independent of shot chart filters.
+  // A dot category's name and colour; null (uncategorised) uses PRIMARY.
+  const categoryOf = useCallback(
+    (id: number | null) => {
+      const cat = id === null ? undefined : mapCategories.find(c => c.id === id);
+      return cat
+        ? { name: cat.name, color: cat.color || PRIMARY }
+        : { name: t("app.categories.noCategory"), color: PRIMARY };
+    },
+    [mapCategories, t]
+  );
+
+  // One dot per located clip, coloured by its dot category, and the legend's
+  // non-zero rows, so the exported image matches the screen.
+  const chartOf = useCallback(
+    (located: MapClip[], filter: CategoryFilter) => {
+      const dots = located.map(c => {
+        const catId = dotCategoryId(c, filter, knownIds);
+        const color = categoryOf(catId).color;
+        return { clipId: c.id, catId, x: c.court_x as number, y: c.court_y as number, color, label: c.title };
+      });
+      const legend: CourtLegendItem[] = legendRows(located, mapCategories, filter)
+        .filter(row => row.count > 0)
+        .map(row => ({ color: categoryOf(row.id).color, label: categoryOf(row.id).name }));
+      return { dots, legend };
+    },
+    [mapCategories, knownIds, categoryOf]
+  );
+  const chart = useMemo(() => chartOf(chartClips, catFilter), [chartOf, chartClips, catFilter]);
+
+  // A filter or the game scope dropped the selected clip: forget it, so it
+  // does not reopen and autoplay when the filter changes back.
+  useEffect(() => {
+    if (selectedId !== null && !clipById.has(selectedId)) setSelectedId(null);
+  }, [clipById, selectedId]);
+  const selected = (selectedId !== null && clipById.get(selectedId)) || null;
+  // null: uncategorised. undefined: nothing selected.
+  const selectedCat = selected ? dotCategoryId(selected, catFilter, knownIds) : undefined;
+  const legend = useMemo(
+    () => legendRows(chartClips, mapCategories, catFilter),
+    [chartClips, mapCategories, catFilter]
+  );
+  const siblings = selected
+    ? sameCategoryClips(chartClips, selected.id, catFilter, knownIds, c =>
+        recordings.findIndex(r => isSamePath(r.video_path, c.video_path)))
+    : [];
+
+  const closeDetail = () => {
+    if (selectedId === null) return;
+    const id = selectedId;
+    setSelectedId(null);
+    focusDot(id);
+  };
+
+  // The report uses the selected game scope, independent of court map filters.
   const handleExportReport = async () => {
     if (!projectId) return;
     const catName = new Map(flatCategories.map(c => [c.id, c.name]));
     const playerLabel = new Map(players.map(p => [p.id, p.number ? `${p.number} ${p.name}` : p.name]));
     const playerCounts = new Map<number, number>();
-    clips.forEach(c => parsePlayerIds(c).forEach(id => playerCounts.set(id, (playerCounts.get(id) ?? 0) + 1)));
-    const { dots, legend } = chartOf(locatedClips);
+    clips.forEach(c => parseIds(c.players).forEach(id => playerCounts.set(id, (playerCounts.get(id) ?? 0) + 1)));
+    const { dots, legend } = chartOf(locatedClips, "all");
     try {
       const result = await window.electronAPI.exportScoutingReport({
         projectId,
@@ -237,7 +305,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             clipsByCategory: t("app.stats.clipsByCategory"),
             byQuarter: t("app.stats.byQuarter"),
             byPlayer: t("app.stats.reportByPlayer"),
-            shotChart: t("app.stats.tabShotChart"),
+            shotChart: t("app.stats.tabCourtMap"),
             noLocatedClips: t("app.stats.reportNoLocated"),
             clipList: t("app.stats.reportClipList"),
             time: t("app.stats.reportTime"),
@@ -268,8 +336,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                 title: recordingId === undefined && recordings.length > 1
                   ? `${c.title} · ${recordings.find(video => isSamePath(video.video_path, c.video_path))?.video_name ?? ""}`
                   : c.title,
-                categories: parseCategoryIds(c).map(id => catName.get(id)).filter(Boolean).join(", "),
-                players: parsePlayerIds(c).map(id => playerLabel.get(id)).filter(Boolean).join(", "),
+                categories: parseIds(c.categories).map(id => catName.get(id)).filter(Boolean).join(", "),
+                players: parseIds(c.players).map(id => playerLabel.get(id)).filter(Boolean).join(", "),
                 quarter: c.quarter ?? "",
                 notes: c.notes ?? "",
               })),
@@ -291,7 +359,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       const result = await window.electronAPI.saveShotChart({ projectId, png });
       if (result) showSuccess(t("app.stats.saveChartImageSuccess", { path: result.filePath }));
     } catch (error) {
-      console.error("Error saving shot chart:", error);
+      console.error("Error saving court map:", error);
       showError(withCause(t("app.stats.saveChartImageError"), error));
     }
   };
@@ -333,18 +401,18 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           role="tab"
           aria-selected={tab === "overview"}
           className={`${styles.tab} ${tab === "overview" ? styles.tabActive : ""}`}
-          onClick={() => setTab("overview")}
+          onClick={() => switchTab("overview")}
         >
           {t("app.stats.tabOverview")}
         </button>
         <button
           type="button"
           role="tab"
-          aria-selected={tab === "shotChart"}
-          className={`${styles.tab} ${tab === "shotChart" ? styles.tabActive : ""}`}
-          onClick={() => setTab("shotChart")}
+          aria-selected={tab === "courtMap"}
+          className={`${styles.tab} ${tab === "courtMap" ? styles.tabActive : ""}`}
+          onClick={() => switchTab("courtMap")}
         >
-          {t("app.stats.tabShotChart")}
+          {t("app.stats.tabCourtMap")}
         </button>
       </div>
         <button type="button" className={styles.chartAction} onClick={handleExportReport}>
@@ -435,7 +503,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       </section>}
         </>
       ) : (
-        <div className={styles.shotChart}>
+        <div className={styles.courtMap}>
           <div className={styles.chartFilters}>
             <label className={styles.chartFilter}>
               <span>{t("app.stats.filterPlayer")}</span>
@@ -503,30 +571,133 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
               <p>{t("app.stats.noLocatedClips")}</p>
             </div>
           ) : (
-            <div className={styles.courtWrap}>
-              <Court>
-                {chart.dots.map((d, i) => (
-                  <circle
-                    key={chartClips[i].id}
-                    cx={d.x * COURT_VB_W}
-                    cy={d.y * COURT_VB_H}
-                    r={8}
-                    fill={d.color}
-                    fillOpacity={0.85}
-                    stroke="var(--bg-main)"
-                    strokeWidth={1}
-                  >
-                    <title>{d.label}</title>
-                  </circle>
-                ))}
-              </Court>
-              {clips.length - locatedClips.length > 0 && (
-                <p className={styles.unlocatedNote}>
-                  {t("app.stats.unlocatedCount", {
-                    count: clips.length - locatedClips.length,
-                  })}
-                </p>
+            <div
+              className={`${styles.courtMapBody} ${selected ? styles.courtMapBodySplit : ""}`}
+              onKeyDown={e => {
+                if (e.key === "Escape" && selected) {
+                  // Stops App's modal handler too, so Stats stays open.
+                  e.stopPropagation();
+                  closeDetail();
+                }
+              }}
+            >
+              {selected && (
+                <CourtClipDetail
+                  clip={selected}
+                  categoryName={categoryOf(selectedCat ?? null).name}
+                  categoryColor={categoryOf(selectedCat ?? null).color}
+                  players={players}
+                  siblings={siblings}
+                  onSelect={setSelectedId}
+                  onClose={closeDetail}
+                  onOpenInMainVideo={onOpenClip}
+                />
               )}
+              <div className={styles.courtWrap}>
+                <ul className={styles.legend}>
+                  {legend.map(row => {
+                    const cat = categoryOf(row.id);
+                    const hollow = selectedCat !== undefined && row.id !== selectedCat;
+                    return (
+                      <li key={row.id ?? "none"} className={styles.legendItem}>
+                        <span
+                          className={`${styles.legendSwatch} ${hollow ? styles.legendSwatchHollow : ""}`}
+                          style={hollow ? undefined : { backgroundColor: cat.color }}
+                        />
+                        {cat.name} <span className={styles.legendCount}>{row.count}</span>
+                      </li>
+                    );
+                  })}
+                  <li className={`${styles.legendItem} ${styles.legendTotal}`}>
+                    {t("app.stats.onCourt", { shown: chartClips.length, total: filteredClips.length })}
+                  </li>
+                </ul>
+                <div className={styles.courtBox}>
+                <Court ariaLabel={t("app.stats.tabCourtMap")}>
+                  {/* The focusable dots never change order: a moved node loses
+                      focus, and Enter on a dot would drop it to <body>. */}
+                  <g>
+                  {chart.dots.map(d => {
+                      const clip = clipById.get(d.clipId);
+                      if (!clip) return null;
+                      const cx = d.x * COURT_VB_W;
+                      const cy = d.y * COURT_VB_H;
+                      const isSelected = clip.id === selectedId;
+                      const hollow = selectedCat !== undefined && d.catId !== selectedCat;
+                      const base = `${clip.title}, ${categoryOf(d.catId).name}`;
+                      return (
+                        <g
+                          key={clip.id}
+                          data-clip-id={clip.id}
+                          role="button"
+                          tabIndex={0}
+                          className={styles.dot}
+                          aria-label={isSelected ? t("app.stats.dotPlaying", { label: base }) : base}
+                          aria-pressed={isSelected}
+                          onClick={() => setSelectedId(clip.id)}
+                          onKeyDown={e => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelectedId(clip.id);
+                            }
+                            // Keep Space/Z/M/1-9/Cmd+1/Cmd+2 away from VideoPlayer's
+                            // and App's document listeners. Tab must move focus;
+                            // Escape bubbles to the body handler, then App's modal.
+                            if (e.key !== "Tab" && e.key !== "Escape") e.stopPropagation();
+                          }}
+                        >
+                          <circle cx={cx} cy={cy} r={14} className={styles.dotHit} />
+                          {hollow ? (
+                            <circle cx={cx} cy={cy} r={8} className={styles.dotHollow} />
+                          ) : (
+                            <circle
+                              cx={cx}
+                              cy={cy}
+                              r={8}
+                              fill={d.color}
+                              fillOpacity={0.85}
+                              stroke="var(--bg-main)"
+                              strokeWidth={1}
+                            />
+                          )}
+                          <circle cx={cx} cy={cy} r={12} className={styles.dotFocus} />
+                          <title>{clip.title}</title>
+                        </g>
+                      );
+                    })}
+                  </g>
+                  {/* The selected category redrawn on top, so the hollow rings
+                      never cover it. Not interactive: clicks reach the dots below. */}
+                  {selectedCat !== undefined && (
+                    <g className={styles.dotOverlay} aria-hidden="true">
+                      {chart.dots
+                        .filter(d => d.catId === selectedCat)
+                        .map(d => {
+                          const cx = d.x * COURT_VB_W;
+                          const cy = d.y * COURT_VB_H;
+                          return (
+                            <g key={d.clipId}>
+                              <circle
+                                cx={cx}
+                                cy={cy}
+                                r={8}
+                                fill={d.color}
+                                fillOpacity={0.85}
+                                stroke="var(--bg-main)"
+                                strokeWidth={1}
+                              />
+                              {d.clipId === selectedId && (
+                                <circle cx={cx} cy={cy} r={12} className={styles.dotSelected} />
+                              )}
+                            </g>
+                          );
+                        })}
+                    </g>
+                  )}
+                </Court>
+                </div>
+                {!selected && <p className={styles.courtHint}>{t("app.stats.courtMapHint")}</p>}
+              </div>
             </div>
           )}
         </div>
