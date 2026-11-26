@@ -34,7 +34,9 @@ fetch "https://ffmpeg.org/releases/$ffmpeg.tar.xz" \
   7138d28c96d9d3e3af4ee3d8cad72741f8ffb40da90c1112235dea3ecd3178a3
 fetch "https://code.videolan.org/videolan/x264/-/archive/${x264#x264-}/$x264.tar.gz" \
   d053c9d86988d6bc78237ca5205865c5ddf99c98ef4cd9927eec8f6d388f6dd9
-fetch "https://zlib.net/$zlib.tar.gz" \
+# zlib.net answers some CI runner addresses with a small HTML page; the
+# release asset on GitHub is the same tarball.
+fetch "https://github.com/madler/zlib/releases/download/v${zlib#zlib-}/$zlib.tar.gz" \
   02dd159783677a749c04adbdd02b55b8a2bcc7e054f51b76b549199a916ad584
 
 jobs="$(getconf _NPROCESSORS_ONLN)"
