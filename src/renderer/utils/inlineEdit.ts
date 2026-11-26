@@ -1,4 +1,23 @@
 export type EditField = "title" | "notes";
+export type EditTarget = { id: number; field: EditField };
+export type EditAction =
+  | { type: "start"; target: EditTarget }
+  | { type: "commit" }
+  | { type: "cancel" };
+
+/**
+ * The open editor after an action, and the field to write, if any. A blur is
+ * a commit, so the blur that follows Enter or Escape finds nothing open and
+ * writes nothing.
+ */
+export const nextEdit = (
+  open: EditTarget | null,
+  action: EditAction,
+): { open: EditTarget | null; write: EditTarget | null } => {
+  if (action.type === "start") return { open: action.target, write: null };
+  if (action.type === "cancel") return { open: null, write: null };
+  return { open: null, write: open };
+};
 
 /** The text a field starts from when editing opens. */
 export const draftFor = (

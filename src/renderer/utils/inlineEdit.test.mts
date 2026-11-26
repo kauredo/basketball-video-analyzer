@@ -1,6 +1,48 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { draftFor, editedValue, editKeyAction } from "./inlineEdit.ts";
+import {
+  draftFor,
+  editedValue,
+  editKeyAction,
+  nextEdit,
+  type EditAction,
+  type EditTarget,
+} from "./inlineEdit.ts";
+
+const writesFor = (actions: EditAction[]): EditTarget[] => {
+  let open: EditTarget | null = null;
+  const writes: EditTarget[] = [];
+  for (const action of actions) {
+    const next = nextEdit(open, action);
+    open = next.open;
+    if (next.write) writes.push(next.write);
+  }
+  return writes;
+};
+
+const target: EditTarget = { id: 7, field: "title" };
+
+test("a second commit (Enter then blur) writes nothing more", () => {
+  assert.deepEqual(
+    writesFor([{ type: "start", target }, { type: "commit" }, { type: "commit" }]),
+    [target],
+  );
+});
+
+test("Escape then blur writes nothing", () => {
+  assert.deepEqual(
+    writesFor([{ type: "start", target }, { type: "cancel" }, { type: "commit" }]),
+    [],
+  );
+});
+
+test("a title of only a line break reverts", () => {
+  assert.equal(editedValue("title", "\n", "Old"), null);
+});
+
+test("a trailing line break on an unchanged title writes nothing", () => {
+  assert.equal(editedValue("title", "Old\n", "Old"), null);
+});
 
 test("trims a title", () => {
   assert.equal(editedValue("title", "  Drag  ", "Old"), "Drag");

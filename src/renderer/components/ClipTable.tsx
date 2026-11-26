@@ -363,6 +363,7 @@ export const ClipTable: React.FC<ClipTableProps> = ({
                         className={styles.cellButton}
                         title={clip.title}
                         onClick={() => edit.start(clip, "title")}
+                        {...edit.openerProps(clip.id, "title")}
                         aria-label={`${t("app.clips.table.editTitle")}: ${clip.title}`}
                       >
                         {clip.title}
@@ -465,6 +466,7 @@ export const ClipTable: React.FC<ClipTableProps> = ({
                         className={`${styles.cellButton} ${styles.notesButton}`}
                         title={clip.notes || ""}
                         onClick={() => edit.start(clip, "notes")}
+                        {...edit.openerProps(clip.id, "notes")}
                         aria-label={t("app.clips.table.editNotes")}
                       >
                         {clip.notes || (

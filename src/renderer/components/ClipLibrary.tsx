@@ -162,7 +162,11 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     loadData();
   }, [onRefresh, currentProject]);
 
+  // Edits reload too, so a slow older load must not overwrite a newer one.
+  const loadRequest = useRef(0);
+
   const loadData = async () => {
+    const request = ++loadRequest.current;
     try {
       if (!currentProject) return;
 
@@ -171,6 +175,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
         window.electronAPI.getCategoriesHierarchical(currentProject.id),
         window.electronAPI.getPlayers(currentProject.id),
       ]);
+      if (request !== loadRequest.current) return;
 
       setClips(clipsData);
       setCategories(categoriesData);
@@ -1129,6 +1134,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                               className={styles.clipTitleButton}
                               title={clip.title}
                               onClick={() => edit.start(clip, "title")}
+                              {...edit.openerProps(clip.id, "title")}
                               aria-label={`${t("app.clips.table.editTitle")}: ${clip.title}`}
                             >
                               {clip.title}
@@ -1177,6 +1183,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                             className={`${styles.clipNotes} ${styles.clipNotesButton}`}
                             title={clip.notes}
                             onClick={() => edit.start(clip, "notes")}
+                            {...edit.openerProps(clip.id, "notes")}
                             aria-label={t("app.clips.table.editNotes")}
                           >
                             {clip.notes}
@@ -1186,6 +1193,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                             type="button"
                             className={styles.addNoteButton}
                             onClick={() => edit.start(clip, "notes")}
+                            {...edit.openerProps(clip.id, "notes")}
                           >
                             {t("app.clips.table.notesPlaceholder")}
                           </button>
