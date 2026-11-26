@@ -364,6 +364,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm) var(--spacing-md);
   padding: var(--spacing-md);
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
@@ -382,6 +384,7 @@
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   font-family: var(--font-mono);
+  white-space: nowrap;
 }
 
 /* Timeline Ruler */
