@@ -119,13 +119,14 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 - **Project-Specific Libraries**: Each project maintains its own complete clip collection
 - **Visual Browser**: Thumbnail view of all clips with project context
 - **Hierarchical Filtering**: Filter by parent categories or drill down to specific subcategories
+- **One Filter Button**: Search, Filter, and sort sit on one row. Filter opens Category, Player, and Status; each active filter shows as a chip you can remove, and one line shows how many clips match out of the total
 - **Category Statistics**: See clip counts and total duration by category and subcategory
 - **Cross-Project Overview**: Easily switch between project libraries
 
 ### 📊 Table View and Clip Editing
 
 - **Two Views**: Browse clips as a thumbnail grid or switch to a dense, editable table
-- **Inline Editing**: Change title, categories, and notes directly in a table row
+- **Inline Editing**: Change title, categories, and notes directly in a table row, or edit title and notes in place on a card. Shift+Enter starts a new line in notes
 - **Multi-Select**: Tick rows to delete or re-categorise clips in bulk
 - **Clip Status**: Mark a clip keep, cut, or review; the row tints to match and the library filters by it
 
@@ -134,6 +135,12 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 - **Player Tagging**: Tag clips with the players involved and filter the library by player
 - **Court Positions**: Mark where on the floor a play happened
 - **Stats Dashboard**: Clip counts and durations broken down by category, player, and quarter
+- **Court Map**: Each located clip is a dot on the court. Click a dot to play that clip inside Stats, looped at 0.5x or 1x, step to the previous or next clip in the same category, or open it in the main video
+
+### 🪟 Workspace Layout
+
+- **Layout Presets**: Tag, Study, and Scout in the header set the panel sizes and clip list width in one click. After you resize by hand the preset shows a dot, and clicking it again restores its sizes
+- **List Width**: Set the bottom panel's clip list to Narrow, Wide, or Full; rows show whole titles and notes
 
 ### 🎥 Film Sessions
 
@@ -229,7 +236,7 @@ The mark keys are rebindable in Settings. Z and M are the defaults.
 ### 7. Manage Your Project Library
 
 - View all clips in the **Clip Library** filtered by current project
-- Use hierarchical filtering to drill down to specific subcategories
+- Use the **Filter** button to narrow by category, subcategory, player, or status
 - Switch between projects to access different clip libraries
 - Review category statistics to understand your analysis coverage
 
