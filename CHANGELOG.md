@@ -5,6 +5,31 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] - 2026-11-26
+
+### Added
+
+- Click a dot on the court map and its clip plays right there in Stats, on a loop, at full or half speed. Previous and next step through the other clips of that category, and "Open in main video" jumps the film to it.
+- Layout presets in the header. Tag gives the clip library room, Study gives the bottom clip list room, and Scout gives the video room. A preset shows a dot once you resize a panel by hand, and clicking it again puts its sizes back.
+- The bottom clip list has a width control, Narrow, Wide or Full, and shows whole titles and notes.
+- Edit a clip's title and notes straight on its card, as in the table. Shift+Enter starts a new line in notes.
+
+### Changed
+
+- The clip library's filters sit behind one Filter button, next to search and sort, with a removable chip for each active filter. The clips now start right under the search box.
+- The Stats "Shot chart" tab is now "Court map", since it shows any clip with a spot on the court.
+- Opening Stats pauses the main video.
+
+### Fixed
+
+- Edits in the clip library now show in the bottom list and Stats without a reload.
+- Picking a parent category in the bottom list or on the court map includes its subcategories' clips.
+- A selected subcategory no longer shows as "Unknown", and filters reset when you switch project.
+- Clicking a clip in the bottom list no longer throws an error, and Space then plays the video.
+- Esc in Stats no longer clears your in and out marks.
+- Every click on the side panel's drag handle no longer narrows it by a pixel.
+- Multi-line notes keep their lines in the table.
+
 ## [1.14.1] - 2026-11-25
 
 ### Fixed
