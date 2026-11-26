@@ -209,7 +209,7 @@
   border-bottom-color: var(--color-primary);
 }
 
-.shotChart {
+.courtMap {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
@@ -263,14 +263,349 @@
   cursor: not-allowed;
 }
 
+/* Court map body: the court alone and centred, or detail + court. */
+.courtMapBody {
+  display: grid;
+  grid-template-columns: minmax(0, 600px);
+  justify-content: center;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+.courtMapBodySplit {
+  grid-template-columns: minmax(320px, 520px) minmax(0, 1fr);
+  justify-content: stretch;
+}
+
+@media (max-width: 1000px) {
+  .courtMapBodySplit {
+    grid-template-columns: 1fr;
+  }
+}
+
 .courtWrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-sm);
+  min-width: 0;
 }
 
-.unlocatedNote {
+.courtHint {
+  margin: 0;
   font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
+  color: var(--text-muted);
+}
+
+/* Legend row above the court */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm) var(--spacing-md);
+  width: 100%;
+  max-width: 600px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.legendSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendSwatchHollow {
+  border: 1.5px solid var(--text-muted);
+}
+
+.legendCount {
+  color: var(--text-primary);
+}
+
+.legendTotal {
+  margin-left: auto;
+}
+
+/* Dots */
+.dot {
+  cursor: pointer;
+  outline: none;
+}
+
+.dotHit {
+  fill: transparent;
+}
+
+.dotHollow {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+}
+
+.dotSelected {
+  fill: none;
+  stroke: var(--text-primary);
+  stroke-width: 2;
+}
+
+.dotFocus {
+  fill: none;
+  stroke: none;
+}
+
+.dot:focus-visible .dotFocus {
+  stroke: var(--focus-ring-color);
+  stroke-width: 2.5;
+}
+
+/* Detail column */
+.detail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.detailClose {
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
+  z-index: 1;
+}
+
+.detailVideoBox {
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+}
+
+.detailVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.detailMissing {
+  margin: 0;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.detailProgress {
+  height: 2px;
+  margin-top: calc(-1 * var(--spacing-sm));
+  background: var(--border-color);
+}
+
+.detailProgressFill {
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.detailControls,
+.detailActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.detailSpacer {
+  flex: 1;
+}
+
+.detailTime {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.detailIconButton,
+.detailToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  height: var(--button-height);
+  min-width: var(--button-height);
+  padding: 0 var(--spacing-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.detailIconButton:hover:not(:disabled),
+.detailToggle:hover {
+  border-color: var(--border-color-hover);
+}
+
+.detailIconButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Neutral and raised: one solid teal button per region, and that is
+   "Open in main video". */
+.detailToggleOn {
+  background: var(--bg-quaternary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color-hover);
+  border-bottom: 2px solid var(--color-accent-ink);
+}
+
+.detailSegments {
+  display: inline-flex;
+}
+
+.detailSegments .detailToggle + .detailToggle {
+  margin-left: -1px;
+}
+
+.detailTitle {
+  margin: 0;
+  padding-right: calc(var(--button-height) + var(--spacing-sm));
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+}
+
+.detailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.detailChip {
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.detailNotes {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+.detailPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  height: var(--button-height);
+  padding: 0 var(--spacing-md);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-white);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.detailPrimary:hover {
+  background: var(--color-primary-dark);
+}
+
+.detailListHeading {
+  margin: var(--spacing-sm) 0 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+}
+
+.detailListCount {
+  color: var(--text-primary);
+}
+
+.detailList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.detailRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.detailRow:hover {
+  background: var(--bg-tertiary);
+}
+
+.detailRowCurrent,
+.detailRowCurrent:hover {
+  background: var(--bg-quaternary);
+  border-left-color: var(--color-accent-ink);
+}
+
+.detailRowCurrent .detailRowTitle {
+  font-weight: var(--font-weight-bold);
+}
+
+.detailRowDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.detailRowTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detailRowMono {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.detailRowPlaying {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent-ink);
+}
+
+.detailIconButton:focus-visible,
+.detailToggle:focus-visible,
+.detailPrimary:focus-visible,
+.detailRow:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
 }

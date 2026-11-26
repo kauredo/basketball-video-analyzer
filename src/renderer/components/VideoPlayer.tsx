@@ -77,6 +77,7 @@ interface VideoPlayerProps {
 
 interface VideoPlayerRef {
   seekTo: (time: number) => void;
+  pause: () => void;
   getOverlay: () => string | null;
   getClipDrawings: (start: number, end: number) => ClipDrawings;
 }
@@ -275,6 +276,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           setCurrentTime(time);
         }
       },
+      pause: () => videoRef.current?.pause(),
       // Current drawing as a native-resolution transparent PNG data URL, or
       // null if nothing is drawn. Used to burn annotations into exported clips.
       getOverlay: (): string | null => {

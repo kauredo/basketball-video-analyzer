@@ -1,5 +1,5 @@
 // The half-court as plain data, drawn by the Court component on screen and as
-// a standalone SVG string for the shot chart image and the scouting report.
+// a standalone SVG string for the court map image and the scouting report.
 // Baseline at the top; positions are normalized 0-1 (x left to right, y
 // baseline to half-court line) and scaled to the viewBox.
 

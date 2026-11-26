@@ -742,7 +742,12 @@ export const App: React.FC = () => {
             <button
               type="button"
               className={styles.btn}
-              onClick={() => { setStatsGame(null); setShowStats(true); }}
+              onClick={() => {
+                // The court map plays clips with sound; don't play over the main video.
+                videoPlayerRef.current?.pause();
+                setStatsGame(null);
+                setShowStats(true);
+              }}
             >
               <FontAwesomeIcon icon={faChartColumn} /> {t("app.stats.stats")}
             </button>
@@ -1107,7 +1112,7 @@ export const App: React.FC = () => {
           aria-modal="true"
           aria-labelledby="stats-title"
           onClick={(e) => { if (e.target === e.currentTarget) setShowStats(false); }}
-          onKeyDown={(e) => { if (e.key === "Escape") setShowStats(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); setShowStats(false); } }}
         >
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
@@ -1147,6 +1152,7 @@ export const App: React.FC = () => {
                 recordingId={statsGame ?? undefined}
                 recordings={recordings}
                 projectId={currentProject?.id}
+                onOpenClip={clip => { setShowStats(false); handleClipSelect(clip); }}
               />
             </div>
           </div>
