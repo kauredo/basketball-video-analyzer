@@ -35,6 +35,8 @@
       "hideSidePanel": "Seitenleiste ausblenden",
       "showBottomPanel": "Unteres Panel anzeigen",
       "hideBottomPanel": "Unteres Panel ausblenden",
+      "sidePanel": "Seitenleiste",
+      "bottomPanel": "Unteres Panel",
       "markIn": "Anfang setzen",
       "markOut": "Ende setzen",
       "clearMarks": "Markierungen löschen",
@@ -51,6 +53,17 @@
       "pause": "Pause",
       "resizeTimeline": "Ziehen, um das Timeline-Panel zu skalieren",
       "resizeClips": "Ziehen, um das Clip-Panel zu skalieren"
+    },
+    "layout": {
+      "label": "Layout",
+      "tag": "Taggen",
+      "study": "Analyse",
+      "scout": "Scouting",
+      "tagHint": "Breite Seitenleiste zum Schneiden von Clips",
+      "studyHint": "Hoher unterer Bereich zum Sichten von Clips",
+      "scoutHint": "Größtes Video zum Beobachten eines Gegners",
+      "edited": "{{name}} (geändert)",
+      "restoreHint": "{{name}} (geändert). Klicke, um die Größen wiederherzustellen."
     },
     "welcome": {
       "title": "Willkommen beim Basketball Video Analyzer",

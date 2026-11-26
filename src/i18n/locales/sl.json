@@ -35,6 +35,8 @@
       "hideSidePanel": "Skrij stranski panel",
       "showBottomPanel": "Pokaži spodnji panel",
       "hideBottomPanel": "Skrij spodnji panel",
+      "sidePanel": "Stranski panel",
+      "bottomPanel": "Spodnji panel",
       "markIn": "Začetna oznaka",
       "markOut": "Končna oznaka",
       "clearMarks": "Počisti oznake",
@@ -51,6 +53,17 @@
       "pause": "Premor",
       "resizeTimeline": "Povleci za spremembo velikosti panela časovnice",
       "resizeClips": "Povleci za spremembo velikosti panela posnetkov"
+    },
+    "layout": {
+      "label": "Postavitev",
+      "tag": "Označi",
+      "study": "Študij",
+      "scout": "Skavt",
+      "tagHint": "Širok stranski panel za rezanje posnetkov",
+      "studyHint": "Visok spodnji panel za pregled posnetkov",
+      "scoutHint": "Največji video za opazovanje nasprotnika",
+      "edited": "{{name}} (spremenjeno)",
+      "restoreHint": "{{name}} (spremenjeno). Kliknite za obnovitev velikosti."
     },
     "welcome": {
       "title": "Dobrodošli v Basketball Video Analyzer",
