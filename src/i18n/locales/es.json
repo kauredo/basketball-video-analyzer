@@ -288,6 +288,8 @@
         "selectAll": "Seleccionar todos los clips",
         "editTitle": "Editar título",
         "editNotes": "Editar notas",
+        "editHint": "Intro guarda, Esc cancela",
+        "editHintNotes": "Intro guarda, Mayús+Intro añade una línea, Esc cancela",
         "editCategories": "Editar categorías",
         "notesPlaceholder": "Añadir una nota",
         "noNotes": "Sin nota",

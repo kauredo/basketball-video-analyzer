@@ -267,6 +267,8 @@
         "selectAll": "Select all clips",
         "editTitle": "Edit title",
         "editNotes": "Edit notes",
+        "editHint": "Enter saves, Esc cancels",
+        "editHintNotes": "Enter saves, Shift+Enter adds a line, Esc cancels",
         "editCategories": "Edit categories",
         "notesPlaceholder": "Add a note",
         "noNotes": "No note",

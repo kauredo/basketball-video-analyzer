@@ -234,12 +234,17 @@
   font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+/* The clamp sits on the button: inside a clamped -webkit-box a button counts
+   as one atomic line, so a clamp on the h4 would not cut it. */
+.clipTitleButton {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
   word-break: break-word;
 }
 
@@ -268,6 +273,98 @@
   line-clamp: 3;
   -webkit-box-orient: vertical;
   word-break: break-word;
+}
+
+/* Title and notes look like text until clicked, then become a textarea. The
+   negative margin keeps their text aligned with the card's other lines. */
+.clipTitleButton,
+.clipNotesButton,
+.addNoteButton {
+  width: 100%;
+  text-align: left;
+  background: none;
+  padding: 2px var(--spacing-xs);
+  margin: 0 calc(-1 * var(--spacing-xs));
+  cursor: text;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.clipTitleButton,
+.addNoteButton {
+  font: inherit;
+  color: inherit;
+}
+
+/* Size, colour and line height come from .clipNotes; only the family needs
+   pulling back from the button default. */
+.clipNotesButton {
+  font-family: inherit;
+  white-space: pre-line;
+}
+
+.clipTitleButton:hover {
+  border-color: var(--border-color-hover);
+}
+
+.clipCard:hover .clipNotesButton,
+.clipNotesButton:focus-visible {
+  border: 1px dashed var(--border-color-hover);
+}
+
+.addNoteButton {
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  opacity: 0;
+}
+
+.clipCard:hover .addNoteButton,
+.clipCard:focus-within .addNoteButton {
+  opacity: 1;
+}
+
+.clipTitleButton:focus-visible,
+.clipNotesButton:focus-visible,
+.addNoteButton:focus-visible,
+.inlineInput:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 1px;
+}
+
+.inlineEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.inlineInput {
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  background: var(--bg-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font: inherit;
+  padding: 2px var(--spacing-xs);
+  line-height: var(--line-height-normal);
+}
+
+.inlineTitleInput {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
+}
+
+.inlineNotesInput {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.editHint {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
 }
 
 .clipActions {

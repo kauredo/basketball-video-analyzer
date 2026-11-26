@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { useDismissableMenu } from "../hooks/useDismissableMenu";
+import { useInlineEdit, autoGrow } from "../hooks/useInlineEdit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFilm,
@@ -86,7 +87,7 @@ export interface Clip {
 interface ClipLibraryProps {
   onRefresh: number; // Trigger refresh when this changes
   currentProject: any | null;
-  /** Clips were deleted here, so the timeline's copy is stale. */
+  /** Clips were edited or deleted here, so App's copy (Timeline, Stats) is stale. */
   onClipsChanged: () => void;
   onJumpToSource: (clip: Clip) => void;
   /** Ask the side panel for at least this many pixels. */
@@ -291,20 +292,25 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
   };
 
-  // The first renderer caller of updateClip. Local state is patched rather than
-  // reloading everything: a reload would refetch clips, categories and players
-  // over IPC on every committed edit. The catch resyncs, so a rejected write
-  // never leaves a value on screen that the database does not hold.
+  // Patched locally so the edit shows at once, then onClipsChanged so App
+  // reloads the copy Timeline and Stats read. That also reloads this list
+  // through onRefresh. The catch resyncs, so a rejected write never leaves a
+  // value on screen that the database does not hold.
   const handleUpdateClip = async (id: number, updates: Partial<Clip>) => {
     try {
       await window.electronAPI.updateClip(id, updates);
       setClips(prev => prev.map(c => (c.id === id ? { ...c, ...updates } : c)));
+      onClipsChanged();
     } catch (error) {
       console.error("Error updating clip:", error);
       showError(withCause(t("app.clips.table.saveError"), error));
       await loadData();
     }
   };
+
+  // Card title and notes editing. One field edits at a time, so one hint id.
+  const edit = useInlineEdit(handleUpdateClip);
+  const editHintId = useId();
 
   const handleUpdateEach = async (
     entries: Array<{ id: number; updates: Partial<Clip> }>
@@ -323,6 +329,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     setClips(prev =>
       prev.map(c => (applied.has(c.id) ? { ...c, ...applied.get(c.id) } : c))
     );
+    if (applied.size > 0) onClipsChanged();
 
     if (failed > 0) {
       showWarning(
@@ -1095,7 +1102,39 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
                       {/* Clip Info */}
                       <div className={styles.clipInfo}>
-                        <h4 className={styles.clipTitle}>{clip.title}</h4>
+                        {edit.isEditing(clip.id, "title") ? (
+                          <div className={styles.inlineEditor}>
+                            <textarea
+                              ref={edit.editorRef}
+                              rows={1}
+                              className={`${styles.inlineInput} ${styles.inlineTitleInput}`}
+                              value={edit.draft}
+                              onChange={event => {
+                                edit.setDraft(event.target.value);
+                                autoGrow(event.target);
+                              }}
+                              onBlur={() => edit.commit(clip)}
+                              onKeyDown={event => edit.onKeyDown(event, clip)}
+                              aria-label={t("app.clips.table.editTitle")}
+                              aria-describedby={editHintId}
+                            />
+                            <div id={editHintId} className={styles.editHint}>
+                              {t("app.clips.table.editHint")}
+                            </div>
+                          </div>
+                        ) : (
+                          <h4 className={styles.clipTitle}>
+                            <button
+                              type="button"
+                              className={styles.clipTitleButton}
+                              title={clip.title}
+                              onClick={() => edit.start(clip, "title")}
+                              aria-label={`${t("app.clips.table.editTitle")}: ${clip.title}`}
+                            >
+                              {clip.title}
+                            </button>
+                          </h4>
+                        )}
 
                         {/* Categories */}
                         <div className={styles.clipCategories}>
@@ -1111,8 +1150,45 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                         </div>
 
                         {/* Notes */}
-                        {clip.notes && (
-                          <div className={styles.clipNotes}>{clip.notes}</div>
+                        {edit.isEditing(clip.id, "notes") ? (
+                          <div className={styles.inlineEditor}>
+                            <textarea
+                              ref={edit.editorRef}
+                              rows={2}
+                              className={`${styles.inlineInput} ${styles.inlineNotesInput}`}
+                              value={edit.draft}
+                              placeholder={t("app.clips.table.notesPlaceholder")}
+                              onChange={event => {
+                                edit.setDraft(event.target.value);
+                                autoGrow(event.target);
+                              }}
+                              onBlur={() => edit.commit(clip)}
+                              onKeyDown={event => edit.onKeyDown(event, clip)}
+                              aria-label={t("app.clips.table.editNotes")}
+                              aria-describedby={editHintId}
+                            />
+                            <div id={editHintId} className={styles.editHint}>
+                              {t("app.clips.table.editHintNotes")}
+                            </div>
+                          </div>
+                        ) : clip.notes ? (
+                          <button
+                            type="button"
+                            className={`${styles.clipNotes} ${styles.clipNotesButton}`}
+                            title={clip.notes}
+                            onClick={() => edit.start(clip, "notes")}
+                            aria-label={t("app.clips.table.editNotes")}
+                          >
+                            {clip.notes}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className={styles.addNoteButton}
+                            onClick={() => edit.start(clip, "notes")}
+                          >
+                            {t("app.clips.table.notesPlaceholder")}
+                          </button>
                         )}
 
                         {/* Metadata */}

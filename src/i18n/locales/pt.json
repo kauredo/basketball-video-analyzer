@@ -290,6 +290,8 @@
         "selectAll": "Selecionar todos os clipes",
         "editTitle": "Editar título",
         "editNotes": "Editar notas",
+        "editHint": "Enter guarda, Esc cancela",
+        "editHintNotes": "Enter guarda, Shift+Enter muda de linha, Esc cancela",
         "editCategories": "Editar categorias",
         "notesPlaceholder": "Adicionar uma nota",
         "noNotes": "Sem nota",

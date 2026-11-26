@@ -288,6 +288,8 @@
         "selectAll": "Alle Clips auswählen",
         "editTitle": "Titel bearbeiten",
         "editNotes": "Notizen bearbeiten",
+        "editHint": "Enter speichert, Esc bricht ab",
+        "editHintNotes": "Enter speichert, Umschalt+Enter fügt eine Zeile ein, Esc bricht ab",
         "editCategories": "Kategorien bearbeiten",
         "notesPlaceholder": "Notiz hinzufügen",
         "noNotes": "Keine Notiz",
