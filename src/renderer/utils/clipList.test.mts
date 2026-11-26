@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { clipNumbers, listColumns, parseListWidth } from "./clipList.ts";
+import { clipNumbers, compareByStart, listColumns, parseListWidth } from "./clipList.ts";
 
 test("parseListWidth round-trips the three widths", () => {
   assert.equal(parseListWidth("narrow"), "narrow");
@@ -37,6 +37,19 @@ test("listColumns treats full like wide", () => {
       );
     }
   }
+});
+
+test("compareByStart orders by start time, then by id", () => {
+  const sorted = [
+    { id: 9, start_time: 50 },
+    { id: 1, start_time: 300 },
+    { id: 4, start_time: 50 },
+  ].sort(compareByStart);
+  assert.deepEqual(sorted.map(c => c.id), [4, 9, 1]);
+});
+
+test("clipNumbers of no clips is empty", () => {
+  assert.equal(clipNumbers([]).size, 0);
 });
 
 test("clipNumbers numbers clips by start time, whatever the input order", () => {

@@ -25,8 +25,14 @@ export const listColumns = (opts: {
   return cols;
 };
 
-/** 1-based position of each clip by start time, ties broken by id. */
-export const clipNumbers = (clips: { id: number; start_time: number }[]): Map<number, number> => {
-  const sorted = [...clips].sort((a, b) => a.start_time - b.start_time || a.id - b.id);
+type Timed = { id: number; start_time: number };
+
+/** List order: start time, ties broken by id. */
+export const compareByStart = (a: Timed, b: Timed): number =>
+  a.start_time - b.start_time || a.id - b.id;
+
+/** 1-based position of each clip in list order. */
+export const clipNumbers = (clips: Timed[]): Map<number, number> => {
+  const sorted = [...clips].sort(compareByStart);
   return new Map(sorted.map((clip, i) => [clip.id, i + 1]));
 };

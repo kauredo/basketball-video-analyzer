@@ -24,6 +24,7 @@ import {
   ListColumn,
   ListWidth,
   clipNumbers,
+  compareByStart,
   listColumns,
 } from "../utils/clipList";
 
@@ -243,9 +244,7 @@ export const Timeline: React.FC<TimelineProps> = ({
 
   // The list: one row per clip, numbered by position in the whole recording
   const numbers = useMemo(() => clipNumbers(clips), [clips]);
-  const shownClips = [...filteredClips].sort(
-    (a, b) => a.start_time - b.start_time || a.id - b.id
-  );
+  const shownClips = [...filteredClips].sort(compareByStart);
   const columns = listColumns({
     width: listWidth,
     singleCategory: filterCategory !== null,
@@ -257,16 +256,14 @@ export const Timeline: React.FC<TimelineProps> = ({
     onClipSelect(clip); // App seeks to start_time, switching recording if needed
   };
 
-  // VideoPlayer listens on document and only skips its shortcuts for inputs and
-  // buttons, so a focused row has to keep Space, Escape and quick-tag digits.
+  // Only Enter belongs to the row. Space, Escape and quick-tag digits bubble to
+  // VideoPlayer's document listener, so "click a clip, press Space" plays it.
   const onRowKey = (e: React.KeyboardEvent, clip: Clip) => {
-    const plainDigit = /^[1-9]$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault(); // Space would scroll the list
+    if (e.key === "Enter") {
       e.stopPropagation();
       selectFromList(clip);
-    } else if (e.key === "Escape" || plainDigit) {
-      e.stopPropagation(); // keep marks and quick-tags out of a list row
+    } else if (e.key === " ") {
+      e.preventDefault(); // stop the list scrolling; VideoPlayer ignores defaultPrevented
     }
   };
 
