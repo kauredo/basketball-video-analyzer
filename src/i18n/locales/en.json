@@ -187,8 +187,7 @@
       "all": "All",
       "filter": {
         "button": "Filter",
-        "buttonLabel_one": "Filter, {{count}} active",
-        "buttonLabel_other": "Filter, {{count}} active",
+        "buttonLabel": "Filter, {{count}} active",
         "dialogLabel": "Filter clips",
         "category": "Category",
         "player": "Player",

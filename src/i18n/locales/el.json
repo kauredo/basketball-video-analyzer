@@ -208,8 +208,7 @@
       "all": "Όλα",
       "filter": {
         "button": "Φίλτρο",
-        "buttonLabel_one": "Φίλτρο, {{count}} ενεργό",
-        "buttonLabel_other": "Φίλτρο, {{count}} ενεργά",
+        "buttonLabel": "Φίλτρο, ενεργά: {{count}}",
         "dialogLabel": "Φιλτράρισμα κλιπ",
         "category": "Κατηγορία",
         "player": "Παίκτης",

@@ -208,8 +208,7 @@
       "all": "Alle",
       "filter": {
         "button": "Filter",
-        "buttonLabel_one": "Filter, {{count}} aktiv",
-        "buttonLabel_other": "Filter, {{count}} aktiv",
+        "buttonLabel": "Filter, {{count}} aktiv",
         "dialogLabel": "Clips filtern",
         "category": "Kategorie",
         "player": "Spieler",

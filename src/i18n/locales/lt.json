@@ -208,8 +208,7 @@
       "all": "Visi",
       "filter": {
         "button": "Filtras",
-        "buttonLabel_one": "Filtras, aktyvių: {{count}}",
-        "buttonLabel_other": "Filtras, aktyvių: {{count}}",
+        "buttonLabel": "Filtras, aktyvių: {{count}}",
         "dialogLabel": "Filtruoti klipus",
         "category": "Kategorija",
         "player": "Žaidėjas",

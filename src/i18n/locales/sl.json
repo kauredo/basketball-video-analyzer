@@ -208,8 +208,7 @@
       "all": "Vsi",
       "filter": {
         "button": "Filter",
-        "buttonLabel_one": "Filter, aktivnih: {{count}}",
-        "buttonLabel_other": "Filter, aktivnih: {{count}}",
+        "buttonLabel": "Filter, aktivnih: {{count}}",
         "dialogLabel": "Filtriraj posnetke",
         "category": "Kategorija",
         "player": "Igralec",

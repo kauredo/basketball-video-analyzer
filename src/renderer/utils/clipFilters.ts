@@ -66,6 +66,28 @@ export function findCategory(categories: CategoryNode[], id: number): CategoryNo
   return undefined;
 }
 
+/**
+ * Drops a category or player filter whose id is no longer in the project, so a
+ * deletion cannot leave an active filter with no chip and an empty list.
+ * Returns the same object when nothing changed.
+ */
+export function pruneStaleFilters(
+  filters: ClipFilters,
+  categories: CategoryNode[],
+  players: { id: number }[],
+): ClipFilters {
+  const staleCategory =
+    filters.categoryId !== null && !findCategory(categories, filters.categoryId);
+  const stalePlayer =
+    filters.playerId !== null && !players.some(p => p.id === filters.playerId);
+  if (!staleCategory && !stalePlayer) return filters;
+  return {
+    ...filters,
+    categoryId: staleCategory ? null : filters.categoryId,
+    playerId: stalePlayer ? null : filters.playerId,
+  };
+}
+
 export function clipInCategory(
   clip: FilterableClip,
   categoryId: number,
@@ -131,6 +153,9 @@ export function summarize(
   return {
     shown: shown.length,
     total,
-    seconds: shown.reduce((sum, clip) => sum + clip.duration, 0),
+    seconds: shown.reduce(
+      (sum, clip) => sum + (Number.isFinite(clip.duration) && clip.duration > 0 ? clip.duration : 0),
+      0,
+    ),
   };
 }

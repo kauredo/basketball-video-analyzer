@@ -45,6 +45,7 @@ import {
   filterClips,
   findCategory,
   parseIds,
+  pruneStaleFilters,
 } from "../utils/clipFilters";
 
 export interface Category {
@@ -173,6 +174,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       setClips(clipsData);
       setCategories(categoriesData);
       setPlayers(playersData);
+      // A category or player deleted elsewhere would leave an invisible filter.
+      setFilters(current => pruneStaleFilters(current, categoriesData, playersData));
     } catch (error) {
       console.error("Error loading data:", error);
     }
@@ -411,15 +414,10 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       const categoryClips = new Map<number, Clip[]>();
 
       filteredClips.forEach(clip => {
-        try {
-          const clipCategories = JSON.parse(clip.categories);
-          clipCategories.forEach((catId: number) => {
-            const existing = categoryClips.get(catId) || [];
-            categoryClips.set(catId, [...existing, clip]);
-          });
-        } catch {
-          console.warn("Failed to parse categories for clip:", clip.id);
-        }
+        parseIds(clip.categories).forEach(catId => {
+          const existing = categoryClips.get(catId) || [];
+          categoryClips.set(catId, [...existing, clip]);
+        });
       });
 
       const categoryIds = Array.from(categoryClips.keys());

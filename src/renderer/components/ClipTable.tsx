@@ -22,21 +22,12 @@ import { formatVideoTime } from "../utils/format";
 import { inkOn } from "../utils/contrast";
 import { ClipStatus } from "../../types/global";
 import { CLIP_STATUSES, statusLabelKey } from "../utils/constants";
+import { parseIds } from "../utils/clipFilters";
 // Type-only, so this never becomes a runtime cycle with the component that
 // renders this one.
 import type { Clip, Category } from "./ClipLibrary";
 
 type SortField = "date" | "duration" | "title";
-
-/** A clip's id list, tolerating a malformed value the same way the cards do. */
-const parseIds = (json?: string): number[] => {
-  try {
-    const ids = JSON.parse(json || "[]");
-    return Array.isArray(ids) ? ids : [];
-  } catch {
-    return [];
-  }
-};
 
 interface ClipTableProps {
   /** Already filtered and sorted by ClipLibrary. */

@@ -209,8 +209,7 @@
       "all": "Tümü",
       "filter": {
         "button": "Filtre",
-        "buttonLabel_one": "Filtre, {{count}} etkin",
-        "buttonLabel_other": "Filtre, {{count}} etkin",
+        "buttonLabel": "Filtre, {{count}} etkin",
         "dialogLabel": "Klipleri filtrele",
         "category": "Kategori",
         "player": "Oyuncu",

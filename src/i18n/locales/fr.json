@@ -209,8 +209,7 @@
       "all": "Tous",
       "filter": {
         "button": "Filtrer",
-        "buttonLabel_one": "Filtrer, {{count}} actif",
-        "buttonLabel_other": "Filtrer, {{count}} actifs",
+        "buttonLabel": "Filtrer, actifs : {{count}}",
         "dialogLabel": "Filtrer les clips",
         "category": "Catégorie",
         "player": "Joueur",

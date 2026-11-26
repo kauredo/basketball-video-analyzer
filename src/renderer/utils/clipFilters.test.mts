@@ -10,6 +10,7 @@ import {
   findCategory,
   parseIds,
   playerCounts,
+  pruneStaleFilters,
   summarize,
 } from "./clipFilters.ts";
 
@@ -98,4 +99,24 @@ test("summarize sums the shown durations", () => {
     seconds: 47.5,
   });
   assert.deepEqual(summarize([], 0), { shown: 0, total: 0, seconds: 0 });
+});
+
+test("summarize counts a zero or NaN duration as 0", () => {
+  assert.equal(summarize([clip({ duration: 0 })], 1).seconds, 0);
+  assert.equal(summarize([clip({ duration: NaN }), clip({ duration: 5 })], 2).seconds, 5);
+});
+
+test("pruneStaleFilters drops category and player ids that no longer exist", () => {
+  const players = [{ id: 7 }];
+  const live = { search: "x", categoryId: 12, playerId: 7, status: "keep" as const };
+  assert.equal(pruneStaleFilters(live, categories, players), live);
+  assert.equal(pruneStaleFilters(NO_FILTERS, categories, players), NO_FILTERS);
+  assert.deepEqual(
+    pruneStaleFilters({ ...live, categoryId: 404, playerId: 9 }, categories, players),
+    { ...live, categoryId: null, playerId: null },
+  );
+  assert.deepEqual(
+    pruneStaleFilters({ ...live, categoryId: 2, playerId: 9 }, categories, players),
+    { ...live, categoryId: 2, playerId: null },
+  );
 });
