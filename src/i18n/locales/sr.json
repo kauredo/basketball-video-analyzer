@@ -566,6 +566,7 @@
       "playbackSpeed": "Brzina reprodukcije",
       "openInMainVideo": "Otvori u glavnom videu",
       "openInMainVideoHint": "Zatvara statistiku i premotava glavni video na {{time}}",
+      "openInMainVideoMissing": "Utakmica ovog klipa više nije u projektu, pa ne može da se otvori u glavnom videu.",
       "prevInCategory": "Prethodni klip u kategoriji {{category}}",
       "nextInCategory": "Sledeći klip u kategoriji {{category}}",
       "onCourtHeading": "{{category}} na terenu",

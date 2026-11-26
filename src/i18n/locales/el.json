@@ -566,6 +566,7 @@
       "playbackSpeed": "Ταχύτητα αναπαραγωγής",
       "openInMainVideo": "Άνοιγμα στο κύριο βίντεο",
       "openInMainVideoHint": "Κλείνει τα στατιστικά και μεταβαίνει στο {{time}} του κύριου βίντεο",
+      "openInMainVideoMissing": "Ο αγώνας αυτού του κλιπ δεν υπάρχει πια στο έργο, οπότε δεν μπορεί να ανοίξει στο κύριο βίντεο.",
       "prevInCategory": "Προηγούμενο κλιπ σε {{category}}",
       "nextInCategory": "Επόμενο κλιπ σε {{category}}",
       "onCourtHeading": "{{category}} στο γήπεδο",

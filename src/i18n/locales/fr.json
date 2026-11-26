@@ -567,6 +567,7 @@
       "playbackSpeed": "Vitesse de lecture",
       "openInMainVideo": "Ouvrir dans la vidéo principale",
       "openInMainVideoHint": "Ferme les statistiques et place la vidéo principale à {{time}}",
+      "openInMainVideoMissing": "Le match de ce clip n'est plus dans le projet, il ne peut donc pas s'ouvrir dans la vidéo principale.",
       "prevInCategory": "Clip précédent dans {{category}}",
       "nextInCategory": "Clip suivant dans {{category}}",
       "onCourtHeading": "{{category}} sur le terrain",

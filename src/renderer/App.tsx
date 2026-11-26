@@ -113,6 +113,12 @@ export const App: React.FC = () => {
   const feedbackTrapRef = useFocusTrap(showFeedback);
   const statsTrapRef = useFocusTrap(showStats);
 
+  // The court map plays clips with sound; however Stats opens, don't play
+  // over the main video.
+  useEffect(() => {
+    if (showStats) videoPlayerRef.current?.pause?.();
+  }, [showStats]);
+
   useEffect(() => {
     window.electronAPI.getAppVersion().then(setAppVersion).catch(() => {});
   }, []);
@@ -447,13 +453,16 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleClipSelect = (clip: Clip) => {
+  // False when no game in the project has the clip's video.
+  const handleClipSelect = (clip: Clip): boolean => {
     if (videoPath && isSamePath(clip.video_path, videoPath)) {
       handleTimeSeek(clip.start_time);
-      return;
+      return true;
     }
     const recording = recordings.find(video => isSamePath(video.video_path, clip.video_path));
-    if (recording) void switchRecording(recording, clip.start_time);
+    if (!recording) return false;
+    void switchRecording(recording, clip.start_time);
+    return true;
   };
 
   const handleAddRecording = async () => {
@@ -742,12 +751,7 @@ export const App: React.FC = () => {
             <button
               type="button"
               className={styles.btn}
-              onClick={() => {
-                // The court map plays clips with sound; don't play over the main video.
-                videoPlayerRef.current?.pause();
-                setStatsGame(null);
-                setShowStats(true);
-              }}
+              onClick={() => { setStatsGame(null); setShowStats(true); }}
             >
               <FontAwesomeIcon icon={faChartColumn} /> {t("app.stats.stats")}
             </button>
@@ -1152,7 +1156,10 @@ export const App: React.FC = () => {
                 recordingId={statsGame ?? undefined}
                 recordings={recordings}
                 projectId={currentProject?.id}
-                onOpenClip={clip => { setShowStats(false); handleClipSelect(clip); }}
+                onOpenClip={clip => {
+                  if (handleClipSelect(clip)) setShowStats(false);
+                  else showError(t("app.stats.openInMainVideoMissing"));
+                }}
               />
             </div>
           </div>

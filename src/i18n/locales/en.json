@@ -545,6 +545,7 @@
       "playbackSpeed": "Playback speed",
       "openInMainVideo": "Open in main video",
       "openInMainVideoHint": "Closes Stats and jumps the main video to {{time}}",
+      "openInMainVideoMissing": "This clip's game is no longer in the project, so it can't open in the main video.",
       "prevInCategory": "Previous clip in {{category}}",
       "nextInCategory": "Next clip in {{category}}",
       "onCourtHeading": "{{category}} on the court",

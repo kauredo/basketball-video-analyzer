@@ -568,6 +568,7 @@
       "playbackSpeed": "Velocidade de reprodução",
       "openInMainVideo": "Abrir no vídeo principal",
       "openInMainVideoHint": "Fecha as estatísticas e salta o vídeo principal para {{time}}",
+      "openInMainVideoMissing": "O jogo deste clip já não está no projeto, por isso não pode abrir no vídeo principal.",
       "prevInCategory": "Clip anterior em {{category}}",
       "nextInCategory": "Clip seguinte em {{category}}",
       "onCourtHeading": "{{category}} no campo",

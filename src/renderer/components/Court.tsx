@@ -16,11 +16,9 @@ interface CourtProps {
   // Display mode with focusable children: names the svg as a group, so the
   // children stay reachable by screen readers (role="img" hides them).
   ariaLabel?: string;
-  // Overrides the 480px cap in Court.module.css.
-  maxWidth?: number;
 }
 
-export const Court: React.FC<CourtProps> = ({ marker, onSelect, children, ariaLabel, maxWidth }) => {
+export const Court: React.FC<CourtProps> = ({ marker, onSelect, children, ariaLabel }) => {
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!onSelect) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -37,7 +35,7 @@ export const Court: React.FC<CourtProps> = ({ marker, onSelect, children, ariaLa
     <svg
       className={styles.court}
       viewBox={`0 0 ${COURT_VB_W} ${COURT_VB_H}`}
-      style={{ width: "100%", height: "auto", display: "block", ...(maxWidth ? { maxWidth } : {}) }}
+      style={{ width: "100%", height: "auto", display: "block" }}
       onClick={onSelect ? handleClick : undefined}
       role={onSelect ? "button" : ariaLabel ? "group" : "img"}
       aria-label={ariaLabel}

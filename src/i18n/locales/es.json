@@ -566,6 +566,7 @@
       "playbackSpeed": "Velocidad de reproducción",
       "openInMainVideo": "Abrir en el vídeo principal",
       "openInMainVideoHint": "Cierra las estadísticas y lleva el vídeo principal a {{time}}",
+      "openInMainVideoMissing": "El partido de este clip ya no está en el proyecto, así que no se puede abrir en el vídeo principal.",
       "prevInCategory": "Clip anterior en {{category}}",
       "nextInCategory": "Clip siguiente en {{category}}",
       "onCourtHeading": "{{category}} en la pista",

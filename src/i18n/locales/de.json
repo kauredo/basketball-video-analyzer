@@ -566,6 +566,7 @@
       "playbackSpeed": "Wiedergabegeschwindigkeit",
       "openInMainVideo": "Im Hauptvideo öffnen",
       "openInMainVideoHint": "Schließt die Statistik und springt im Hauptvideo zu {{time}}",
+      "openInMainVideoMissing": "Das Spiel dieses Clips ist nicht mehr im Projekt, daher kann er nicht im Hauptvideo geöffnet werden.",
       "prevInCategory": "Vorheriger Clip in {{category}}",
       "nextInCategory": "Nächster Clip in {{category}}",
       "onCourtHeading": "{{category}} auf dem Spielfeld",

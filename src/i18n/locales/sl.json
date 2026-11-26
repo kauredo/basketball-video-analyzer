@@ -566,6 +566,7 @@
       "playbackSpeed": "Hitrost predvajanja",
       "openInMainVideo": "Odpri v glavnem videu",
       "openInMainVideoHint": "Zapre statistiko in v glavnem videu skoči na {{time}}",
+      "openInMainVideoMissing": "Tekme tega posnetka ni več v projektu, zato ga ni mogoče odpreti v glavnem videu.",
       "prevInCategory": "Prejšnji posnetek v {{category}}",
       "nextInCategory": "Naslednji posnetek v {{category}}",
       "onCourtHeading": "{{category}} na igrišču",

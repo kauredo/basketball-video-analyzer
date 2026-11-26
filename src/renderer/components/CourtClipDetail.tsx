@@ -11,13 +11,27 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/StatsDashboard.module.css";
-import { clipMetaParts, stepClip } from "../utils/courtMap";
+import { stepClip } from "../utils/courtMap";
+import { parseIds } from "../utils/clipFilters";
 import { formatDuration } from "../utils/format";
 import { formatVideoSrc } from "../utils/paths";
 import { inkOn } from "../utils/contrast";
 import { Clip, Player } from "../../types/global";
 
 type Rate = 0.5 | 1;
+
+/** ["#7, #11", "Q3", "1:14:03–1:14:11"] with missing parts left out. */
+const clipMetaParts = (clip: Clip, players: Player[]): string[] => {
+  const numbers = parseIds(clip.players)
+    .map(id => players.find(p => p.id === id)?.number)
+    .filter((n): n is string => !!n)
+    .map(n => `#${n}`);
+  const parts: string[] = [];
+  if (numbers.length > 0) parts.push(numbers.join(", "));
+  if (clip.quarter) parts.push(clip.quarter);
+  parts.push(`${formatDuration(clip.start_time)}–${formatDuration(clip.end_time)}`);
+  return parts;
+};
 
 interface CourtClipDetailProps {
   clip: Clip;
@@ -174,7 +188,7 @@ export const CourtClipDetail: React.FC<CourtClipDetailProps> = ({
     onSelect(id);
   };
 
-  const meta = clipMetaParts(clip, players, formatDuration).join(" · ");
+  const meta = clipMetaParts(clip, players).join(" · ");
 
   return (
     <section aria-label={t("app.stats.selectedClip")} className={styles.detail}>

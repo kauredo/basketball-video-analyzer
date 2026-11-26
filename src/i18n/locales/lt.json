@@ -566,6 +566,7 @@
       "playbackSpeed": "Atkūrimo greitis",
       "openInMainVideo": "Atidaryti pagrindiniame vaizdo įraše",
       "openInMainVideoHint": "Uždaro statistiką ir pagrindinį vaizdo įrašą perkelia į {{time}}",
+      "openInMainVideoMissing": "Šio klipo rungtynių projekte nebėra, todėl jo negalima atidaryti pagrindiniame vaizdo įraše.",
       "prevInCategory": "Ankstesnis klipas: {{category}}",
       "nextInCategory": "Kitas klipas: {{category}}",
       "onCourtHeading": "{{category}} aikštėje",

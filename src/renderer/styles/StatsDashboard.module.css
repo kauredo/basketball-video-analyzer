@@ -291,6 +291,20 @@
   min-width: 0;
 }
 
+/* The court map is wider than the picker's 480px court. */
+.courtBox {
+  width: 100%;
+  max-width: 600px;
+}
+
+.courtBox svg {
+  max-width: none;
+}
+
+.dotOverlay {
+  pointer-events: none;
+}
+
 .courtHint {
   margin: 0;
   font-size: var(--font-size-sm);

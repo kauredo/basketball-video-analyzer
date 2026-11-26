@@ -567,6 +567,7 @@
       "playbackSpeed": "Oynatma hızı",
       "openInMainVideo": "Ana videoda aç",
       "openInMainVideoHint": "İstatistikleri kapatır ve ana videoyu {{time}} anına götürür",
+      "openInMainVideoMissing": "Bu klibin maçı artık projede değil, bu yüzden ana videoda açılamıyor.",
       "prevInCategory": "{{category}} içinde önceki klip",
       "nextInCategory": "{{category}} içinde sonraki klip",
       "onCourtHeading": "Sahadaki {{category}}",
