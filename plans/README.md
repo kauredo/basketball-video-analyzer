@@ -93,11 +93,11 @@ downloading the electron and ffmpeg binaries by running each package's
 | 041 | Electron 28 to 45 in seven small steps, content security policy first | app | P1 | L | — (Step 4 waits for the Linux build fix in the workflows) | TODO |
 | 042 | Session format v3 (drawings, court position, status), one-transaction load, re-cut loaded clips | app | P2 | L | — | TODO |
 | 043 | Feedback form platform field, and `check-paths-exist` answers only for saved projects | app | P2 | S | — | TODO |
-| 044 | Edit a clip's title and notes on the card view, and let sidebar edits reach Timeline and Stats | app | P1 | M | — | TODO |
-| 045 | One Filter button with a popover and removable chips in place of the stacked sidebar filters | app | P1 | M | 044 (stacked) | TODO |
-| 046 | The bottom clip list widens (Narrow / Wide / Full) and shows whole titles and notes | app | P1 | M | 045 (stacked) | TODO |
-| 047 | Court map: click a dot and watch its clip inside Stats ("Shot chart" renamed) | app | P1 | M | 046 (stacked) | TODO |
-| 048 | Layout presets Tag / Study / Scout in the header | app | P2 | M | 047 (stacked), needs 046's list width | TODO |
+| 044 | Edit a clip's title and notes on the card view, and let sidebar edits reach Timeline and Stats | app | P1 | M | — | IN REVIEW, [PR #89](https://github.com/kauredo/basketball-video-analyzer/pull/89), stack #94 |
+| 045 | One Filter button with a popover and removable chips in place of the stacked sidebar filters | app | P1 | M | 044 (stacked) | IN REVIEW, [PR #90](https://github.com/kauredo/basketball-video-analyzer/pull/90), stack #94 |
+| 046 | The bottom clip list widens (Narrow / Wide / Full) and shows whole titles and notes | app | P1 | M | 045 (stacked) | IN REVIEW, [PR #91](https://github.com/kauredo/basketball-video-analyzer/pull/91), stack #94 |
+| 047 | Court map: click a dot and watch its clip inside Stats ("Shot chart" renamed) | app | P1 | M | 046 (stacked) | IN REVIEW, [PR #92](https://github.com/kauredo/basketball-video-analyzer/pull/92), stack #94 |
+| 048 | Layout presets Tag / Study / Scout in the header | app | P2 | M | 047 (stacked), needs 046's list width | IN REVIEW, [PR #93](https://github.com/kauredo/basketball-video-analyzer/pull/93), stack #94 |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) |
 REJECTED (with one-line rationale).
