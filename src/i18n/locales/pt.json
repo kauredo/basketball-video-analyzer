@@ -37,6 +37,8 @@
       "hideSidePanel": "Ocultar Painel Lateral",
       "showBottomPanel": "Mostrar Painel Inferior",
       "hideBottomPanel": "Ocultar Painel Inferior",
+      "sidePanel": "Painel lateral",
+      "bottomPanel": "Painel inferior",
       "markIn": "Marcar Início",
       "markOut": "Marcar Fim",
       "clearMarks": "Limpar Marcas",

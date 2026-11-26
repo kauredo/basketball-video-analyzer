@@ -53,7 +53,11 @@ import { withCause } from "./utils/errors";
 import { formatVideoTime } from "./utils/format";
 import { parseListWidth, type ListWidth } from "./utils/clipList";
 import {
+  BOTTOM_MAX,
+  BOTTOM_MIN,
   LAYOUT_PRESET_IDS,
+  SIDE_MAX,
+  SIDE_MIN,
   parsePresetState,
   presetLayoutFor,
   presetReducer,
@@ -137,9 +141,10 @@ export const App: React.FC = () => {
   useEffect(() => { savePref(STORAGE_KEYS.LAYOUT_PRESET, presetState); }, [presetState]);
   const markLayoutEdited = useCallback(() => dispatchPreset({ type: "manualChange" }), []);
   const onUserListWidthChange = useCallback((w: ListWidth) => {
+    if (w === bottomListWidth) return;
     changeBottomListWidth(w);
     markLayoutEdited();
-  }, [changeBottomListWidth, markLayoutEdited]);
+  }, [bottomListWidth, changeBottomListWidth, markLayoutEdited]);
   const mainRef = useRef<HTMLElement>(null);
   const applyPreset = useCallback((id: LayoutPresetId) => {
     // <main>'s size does not depend on the panels, so measuring before
@@ -369,7 +374,7 @@ export const App: React.FC = () => {
         if (!isResizing.current) return;
 
         const deltaY = startY - e.pageY; // Inverted for bottom-to-top resize
-        const newHeight = Math.min(Math.max(200, startHeight + deltaY), 600);
+        const newHeight = Math.min(Math.max(BOTTOM_MIN, startHeight + deltaY), BOTTOM_MAX);
         draggedHeight = newHeight;
         setBottomPanelHeight(newHeight);
       };
@@ -397,12 +402,15 @@ export const App: React.FC = () => {
   // The clip table needs more room than the card grid does. Rather than ship a
   // view that opens truncated, the library asks for the width it needs the
   // first time a coach switches to it. A panel already wider is left alone.
+  // The view asked for this width, the coach did not drag to it, so the
+  // selected preset is not marked edited.
   const ensureSidePanelWidth = useCallback((minimum: number) => {
-    if (sidePanelWidth >= minimum) return;
-    setSidePanelWidth(minimum);
-    savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, minimum);
-    markLayoutEdited();
-  }, [sidePanelWidth, markLayoutEdited]);
+    setSidePanelWidth(prev => {
+      if (prev >= minimum) return prev;
+      savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, minimum);
+      return minimum;
+    });
+  }, []);
 
   const startSideResize = useCallback(
     (e: React.MouseEvent) => {
@@ -421,7 +429,7 @@ export const App: React.FC = () => {
         if (!isResizing.current) return;
 
         const deltaX = startX - e.pageX; // Inverted for right-to-left resize
-        const newWidth = Math.min(Math.max(280, startWidth + deltaX), 600);
+        const newWidth = Math.min(Math.max(SIDE_MIN, startWidth + deltaX), SIDE_MAX);
         draggedWidth = newWidth;
         setSidePanelWidth(newWidth);
       };
@@ -794,12 +802,12 @@ export const App: React.FC = () => {
                 type="button"
                 className={`${styles.presetBtn} ${active ? styles.presetBtnActive : ""}`}
                 aria-pressed={active}
-                aria-label={edited ? t("app.layout.edited", { name }) : undefined}
+                aria-label={edited ? t("app.layout.edited", { name }) : name}
                 title={edited ? t("app.layout.restoreHint", { name }) : t(`app.layout.${id}Hint`)}
                 onClick={() => applyPreset(id)}
               >
                 <PresetDiagram id={id} />
-                {name}
+                <span className={styles.presetName}>{name}</span>
                 {edited && <span className={styles.presetEditedMark} aria-hidden="true" />}
               </button>
             );
@@ -820,7 +828,7 @@ export const App: React.FC = () => {
               type="button"
               className={`${styles.btn} ${styles.iconBtn}`}
               aria-pressed={!isSidePanelCollapsed}
-              aria-label={isSidePanelCollapsed ? t("app.buttons.showSidePanel") : t("app.buttons.hideSidePanel")}
+              aria-label={t("app.buttons.sidePanel")}
               title={isSidePanelCollapsed ? t("app.buttons.showSidePanel") : t("app.buttons.hideSidePanel")}
               onClick={() => {
                 setIsSidePanelCollapsed(!isSidePanelCollapsed);
@@ -837,7 +845,7 @@ export const App: React.FC = () => {
               type="button"
               className={`${styles.btn} ${styles.iconBtn}`}
               aria-pressed={!isBottomPanelCollapsed}
-              aria-label={isBottomPanelCollapsed ? t("app.buttons.showBottomPanel") : t("app.buttons.hideBottomPanel")}
+              aria-label={t("app.buttons.bottomPanel")}
               title={isBottomPanelCollapsed ? t("app.buttons.showBottomPanel") : t("app.buttons.hideBottomPanel")}
               onClick={() => {
                 setIsBottomPanelCollapsed(!isBottomPanelCollapsed);

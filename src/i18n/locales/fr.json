@@ -36,6 +36,8 @@
       "hideSidePanel": "Masquer le panneau latéral",
       "showBottomPanel": "Afficher le panneau inférieur",
       "hideBottomPanel": "Masquer le panneau inférieur",
+      "sidePanel": "Panneau latéral",
+      "bottomPanel": "Panneau inférieur",
       "markIn": "Point d'entrée",
       "markOut": "Point de sortie",
       "clearMarks": "Effacer les points",

@@ -35,6 +35,8 @@
       "hideSidePanel": "Seitenleiste ausblenden",
       "showBottomPanel": "Unteres Panel anzeigen",
       "hideBottomPanel": "Unteres Panel ausblenden",
+      "sidePanel": "Seitenleiste",
+      "bottomPanel": "Unteres Panel",
       "markIn": "Anfang setzen",
       "markOut": "Ende setzen",
       "clearMarks": "Markierungen löschen",

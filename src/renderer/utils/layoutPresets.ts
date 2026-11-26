@@ -19,10 +19,11 @@ export const LAYOUT_PRESETS: Record<LayoutPresetId, PresetLayout> = {
   scout: { sidePanelWidth: 300, bottomPanelHeight: 200, bottomListWidth: "wide" },
 };
 
-// Mirrors of limits that live elsewhere. Change these when the source changes.
-export const SIDE_MIN = 280, SIDE_MAX = 600; // startSideResize clamp in App.tsx
-export const BOTTOM_MIN = 200, BOTTOM_MAX = 600; // startBottomResize clamp in App.tsx
-export const VIDEO_SECTION_MIN_HEIGHT = 460; // --video-section-min-height in variables.css
+// The panel drag limits. App.tsx's resize handlers clamp to these too.
+export const SIDE_MIN = 280, SIDE_MAX = 600;
+export const BOTTOM_MIN = 200, BOTTOM_MAX = 600;
+// Mirror of --video-section-min-height in variables.css. Change both together.
+export const VIDEO_SECTION_MIN_HEIGHT = 460;
 // Room for a 360px-tall 16:9 film plus the bottom list and timeline side by side.
 export const MIN_FILM_COLUMN = 640;
 

@@ -35,6 +35,8 @@
       "hideSidePanel": "Slėpti šoninį skydelį",
       "showBottomPanel": "Rodyti apatinį skydelį",
       "hideBottomPanel": "Slėpti apatinį skydelį",
+      "sidePanel": "Šoninis skydelis",
+      "bottomPanel": "Apatinis skydelis",
       "markIn": "Žymėti pradžią",
       "markOut": "Žymėti pabaigą",
       "clearMarks": "Išvalyti žymas",

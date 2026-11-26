@@ -14,6 +14,8 @@
       "hideSidePanel": "Hide Side Panel",
       "showBottomPanel": "Show Bottom Panel",
       "hideBottomPanel": "Hide Bottom Panel",
+      "sidePanel": "Side panel",
+      "bottomPanel": "Bottom panel",
       "markIn": "Mark In",
       "markOut": "Mark Out",
       "clearMarks": "Clear Marks",

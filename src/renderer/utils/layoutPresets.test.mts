@@ -1,12 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  BOTTOM_MAX,
+  BOTTOM_MIN,
   INITIAL_PRESET_STATE,
   LAYOUT_PRESETS,
   LAYOUT_PRESET_IDS,
   parsePresetState,
   presetLayoutFor,
   presetReducer,
+  SIDE_MAX,
+  SIDE_MIN,
 } from "./layoutPresets.ts";
 
 const BOARD = { width: 1440, height: 840 };
@@ -33,6 +37,26 @@ test("every preset's bottom is 200 at the minimum window height", () => {
 
 test("a narrow main clamps tag's side to the drag floor", () => {
   assert.equal(presetLayoutFor("tag", { width: 900, height: 840 }).sidePanelWidth, 280);
+});
+
+test("study's 360 side is clamped once main is under 1000 wide", () => {
+  assert.equal(presetLayoutFor("study", { width: 960, height: 840 }).sidePanelWidth, 320);
+  assert.equal(presetLayoutFor("study", { width: 1000, height: 840 }).sidePanelWidth, 360);
+});
+
+test("at and below a 919 main every preset stays inside the drag ranges and the window", () => {
+  for (const width of [919, 900, 700, 400]) {
+    for (const height of [612, 500, 300]) {
+      for (const id of LAYOUT_PRESET_IDS) {
+        const layout = presetLayoutFor(id, { width, height });
+        assert.ok(layout.sidePanelWidth >= SIDE_MIN && layout.sidePanelWidth <= SIDE_MAX, `${id} side at ${width}`);
+        assert.ok(layout.bottomPanelHeight >= BOTTOM_MIN && layout.bottomPanelHeight <= BOTTOM_MAX, `${id} bottom at ${height}`);
+        // The drag floor wins over the window only when the window is narrower than the floor.
+        assert.ok(layout.sidePanelWidth <= Math.max(SIDE_MIN, width), `${id} side wider than main at ${width}`);
+      }
+    }
+  }
+  assert.equal(presetLayoutFor("study", { width: 919, height: 840 }).sidePanelWidth, 280);
 });
 
 test("scout has the widest film column and the shortest bottom", () => {
@@ -89,4 +113,14 @@ test("parsePresetState keeps valid state and rejects junk", () => {
     assert.deepEqual(parsePresetState(junk), INITIAL_PRESET_STATE);
   }
   assert.deepEqual(parsePresetState({ selected: null, edited: true }), { selected: null, edited: false });
+});
+
+test("parsePresetState reads back what JSON.stringify wrote", () => {
+  for (const id of LAYOUT_PRESET_IDS) {
+    for (const edited of [false, true]) {
+      const state = { selected: id, edited };
+      assert.deepEqual(parsePresetState(JSON.parse(JSON.stringify(state))), state);
+    }
+  }
+  assert.deepEqual(parsePresetState(JSON.parse(JSON.stringify(INITIAL_PRESET_STATE))), INITIAL_PRESET_STATE);
 });

@@ -462,6 +462,7 @@
   align-items: center;
   justify-content: space-between;
   height: var(--header-height);
+  container: app-header / inline-size;
 }
 
 .headerActions {
@@ -491,7 +492,6 @@
 }
 
 .presetBtn {
-  position: relative;
   height: 100%;
   display: inline-flex;
   align-items: center;
@@ -530,14 +530,29 @@
   outline-offset: -2px;
 }
 
+/* Sits after the label in the button's flex row, so a long label pushes it
+   along instead of running under it. The negative margin trims the row gap
+   to half. */
 .presetEditedMark {
-  position: absolute;
-  top: 4px;
-  right: 4px;
+  flex: none;
   width: 6px;
   height: 6px;
-  border-radius: var(--radius-md);
+  margin-left: calc(var(--spacing-sm) / -2);
+  border-radius: var(--radius-round);
   background: var(--color-accent-ink);
+}
+
+/* With a project open the full header measures about 1320px in English and
+   up to 1480px in Lithuanian and Portuguese, padding included. Below 1460px
+   of content (a window about 1490px wide) the caption goes and the presets
+   show their diagrams only, with the name kept as aria-label. That compact
+   header fits every locale at the 1280px minimum window, with Italian the
+   widest at about 1240px. */
+@container app-header (max-width: 1460px) {
+  .layoutPresetsCaption,
+  .presetName {
+    display: none;
+  }
 }
 
 .panelToggles {

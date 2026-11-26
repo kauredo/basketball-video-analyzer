@@ -35,6 +35,8 @@
       "hideSidePanel": "Nascondi pannello laterale",
       "showBottomPanel": "Mostra pannello inferiore",
       "hideBottomPanel": "Nascondi pannello inferiore",
+      "sidePanel": "Pannello laterale",
+      "bottomPanel": "Pannello inferiore",
       "markIn": "Segna inizio",
       "markOut": "Segna fine",
       "clearMarks": "Cancella marcatori",

@@ -35,6 +35,8 @@
       "hideSidePanel": "Ocultar panel lateral",
       "showBottomPanel": "Mostrar panel inferior",
       "hideBottomPanel": "Ocultar panel inferior",
+      "sidePanel": "Panel lateral",
+      "bottomPanel": "Panel inferior",
       "markIn": "Marcar inicio",
       "markOut": "Marcar fin",
       "clearMarks": "Borrar marcas",

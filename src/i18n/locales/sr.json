@@ -35,6 +35,8 @@
       "hideSidePanel": "Sakrij bočni panel",
       "showBottomPanel": "Prikaži donji panel",
       "hideBottomPanel": "Sakrij donji panel",
+      "sidePanel": "Bočni panel",
+      "bottomPanel": "Donji panel",
       "markIn": "Početna tačka",
       "markOut": "Završna tačka",
       "clearMarks": "Obriši tačke",

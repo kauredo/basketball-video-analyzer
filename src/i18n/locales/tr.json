@@ -36,6 +36,8 @@
       "hideSidePanel": "Yan Paneli Gizle",
       "showBottomPanel": "Alt Paneli Göster",
       "hideBottomPanel": "Alt Paneli Gizle",
+      "sidePanel": "Yan panel",
+      "bottomPanel": "Alt panel",
       "markIn": "Başlangıç İşaretle",
       "markOut": "Bitiş İşaretle",
       "clearMarks": "İşaretleri Temizle",
