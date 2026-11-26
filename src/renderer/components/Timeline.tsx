@@ -1,23 +1,43 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "../styles/Timeline.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faPlay,
   faClock,
-  faLayerGroup,
-  faFilter,
   faSearch,
   faMagnifyingGlassMinus,
   faMagnifyingGlassPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { Clip, Category } from "../../types/global";
+import {
+  CategoryNode,
+  categoryFamily,
+  clipInCategory,
+  parseIds,
+} from "../utils/clipFilters";
+import { formatDuration } from "../utils/format";
+import { inkOn } from "../utils/contrast";
+import { statusLabelKey } from "../utils/constants";
+import {
+  LIST_WIDTHS,
+  ListColumn,
+  ListWidth,
+  clipNumbers,
+  compareByStart,
+  listColumns,
+} from "../utils/clipList";
 
 // A category with no colour of its own. Deliberately a neutral: it reads as
 // unset rather than impersonating a real category. The old #4CAF50 sat dE 7.4
 // from Transition in the new palette and failed 3:1 on the light theme.
 const DEFAULT_CATEGORY_COLOR = "#7F7F7F";
+
+const WIDTH_CLASS: Record<ListWidth, string> = {
+  narrow: styles.listNarrow,
+  wide: styles.listWide,
+  full: styles.listFull,
+};
 
 interface TimelineProps {
   clips: Clip[];
@@ -26,6 +46,8 @@ interface TimelineProps {
   videoDuration: number;
   onTimeSeek: (time: number) => void;
   onClipSelect: (clip: Clip) => void;
+  listWidth: ListWidth;
+  onListWidthChange: (width: ListWidth) => void;
 }
 
 interface TimelineClip extends Clip {
@@ -41,6 +63,8 @@ export const Timeline: React.FC<TimelineProps> = ({
   videoDuration,
   onTimeSeek,
   onClipSelect,
+  listWidth,
+  onListWidthChange,
 }) => {
   const { t } = useTranslation();
   const [selectedClip, setSelectedClip] = useState<Clip | null>(null);
@@ -50,45 +74,49 @@ export const Timeline: React.FC<TimelineProps> = ({
   const timelineRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Every category, parents and their children, for lookup by id
+  const allCategories = useMemo(
+    () => categories.flatMap(cat => [cat, ...(cat.children ?? [])]),
+    [categories]
+  );
+
+  // A parent filter takes in its subcategories' clips, as the side panel does.
+  // Categories from the database always carry an id.
+  const family = useMemo(
+    () => categoryFamily(categories as CategoryNode[]),
+    [categories]
+  );
+
   // Filter clips based on search and category filter
   const filteredClips = clips.filter(clip => {
     const matchesSearch =
       clip.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       clip.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Parse categories JSON to check filter
-    let clipCategoryIds: number[] = [];
-    try {
-      clipCategoryIds = JSON.parse(clip.categories || "[]");
-    } catch (e) {
-      clipCategoryIds = [];
-    }
-
     const matchesCategory =
-      filterCategory === null || clipCategoryIds.includes(filterCategory);
+      filterCategory === null || clipInCategory(clip, filterCategory, family);
     return matchesSearch && matchesCategory;
   });
+
+  // Position along the timeline as a percentage; 0 until the duration is known,
+  // so nothing is placed at NaN% while the video loads.
+  const percentOf = (seconds: number): number =>
+    videoDuration > 0 ? (seconds / videoDuration) * 100 : 0;
 
   // Convert clips to timeline format with percentages and expand clips for multiple categories
   const expandClipsForCategories = (): TimelineClip[] => {
     const expandedClips: TimelineClip[] = [];
 
     filteredClips.forEach(clip => {
-      let category_ids: number[] = [];
-      try {
-        category_ids = JSON.parse(clip.categories || "[]");
-      } catch (e) {
-        category_ids = [];
-      }
+      const category_ids = parseIds(clip.categories);
 
       // Create a separate timeline clip for each category the clip belongs to
       category_ids.forEach(categoryId => {
         expandedClips.push({
           ...clip,
           category_ids: [categoryId], // Single category for this instance
-          startPercentage: (clip.start_time / videoDuration) * 100,
-          widthPercentage:
-            ((clip.end_time - clip.start_time) / videoDuration) * 100,
+          startPercentage: percentOf(clip.start_time),
+          widthPercentage: percentOf(clip.end_time - clip.start_time),
         });
       });
 
@@ -97,9 +125,8 @@ export const Timeline: React.FC<TimelineProps> = ({
         expandedClips.push({
           ...clip,
           category_ids: [],
-          startPercentage: (clip.start_time / videoDuration) * 100,
-          widthPercentage:
-            ((clip.end_time - clip.start_time) / videoDuration) * 100,
+          startPercentage: percentOf(clip.start_time),
+          widthPercentage: percentOf(clip.end_time - clip.start_time),
         });
       }
     });
@@ -115,15 +142,6 @@ export const Timeline: React.FC<TimelineProps> = ({
   // Group clips by category for timeline tracks - organize hierarchically
   const organizeCategories = (categories: Category[]) => {
     const result: Array<{ category: Category; clips: TimelineClip[] }> = [];
-
-    // Get all categories (including children) flattened for easier lookup
-    const allCategories: Category[] = [];
-    categories.forEach(cat => {
-      allCategories.push(cat);
-      if (cat.children) {
-        allCategories.push(...cat.children);
-      }
-    });
 
     // First add parent categories and their clips
     categories
@@ -157,7 +175,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   const clipsByCategory = organizeCategories(categories);
 
   // Flattened hierarchical order (each parent followed by its children) so a
-  // clip's category rows in the list always sort parent-before-child.
+  // clip's category chips in the list always sort parent-before-child.
   const categoryOrder = new Map<number, number>();
   categories
     .filter(cat => !cat.parent_id)
@@ -188,7 +206,7 @@ export const Timeline: React.FC<TimelineProps> = ({
     onTimeSeek(Math.max(0, Math.min(videoDuration, newTime)));
   };
 
-  // Handle clip selection with accurate positioning
+  // Handle a click on a timeline segment, seeking to the clicked point inside it
   const handleClipClick = (clip: Clip, event: React.MouseEvent) => {
     event.stopPropagation();
     setSelectedClip(clip);
@@ -215,32 +233,128 @@ export const Timeline: React.FC<TimelineProps> = ({
   };
 
   // Calculate current time indicator position
-  const currentTimePercentage = (currentTime / videoDuration) * 100;
+  const currentTimePercentage = percentOf(currentTime);
 
   // Get category color for a clip (now works with single category per timeline clip)
   const getClipColor = (clip: TimelineClip): string => {
     if (clip.category_ids.length === 0) return DEFAULT_CATEGORY_COLOR;
-
-    // Get all categories (including children) for lookup
-    const allCategories: Category[] = [];
-    categories.forEach(cat => {
-      allCategories.push(cat);
-      if (cat.children) {
-        allCategories.push(...cat.children);
-      }
-    });
-
     const category = allCategories.find(c => c.id === clip.category_ids[0]);
     return category?.color || DEFAULT_CATEGORY_COLOR;
+  };
+
+  // The list: one row per clip, numbered by position in the whole recording
+  const numbers = useMemo(() => clipNumbers(clips), [clips]);
+  const shownClips = [...filteredClips].sort(compareByStart);
+  const columns = listColumns({
+    width: listWidth,
+    singleCategory: filterCategory !== null,
+    anyStatus: shownClips.some(c => c.status),
+  });
+
+  const selectFromList = (clip: Clip) => {
+    setSelectedClip(clip);
+    onClipSelect(clip); // App seeks to start_time, switching recording if needed
+  };
+
+  // Only Enter belongs to the row. Space, Escape and quick-tag digits bubble to
+  // VideoPlayer's document listener, so "click a clip, press Space" plays it.
+  const onRowKey = (e: React.KeyboardEvent, clip: Clip) => {
+    if (e.key === "Enter") {
+      e.stopPropagation();
+      selectFromList(clip);
+    } else if (e.key === " ") {
+      e.preventDefault(); // stop the list scrolling; VideoPlayer ignores defaultPrevented
+    }
+  };
+
+  const chip = (key: React.Key, color: string, label: React.ReactNode) => (
+    <span
+      key={key}
+      className={styles.chip}
+      style={{ backgroundColor: color, color: inkOn(color) }}
+    >
+      {label}
+    </span>
+  );
+
+  const categoryChips = (clip: Clip) => {
+    const ids = parseIds(clip.categories).sort(
+      (a, b) =>
+        (categoryOrder.get(a) ?? Number.MAX_SAFE_INTEGER) -
+        (categoryOrder.get(b) ?? Number.MAX_SAFE_INTEGER)
+    );
+    if (ids.length === 0) {
+      return chip("none", DEFAULT_CATEGORY_COLOR, t("app.categories.noCategory"));
+    }
+    return ids.map((id, index) => {
+      const category = allCategories.find(c => c.id === id);
+      if (!category) {
+        return chip(`${id}-${index}`, DEFAULT_CATEGORY_COLOR, t("app.categories.unknownCategory"));
+      }
+      return chip(
+        `${id}-${index}`,
+        category.color || DEFAULT_CATEGORY_COLOR,
+        category.parent_id ? (
+          <span className={styles.chipSub}>└ {category.name}</span>
+        ) : (
+          category.name
+        )
+      );
+    });
+  };
+
+  const headerLabel = (col: ListColumn): React.ReactNode => {
+    switch (col) {
+      case "number":
+        return <abbr title={t("app.timeline.clipNumber")}>#</abbr>;
+      case "time":
+        return t("app.timeline.time");
+      case "category":
+        return t("app.timeline.category");
+      case "title":
+        return t("app.timeline.clipTitle");
+      case "notes":
+        return t("app.timeline.notes");
+      case "duration":
+        return t("app.timeline.durationHeader");
+      case "status":
+        return t("app.clips.table.columnStatus");
+    }
+  };
+
+  const cell = (col: ListColumn, clip: Clip): React.ReactNode => {
+    switch (col) {
+      case "number":
+        return numbers.get(clip.id);
+      case "time":
+        return formatDuration(clip.start_time);
+      case "category":
+        return <div className={styles.chips}>{categoryChips(clip)}</div>;
+      case "title":
+        return (
+          <>
+            <span className={styles.clipTitle}>{clip.title}</span>
+            {listWidth === "narrow" && clip.notes && (
+              <span className={styles.rowNote}>{clip.notes}</span>
+            )}
+          </>
+        );
+      case "notes":
+        return <span className={styles.notes}>{clip.notes}</span>;
+      case "duration":
+        return formatDuration(clip.end_time - clip.start_time);
+      case "status":
+        return clip.status ? t(statusLabelKey(clip.status)) : "";
+    }
   };
 
   return (
     <div className={styles.timeline}>
       <div className={styles.timelineContent}>
         {/* Left Panel: Clips Table */}
-        <div className={styles.clipsPanel}>
+        <div className={`${styles.clipsPanel} ${WIDTH_CLASS[listWidth]}`}>
           <div className={styles.clipsPanelHeader}>
-            {/* Search and Filter Controls */}
+            {/* Search, filter and list width, one row that wraps only when it runs out of room */}
             <div className={styles.controls}>
               <div className={styles.searchBox}>
                 <FontAwesomeIcon icon={faSearch} />
@@ -288,12 +402,35 @@ export const Timeline: React.FC<TimelineProps> = ({
                   ])
                   .flat()}
               </select>
+
+              <div className={styles.listWidthRow}>
+                <span className={styles.listWidthLabel} id="timeline-list-width">
+                  {t("app.timeline.listWidth")}
+                </span>
+                <div
+                  role="group"
+                  aria-labelledby="timeline-list-width"
+                  className={styles.segmented}
+                >
+                  {LIST_WIDTHS.map(w => (
+                    <button
+                      key={w}
+                      type="button"
+                      aria-pressed={listWidth === w}
+                      className={`${styles.segment} ${listWidth === w ? styles.segmentOn : ""}`}
+                      onClick={() => onListWidthChange(w)}
+                    >
+                      {t(`app.timeline.width${w[0].toUpperCase()}${w.slice(1)}`)}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Clips Table */}
           <div className={styles.clipsTable}>
-            {filteredClips.length === 0 ? (
+            {shownClips.length === 0 ? (
               <div className={styles.emptyState}>
                 <FontAwesomeIcon icon={faClock} />
                 <p>{t("app.timeline.noClips")}</p>
@@ -303,174 +440,30 @@ export const Timeline: React.FC<TimelineProps> = ({
               <table className={styles.clipsTableElement}>
                 <thead>
                   <tr>
-                    <th>{t("app.timeline.category")}</th>
-                    <th>{t("app.timeline.clipTitle")}</th>
-                    <th>{t("app.timeline.time")}</th>
-                    <th>{t("app.timeline.durationHeader")}</th>
-                    <th>{t("app.timeline.notes")}</th>
+                    {columns.map(col => <th key={col} scope="col" className={styles[`col_${col}`]}>{headerLabel(col)}</th>)}
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Show clips expanded by categories */}
-                  {filteredClips.flatMap(clip => {
-                    // Parse clip categories
-                    let clipCategoryIds: number[] = [];
-                    try {
-                      clipCategoryIds = JSON.parse(clip.categories || "[]");
-                    } catch (e) {
-                      clipCategoryIds = [];
-                    }
-
-                    // If no categories, show once with "No Category"
-                    if (clipCategoryIds.length === 0) {
-                      return [
-                        <tr
-                          key={`${clip.id}-no-category`}
-                          className={`${styles.clipRow} ${
-                            selectedClip?.id === clip.id ? styles.selected : ""
-                          }`}
-                          onClick={() =>
-                            handleClipClick(clip, {
-                              stopPropagation: () => {},
-                            } as React.MouseEvent)
-                          }
-                        >
-                          <td className={styles.categoryCell}>
-                            <div className={styles.categoryContainer}>
-                              <div
-                                className={styles.categoryIndicator}
-                                style={{ backgroundColor: DEFAULT_CATEGORY_COLOR }}
-                              />
-                              <span className={styles.categoryName}>
-                                {t("app.categories.noCategory")}
-                              </span>
-                            </div>
-                          </td>
-                          <td className={styles.titleCell}>
-                            <span className={styles.clipTitle}>
-                              {clip.title}
-                            </span>
-                          </td>
-                          <td className={styles.timeCell}>
-                            <span className={styles.timeRange}>
-                              {formatTime(clip.start_time)} -{" "}
-                              {formatTime(clip.end_time)}
-                            </span>
-                          </td>
-                          <td className={styles.durationCell}>
-                            <span className={styles.duration}>
-                              {formatTime(clip.end_time - clip.start_time)}
-                            </span>
-                          </td>
-                          <td className={styles.notesCell}>
-                            <span className={styles.notes}>
-                              {clip.notes
-                                ? clip.notes.length > 30
-                                  ? `${clip.notes.substring(0, 30)}...`
-                                  : clip.notes
-                                : "-"}
-                            </span>
-                          </td>
-                        </tr>,
-                      ];
-                    }
-
-                    // Get all categories (including children) for lookup
-                    const allCategories: Category[] = [];
-                    categories.forEach(cat => {
-                      allCategories.push(cat);
-                      if (cat.children) {
-                        allCategories.push(...cat.children);
-                      }
-                    });
-
-                    // Show once per category, parent before its subcategories
-                    const sortedCategoryIds = [...clipCategoryIds].sort(
-                      (a, b) =>
-                        (categoryOrder.get(a) ?? Number.MAX_SAFE_INTEGER) -
-                        (categoryOrder.get(b) ?? Number.MAX_SAFE_INTEGER)
-                    );
-                    return sortedCategoryIds.map((categoryId, index) => {
-                      const category = allCategories.find(
-                        c => c.id === categoryId
-                      );
-
-                      return (
-                        <tr
-                          key={`${clip.id}-cat-${categoryId}`}
-                          className={`${styles.clipRow} ${
-                            selectedClip?.id === clip.id ? styles.selected : ""
-                          }`}
-                          onClick={() =>
-                            handleClipClick(clip, {
-                              stopPropagation: () => {},
-                            } as React.MouseEvent)
-                          }
-                        >
-                          <td className={styles.categoryCell}>
-                            <div className={styles.categoryContainer}>
-                              <div
-                                className={styles.categoryIndicator}
-                                style={{
-                                  backgroundColor: category?.color || DEFAULT_CATEGORY_COLOR,
-                                }}
-                              />
-                              <span
-                                className={`${styles.categoryName} ${
-                                  category?.parent_id ? styles.subcategoryName : ""
-                                }`}
-                                title={category?.name || t("app.categories.unknownCategory")}
-                              >
-                                {category?.parent_id ? "└ " : ""}
-                                {category?.name || t("app.categories.unknownCategory")}
-                              </span>
-                            </div>
-                          </td>
-                          <td className={styles.titleCell}>
-                            <span className={styles.clipTitle}>
-                              {clip.title}
-                            </span>
-                          </td>
-                          <td className={styles.timeCell}>
-                            <span className={styles.timeRange}>
-                              {formatTime(clip.start_time)} -{" "}
-                              {formatTime(clip.end_time)}
-                            </span>
-                          </td>
-                          <td className={styles.durationCell}>
-                            <span className={styles.duration}>
-                              {formatTime(clip.end_time - clip.start_time)}
-                            </span>
-                          </td>
-                          <td className={styles.notesCell}>
-                            <span className={styles.notes}>
-                              {clip.notes
-                                ? clip.notes.length > 30
-                                  ? `${clip.notes.substring(0, 30)}...`
-                                  : clip.notes
-                                : "-"}
-                            </span>
-                          </td>
-                          <td className={styles.actionsCell}>
-                            <button
-                              className={styles.playBtn}
-                              onClick={e => handleClipClick(clip, e)}
-                              title={t("app.timeline.playClip")}
-                            >
-                              <FontAwesomeIcon icon={faPlay} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    });
-                  })}
+                  {shownClips.map(clip => (
+                    <tr
+                      key={clip.id}
+                      className={selectedClip?.id === clip.id ? styles.selected : undefined}
+                      onClick={() => selectFromList(clip)}
+                      onKeyDown={e => onRowKey(e, clip)}
+                      tabIndex={0}
+                      aria-current={selectedClip?.id === clip.id ? "true" : undefined}
+                    >
+                      {columns.map(col => <td key={col} className={styles[`col_${col}`]}>{cell(col, clip)}</td>)}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             )}
           </div>
         </div>
 
-        {/* Right Panel: Visual Timeline */}
+        {/* Right Panel: Visual Timeline, hidden while the list takes the whole panel */}
+        {listWidth !== "full" && (
         <div className={styles.timelinePanel}>
           <div className={styles.timelinePanelHeader}>
             <div className={styles.timelineInfo}>
@@ -481,7 +474,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                 {t("app.timeline.currentTime")}: {formatTime(currentTime)}
               </span>
             </div>
-            
+
             <div className={styles.zoomControls}>
               <FontAwesomeIcon icon={faMagnifyingGlassMinus} className={styles.zoomIcon} />
               <input
@@ -509,7 +502,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                   const time = (i / (10 * zoomLevel)) * videoDuration;
                   if (time > videoDuration) return null;
                   return (
-                    <div key={i} className={styles.rulerMark} style={{ left: `${(time / videoDuration) * 100}%` }}>
+                    <div key={i} className={styles.rulerMark} style={{ left: `${percentOf(time)}%` }}>
                       <div className={styles.rulerLine} />
                       <span className={styles.rulerLabel}>{formatTime(time)}</span>
                     </div>
@@ -605,6 +598,7 @@ export const Timeline: React.FC<TimelineProps> = ({
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

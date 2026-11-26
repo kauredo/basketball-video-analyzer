@@ -501,14 +501,18 @@
       "search": "Klip ara...",
       "allCategories": "Tüm Kategoriler",
       "noClips": "Klip bulunamadı",
-      "playClip": "Klibi oynat",
       "visualTimeline": "Görsel Zaman Çizelgesi",
       "duration": "Süre",
       "currentTime": "Geçerli Zaman",
       "legend": "Açıklama",
       "selectedClip": "Seçili Klip",
       "currentPosition": "Geçerli Konum",
-      "noClipsGuidance": "Klibin başlangıcını işaretlemek için video oynarken Z tuşuna, ardından bitirmek için M tuşuna basın."
+      "noClipsGuidance": "Klibin başlangıcını işaretlemek için video oynarken Z tuşuna, ardından bitirmek için M tuşuna basın.",
+      "listWidth": "Liste genişliği",
+      "widthNarrow": "Dar",
+      "widthWide": "Geniş",
+      "widthFull": "Tam",
+      "clipNumber": "Klip numarası"
     },
     "hints": {
       "markKeys": "Klibin başını işaretlemek için {{markIn}}, sonunu işaretlemek için {{markOut}} tuşuna basın.",

@@ -500,14 +500,18 @@
       "search": "Cerca clip...",
       "allCategories": "Tutte le categorie",
       "noClips": "Nessuna clip trovata",
-      "playClip": "Riproduci clip",
       "visualTimeline": "Timeline visiva",
       "duration": "Durata",
       "currentTime": "Tempo attuale",
       "legend": "Legenda",
       "selectedClip": "Clip selezionata",
       "currentPosition": "Posizione attuale",
-      "noClipsGuidance": "Premi Z mentre il video è in riproduzione per segnare l'inizio di una clip, poi M per terminarla."
+      "noClipsGuidance": "Premi Z mentre il video è in riproduzione per segnare l'inizio di una clip, poi M per terminarla.",
+      "listWidth": "Larghezza elenco",
+      "widthNarrow": "Stretta",
+      "widthWide": "Larga",
+      "widthFull": "Intera",
+      "clipNumber": "Numero clip"
     },
     "hints": {
       "markKeys": "Premi {{markIn}} per segnare l'inizio di una clip, {{markOut}} per segnare la fine.",

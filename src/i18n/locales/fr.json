@@ -501,14 +501,18 @@
       "search": "Rechercher des clips...",
       "allCategories": "Toutes les catégories",
       "noClips": "Aucun clip trouvé",
-      "playClip": "Lire le clip",
       "visualTimeline": "Timeline visuelle",
       "duration": "Durée",
       "currentTime": "Instant actuel",
       "legend": "Légende",
       "selectedClip": "Clip sélectionné",
       "currentPosition": "Position actuelle",
-      "noClipsGuidance": "Appuyez sur Z pendant la lecture de la vidéo pour marquer le début d'un clip, puis M pour le terminer."
+      "noClipsGuidance": "Appuyez sur Z pendant la lecture de la vidéo pour marquer le début d'un clip, puis M pour le terminer.",
+      "listWidth": "Largeur de la liste",
+      "widthNarrow": "Étroite",
+      "widthWide": "Large",
+      "widthFull": "Pleine",
+      "clipNumber": "Numéro du clip"
     },
     "hints": {
       "markKeys": "Appuyez sur {{markIn}} pour marquer le début d'un clip, {{markOut}} pour marquer la fin.",

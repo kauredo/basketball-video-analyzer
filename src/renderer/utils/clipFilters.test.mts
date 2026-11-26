@@ -78,6 +78,14 @@ test("bad JSON in categories or players matches nothing and does not throw", () 
   assert.deepEqual(filterClips([broken], { ...NO_FILTERS, playerId: 7 }, family), []);
   assert.deepEqual(parseIds("{\"a\":1}"), []);
   assert.deepEqual(parseIds(null), []);
+  assert.deepEqual(parseIds(""), []);
+  assert.deepEqual(parseIds("oops"), []);
+  assert.deepEqual(parseIds("{}"), []);
+});
+
+test("parseIds drops elements that are not finite numbers", () => {
+  assert.deepEqual(parseIds("[3,\"x\",null,1]"), [3, 1]);
+  assert.deepEqual(parseIds("[1e999,2]"), [2]);
 });
 
 test("playerCounts counts each clip once per player", () => {

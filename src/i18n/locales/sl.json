@@ -500,14 +500,18 @@
       "search": "Išči posnetke ...",
       "allCategories": "Vse kategorije",
       "noClips": "Ni najdenih posnetkov",
-      "playClip": "Predvajaj posnetek",
       "visualTimeline": "Vizualna časovnica",
       "duration": "Trajanje",
       "currentTime": "Trenutni čas",
       "legend": "Legenda",
       "selectedClip": "Izbrani posnetek",
       "currentPosition": "Trenutni položaj",
-      "noClipsGuidance": "Med predvajanjem videa pritisnite Z za označitev začetka posnetka in nato M za konec."
+      "noClipsGuidance": "Med predvajanjem videa pritisnite Z za označitev začetka posnetka in nato M za konec.",
+      "listWidth": "Širina seznama",
+      "widthNarrow": "Ozek",
+      "widthWide": "Širok",
+      "widthFull": "Poln",
+      "clipNumber": "Številka posnetka"
     },
     "hints": {
       "markKeys": "Pritisnite {{markIn}} za označitev začetka posnetka in {{markOut}} za konec.",

@@ -53,6 +53,7 @@ import { useConfirm } from "./contexts/ConfirmContext";
 import { loadPref, savePref, STORAGE_KEYS } from "./utils/storage";
 import { withCause } from "./utils/errors";
 import { formatVideoTime } from "./utils/format";
+import { parseListWidth, type ListWidth } from "./utils/clipList";
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
@@ -90,6 +91,13 @@ export const App: React.FC = () => {
   const [isSidePanelCollapsed, setIsSidePanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.SIDE_PANEL_COLLAPSED, true));
   const [bottomPanelHeight, setBottomPanelHeight] = useState(() => loadPref(STORAGE_KEYS.BOTTOM_PANEL_HEIGHT, 300));
   const [isBottomPanelCollapsed, setIsBottomPanelCollapsed] = useState(() => loadPref(STORAGE_KEYS.BOTTOM_PANEL_COLLAPSED, false));
+  const [bottomListWidth, setBottomListWidth] = useState<ListWidth>(() =>
+    parseListWidth(loadPref<unknown>(STORAGE_KEYS.BOTTOM_LIST_WIDTH, "narrow")));
+  // Plan 048's layout presets call this too, so a preset change persists like a manual one.
+  const changeBottomListWidth = useCallback((width: ListWidth) => {
+    setBottomListWidth(width);
+    savePref(STORAGE_KEYS.BOTTOM_LIST_WIDTH, width);
+  }, []);
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -831,6 +839,8 @@ export const App: React.FC = () => {
                     videoDuration={duration}
                     onTimeSeek={handleTimeSeek}
                     onClipSelect={handleClipSelect}
+                    listWidth={bottomListWidth}
+                    onListWidthChange={changeBottomListWidth}
                   />
                 )}
               </div>
