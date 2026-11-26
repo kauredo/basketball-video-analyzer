@@ -53,6 +53,17 @@
       "resizeTimeline": "Zaman çizelgesi panelini yeniden boyutlandırmak için sürükle",
       "resizeClips": "Klip panelini yeniden boyutlandırmak için sürükle"
     },
+    "layout": {
+      "label": "Düzen",
+      "tag": "Etiket",
+      "study": "İnceleme",
+      "scout": "Keşif",
+      "tagHint": "Klip kesmek için geniş yan panel",
+      "studyHint": "Klipleri incelemek için uzun alt panel",
+      "scoutHint": "Rakibi izlemek için en büyük video",
+      "edited": "{{name}} (değiştirildi)",
+      "restoreHint": "{{name}} (değiştirildi). Boyutları geri yüklemek için tıklayın."
+    },
     "welcome": {
       "title": "Basketball Video Analyzer'e Hoş Geldiniz",
       "subtitle": "Oyunları işaretleyin, klipleri düzenleyin ve takım analizi için dışa aktarın",

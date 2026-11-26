@@ -469,6 +469,99 @@
   align-items: center;
   gap: var(--spacing-md);
   flex-wrap: wrap;
+  /* Opens the gap before the actions so the Layout group sits by the title. */
+  margin-left: auto;
+}
+
+/* Layout presets: a segmented control. The active segment uses the neutral
+   raised style; keep its tokens identical to Timeline.module.css .segmentOn. */
+.layoutPresets {
+  display: inline-flex;
+  align-items: center;
+  height: var(--button-height);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
+  margin-left: var(--spacing-md);
+}
+
+.layoutPresetsCaption {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  padding: 0 var(--spacing-sm);
+}
+
+.presetBtn {
+  position: relative;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-sm);
+  border: 0;
+  border-left: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.presetBtn:hover:not(.presetBtnActive) {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.presetBtnActive {
+  background: var(--bg-quaternary);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--border-color-hover), inset 0 -2px 0 var(--color-accent-ink);
+}
+
+.presetBtnActive .presetRegion {
+  fill: var(--color-accent-ink);
+  fill-opacity: 0.55;
+}
+
+.presetBtn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+.presetEditedMark {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-ink);
+}
+
+.panelToggles {
+  display: inline-flex;
+  border: 1px solid var(--border-color-light);
+}
+
+.panelToggles .iconBtn + .iconBtn {
+  border-left: 1px solid var(--border-color-light);
+}
+
+/* A lifted button would break the pair's shared frame. */
+.panelToggles .iconBtn:hover:not(:disabled) {
+  transform: none;
+}
+
+.iconBtn {
+  width: var(--button-height);
+  padding: 0;
+  justify-content: center;
+}
+
+.iconBtn[aria-pressed="true"] {
+  color: var(--color-accent-ink);
 }
 
 .updateProgress {

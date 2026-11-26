@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   BOTTOM_PANEL_HEIGHT: "bottomPanelHeight",
   BOTTOM_PANEL_COLLAPSED: "bottomPanelCollapsed",
   BOTTOM_LIST_WIDTH: "bottomListWidth",
+  LAYOUT_PRESET: "layoutPreset",
   CLIP_SORT_BY: "clipSortBy",
   CLIP_SORT_ORDER: "clipSortOrder",
   CLIP_VIEW_MODE: "clipViewMode",

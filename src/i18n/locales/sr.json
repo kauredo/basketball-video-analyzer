@@ -52,6 +52,17 @@
       "resizeTimeline": "Prevucite da promenite veličinu panela vremenske linije",
       "resizeClips": "Prevucite da promenite veličinu panela klipova"
     },
+    "layout": {
+      "label": "Raspored",
+      "tag": "Označi",
+      "study": "Analiza",
+      "scout": "Skaut",
+      "tagHint": "Širok bočni panel za sečenje klipova",
+      "studyHint": "Visok donji panel za pregled klipova",
+      "scoutHint": "Najveći video za praćenje protivnika",
+      "edited": "{{name}} (izmenjeno)",
+      "restoreHint": "{{name}} (izmenjeno). Kliknite da vratite veličine."
+    },
     "welcome": {
       "title": "Dobro došli u Basketball Video Analyzer",
       "subtitle": "Označite akcije, sredite klipove i izvezite ih za analizu tima",

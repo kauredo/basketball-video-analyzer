@@ -52,6 +52,17 @@
       "resizeTimeline": "Vilkite, kad pakeistumėte laiko juostos dydį",
       "resizeClips": "Vilkite, kad pakeistumėte klipų skydelio dydį"
     },
+    "layout": {
+      "label": "Išdėstymas",
+      "tag": "Žymėti",
+      "study": "Analizė",
+      "scout": "Žvalgyba",
+      "tagHint": "Platus šoninis skydelis klipams karpyti",
+      "studyHint": "Aukštas apatinis skydelis klipams peržiūrėti",
+      "scoutHint": "Didžiausias vaizdas varžovui stebėti",
+      "edited": "{{name}} (pakeista)",
+      "restoreHint": "{{name}} (pakeista). Spustelėkite, kad atkurtumėte dydžius."
+    },
     "welcome": {
       "title": "Sveiki atvykę į Basketball Video Analyzer",
       "subtitle": "Žymėkite epizodus, tvarkykite klipus ir eksportuokite juos komandos analizei",

@@ -1,7 +1,7 @@
 import type { ProjectVideo } from "../main/projectVideos";
 import { isSamePath } from "../shared/clipDrawings";
 import { activeRecordingKey } from "./utils/projectPlayback";
-import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo, useReducer } from "react";
 import { useTranslation } from "react-i18next";
 import { Mark } from "./components/Mark";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,8 +21,6 @@ import {
   faTimes,
   faTrash,
   faQuestionCircle,
-  faLayerGroup,
-  faList,
   faSun,
   faMoon,
   faChartColumn,
@@ -54,6 +52,40 @@ import { loadPref, savePref, STORAGE_KEYS } from "./utils/storage";
 import { withCause } from "./utils/errors";
 import { formatVideoTime } from "./utils/format";
 import { parseListWidth, type ListWidth } from "./utils/clipList";
+import {
+  LAYOUT_PRESET_IDS,
+  parsePresetState,
+  presetLayoutFor,
+  presetReducer,
+  type LayoutPresetId,
+} from "./utils/layoutPresets";
+
+// The header's preset diagrams: each fills the region its preset favours.
+const PresetDiagram: React.FC<{ id: LayoutPresetId }> = ({ id }) => (
+  <svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    {id === "tag" && (
+      <>
+        <rect className={styles.presetRegion} x="12" y=".75" width="9.25" height="14.5" fill="currentColor" fillOpacity=".45" stroke="none" />
+        <rect x=".75" y=".75" width="20.5" height="14.5" />
+        <path d="M12 .75v14.5" />
+      </>
+    )}
+    {id === "study" && (
+      <>
+        <rect className={styles.presetRegion} x=".75" y="6.25" width="20.5" height="9" fill="currentColor" fillOpacity=".45" stroke="none" />
+        <rect x=".75" y=".75" width="20.5" height="14.5" />
+        <path d="M.75 6.25h20.5" />
+      </>
+    )}
+    {id === "scout" && (
+      <>
+        <rect className={styles.presetRegion} x=".75" y=".75" width="17" height="11.5" fill="currentColor" fillOpacity=".45" stroke="none" />
+        <rect x=".75" y=".75" width="20.5" height="14.5" />
+        <path d="M17.75 .75v14.5M.75 12.25h17" />
+      </>
+    )}
+  </svg>
+);
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
@@ -98,6 +130,34 @@ export const App: React.FC = () => {
     setBottomListWidth(width);
     savePref(STORAGE_KEYS.BOTTOM_LIST_WIDTH, width);
   }, []);
+  // Which layout preset is selected, and whether the coach has changed the
+  // layout by hand since. Every manual layout change calls markLayoutEdited.
+  const [presetState, dispatchPreset] = useReducer(presetReducer, undefined,
+    () => parsePresetState(loadPref<unknown>(STORAGE_KEYS.LAYOUT_PRESET, null)));
+  useEffect(() => { savePref(STORAGE_KEYS.LAYOUT_PRESET, presetState); }, [presetState]);
+  const markLayoutEdited = useCallback(() => dispatchPreset({ type: "manualChange" }), []);
+  const onUserListWidthChange = useCallback((w: ListWidth) => {
+    changeBottomListWidth(w);
+    markLayoutEdited();
+  }, [changeBottomListWidth, markLayoutEdited]);
+  const mainRef = useRef<HTMLElement>(null);
+  const applyPreset = useCallback((id: LayoutPresetId) => {
+    // <main>'s size does not depend on the panels, so measuring before
+    // un-collapsing them does not skew the clamp.
+    const el = mainRef.current;
+    const size = el
+      ? { width: el.clientWidth, height: el.clientHeight }
+      : { width: window.innerWidth, height: window.innerHeight - 60 };
+    const layout = presetLayoutFor(id, size);
+    setSidePanelWidth(layout.sidePanelWidth);
+    savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, layout.sidePanelWidth);
+    setBottomPanelHeight(layout.bottomPanelHeight);
+    savePref(STORAGE_KEYS.BOTTOM_PANEL_HEIGHT, layout.bottomPanelHeight);
+    changeBottomListWidth(layout.bottomListWidth);
+    setIsSidePanelCollapsed(false);
+    setIsBottomPanelCollapsed(false);
+    dispatchPreset({ type: "apply", id });
+  }, [changeBottomListWidth]);
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -105,7 +165,6 @@ export const App: React.FC = () => {
   const [currentQuarter, setCurrentQuarter] = useState<string | null>(null);
 
   const resizeRef = useRef<HTMLDivElement>(null);
-  const sideResizeRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
   const videoPlayerRef = useRef<any>(null);
   const clipCreatorTrapRef = useFocusTrap(showClipCreator);
@@ -245,14 +304,16 @@ export const App: React.FC = () => {
       if (e.key === "1") {
         e.preventDefault();
         setIsSidePanelCollapsed(v => !v);
+        markLayoutEdited();
       } else if (e.key === "2") {
         e.preventDefault();
         setIsBottomPanelCollapsed(v => !v);
+        markLayoutEdited();
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, []);
+  }, [markLayoutEdited]);
 
   useEffect(() => {
     savePref(STORAGE_KEYS.BOTTOM_PANEL_COLLAPSED, isBottomPanelCollapsed);
@@ -316,6 +377,8 @@ export const App: React.FC = () => {
       const handleMouseUp = () => {
         isResizing.current = false;
         savePref(STORAGE_KEYS.BOTTOM_PANEL_HEIGHT, draggedHeight);
+        // A click on the handle without moving is not an edit.
+        if (draggedHeight !== startHeight) markLayoutEdited();
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = "";
@@ -327,7 +390,7 @@ export const App: React.FC = () => {
       document.body.style.cursor = "ns-resize";
       document.body.style.userSelect = "none";
     },
-    [bottomPanelHeight],
+    [bottomPanelHeight, markLayoutEdited],
   );
 
   // Handle side panel resizing (clips library)
@@ -335,12 +398,11 @@ export const App: React.FC = () => {
   // view that opens truncated, the library asks for the width it needs the
   // first time a coach switches to it. A panel already wider is left alone.
   const ensureSidePanelWidth = useCallback((minimum: number) => {
-    setSidePanelWidth(prev => {
-      if (prev >= minimum) return prev;
-      savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, minimum);
-      return minimum;
-    });
-  }, []);
+    if (sidePanelWidth >= minimum) return;
+    setSidePanelWidth(minimum);
+    savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, minimum);
+    markLayoutEdited();
+  }, [sidePanelWidth, markLayoutEdited]);
 
   const startSideResize = useCallback(
     (e: React.MouseEvent) => {
@@ -349,22 +411,25 @@ export const App: React.FC = () => {
 
       const startX = e.pageX;
       const startWidth = sidePanelWidth;
+      // What the user dragged to, saved instead of the rendered width for the
+      // same reason as the bottom panel: the rendered clientWidth leaves out
+      // the 1px border and any flex shrink, so saving it ratcheted the
+      // preference down a pixel on every click of the handle.
+      let draggedWidth = startWidth;
 
       const handleMouseMove = (e: MouseEvent) => {
         if (!isResizing.current) return;
 
         const deltaX = startX - e.pageX; // Inverted for right-to-left resize
         const newWidth = Math.min(Math.max(280, startWidth + deltaX), 600);
+        draggedWidth = newWidth;
         setSidePanelWidth(newWidth);
       };
 
       const handleMouseUp = () => {
         isResizing.current = false;
-        // Save final width on mouseup
-        const finalEl = sideResizeRef.current;
-        if (finalEl) {
-          savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, finalEl.clientWidth || sidePanelWidth);
-        }
+        savePref(STORAGE_KEYS.SIDE_PANEL_WIDTH, draggedWidth);
+        if (draggedWidth !== startWidth) markLayoutEdited();
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = "";
@@ -376,7 +441,7 @@ export const App: React.FC = () => {
       document.body.style.cursor = "ew-resize";
       document.body.style.userSelect = "none";
     },
-    [sidePanelWidth],
+    [sidePanelWidth, markLayoutEdited],
   );
 
   const projectNameFor = (videoName: string) => videoName.replace(/\.[^/.]+$/, "");
@@ -717,6 +782,29 @@ export const App: React.FC = () => {
         <h1 className={styles.title}>
           <Mark /> {t("app.title")}
         </h1>
+        <div className={styles.layoutPresets} role="group" aria-label={t("app.layout.label")}>
+          <span className={styles.layoutPresetsCaption} aria-hidden="true">{t("app.layout.label")}</span>
+          {LAYOUT_PRESET_IDS.map(id => {
+            const active = presetState.selected === id;
+            const edited = active && presetState.edited;
+            const name = t(`app.layout.${id}`);
+            return (
+              <button
+                key={id}
+                type="button"
+                className={`${styles.presetBtn} ${active ? styles.presetBtnActive : ""}`}
+                aria-pressed={active}
+                aria-label={edited ? t("app.layout.edited", { name }) : undefined}
+                title={edited ? t("app.layout.restoreHint", { name }) : t(`app.layout.${id}Hint`)}
+                onClick={() => applyPreset(id)}
+              >
+                <PresetDiagram id={id} />
+                {name}
+                {edited && <span className={styles.presetEditedMark} aria-hidden="true" />}
+              </button>
+            );
+          })}
+        </div>
         <div className={styles.headerActions}>
           <button
             type="button"
@@ -727,26 +815,42 @@ export const App: React.FC = () => {
             <FontAwesomeIcon icon={faFolderOpen} />{" "}
             {t("app.projects.selectProject")}
           </button>
-          <button
-            type="button"
-            className={styles.btn}
-            onClick={() => setIsSidePanelCollapsed(!isSidePanelCollapsed)}
-          >
-            <FontAwesomeIcon icon={faList} />{" "}
-            {isSidePanelCollapsed
-              ? t("app.buttons.showSidePanel")
-              : t("app.buttons.hideSidePanel")}
-          </button>
-          <button
-            type="button"
-            className={styles.btn}
-            onClick={() => setIsBottomPanelCollapsed(!isBottomPanelCollapsed)}
-          >
-            <FontAwesomeIcon icon={faLayerGroup} />{" "}
-            {isBottomPanelCollapsed
-              ? t("app.buttons.showBottomPanel")
-              : t("app.buttons.hideBottomPanel")}
-          </button>
+          <div className={styles.panelToggles}>
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.iconBtn}`}
+              aria-pressed={!isSidePanelCollapsed}
+              aria-label={isSidePanelCollapsed ? t("app.buttons.showSidePanel") : t("app.buttons.hideSidePanel")}
+              title={isSidePanelCollapsed ? t("app.buttons.showSidePanel") : t("app.buttons.hideSidePanel")}
+              onClick={() => {
+                setIsSidePanelCollapsed(!isSidePanelCollapsed);
+                markLayoutEdited();
+              }}
+            >
+              <svg width="18" height="14" viewBox="0 0 18 14" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
+                <rect x=".7" y=".7" width="16.6" height="12.6" />
+                <path d="M12 .7v12.6" />
+                <path d="M12 .7h5.3v12.6H12z" fill="currentColor" fillOpacity=".35" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.iconBtn}`}
+              aria-pressed={!isBottomPanelCollapsed}
+              aria-label={isBottomPanelCollapsed ? t("app.buttons.showBottomPanel") : t("app.buttons.hideBottomPanel")}
+              title={isBottomPanelCollapsed ? t("app.buttons.showBottomPanel") : t("app.buttons.hideBottomPanel")}
+              onClick={() => {
+                setIsBottomPanelCollapsed(!isBottomPanelCollapsed);
+                markLayoutEdited();
+              }}
+            >
+              <svg width="18" height="14" viewBox="0 0 18 14" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
+                <rect x=".7" y=".7" width="16.6" height="12.6" />
+                <path d="M.7 9h16.6" />
+                <path d="M.7 9h16.6v4.3H.7z" fill="currentColor" fillOpacity=".35" />
+              </svg>
+            </button>
+          </div>
           {currentProject && (
             <button
               type="button"
@@ -775,7 +879,7 @@ export const App: React.FC = () => {
         </div>
       </header>
 
-      <main className={styles.mainContent}>
+      <main ref={mainRef} className={styles.mainContent}>
         <div className={styles.contentWithSidePanel}>
           <div className={styles.videoContainer}>
             <div className={styles.videoSection}>
@@ -849,7 +953,7 @@ export const App: React.FC = () => {
                     onTimeSeek={handleTimeSeek}
                     onClipSelect={handleClipSelect}
                     listWidth={bottomListWidth}
-                    onListWidthChange={changeBottomListWidth}
+                    onListWidthChange={onUserListWidthChange}
                   />
                 )}
               </div>
@@ -867,7 +971,6 @@ export const App: React.FC = () => {
                 "--panel-width": `${sidePanelWidth}px`,
               } as React.CSSProperties
             }
-            ref={sideResizeRef}
           >
             {!isSidePanelCollapsed && (
               <div

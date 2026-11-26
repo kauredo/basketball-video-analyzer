@@ -54,6 +54,17 @@
       "resizeTimeline": "Arrastar para redimensionar painel da linha do tempo",
       "resizeClips": "Arrastar para redimensionar painel de clips"
     },
+    "layout": {
+      "label": "Disposição",
+      "tag": "Marcar",
+      "study": "Estudo",
+      "scout": "Scouting",
+      "tagHint": "Painel lateral largo para cortar clips",
+      "studyHint": "Painel inferior alto para rever clips",
+      "scoutHint": "Vídeo maior para observar um adversário",
+      "edited": "{{name}} (alterado)",
+      "restoreHint": "{{name}} (alterado). Clica para repor os tamanhos."
+    },
     "welcome": {
       "title": "Bem-vindo ao Basketball Video Analyzer",
       "subtitle": "Marca jogadas, organiza clips e exporta-os para analisar a equipa",
