@@ -569,7 +569,8 @@
   transform: none;
 }
 
-.iconBtn {
+.iconBtn,
+.btn.iconBtn {
   width: var(--button-height);
   padding: 0;
   justify-content: center;
