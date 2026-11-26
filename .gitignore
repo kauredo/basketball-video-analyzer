@@ -7,3 +7,5 @@ dist/
 # Ignore CLAUDE.md everywhere except the root
 **/CLAUDE.md
 !/CLAUDE.md
+
+.ship/
