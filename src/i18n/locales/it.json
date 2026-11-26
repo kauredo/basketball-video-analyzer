@@ -288,6 +288,8 @@
         "selectAll": "Seleziona tutte le clip",
         "editTitle": "Modifica titolo",
         "editNotes": "Modifica note",
+        "editHint": "Invio salva, Esc annulla",
+        "editHintNotes": "Invio salva, Maiusc+Invio va a capo, Esc annulla",
         "editCategories": "Modifica categorie",
         "notesPlaceholder": "Aggiungi una nota",
         "noNotes": "Nessuna nota",

@@ -288,6 +288,8 @@
         "selectAll": "Επιλογή όλων των κλιπ",
         "editTitle": "Επεξεργασία τίτλου",
         "editNotes": "Επεξεργασία σημειώσεων",
+        "editHint": "Enter για αποθήκευση, Esc για ακύρωση",
+        "editHintNotes": "Enter για αποθήκευση, Shift+Enter για νέα γραμμή, Esc για ακύρωση",
         "editCategories": "Επεξεργασία κατηγοριών",
         "notesPlaceholder": "Προσθήκη σημείωσης",
         "noNotes": "Χωρίς σημείωση",

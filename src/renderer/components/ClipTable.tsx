@@ -17,6 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipTable.module.css";
 import { useDismissableMenu } from "../hooks/useDismissableMenu";
+import { useInlineEdit, autoGrow } from "../hooks/useInlineEdit";
 import { formatVideoTime } from "../utils/format";
 import { inkOn } from "../utils/contrast";
 import { ClipStatus } from "../../types/global";
@@ -70,11 +71,7 @@ export const ClipTable: React.FC<ClipTableProps> = ({
   const { t } = useTranslation();
 
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [editing, setEditing] = useState<{
-    id: number;
-    field: "title" | "notes";
-  } | null>(null);
-  const [draft, setDraft] = useState("");
+  const edit = useInlineEdit(onUpdate);
   const [categoryEditFor, setCategoryEditFor] = useState<number | null>(null);
   // The open popover's working set. Reading the clip prop instead would mean
   // every toggle computes its new list from whatever the last completed write
@@ -165,36 +162,6 @@ export const ClipTable: React.FC<ClipTableProps> = ({
       return next;
     });
     lastClickedId.current = clip.id;
-  };
-
-  const startEdit = (clip: Clip, field: "title" | "notes") => {
-    setEditing({ id: clip.id, field });
-    setDraft(field === "title" ? clip.title : clip.notes || "");
-  };
-
-  const commitEdit = (clip: Clip) => {
-    if (!editing) return;
-    const field = editing.field;
-    const value = draft.trim();
-    const current = field === "title" ? clip.title : clip.notes || "";
-    setEditing(null);
-
-    // An empty title would leave the clip unidentifiable in the export
-    // filenames, so it reverts. An empty note is a legitimate value.
-    if (field === "title" && value === "") return;
-    if (value === current) return;
-
-    void onUpdate(clip.id, { [field]: value } as Partial<Clip>);
-  };
-
-  const onEditKeyDown = (event: React.KeyboardEvent, clip: Clip) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      commitEdit(clip);
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      setEditing(null);
-    }
   };
 
   const openCategoryEditor = (clip: Clip) => {
@@ -361,10 +328,8 @@ export const ClipTable: React.FC<ClipTableProps> = ({
               const clipCategories = ids
                 .map(id => categoryById.get(id))
                 .filter((c): c is Category => Boolean(c));
-              const isEditingTitle =
-                editing?.id === clip.id && editing.field === "title";
-              const isEditingNotes =
-                editing?.id === clip.id && editing.field === "notes";
+              const isEditingTitle = edit.isEditing(clip.id, "title");
+              const isEditingNotes = edit.isEditing(clip.id, "notes");
 
               return (
                 <tr key={clip.id} className={rowClass(clip.status)}>
@@ -385,11 +350,11 @@ export const ClipTable: React.FC<ClipTableProps> = ({
                       <input
                         type="text"
                         className={styles.cellInput}
-                        value={draft}
+                        value={edit.draft}
                         autoFocus
-                        onChange={event => setDraft(event.target.value)}
-                        onBlur={() => commitEdit(clip)}
-                        onKeyDown={event => onEditKeyDown(event, clip)}
+                        onChange={event => edit.setDraft(event.target.value)}
+                        onBlur={() => edit.commit(clip)}
+                        onKeyDown={event => edit.onKeyDown(event, clip)}
                         aria-label={t("app.clips.table.editTitle")}
                       />
                     ) : (
@@ -397,7 +362,8 @@ export const ClipTable: React.FC<ClipTableProps> = ({
                         type="button"
                         className={styles.cellButton}
                         title={clip.title}
-                        onClick={() => startEdit(clip, "title")}
+                        onClick={() => edit.start(clip, "title")}
+                        {...edit.openerProps(clip.id, "title")}
                         aria-label={`${t("app.clips.table.editTitle")}: ${clip.title}`}
                       >
                         {clip.title}
@@ -477,23 +443,30 @@ export const ClipTable: React.FC<ClipTableProps> = ({
 
                   <td className={styles.notesCell}>
                     {isEditingNotes ? (
-                      <input
-                        type="text"
-                        className={styles.cellInput}
-                        value={draft}
-                        autoFocus
+                      // A textarea, because an <input> strips the line
+                      // breaks a note from the cut form can hold.
+                      <textarea
+                        ref={edit.editorRef}
+                        rows={1}
+                        className={`${styles.cellInput} ${styles.cellTextarea}`}
+                        value={edit.draft}
                         placeholder={t("app.clips.table.notesPlaceholder")}
-                        onChange={event => setDraft(event.target.value)}
-                        onBlur={() => commitEdit(clip)}
-                        onKeyDown={event => onEditKeyDown(event, clip)}
+                        onChange={event => {
+                          edit.setDraft(event.target.value);
+                          autoGrow(event.target);
+                        }}
+                        onBlur={() => edit.commit(clip)}
+                        onKeyDown={event => edit.onKeyDown(event, clip)}
                         aria-label={t("app.clips.table.editNotes")}
+                        title={t("app.clips.table.editHintNotes")}
                       />
                     ) : (
                       <button
                         type="button"
-                        className={styles.cellButton}
+                        className={`${styles.cellButton} ${styles.notesButton}`}
                         title={clip.notes || ""}
-                        onClick={() => startEdit(clip, "notes")}
+                        onClick={() => edit.start(clip, "notes")}
+                        {...edit.openerProps(clip.id, "notes")}
                         aria-label={t("app.clips.table.editNotes")}
                       >
                         {clip.notes || (

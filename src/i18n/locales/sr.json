@@ -288,6 +288,8 @@
         "selectAll": "Izaberi sve klipove",
         "editTitle": "Izmeni naslov",
         "editNotes": "Izmeni beleške",
+        "editHint": "Enter čuva, Esc otkazuje",
+        "editHintNotes": "Enter čuva, Shift+Enter dodaje red, Esc otkazuje",
         "editCategories": "Izmeni kategorije",
         "notesPlaceholder": "Dodaj belešku",
         "noNotes": "Bez beleške",

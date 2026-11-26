@@ -288,6 +288,8 @@
         "selectAll": "Pasirinkti visus klipus",
         "editTitle": "Redaguoti pavadinimą",
         "editNotes": "Redaguoti pastabas",
+        "editHint": "Enter išsaugo, Esc atšaukia",
+        "editHintNotes": "Enter išsaugo, Shift+Enter prideda eilutę, Esc atšaukia",
         "editCategories": "Redaguoti kategorijas",
         "notesPlaceholder": "Pridėti pastabą",
         "noNotes": "Pastabų nėra",

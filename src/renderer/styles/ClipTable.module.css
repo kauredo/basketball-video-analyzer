@@ -181,6 +181,25 @@
   padding: 2px var(--spacing-xs);
 }
 
+/* The notes editor. useInlineEdit's autoGrow sets its height to fit. */
+.cellTextarea {
+  display: block;
+  resize: none;
+  overflow: hidden;
+  line-height: inherit;
+}
+
+/* A multi-line note keeps its breaks, up to two lines, instead of the
+   single ellipsed line .cellButton gives the title. */
+.notesButton {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
 .cellInput:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 1px;

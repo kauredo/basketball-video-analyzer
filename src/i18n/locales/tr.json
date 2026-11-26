@@ -289,6 +289,8 @@
         "selectAll": "Tüm klipleri seç",
         "editTitle": "Başlığı düzenle",
         "editNotes": "Notları düzenle",
+        "editHint": "Enter kaydeder, Esc iptal eder",
+        "editHintNotes": "Enter kaydeder, Shift+Enter satır ekler, Esc iptal eder",
         "editCategories": "Kategorileri düzenle",
         "notesPlaceholder": "Not ekle",
         "noNotes": "Not yok",

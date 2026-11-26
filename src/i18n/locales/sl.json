@@ -288,6 +288,8 @@
         "selectAll": "Izberi vse posnetke",
         "editTitle": "Uredi naslov",
         "editNotes": "Uredi opombe",
+        "editHint": "Enter shrani, Esc prekliče",
+        "editHintNotes": "Enter shrani, Shift+Enter doda vrstico, Esc prekliče",
         "editCategories": "Uredi kategorije",
         "notesPlaceholder": "Dodaj opombo",
         "noNotes": "Brez opombe",
