@@ -32,11 +32,13 @@ export const NO_FILTERS: ClipFilters = {
   status: null,
 };
 
-/** A clip's JSON id array; [] for anything malformed. */
+/** A clip's JSON id array; [] for anything malformed, non-number elements dropped. */
 export function parseIds(json?: string | null): number[] {
   try {
-    const ids = JSON.parse(json || "[]");
-    return Array.isArray(ids) ? ids : [];
+    const ids: unknown = JSON.parse(json || "[]");
+    return Array.isArray(ids)
+      ? ids.filter((id): id is number => typeof id === "number" && Number.isFinite(id))
+      : [];
   } catch {
     return [];
   }

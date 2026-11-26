@@ -63,15 +63,28 @@
 
 /* Left Panel: Clips List */
 .clipsPanel {
-  width: 350px;
-  min-width: 300px;
-  max-width: 500px;
   min-height: 0;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* List width: the media queries at the bottom step Narrow down further. */
+.listNarrow {
+  width: 350px;
+  min-width: 300px;
+}
+
+/* The timeline keeps at least 40% of the panel on a small window. */
+.listWide {
+  flex: 0 0 min(660px, 60%);
+}
+
+.listFull {
+  flex: 1;
+  border-right: none;
 }
 
 .clipsPanelHeader {
@@ -89,7 +102,9 @@
 
 .controls {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--spacing-sm);
 }
 
@@ -97,6 +112,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1 1 160px;
 }
 
 .searchBox svg {
@@ -127,7 +143,9 @@
 }
 
 .categoryFilter {
-  width: 100%;
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 200px;
   height: var(--input-height);
   padding: var(--spacing-sm);
   border: 1px solid var(--border-color);
@@ -145,6 +163,47 @@
   outline-offset: 2px;
 }
 
+.listWidthRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-left: auto;
+}
+
+.listWidthLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.segment {
+  height: 30px;
+  padding: 0 var(--spacing-sm);
+  border: none;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.segment:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+/* Neutral and raised, not teal: the edges are borders drawn inside, not elevation. */
+.segmentOn {
+  background: var(--bg-quaternary);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--border-color-hover), inset 0 -2px 0 var(--color-accent-ink);
+}
+
 /* Clips Table */
 .clipsTable {
   flex: 1;
@@ -155,6 +214,7 @@
 
 .clipsTableElement {
   width: 100%;
+  table-layout: auto;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
 }
@@ -187,103 +247,84 @@
 }
 
 .clipsTableElement tbody tr.selected {
-  background: var(--bg-quaternary);
-  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
+.clipsTableElement tbody tr:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+/* A long unbroken word wraps instead of widening the table past the panel. */
 .clipsTableElement td {
   padding: var(--spacing-sm);
-  vertical-align: middle;
+  vertical-align: top;
+  overflow-wrap: anywhere;
 }
 
-.categoryCell {
-  width: 140px;
+/* width: 1% makes auto layout shrink these to their content. */
+.col_number,
+.col_time,
+.col_duration {
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  width: 1%;
 }
 
-.categoryContainer {
+.clipsTableElement td.col_number {
+  color: var(--text-tertiary);
+}
+
+.col_duration {
+  text-align: right;
+}
+
+/* th sets text-align: left, which would otherwise win on the header. */
+.clipsTableElement th.col_duration {
+  text-align: right;
+}
+
+.col_status {
+  white-space: nowrap;
+  min-width: 96px;
+}
+
+.col_category {
+  min-width: 96px;
+}
+
+.chips {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: var(--spacing-xs);
 }
 
-.categoryIndicator {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-round);
-  flex-shrink: 0;
-}
-
-.categoryName {
-  flex: 1;
-  min-width: 0;
+.chip {
+  padding: 1px var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  font-size: var(--font-size-xs);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.subcategoryName {
-  font-weight: var(--font-weight-normal);
-  color: var(--text-secondary);
+.chipSub {
+  font-size: var(--font-size-xs);
   font-style: italic;
-}
-
-.categoryCount {
-  color: var(--text-tertiary);
-  font-size: var(--font-size-xs);
-}
-
-.titleCell {
-  width: 200px;
-  max-width: 200px;
 }
 
 .clipTitle {
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.timeCell {
-  width: 120px;
-}
-
-.timeRange {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-}
-
-.durationCell {
-  width: 80px;
-}
-
-.duration {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
-}
-
-.notesCell {
-  max-width: 150px;
 }
 
 .notes {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.actionsCell {
-  width: 50px;
-  text-align: center;
+.rowNote {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
 }
 
 .emptyState {
@@ -307,32 +348,6 @@
   color: var(--text-tertiary);
   opacity: 0.7;
   margin-top: var(--spacing-sm);
-}
-
-.playBtn {
-  width: 32px;
-  height: 32px;
-  background: var(--color-primary);
-  border: none;
-  color: var(--text-white);
-  border-radius: var(--radius-round);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.playBtn:hover {
-  background: var(--color-primary-dark);
-  transform: scale(1.1);
-  box-shadow: var(--shadow-md);
-}
-
-.playBtn:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: 2px;
 }
 
 /* Right Panel: Visual Timeline */
@@ -607,7 +622,7 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .clipsPanel {
+  .listNarrow {
     width: 300px;
     min-width: 250px;
   }
@@ -619,7 +634,7 @@
 }
 
 @media (max-width: 900px) {
-  .clipsPanel {
+  .listNarrow {
     width: 250px;
     min-width: 200px;
   }

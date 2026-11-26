@@ -500,14 +500,18 @@
       "search": "Ieškoti klipų...",
       "allCategories": "Visos kategorijos",
       "noClips": "Klipų nerasta",
-      "playClip": "Leisti klipą",
       "visualTimeline": "Vizuali laiko juosta",
       "duration": "Trukmė",
       "currentTime": "Dabartinis laikas",
       "legend": "Legenda",
       "selectedClip": "Pasirinktas klipas",
       "currentPosition": "Dabartinė padėtis",
-      "noClipsGuidance": "Grojant vaizdo įrašui paspauskite Z, kad pažymėtumėte klipo pradžią, tada M, kad jį užbaigtumėte."
+      "noClipsGuidance": "Grojant vaizdo įrašui paspauskite Z, kad pažymėtumėte klipo pradžią, tada M, kad jį užbaigtumėte.",
+      "listWidth": "Sąrašo plotis",
+      "widthNarrow": "Siauras",
+      "widthWide": "Platus",
+      "widthFull": "Visas",
+      "clipNumber": "Klipo numeris"
     },
     "hints": {
       "markKeys": "Paspauskite {{markIn}}, kad pažymėtumėte klipo pradžią, ir {{markOut}}, kad pažymėtumėte pabaigą.",

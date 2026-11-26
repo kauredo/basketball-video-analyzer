@@ -500,14 +500,18 @@
       "search": "Clips suchen …",
       "allCategories": "Alle Kategorien",
       "noClips": "Keine Clips gefunden",
-      "playClip": "Clip abspielen",
       "visualTimeline": "Visuelle Timeline",
       "duration": "Dauer",
       "currentTime": "Aktuelle Zeit",
       "legend": "Legende",
       "selectedClip": "Ausgewählter Clip",
       "currentPosition": "Aktuelle Position",
-      "noClipsGuidance": "Drücke Z während der Wiedergabe, um den Anfang eines Clips zu markieren, dann M, um ihn zu beenden."
+      "noClipsGuidance": "Drücke Z während der Wiedergabe, um den Anfang eines Clips zu markieren, dann M, um ihn zu beenden.",
+      "listWidth": "Listenbreite",
+      "widthNarrow": "Schmal",
+      "widthWide": "Breit",
+      "widthFull": "Voll",
+      "clipNumber": "Clipnummer"
     },
     "hints": {
       "markKeys": "Drücke {{markIn}}, um den Anfang eines Clips zu markieren, und {{markOut}} für das Ende.",

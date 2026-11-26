@@ -500,14 +500,18 @@
       "search": "Pretraži klipove...",
       "allCategories": "Sve kategorije",
       "noClips": "Nema pronađenih klipova",
-      "playClip": "Pusti klip",
       "visualTimeline": "Vizuelna vremenska linija",
       "duration": "Trajanje",
       "currentTime": "Trenutno vreme",
       "legend": "Legenda",
       "selectedClip": "Izabrani klip",
       "currentPosition": "Trenutna pozicija",
-      "noClipsGuidance": "Pritisnite Z dok se snimak reprodukuje da označite početak klipa, a zatim M da ga završite."
+      "noClipsGuidance": "Pritisnite Z dok se snimak reprodukuje da označite početak klipa, a zatim M da ga završite.",
+      "listWidth": "Širina liste",
+      "widthNarrow": "Uska",
+      "widthWide": "Široka",
+      "widthFull": "Puna",
+      "clipNumber": "Broj klipa"
     },
     "hints": {
       "markKeys": "Pritisnite {{markIn}} da označite početak klipa, {{markOut}} da označite kraj.",

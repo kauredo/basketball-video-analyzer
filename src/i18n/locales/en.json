@@ -479,14 +479,18 @@
       "search": "Search clips...",
       "allCategories": "All Categories",
       "noClips": "No clips found",
-      "playClip": "Play clip",
       "visualTimeline": "Visual Timeline",
       "duration": "Duration",
       "currentTime": "Current Time",
       "legend": "Legend",
       "selectedClip": "Selected clip",
       "currentPosition": "Current position",
-      "noClipsGuidance": "Press Z while the video plays to mark the start of a clip, then M to finish it."
+      "noClipsGuidance": "Press Z while the video plays to mark the start of a clip, then M to finish it.",
+      "listWidth": "List width",
+      "widthNarrow": "Narrow",
+      "widthWide": "Wide",
+      "widthFull": "Full",
+      "clipNumber": "Clip number"
     },
     "hints": {
       "markKeys": "Press {{markIn}} to mark the start of a clip, {{markOut}} to mark the end.",
