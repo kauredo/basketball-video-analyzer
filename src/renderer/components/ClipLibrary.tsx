@@ -14,10 +14,6 @@ import {
   faClock,
   faShare,
   faVideo,
-  faSort,
-  faSortUp,
-  faSortDown,
-  faSearch,
   faChevronDown,
   faTable,
   faVideo as faVideoFile,
@@ -34,27 +30,23 @@ import { useConfirm } from "../contexts/ConfirmContext";
 import { ContextualHint } from "./ContextualHint";
 import { PresentMode } from "./PresentMode";
 import { ClipTable } from "./ClipTable";
+import { ClipFilterBar } from "./ClipFilterBar";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
-import {
-  CLIP_STATUSES,
-  DONATION_NUDGE_THRESHOLD,
-  DONATION_URL,
-  statusLabelKey,
-} from "../utils/constants";
+import { DONATION_NUDGE_THRESHOLD, DONATION_URL } from "../utils/constants";
 import { formatVideoSrc } from "../utils/paths";
 import { Player, ClipStatus } from "../../types/global";
 import { inkOn } from "../utils/contrast";
 import { withCause } from "../utils/errors";
-
-// Parse a clip's JSON player-ID array, tolerating malformed values.
-const parsePlayerIds = (playersJson?: string): number[] => {
-  try {
-    const ids = JSON.parse(playersJson || "[]");
-    return Array.isArray(ids) ? ids : [];
-  } catch {
-    return [];
-  }
-};
+import {
+  ClipFilters,
+  NO_FILTERS,
+  categoryFamily as buildCategoryFamily,
+  clipInCategory as clipInCategoryWith,
+  filterClips,
+  findCategory,
+  parseIds,
+  pruneStaleFilters,
+} from "../utils/clipFilters";
 
 export interface Category {
   id: number;
@@ -131,15 +123,12 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const [clips, setClips] = useState<Clip[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState<ClipFilters>(NO_FILTERS);
   const [sortBy, setSortBy] = useState<"date" | "duration" | "title">(() => loadPref(STORAGE_KEYS.CLIP_SORT_BY, "date") as "date" | "duration" | "title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() => loadPref(STORAGE_KEYS.CLIP_SORT_ORDER, "desc") as "asc" | "desc");
   const [isExporting, setIsExporting] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [showPresent, setShowPresent] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<ClipStatus | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">(
     () => loadPref(STORAGE_KEYS.CLIP_VIEW_MODE, "grid") as "grid" | "table"
   );
@@ -162,6 +151,11 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     loadData();
   }, [onRefresh, currentProject]);
 
+  // A category, player or status id from the last project matches nothing here.
+  useEffect(() => {
+    setFilters(NO_FILTERS);
+  }, [currentProject?.id]);
+
   // Edits reload too, so a slow older load must not overwrite a newer one.
   const loadRequest = useRef(0);
 
@@ -180,50 +174,25 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       setClips(clipsData);
       setCategories(categoriesData);
       setPlayers(playersData);
+      // A category or player deleted elsewhere would leave an invisible filter.
+      setFilters(current => pruneStaleFilters(current, categoriesData, playersData));
     } catch (error) {
       console.error("Error loading data:", error);
     }
   };
 
-  // A parent category owns its subcategories' clips too: quick tag and most
-  // manual tagging pick the subcategory, so an exact-id match left "Offense (0)".
-  const categoryFamily = useMemo(() => {
-    const family = new Map<number, Set<number>>();
-    categories.forEach(parent => {
-      family.set(parent.id, new Set([parent.id, ...(parent.children ?? []).map(child => child.id)]));
-      parent.children?.forEach(child => family.set(child.id, new Set([child.id])));
-    });
-    return family;
-  }, [categories]);
+  // A parent category owns its subcategories' clips too (see clipFilters.ts).
+  const categoryFamily = useMemo(() => buildCategoryFamily(categories), [categories]);
 
   const clipInCategory = useCallback(
-    (clip: Clip, categoryId: number) => {
-      const ids = categoryFamily.get(categoryId) ?? new Set([categoryId]);
-      try {
-        return (JSON.parse(clip.categories || "[]") as number[]).some(id => ids.has(id));
-      } catch {
-        return false;
-      }
-    },
+    (clip: Clip, categoryId: number) => clipInCategoryWith(clip, categoryId, categoryFamily),
     [categoryFamily],
   );
 
-  const filteredClips = useMemo(() => {
-    const term = searchTerm.toLowerCase();
-    return clips.filter(clip => {
-      const matchesSearch =
-        clip.title.toLowerCase().includes(term) ||
-        clip.notes?.toLowerCase().includes(term);
-
-      const matchesCategory = !selectedCategory || clipInCategory(clip, selectedCategory);
-
-      const matchesPlayer = !selectedPlayer || parsePlayerIds(clip.players).includes(selectedPlayer);
-
-      const matchesStatus = !selectedStatus || clip.status === selectedStatus;
-
-      return matchesSearch && matchesCategory && matchesPlayer && matchesStatus;
-    });
-  }, [clips, searchTerm, selectedCategory, selectedPlayer, selectedStatus, clipInCategory]);
+  const filteredClips = useMemo(
+    () => filterClips(clips, filters, categoryFamily),
+    [clips, filters, categoryFamily],
+  );
 
   const sortedClips = useMemo(() => {
     return [...filteredClips].sort((a, b) => {
@@ -265,14 +234,11 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const getClipCategories = (clip: Clip): Category[] => {
-    try {
-      const categoryIds = JSON.parse(clip.categories);
-      return categories.filter(cat => categoryIds.includes(cat.id));
-    } catch {
-      return [];
-    }
-  };
+  // Subcategories sit under their parent, so a top-level search missed them.
+  const getClipCategories = (clip: Clip): Category[] =>
+    parseIds(clip.categories)
+      .map(id => findCategory(categories, id))
+      .filter((category): category is Category => category !== undefined);
 
   const handlePlayClip = async (clipPath: string) => {
     try {
@@ -378,7 +344,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   };
 
   const handleExportCategory = async () => {
-    if (selectedCategory === null || filteredClips.length === 0) {
+    const { categoryId } = filters;
+    if (categoryId === null || filteredClips.length === 0) {
       showWarning(t("app.clips.selectCategoryToExport"));
       return;
     }
@@ -387,7 +354,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       setIsExporting(true);
 
       // Get clips for the selected category
-      const clipsToExport = filteredClips.filter(clip => clipInCategory(clip, selectedCategory));
+      const clipsToExport = filteredClips.filter(clip => clipInCategory(clip, categoryId));
 
       if (clipsToExport.length === 0) {
         showWarning(t("app.clips.noClipsInCategoryToExport"));
@@ -395,7 +362,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       }
 
       console.log("Attempting to export clips:", {
-        categoryId: selectedCategory,
+        categoryId,
         clipsToExport: clipsToExport.map(c => ({
           id: c.id,
           title: c.title,
@@ -404,14 +371,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       });
 
       const result = await window.electronAPI.exportClipsByCategory({
-        categoryIds: [selectedCategory],
+        categoryIds: [categoryId],
         // The main process groups by exact id; every clip here already belongs to
         // the selected category (subcategory clips included), so say so.
         clips: clipsToExport.map(clip => ({
           id: clip.id,
           title: clip.title,
           output_path: clip.output_path,
-          categories: JSON.stringify([selectedCategory]),
+          categories: JSON.stringify([categoryId]),
         })),
       });
 
@@ -447,15 +414,10 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       const categoryClips = new Map<number, Clip[]>();
 
       filteredClips.forEach(clip => {
-        try {
-          const clipCategories = JSON.parse(clip.categories);
-          clipCategories.forEach((catId: number) => {
-            const existing = categoryClips.get(catId) || [];
-            categoryClips.set(catId, [...existing, clip]);
-          });
-        } catch {
-          console.warn("Failed to parse categories for clip:", clip.id);
-        }
+        parseIds(clip.categories).forEach(catId => {
+          const existing = categoryClips.get(catId) || [];
+          categoryClips.set(catId, [...existing, clip]);
+        });
       });
 
       const categoryIds = Array.from(categoryClips.keys());
@@ -495,8 +457,6 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
 
       if (result.count === 0) {
         console.error("Export returned 0 clips. Export result:", result);
-        const allClips = Array.from(categoryClips.values()).flat();
-
         showWarning(t("app.clips.exportNoneWarning"));
       } else {
         showSuccess(t("app.clips.exportSuccess", { count: result.count, dir: result.exportDir }));
@@ -594,27 +554,9 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     }
   };
 
-  const getCategoryName = (categoryId: number): string => {
-    const category = categories.find(c => c.id === categoryId);
-    return category ? category.name : t("app.clips.unknown");
-  };
-
-  const getClipStats = () => {
-    const totalDuration = filteredClips.reduce(
-      (sum, clip) => sum + clip.duration,
-      0
-    );
-    return {
-      count: filteredClips.length,
-      totalDuration: formatTime(totalDuration),
-      avgDuration:
-        filteredClips.length > 0
-          ? formatTime(totalDuration / filteredClips.length)
-          : "0:00",
-    };
-  };
-
-  const stats = getClipStats();
+  // Subcategories live under their parent, so look in both levels.
+  const getCategoryName = (categoryId: number): string =>
+    findCategory(categories, categoryId)?.name ?? t("app.clips.unknown");
 
   return (
     <div className={styles.clipLibrary}>
@@ -700,7 +642,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   disabled={filteredClips.length === 0}
                   onClick={() => {
                     setExportMenuOpen(false);
-                    selectedCategory ? handleExportCategory() : handleExportAll();
+                    filters.categoryId !== null ? handleExportCategory() : handleExportAll();
                   }}
                 >
                   <FontAwesomeIcon icon={faVideoFile} />
@@ -774,254 +716,17 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           </div>
         ) : (
           <>
-            {/* Category Filter */}
-            <div className={styles.categoryFilterSection}>
-              <h4>{t("app.clips.filterByCategory")}</h4>
-              <div className={styles.filterButtons}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategory(null)}
-                  className={`${styles.filterBtn} ${
-                    selectedCategory === null ? styles.active : ""
-                  }`}
-                >
-                  {t("app.clips.all")} ({clips.length})
-                </button>
-                {categories
-                  .filter(category => !category.parent_id) // Only show parent categories
-                  .map(category => {
-                    const count = clips.filter(clip => clipInCategory(clip, category.id)).length;
-
-                    return (
-                      <div key={category.id} className={styles.categoryGroup}>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedCategory(category.id)}
-                          className={`${styles.filterBtn} ${
-                            selectedCategory === category.id
-                              ? styles.active
-                              : ""
-                          }`}
-                          style={{
-                            borderColor: category.color,
-                            backgroundColor:
-                              selectedCategory === category.id
-                                ? category.color
-                                : "transparent",
-                            color:
-                              selectedCategory === category.id
-                                ? "var(--text-white)"
-                                : "var(--text-primary)",
-                          }}
-                        >
-                          {category.name} ({count})
-                        </button>
-
-                        {/* Show subcategories if parent is selected OR if any subcategory is selected */}
-                        {(selectedCategory === category.id ||
-                          (category.children &&
-                            category.children.some(
-                              child => child.id === selectedCategory
-                            ))) &&
-                          category.children &&
-                          category.children.length > 0 && (
-                            <div className={styles.subcategoryButtons}>
-                              {category.children.map(
-                                (subcategory: Category) => {
-                                  const subCount = clips.filter(clip => {
-                                    try {
-                                      const clipCategories = JSON.parse(
-                                        clip.categories
-                                      );
-                                      return clipCategories.includes(
-                                        subcategory.id
-                                      );
-                                    } catch {
-                                      return false;
-                                    }
-                                  }).length;
-
-                                  return (
-                                    <button
-                                      type="button"
-                                      key={subcategory.id}
-                                      onClick={() =>
-                                        setSelectedCategory(subcategory.id)
-                                      }
-                                      className={`${styles.filterBtn} ${
-                                        styles.subcategoryBtn
-                                      } ${
-                                        selectedCategory === subcategory.id
-                                          ? styles.active
-                                          : ""
-                                      }`}
-                                      style={{
-                                        borderColor: subcategory.color,
-                                        backgroundColor:
-                                          selectedCategory === subcategory.id
-                                            ? subcategory.color
-                                            : "transparent",
-                                        color:
-                                          selectedCategory === subcategory.id
-                                            ? "var(--text-white)"
-                                            : "var(--text-primary)",
-                                      }}
-                                    >
-                                      {subcategory.name} ({subCount})
-                                    </button>
-                                  );
-                                }
-                              )}
-                            </div>
-                          )}
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-
-            {/* Player Filter */}
-            {players.length > 0 && (
-              <div className={styles.categoryFilterSection}>
-                <h4>{t("app.clips.filterByPlayer")}</h4>
-                <div className={styles.filterButtons}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlayer(null)}
-                    className={`${styles.filterBtn} ${
-                      selectedPlayer === null ? styles.active : ""
-                    }`}
-                  >
-                    {t("app.clips.all")} ({clips.length})
-                  </button>
-                  {players.map(player => {
-                    const count = clips.filter(clip =>
-                      parsePlayerIds(clip.players).includes(player.id)
-                    ).length;
-                    return (
-                      <button
-                        type="button"
-                        key={player.id}
-                        onClick={() => setSelectedPlayer(player.id)}
-                        className={`${styles.filterBtn} ${
-                          selectedPlayer === player.id ? styles.active : ""
-                        }`}
-                      >
-                        {player.number ? `#${player.number} ` : ""}
-                        {player.name} ({count})
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Status Filter. Only once a status exists, so a project that
-                never uses one does not pay a row of vertical space for it. */}
-            {clips.some(clip => clip.status) && (
-            <div className={styles.categoryFilterSection}>
-              <h4>{t("app.clips.table.filterByStatus")}</h4>
-              <div className={styles.filterButtons}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedStatus(null)}
-                  className={`${styles.filterBtn} ${
-                    selectedStatus === null ? styles.active : ""
-                  }`}
-                >
-                  {t("app.clips.all")} ({clips.length})
-                </button>
-                {CLIP_STATUSES.map(status => {
-                  const count = clips.filter(clip => clip.status === status).length;
-                  return (
-                    <button
-                      type="button"
-                      key={status}
-                      onClick={() => setSelectedStatus(status)}
-                      className={`${styles.filterBtn} ${
-                        selectedStatus === status ? styles.active : ""
-                      }`}
-                    >
-                      {t(statusLabelKey(status))} ({count})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            )}
-
-            {/* Stats */}
-            <div className={styles.libraryStats}>
-              <div className={styles.statItem}>
-                <span className={styles.statLabel}>{t("app.clips.clipsCount")}:</span>
-                <span className={styles.statValue}>{stats.count}</span>
-              </div>
-              <div className={styles.statItem}>
-                <span className={styles.statLabel}>{t("app.clips.totalDuration")}:</span>
-                <span className={styles.statValue}>{stats.totalDuration}</span>
-              </div>
-              <div className={styles.statItem}>
-                <span className={styles.statLabel}>{t("app.clips.avgDuration")}:</span>
-                <span className={styles.statValue}>{stats.avgDuration}</span>
-              </div>
-            </div>
-
-            {/* Search and Sort Controls */}
-            <div className={styles.searchAndSortContainer}>
-              <div className={styles.searchContainer}>
-                <FontAwesomeIcon icon={faSearch} className={styles.searchIcon} />
-                <input
-                  type="text"
-                  placeholder={t("app.library.searchPlaceholder")}
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className={styles.searchInput}
-                  aria-label={t("app.library.searchPlaceholder")}
-                />
-              </div>
-
-              <div className={styles.sortControls}>
-                <button
-                  className={`${styles.sortButton} ${
-                    sortBy === "date" ? styles.activeSort : ""
-                  }`}
-                  onClick={() => toggleSort("date")}
-                >
-                  {t("app.clips.date")}
-                  {sortBy === "date" && (
-                    <FontAwesomeIcon
-                      icon={sortOrder === "asc" ? faSortUp : faSortDown}
-                    />
-                  )}
-                </button>
-                <button
-                  className={`${styles.sortButton} ${
-                    sortBy === "duration" ? styles.activeSort : ""
-                  }`}
-                  onClick={() => toggleSort("duration")}
-                >
-                  {t("app.clips.sortDuration")}
-                  {sortBy === "duration" && (
-                    <FontAwesomeIcon
-                      icon={sortOrder === "asc" ? faSortUp : faSortDown}
-                    />
-                  )}
-                </button>
-                <button
-                  className={`${styles.sortButton} ${
-                    sortBy === "title" ? styles.activeSort : ""
-                  }`}
-                  onClick={() => toggleSort("title")}
-                >
-                  {t("app.clips.sortTitle")}
-                  {sortBy === "title" && (
-                    <FontAwesomeIcon
-                      icon={sortOrder === "asc" ? faSortUp : faSortDown}
-                    />
-                  )}
-                </button>
-              </div>
-            </div>
+            <ClipFilterBar
+              clips={clips}
+              shownClips={filteredClips}
+              categories={categories}
+              players={players}
+              filters={filters}
+              onFiltersChange={setFilters}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onToggleSort={toggleSort}
+            />
 
             {/* First clip hint */}
             {clips.length === 1 && (
@@ -1057,7 +762,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
             <div className={styles.clipsGrid}>
               {sortedClips.length === 0 ? (
                 <div className={styles.emptyState}>
-                  {selectedCategory === null ? (
+                  {filters.categoryId === null ? (
                     <div>
                       <h4>
                         <FontAwesomeIcon icon={faFilm} />{" "}
@@ -1072,7 +777,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                       <h4>
                         <FontAwesomeIcon icon={faFilm} />{" "}
                         {t("app.clips.noClipsInCategory")}{" "}
-                        {getCategoryName(selectedCategory)}
+                        {getCategoryName(filters.categoryId)}
                       </h4>
                       <p>{t("app.clips.createClipsInCategory")}</p>
                     </div>
@@ -1256,8 +961,8 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
                   <FontAwesomeIcon icon={faShare} /> {t("app.clips.sharingClips")}
                 </h4>
                 <p>
-                  {selectedCategory
-                    ? t("app.clips.exportCategoryClips", { category: getCategoryName(selectedCategory) })
+                  {filters.categoryId !== null
+                    ? t("app.clips.exportCategoryClips", { category: getCategoryName(filters.categoryId) })
                     : t("app.clips.exportOrganizedClips")}
                 </p>
               </div>

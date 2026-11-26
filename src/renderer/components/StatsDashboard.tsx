@@ -9,6 +9,7 @@ import { Court, COURT_VB_W, COURT_VB_H } from "./Court";
 import { courtSvg, courtSvgHeight, CourtDot, CourtLegendItem } from "../../shared/courtSvg";
 import { svgToPng } from "../utils/svgToPng";
 import { withCause } from "../utils/errors";
+import { formatDuration } from "../utils/format";
 import { useToastContext } from "../contexts/ToastContext";
 import { Clip, Category, Player } from "../../types/global";
 
@@ -44,18 +45,6 @@ const parsePlayerIds = (clip: Clip): number[] => {
   } catch {
     return [];
   }
-};
-
-// mm:ss, or h:mm:ss when an hour or more
-const formatDuration = (seconds: number): string => {
-  const total = Math.floor(seconds);
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  if (h > 0) {
-    return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  }
-  return `${m}:${s.toString().padStart(2, "0")}`;
 };
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({

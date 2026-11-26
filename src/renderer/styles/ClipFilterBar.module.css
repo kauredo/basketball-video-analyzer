@@ -1,0 +1,394 @@
+@import "./variables.css";
+
+.filterBar {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Row 1: search, Filter, sort */
+.filterRow {
+  position: relative;
+  display: flex;
+  gap: 6px;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--spacing-sm);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  min-width: 0;
+  height: var(--input-height);
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color-light);
+  color: var(--text-primary);
+  padding: 0 var(--spacing-sm) 0 calc(var(--spacing-sm) + var(--spacing-md));
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.searchInput:hover {
+  border-color: var(--border-color-hover);
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+}
+
+.searchInput:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+.barButton {
+  flex: none;
+  height: var(--button-height);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.barButton:hover {
+  background: var(--bg-quaternary);
+  border-color: var(--border-color-hover);
+}
+
+.barButtonActive,
+.barButtonActive:hover {
+  border-color: var(--color-primary);
+}
+
+.activeCount {
+  font-family: var(--font-mono);
+  color: var(--color-accent-ink);
+}
+
+/* Filter popover. Anchored to the row's right edge so it fits a 280px panel. */
+.popover {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  width: min(240px, 100%);
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  z-index: var(--z-popover);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color-hover);
+  border-radius: var(--radius-md);
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.groupHeading {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.categoryRow {
+  width: 100%;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.categoryRow:hover {
+  background: var(--bg-hover);
+}
+
+.categoryChild {
+  padding-left: 22px;
+}
+
+.categoryRowChecked,
+.categoryRowChecked:hover {
+  background: var(--bg-quaternary);
+}
+
+.checkBox {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-color-hover);
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.categoryRowChecked .checkBox {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* A tick drawn from two borders, so no icon font is needed at 14px. */
+.tick {
+  width: 4px;
+  height: 8px;
+  border: solid var(--text-white);
+  border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg);
+}
+
+.colorSquare {
+  flex: none;
+  width: 8px;
+  height: 8px;
+}
+
+.categoryName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryRowChecked .categoryName {
+  font-weight: var(--font-weight-medium);
+}
+
+.count {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-2xs);
+  color: var(--text-tertiary);
+}
+
+.categoryRowChecked .count {
+  color: var(--text-primary);
+}
+
+.playerChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.playerChip {
+  height: 26px;
+  min-width: 32px;
+  padding: 0 8px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-2xs);
+  cursor: pointer;
+}
+
+.playerChip:hover {
+  border-color: var(--border-color-hover);
+  color: var(--text-primary);
+}
+
+.segments {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.segment {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 26px;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-2xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.segment + .segment {
+  border-left: 1px solid var(--border-color);
+}
+
+.segment:hover {
+  color: var(--text-primary);
+}
+
+/* The neutral raised style for an active segment, player chip or sort item. */
+.raised,
+.raised:hover {
+  background: var(--bg-quaternary);
+  color: var(--text-primary);
+  box-shadow:
+    inset 0 0 0 1px var(--border-color-hover),
+    inset 0 -2px 0 var(--color-accent-ink);
+}
+
+/* Sort list */
+.sortWrap {
+  position: relative;
+  flex: none;
+}
+
+.sortMenu {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  min-width: 160px;
+  z-index: var(--z-popover);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color-hover);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sortItem {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sortItem:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Row 2: chips and the summary */
+.activeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  min-height: 24px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.chip {
+  height: 22px;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 3px 0 8px;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-2xs);
+}
+
+.categoryChip {
+  border-color: transparent;
+}
+
+.chipName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipRemove {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  font-size: var(--font-size-2xs);
+  cursor: pointer;
+}
+
+.chipRemove:hover {
+  background: var(--bg-hover);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.summary {
+  flex: none;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+}
+
+.barButton:focus-visible,
+.categoryRow:focus-visible,
+.playerChip:focus-visible,
+.sortItem:focus-visible,
+.chipRemove:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+.segment:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+/* Rows and items sit edge to edge inside a scrolling box; an outer ring
+   would be clipped by it. */
+.categoryRow:focus-visible,
+.sortItem:focus-visible {
+  outline-offset: -2px;
+}
