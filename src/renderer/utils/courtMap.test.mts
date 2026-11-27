@@ -183,3 +183,11 @@ test("stepClip steps both ways and stops at the ends", () => {
   assert.equal(stepClip(list, 3, 1), null);
   assert.equal(stepClip(list, 9, 1), null);
 });
+
+test("familyLegendRows: no rows gives none, and the uncategorised row never takes a family", () => {
+  assert.deepEqual(familyLegendRows([], withFamily), []);
+  const rows = [{ id: null, count: 2 }, { id: 8, count: 1 }];
+  const result = familyLegendRows(rows, withFamily);
+  assert.equal(result.find(row => row.id === null)?.count, 2);
+  assert.equal(result.find(row => row.id === 8)?.parentId, null, "a child whose parent is not listed is not drawn nested");
+});

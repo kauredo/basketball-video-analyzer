@@ -1241,8 +1241,9 @@ ipcMain.handle(
       const exportedFiles: string[] = [];
 
       // Paths and titles come from the database, never from the renderer.
-      const storedClips = params.clips
-        .map(clip => getClipById(clip.id))
+      const categoryIds = [...new Set(params.categoryIds)];
+      const storedClips = [...new Set(params.clips.map(clip => clip.id))]
+        .map(id => getClipById(id))
         .filter((clip): clip is NonNullable<typeof clip> => !!clip);
 
       // Get project ID from the first clip (all clips should be from same project)
@@ -1258,7 +1259,8 @@ ipcMain.handle(
       storedClips.forEach(clip => {
         try {
           const clipCategories: number[] = JSON.parse(clip.categories);
-          exportFoldersFor(clipCategories, params.categoryIds, categories).forEach(catId => {
+          // exportFoldersFor decides which selected folders a clip goes in.
+          exportFoldersFor(clipCategories, categoryIds, categories).forEach(catId => {
             const existing = clipsByCategory.get(catId) || [];
             clipsByCategory.set(catId, [...existing, clip]);
           });
@@ -1268,7 +1270,7 @@ ipcMain.handle(
       });
 
       // Export clips by category
-      for (const categoryId of params.categoryIds) {
+      for (const categoryId of categoryIds) {
         const clips = clipsByCategory.get(categoryId) || [];
         const category = categories.find(c => c.id === categoryId);
 

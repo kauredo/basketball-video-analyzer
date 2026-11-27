@@ -31,3 +31,14 @@ test("exporting everything keeps subcategory clips in their own folders, not the
 test("a clip tagged with a parent and one of its children lands in both selected folders once", () => {
   assert.deepEqual(exportFoldersFor([1, 2], [1, 2], categories), [1, 2]);
 });
+
+test("only the parent selected: a clip tagged with the parent and a child is exported once", () => {
+  assert.deepEqual(exportFoldersFor([1, 2], [1], categories), [1]);
+});
+
+test("a deleted category, empty inputs, and order follow the selection", () => {
+  assert.deepEqual(exportFoldersFor([99], [1], categories), []);
+  assert.deepEqual(exportFoldersFor([], [1], categories), []);
+  assert.deepEqual(exportFoldersFor([2], [], categories), []);
+  assert.deepEqual(exportFoldersFor([4, 2], [2, 4], categories), [2, 4]);
+});

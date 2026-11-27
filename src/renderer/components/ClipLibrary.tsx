@@ -38,6 +38,7 @@ import { formatVideoSrc } from "../utils/paths";
 import { Player, ClipStatus } from "../../types/global";
 import { inkOn } from "../utils/contrast";
 import { withCause } from "../utils/errors";
+import { firstSortOrder, sortClips, type SortField } from "../utils/clipList";
 import {
   ClipFilters,
   NO_FILTERS,
@@ -198,37 +199,18 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     [clips, filters, categoryFamily],
   );
 
-  const sortedClips = useMemo(() => {
-    return [...filteredClips].sort((a, b) => {
-      let comparison = 0;
-      switch (sortBy) {
-        case "date":
-          comparison =
-            new Date(b.created_at || 0).getTime() -
-            new Date(a.created_at || 0).getTime();
-          break;
-        case "duration":
-          comparison =
-            b.end_time - b.start_time - (a.end_time - a.start_time);
-          break;
-        // b before a like the other two, so "desc" really is Z to A and the
-        // arrow and aria-sort tell the truth.
-        case "title":
-          comparison = b.title.localeCompare(a.title);
-          break;
-      }
-      return sortOrder === "asc" ? -comparison : comparison;
-    });
-  }, [filteredClips, sortBy, sortOrder]);
+  const sortedClips = useMemo(
+    () => sortClips(filteredClips, sortBy, sortOrder),
+    [filteredClips, sortBy, sortOrder],
+  );
 
-  const toggleSort = (field: "date" | "duration" | "title") => {
+  const toggleSort = (field: SortField) => {
     if (sortBy === field) {
       const newOrder = sortOrder === "asc" ? "desc" : "asc";
       setSortOrder(newOrder);
       savePref(STORAGE_KEYS.CLIP_SORT_ORDER, newOrder);
     } else {
-      // Newest and longest first, but titles A to Z.
-      const firstOrder = field === "title" ? "asc" : "desc";
+      const firstOrder = firstSortOrder(field);
       setSortBy(field);
       setSortOrder(firstOrder);
       savePref(STORAGE_KEYS.CLIP_SORT_BY, field);
