@@ -859,9 +859,11 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   <FontAwesomeIcon icon={faFilm} /> {videoError}
                 </h3>
                 <p>{t("app.video.pathLabel")} {videoPath}</p>
-                <p>
-                  {t("app.video.checkVideoFormat")}
-                </p>
+                {videoError !== t("app.video.receivedVideoChanged") && (
+                  <p>
+                    {t("app.video.checkVideoFormat")}
+                  </p>
+                )}
               </div>
             </div>
           ) : (
