@@ -537,6 +537,33 @@
   gap: var(--spacing-md);
 }
 
+.locateButton {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  height: var(--button-height);
+  padding: 0 var(--spacing-lg);
+  background: var(--color-primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-white);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.locateButton:hover {
+  background: var(--color-primary-dark);
+}
+
+.locateButton:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
 .placeholderTips {
   background: var(--bg-tertiary);
   padding: var(--spacing-md);

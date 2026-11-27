@@ -130,6 +130,7 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({
                 name="shared-videos"
                 checked={copyVideos}
                 disabled={!canCopy}
+                data-autofocus={choice.canCopy || undefined}
                 onChange={() => setCopyVideos(true)}
               />
               {t("app.openShared.copyVideos")}
@@ -141,6 +142,7 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({
                 name="shared-videos"
                 checked={!copyVideos}
                 onChange={() => setCopyVideos(false)}
+                data-autofocus={!choice.canCopy || undefined}
               />
               {t("app.openShared.useInPlace")}
             </label>

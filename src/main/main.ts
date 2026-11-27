@@ -80,6 +80,7 @@ import { safeFolderName } from "../shared/safeFolderName";
 import { hasVideoExtension } from "../shared/videoPath";
 import { isInsideDir } from "./insideDir";
 import { RECORDING_ALREADY_IN_PROJECT } from "./relink";
+import { removeProjectVideosDir } from "./projectVideosDir";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
 import { safeName, uniqueName } from "./bundleNames";
@@ -1561,7 +1562,9 @@ ipcMain.handle(
 );
 
 ipcMain.handle("delete-project", async (_event, id: number) => {
+  if (!validProjectId(id)) throw new Error(INVALID_INPUT);
   try {
+    const uid = getProjectById(id)?.uid;
     // Get all clips for this project before deleting
     const clips = getClips(id);
 
@@ -1588,6 +1591,13 @@ ipcMain.handle("delete-project", async (_event, id: number) => {
     // Delete project from database (CASCADE will delete clips and categories)
     deleteProject(id);
     allowedMediaPaths.clear();
+    // The recordings a shared project brought in were copied to videos/<uid>/.
+    if (uid) {
+      const videosRoot = path.join(app.getPath("userData"), "videos");
+      await removeProjectVideosDir(videosRoot, uid, getProjectVideoPaths())
+        .then(result => console.log(`Videos folder of deleted project ${uid}: ${result}`))
+        .catch(error => console.error("Error removing a deleted project's videos folder:", error));
+    }
     return true;
   } catch (error) {
     console.error("Error deleting project:", error);
@@ -2220,12 +2230,19 @@ const sendProgress = (sender: Electron.WebContents, channel: string, progress: u
   if (!sender.isDestroyed()) sender.send(channel, progress);
 };
 
-// The total behind "Include game videos (X GB)".
+// The sizes behind "Include game videos (X GB)" and the total a share copies,
+// counted as share-project's plan counts them so the progress total matches.
 ipcMain.handle("get-share-size", async (_event, projectId: number) => {
   if (!validProjectId(projectId) || !getProjectById(projectId)) throw new Error("ERROR_INVALID_INPUT");
   const videos = await Promise.all(
     getProjectVideos(projectId).map(video => statSource(video.video_path, VIDEO_SOURCE)));
-  return videos.reduce((total, video) => total + (video?.size ?? 0), 0);
+  const clipsOnly = await planShareCopies({
+    recordings: getProjectVideos(projectId), clips: getClips(projectId), includeVideos: false,
+  });
+  return {
+    videoBytes: videos.reduce((total, video) => total + (video?.size ?? 0), 0),
+    clipBytes: clipsOnly.totalBytes,
+  };
 });
 
 // Write the project, its cut clips and (optionally) its videos into a new

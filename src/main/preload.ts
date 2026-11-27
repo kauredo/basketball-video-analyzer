@@ -168,7 +168,7 @@ export interface ElectronAPI {
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
 
   // Share project
-  getShareSize: (projectId: number) => Promise<number>;
+  getShareSize: (projectId: number) => Promise<{ videoBytes: number; clipBytes: number }>;
   shareProject: (params: { projectId: number; includeVideos: boolean }) =>
     Promise<{ folderName: string; clips: number; videos: number } | null>;
   cancelShare: () => Promise<boolean>;
