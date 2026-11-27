@@ -8,14 +8,14 @@ import { parseManifest, type BundleManifest, type Fingerprint } from "./bundleMa
 import { uniqueName } from "./bundleNames.ts";
 import type { UidTable } from "./permanentIds.ts";
 import { MAX_SESSION_BYTES, parseSessionData, prepareImport, type ParsedSession } from "./sessionData.ts";
-import { SHARE_CANCELLED, copyErrorCode, copyFiles, type CopyState, type ShareProgress } from "./shareBundle.ts";
+import {
+  INVALID_INPUT, SHARE_CANCELLED, copyErrorCode, copyFiles, type CopyState, type ShareProgress,
+} from "./shareBundle.ts";
 import type { ShareDiff } from "./shareDiff.ts";
 
 export const IMPORT_CANCELLED = "ERROR_IMPORT_CANCELLED";
-export const IMPORT_FAILED = "ERROR_IMPORT_FAILED";
 /** Another share or import is running. Both take the same lock. */
 export const SHARE_BUSY = "ERROR_SHARE_BUSY";
-export const INVALID_INPUT = "ERROR_INVALID_INPUT";
 
 const UID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

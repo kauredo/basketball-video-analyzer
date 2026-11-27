@@ -1,38 +1,67 @@
-import path from "path";
-import { EXISTS, sessionRows, type DiffItem, type Fields, type ItemKind, type ShareDiff } from "./shareDiff.ts";
-import { INVALID_INPUT } from "./shareImport.ts";
+import { EXISTS, ITEM_KINDS, same, sessionRows, type DiffItem, type Fields, type ItemKind, type ShareDiff } from "./shareDiff.ts";
+import { INVALID_INPUT, SHARE_ID_TAKEN } from "./shareBundle.ts";
+import { planImportCopies, type ImportPlanInput, type MergeShare } from "./shareImport.ts";
+import type { MergeFiles } from "./shareApply.ts";
 import type { ParsedSession } from "./sessionData.ts";
-import { insertShareSnapshot, type ShareSnapshot } from "./shareSnapshots.ts";
+import type { ShareSnapshot } from "./shareSnapshots.ts";
+import type { HeldBack } from "../shared/shareReview.ts";
 
 export type Choice = "mine" | "theirs";
 
+export type ShareStanding =
+  | { kind: "applied" }
+  | { kind: "review"; base: ShareSnapshot | null; snapshot: { id: string; data: string } | null };
+
 /**
- * The base a returning share is compared with: the 'sent' snapshot it names
- * as `basedOn`, from this project. A share already received here is its own
- * base, so opening the same file twice shows nothing new.
+ * What to do with a share of a project that is already here. Only a 'sent'
+ * snapshot of this project, written when this computer shared it, can be the
+ * base. A 'received' one with the file's own id means it was applied already.
+ * Any other snapshot with that id is refused, so a file cannot plant its own base.
  */
-export const pickBase = (
-  share: { id: string | null; basedOn: string | null },
+export const classifyShare = (
+  share: { snapshot: { id: string; data: string } | null; basedOn: string | null },
   projectId: number,
   getSnapshot: (id: string) => ShareSnapshot | null,
-): ShareSnapshot | null => {
-  const received = share.id ? getSnapshot(share.id) : null;
-  if (received?.project_id === projectId && received.direction === "received") return received;
+): ShareStanding => {
+  const existing = share.snapshot ? getSnapshot(share.snapshot.id) : null;
+  if (existing) {
+    if (existing.project_id === projectId && existing.direction === "received") return { kind: "applied" };
+    throw new Error(SHARE_ID_TAKEN);
+  }
   const sent = share.basedOn ? getSnapshot(share.basedOn) : null;
-  return sent?.project_id === projectId && sent.direction === "sent" ? sent : null;
+  return {
+    kind: "review",
+    base: sent?.project_id === projectId && sent.direction === "sent" ? sent : null,
+    snapshot: share.snapshot,
+  };
 };
 
-/** What the bundle has to provide: every recording I don't have, and a cut file for clips that are new or moved. */
-export const mergeNeeds = (diff: ShareDiff, mine: ParsedSession): { recordings: string[]; clips: string[] } => {
+export const rowsOf = (session: ParsedSession) =>
+  new Map(ITEM_KINDS.map(kind => [kind, sessionRows(session, kind)] as const));
+
+/**
+ * What the bundle has to provide: every recording I lack that a row of theirs
+ * could bring, and a cut file for clips that are new, restored or moved.
+ */
+export const mergeNeeds = (
+  diff: ShareDiff, mine: ParsedSession, theirs: ParsedSession,
+): { recordings: string[]; clips: string[] } => {
   const mineRecordings = new Set(mine.recordings.map(video => video.uid));
+  const theirRows = rowsOf(theirs);
+  const recordings = new Set<string>();
+  for (const item of diff.items) {
+    if (item.kind === "recording") recordings.add(item.uid);
+    const row = theirRows.get(item.kind)!.get(item.uid);
+    if ((item.kind === "clip" || item.kind === "drawing") && row) recordings.add(row.recording as string);
+  }
   const clips = diff.items.filter(item => item.kind === "clip" && (
     item.group === "new" ||
     [...item.changes, ...item.conflicts].some(change =>
       change.field === "time" || change.field === "recording" || (change.field === EXISTS && change.theirs === true))));
   return {
-    recordings: diff.items
-      .filter(item => item.kind === "recording" && !mineRecordings.has(item.uid))
-      .map(item => item.uid),
+    recordings: theirs.recordings
+      .map(video => video.uid as string)
+      .filter(uid => recordings.has(uid) && !mineRecordings.has(uid)),
     clips: clips.map(item => item.uid),
   };
 };
@@ -75,6 +104,14 @@ export const validateSelections = (diff: ShareDiff, input: unknown): MergeSelect
   return { selected, choices };
 };
 
+/** True when two sessions hold the same rows, by uid, field for field; row order does not matter. */
+export const sessionsMatch = (a: ParsedSession, b: ParsedSession): boolean =>
+  ITEM_KINDS.every(kind => {
+    const left = sessionRows(a, kind);
+    const right = sessionRows(b, kind);
+    return left.size === right.size && [...left].every(([uid, fields]) => right.has(uid) && same(fields, right.get(uid)));
+  });
+
 export type MergeOp =
   | { op: "insert"; kind: ItemKind; uid: string; row: Fields }
   | { op: "update"; kind: ItemKind; uid: string; fields: Fields }
@@ -84,11 +121,37 @@ export interface MergePlan {
   ops: MergeOp[];
   /** Tokens of ticked deletions left in place because something still uses them. */
   kept: string[];
+  /** Ticked changes left as they are here, because they would loop, nest too deep or clash on a name. */
+  heldBack: HeldBack[];
   /** Recordings inserted, in op order; each needs a video path. */
   newRecordings: string[];
-  /** Clips inserted or moved in time or recording; each takes its bundled cut file, or needs a re-cut. */
+  /** Clips that end up with their time and recording, inserted or moved: each takes their cut file. */
   clipFiles: string[];
 }
+
+type Rows = Map<ItemKind, Map<string, Fields>>;
+
+const refs = (value: unknown): string[] =>
+  Array.isArray(value) ? value as string[] : typeof value === "string" ? [value] : [];
+
+/** How many rows point at each row, by token: clips at tags, players and recordings, drawings at recordings, subcategories at parents. */
+export const countUsers = (rows: Rows): Map<string, number> => {
+  const counts = new Map<string, number>();
+  const add = (kind: ItemKind, uids: string[]) => {
+    for (const uid of uids) counts.set(`${kind}:${uid}`, (counts.get(`${kind}:${uid}`) ?? 0) + 1);
+  };
+  for (const clip of rows.get("clip")!.values()) {
+    add("category", refs(clip.categories));
+    add("player", refs(clip.players));
+    add("recording", refs(clip.recording));
+  }
+  for (const drawing of rows.get("drawing")!.values()) add("recording", refs(drawing.recording));
+  for (const cat of rows.get("category")!.values()) add("category", refs(cat.parent));
+  return counts;
+};
+
+export const usersOf = (counts: Map<string, number>, kind: ItemKind, uid: string): number =>
+  counts.get(`${kind}:${uid}`) ?? 0;
 
 const PHASES: Array<[MergeOp["op"], ItemKind]> = [
   ["insert", "recording"], ["insert", "category"], ["insert", "player"],
@@ -101,11 +164,8 @@ const PHASES: Array<[MergeOp["op"], ItemKind]> = [
 export const planMerge = (
   diff: ShareDiff, mine: ParsedSession, theirs: ParsedSession, selections: MergeSelections,
 ): MergePlan => {
-  const rows = (session: ParsedSession) =>
-    new Map<ItemKind, Map<string, Fields>>((["recording", "category", "player", "clip", "drawing"] as ItemKind[])
-      .map(kind => [kind, sessionRows(session, kind)]));
-  const mineRows = rows(mine);
-  const theirRows = rows(theirs);
+  const mineRows = rowsOf(mine);
+  const theirRows = rowsOf(theirs);
   const ops: MergeOp[] = [];
 
   const pickedOp = (item: DiffItem): MergeOp | null => {
@@ -141,399 +201,186 @@ export const planMerge = (
     }
     return result;
   };
+  const deleting = (kind: ItemKind, uid: string) =>
+    ops.some(op => op.op === "delete" && op.kind === kind && op.uid === uid);
 
-  // A ticked clip, drawing or subcategory brings the new recording or parent it sits on.
+  // A ticked row brings the rows of theirs it points at and this project lacks:
+  // tags and players, the recording it sits on, a subcategory's parent.
   const bring = (kind: ItemKind, field: string, target: ItemKind) => {
     for (;;) {
       const present = after(target);
-      const missing = [...after(kind).values()]
-        .map(row => row[field] as string | null)
-        .find(uid => uid && !present.has(uid) && theirRows.get(target)!.has(uid) && !mineRows.get(target)!.has(uid));
+      const missing = [...after(kind).values()].flatMap(row => refs(row[field]))
+        .find(uid => !present.has(uid) && !deleting(target, uid) && theirRows.get(target)!.has(uid));
       if (!missing) return;
       ops.push({ op: "insert", kind: target, uid: missing, row: theirRows.get(target)!.get(missing)! });
     }
   };
+  bring("clip", "categories", "category");
+  bring("clip", "players", "player");
   bring("clip", "recording", "recording");
   bring("drawing", "recording", "recording");
   bring("category", "parent", "category");
 
-  // A ticked deletion of something still in use stays, and so does the first recording (the project's own video).
+  const heldBack: HeldBack[] = [];
+  const holdBack = (op: Extract<MergeOp, { op: "update" }>, fields: string[], entry: HeldBack) => {
+    for (const field of fields) delete op.fields[field];
+    if (Object.keys(op.fields).length === 0) ops.splice(ops.indexOf(op), 1);
+    heldBack.push(entry);
+  };
+  const nameOf = (kind: ItemKind, uid: string) =>
+    String((mineRows.get(kind)!.get(uid) ?? theirRows.get(kind)!.get(uid))?.name ?? "");
+
+  // A parent change that would put a category inside itself stays as it is here.
+  for (;;) {
+    const categories = after("category");
+    const loopFrom = (uid: string): string[] | null => {
+      const chain: string[] = [];
+      for (let at: string | null = uid; at; at = (categories.get(at)?.parent as string | null) ?? null) {
+        const seen = chain.indexOf(at);
+        if (seen >= 0) return chain.slice(seen);
+        chain.push(at);
+      }
+      return null;
+    };
+    const loop = [...categories.keys()].map(loopFrom).find(members => members !== null);
+    const op = loop && ops.find((candidate): candidate is Extract<MergeOp, { op: "update" }> =>
+      candidate.op === "update" && candidate.kind === "category" && "parent" in candidate.fields &&
+      loop.includes(candidate.uid));
+    if (!op) break;
+    holdBack(op, ["parent"], { name: nameOf("category", op.uid), reason: "loop" });
+  }
+
+  // The app nests categories one level deep: a parent change that would make
+  // a grandchild, or give a child children of its own, stays as it is here.
+  for (;;) {
+    const categories = after("category");
+    const parentOf = (uid: string) => (categories.get(uid)?.parent as string | null | undefined) ?? null;
+    const deep = [...categories.keys()].find(uid => {
+      const parent = parentOf(uid);
+      return parent !== null && parentOf(parent) !== null;
+    });
+    const chain = deep ? [deep, parentOf(deep)!] : [];
+    const op = ops.find((candidate): candidate is Extract<MergeOp, { op: "update" }> =>
+      candidate.op === "update" && candidate.kind === "category" && "parent" in candidate.fields &&
+      chain.includes(candidate.uid));
+    if (!op) break;
+    holdBack(op, ["parent"], { name: nameOf("category", op.uid), reason: "depth" });
+  }
+
+  // A rename or move onto a name another row has, or still has while the
+  // apply runs (a swap), stays as it is here, so no unique name index fails.
+  for (const kind of ["category", "player"] as const) {
+    const key = (row: Fields | undefined) =>
+      kind === "category" ? `${row?.parent ?? ""}\u0000${row?.name}` : String(row?.name);
+    for (;;) {
+      const rows = after(kind);
+      const clash = ops.find((op): op is Extract<MergeOp, { op: "update" }> => {
+        if (op.op !== "update" || op.kind !== kind || !("name" in op.fields || "parent" in op.fields)) return false;
+        const target = key(rows.get(op.uid));
+        return [...rows].some(([uid, row]) =>
+          uid !== op.uid && (key(row) === target || key(mineRows.get(kind)!.get(uid)) === target));
+      });
+      if (!clash) break;
+      const to = String(rows.get(clash.uid)?.name);
+      holdBack(clash, "name" in clash.fields ? ["name"] : ["parent"], { name: nameOf(kind, clash.uid), to, reason: "name" });
+    }
+  }
+
+  // A ticked deletion of something still in use stays, and so does the first
+  // recording (the project's own video). Counts are taken once; a kept
+  // subcategory counts again for its parent, so children go first.
+  const final: Rows = new Map(ITEM_KINDS.map(kind => [kind, after(kind)]));
+  const counts = countUsers(final);
+  const depth = (uid: string): number => {
+    let levels = 0;
+    for (let at = mineRows.get("category")!.get(uid)?.parent as string | null; at && levels < 10; levels++) {
+      at = mineRows.get("category")!.get(at)?.parent as string | null;
+    }
+    return levels;
+  };
   const kept: string[] = [];
-  const keep = (op: MergeOp) => {
+  const deletions = ops.filter(op => op.op === "delete")
+    .sort((a, b) => (b.kind === "category" ? depth(b.uid) : 0) - (a.kind === "category" ? depth(a.uid) : 0));
+  for (const op of deletions) {
+    const firstRecording = op.kind === "recording" && op.uid === mine.recordings[0]?.uid;
+    if (!firstRecording && usersOf(counts, op.kind, op.uid) === 0) continue;
     ops.splice(ops.indexOf(op), 1);
     kept.push(`${op.kind}:${op.uid}`);
-  };
-  for (;;) {
-    const clips = [...after("clip").values()];
-    const drawings = [...after("drawing").values()];
-    const categories = [...after("category").values()];
-    const inUse = (op: MergeOp): boolean => {
-      switch (op.kind) {
-        case "category":
-          return clips.some(clip => (clip.categories as string[]).includes(op.uid)) ||
-            categories.some(cat => cat.parent === op.uid);
-        case "player":
-          return clips.some(clip => (clip.players as string[]).includes(op.uid));
-        case "recording":
-          return op.uid === mine.recordings[0]?.uid ||
-            [...clips, ...drawings].some(row => row.recording === op.uid);
-        default:
-          return false;
-      }
-    };
-    const used = ops.find(op => op.op === "delete" && inUse(op));
-    if (!used) break;
-    keep(used);
+    const parent = op.kind === "category" ? mineRows.get("category")!.get(op.uid)?.parent as string | null : null;
+    if (parent) counts.set(`category:${parent}`, usersOf(counts, "category", parent) + 1);
   }
 
   const phase = (op: MergeOp) => PHASES.findIndex(([kind, table]) => kind === op.op && table === op.kind);
   // Parents are inserted before their children and deleted after them.
-  const depth = (op: MergeOp) => {
+  const order = (op: MergeOp) => {
     if (op.kind !== "category") return 0;
     const row = op.op === "insert" ? op.row : mineRows.get("category")!.get(op.uid);
     const child = row?.parent ? 1 : 0;
     return op.op === "delete" ? -child : child;
   };
-  ops.sort((a, b) => phase(a) - phase(b) || depth(a) - depth(b));
+  ops.sort((a, b) => phase(a) - phase(b) || order(a) - order(b));
 
+  // Their cut file fits only when the clip ends up with both their time and their recording.
+  const clipsAfter = after("clip");
+  const takesTheirFile = (uid: string) => {
+    const row = clipsAfter.get(uid);
+    const theirsRow = theirRows.get("clip")!.get(uid);
+    return !!row && !!theirsRow && same(row.time, theirsRow.time) && same(row.recording, theirsRow.recording);
+  };
   return {
     ops,
     kept,
+    heldBack,
     newRecordings: ops.filter(op => op.op === "insert" && op.kind === "recording").map(op => op.uid),
     clipFiles: ops
       .filter(op => op.kind === "clip" && (op.op === "insert" || (op.op === "update" &&
         ("time" in op.fields || "recording" in op.fields))))
-      .map(op => op.uid),
+      .map(op => op.uid)
+      .filter(takesTheirFile),
   };
 };
-
-type SqlValue = string | number | null;
-
-export interface MergeDb {
-  exec(sql: string): unknown;
-  prepare(sql: string): {
-    run(...params: unknown[]): unknown;
-    get(...params: unknown[]): unknown;
-  };
-}
-
-export interface MergeFiles {
-  /** Where each recording in `plan.newRecordings` now is. */
-  recordingPaths: Map<string, string>;
-  /** The cut file a clip in `plan.clipFiles` arrived with; a clip without one waits for a re-cut. */
-  clipFiles: Map<string, { output: string; thumbnail: string }>;
-}
-
-const TABLES: Record<ItemKind, string> = {
-  recording: "project_videos", category: "categories", player: "players", clip: "clips", drawing: "annotations",
-};
-
-// The UI offers 1-10 s; database.ts falls back to the global setting outside this range.
-const displaySeconds = (value: unknown): number | null =>
-  typeof value === "number" && value > 0 && value <= 60 ? value : null;
 
 /**
- * Runs a merge plan on one project and saves the 'received' snapshot, all in
- * one transaction. Returns the cut files of deleted or re-timed clips, for the
- * caller to remove once this has committed.
+ * The copy-or-use-in-place question, asked only when a ticked new recording
+ * comes in the bundle: its bytes, and everything the merge would copy.
  */
-export const applyMerge = (
-  db: MergeDb,
-  projectId: number,
+export const copyChoice = (
+  plan: MergePlan, pending: Pick<MergeShare, "recordings" | "clips">,
+): { videoBytes: number; totalBytes: number } | null => {
+  const bundled = plan.newRecordings.map(uid => pending.recordings.get(uid)?.bundle).filter(file => file);
+  if (bundled.length === 0) return null;
+  const videoBytes = bundled.reduce((total, file) => total + file!.size, 0);
+  const clipBytes = plan.clipFiles.reduce((total, uid) => {
+    const clip = pending.clips.get(uid);
+    return total + (clip ? clip.clip.size + (clip.thumbnail?.size ?? 0) : 0);
+  }, 0);
+  return { videoBytes, totalBytes: videoBytes + clipBytes };
+};
+
+/** What a merge copies, and where each new recording and clip file ends up, by uid. */
+export const planMergeCopies = (
   plan: MergePlan,
-  files: MergeFiles,
-  snapshot: { id: string; data: string } | null,
-): { removedFiles: string[] } => {
-  // A new player or category with the same name as one here becomes that one.
-  const aliases = new Map<string, number>();
-  const idOf = (kind: ItemKind, uid: string | null): number | null => {
-    if (!uid) return null;
-    if (aliases.has(`${kind}:${uid}`)) return aliases.get(`${kind}:${uid}`)!;
-    const row = db.prepare(`SELECT id FROM ${TABLES[kind]} WHERE project_id = ? AND uid = ?`).get(projectId, uid);
-    return (row as { id: number } | undefined)?.id ?? null;
-  };
-  const ids = (kind: ItemKind, uids: unknown) => JSON.stringify(
-    (uids as string[]).map(uid => idOf(kind, uid)).filter((id): id is number => id !== null));
-  const videoPath = (uid: unknown): string => {
-    const fromBundle = files.recordingPaths.get(uid as string);
-    if (fromBundle) return fromBundle;
-    const row = db.prepare("SELECT video_path FROM project_videos WHERE project_id = ? AND uid = ?")
-      .get(projectId, uid as string) as { video_path: string } | undefined;
-    if (!row) throw new Error(INVALID_INPUT);
-    return row.video_path;
-  };
-  const removedFiles: string[] = [];
-  const clipFilesOf = (uid: string) => {
-    const row = db.prepare("SELECT output_path, thumbnail_path, overlay_path FROM clips WHERE project_id = ? AND uid = ?")
-      .get(projectId, uid) as Record<string, string | null> | undefined;
-    for (const file of Object.values(row ?? {})) if (file) removedFiles.push(file);
-  };
-
-  const columns = (kind: ItemKind, fields: Fields): Record<string, SqlValue> => {
-    const set: Record<string, SqlValue> = {};
-    for (const [field, value] of Object.entries(fields)) {
-      if (kind === "clip") {
-        if (field === "time") [set.start_time, set.end_time, set.duration] = value as number[];
-        else if (field === "court") [set.court_x, set.court_y] = (value as number[] | null) ?? [null, null];
-        else if (field === "categories") set.categories = ids("category", value);
-        else if (field === "players") set.players = ids("player", value);
-        else if (field === "recording") set.video_path = videoPath(value);
-        else if (field === "notes" || field === "quarter") set[field] = (value as string | null) || null;
-        else set[field] = value as SqlValue;
-      } else if (kind === "drawing") {
-        if (field === "displaySeconds") set.display_seconds = displaySeconds(value);
-        else if (field === "pausePlayback") set.pause_playback = value === true ? 1 : 0;
-        else if (field === "recording") set.video_path = videoPath(value);
-        else set[field] = value as SqlValue;
-      } else if (kind === "category") {
-        if (field === "parent") set.parent_id = idOf("category", value as string | null);
-        else if (field === "description") set.description = (value as string) || null;
-        else set[field] = value as SqlValue;
-      } else {
-        set[field] = value as SqlValue;
-      }
-    }
-    return set;
-  };
-
-  const insert = (table: string, set: Record<string, SqlValue>) => {
-    const keys = Object.keys(set);
-    db.prepare(`INSERT INTO ${table} (${keys.join(", ")}, updated_at) VALUES (${keys.map(() => "?").join(", ")}, CURRENT_TIMESTAMP)`)
-      .run(...keys.map(key => set[key]));
-  };
-
-  const run = (op: MergeOp) => {
-    const table = TABLES[op.kind];
-    if (op.op === "delete") {
-      if (op.kind === "clip") clipFilesOf(op.uid);
-      db.prepare(`DELETE FROM ${table} WHERE project_id = ? AND uid = ?`).run(projectId, op.uid);
-      return;
-    }
-    if (op.op === "update") {
-      const set = columns(op.kind, op.fields);
-      if (op.kind === "clip" && ("time" in op.fields || "recording" in op.fields)) {
-        clipFilesOf(op.uid);
-        const file = files.clipFiles.get(op.uid);
-        Object.assign(set, {
-          output_path: file?.output ?? "", thumbnail_path: file?.thumbnail ?? "", drawings_key: null, overlay_path: null,
-        });
-      }
-      const keys = Object.keys(set);
-      db.prepare(`UPDATE ${table} SET ${keys.map(key => `${key} = ?`).join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE project_id = ? AND uid = ?`)
-        .run(...keys.map(key => set[key]), projectId, op.uid);
-      return;
-    }
-
-    if (op.kind === "recording") {
-      const file = files.recordingPaths.get(op.uid);
-      if (!file) throw new Error(INVALID_INPUT);
-      db.prepare(`
-        INSERT INTO project_videos (project_id, video_path, video_name, uid)
-        VALUES (?, ?, ?, ?) ON CONFLICT(project_id, video_path) DO NOTHING
-      `).run(projectId, file, path.basename(file), op.uid);
-      return;
-    }
-    const set = columns(op.kind, op.row);
-    if (op.kind === "player" || op.kind === "category") {
-      const same = op.kind === "player"
-        ? db.prepare("SELECT id FROM players WHERE project_id = ? AND name = ?").get(projectId, set.name)
-        : db.prepare("SELECT id FROM categories WHERE project_id = ? AND name = ? AND parent_id IS ?")
-          .get(projectId, set.name, set.parent_id);
-      if (same) {
-        aliases.set(`${op.kind}:${op.uid}`, (same as { id: number }).id);
-        return;
-      }
-    }
-    if (op.kind === "clip") {
-      const file = files.clipFiles.get(op.uid);
-      Object.assign(set, { output_path: file?.output ?? "", thumbnail_path: file?.thumbnail ?? "" });
-    }
-    insert(table, { ...set, project_id: projectId, uid: op.uid });
-  };
-
-  db.exec("BEGIN");
-  try {
-    for (const op of plan.ops) run(op);
-    if (snapshot) insertShareSnapshot(db, { ...snapshot, projectId, direction: "received" });
-    db.exec("COMMIT");
-  } catch (error) {
-    db.exec("ROLLBACK");
-    throw error;
-  }
-  return { removedFiles };
-};
-
-/** A value as the review screen shows it. */
-export type ReviewValue =
-  | { type: "text"; text: string }
-  | { type: "time"; start: number; end: number }
-  | { type: "seconds"; seconds: number | null }
-  | { type: "tags"; tags: Array<{ name: string; color: string | null }> }
-  | { type: "color"; color: string }
-  | { type: "flag"; on: boolean }
-  | { type: "status"; status: ParsedSession["clips"][number]["status"] }
-  | { type: "court"; set: boolean }
-  | { type: "shapes"; count: number }
-  | { type: "exists"; exists: boolean };
-
-export interface ReviewField {
-  field: string;
-  mine: ReviewValue;
-  theirs: ReviewValue;
-}
-
-export interface ReviewRow {
-  token: string;
-  kind: ItemKind;
-  group: DiffItem["group"];
-  ticked: boolean;
-  preview: {
-    title: string;
-    start?: number;
-    end?: number;
-    tags?: Array<{ name: string; color: string | null }>;
-    color?: string;
-    detail?: string;
-  };
-  changes: ReviewField[];
-  conflicts: ReviewField[];
-  /** For a deletion: how many of my clips use it, so it would stay. */
-  inUse: number;
-}
-
-export interface ShareReview {
-  hasBase: boolean;
-  rows: ReviewRow[];
-}
-
-const shapeCount = (data: unknown): number => {
-  try {
-    const shapes: unknown = JSON.parse(data as string);
-    return Array.isArray(shapes) ? shapes.length : 0;
-  } catch {
-    return 0;
-  }
-};
-
-/** The diff as the renderer sees it: uids as tokens, names instead of ids, no paths. */
-export const reviewSummary = (diff: ShareDiff, mine: ParsedSession, theirs: ParsedSession): ShareReview => {
-  type Side = "mine" | "theirs";
-  const byUid = <T extends { uid: string | null }>(rows: T[]) => new Map(rows.map(row => [row.uid as string, row]));
-  const lookup = (session: ParsedSession) => ({
-    category: byUid(session.categories),
-    player: byUid(session.players),
-    recording: byUid(session.recordings),
-    clip: byUid(session.clips),
-    drawing: byUid(session.drawings),
+  pending: Pick<MergeShare, "recordings" | "clips">,
+  options: Omit<ImportPlanInput, "recordings" | "clips">,
+): { copies: ReturnType<typeof planImportCopies>["copies"]; totalBytes: number; files: MergeFiles } => {
+  const recordings = plan.newRecordings.map(uid => {
+    const recording = pending.recordings.get(uid);
+    if (!recording) throw new Error(INVALID_INPUT);
+    return { uid, recording };
   });
-  const sides = { mine: lookup(mine), theirs: lookup(theirs) };
-  // A side's own row first: a name on my side reads as I have it.
-  const either = <K extends keyof ReturnType<typeof lookup>>(key: K, uid: string, side: Side) =>
-    (sides[side][key].get(uid) ?? sides[side === "mine" ? "theirs" : "mine"][key].get(uid)) as
-      ReturnType<typeof lookup>[K] extends Map<string, infer V> ? V | undefined : never;
-
-  const value = (field: string, raw: unknown, side: Side): ReviewValue => {
-    switch (field) {
-      case EXISTS:
-        return { type: "exists", exists: raw === true };
-      case "time": {
-        const [start, end] = raw as number[];
-        return { type: "time", start, end };
-      }
-      case "timestamp":
-      case "displaySeconds":
-        return { type: "seconds", seconds: raw as number | null };
-      case "categories":
-        return {
-          type: "tags",
-          tags: (raw as string[]).map(uid => either("category", uid, side))
-            .filter(cat => cat !== undefined)
-            .map(cat => ({ name: cat.name, color: cat.color })),
-        };
-      case "players":
-        return {
-          type: "tags",
-          tags: (raw as string[]).map(uid => either("player", uid, side))
-            .filter(player => player !== undefined)
-            .map(player => ({ name: player.number ? `#${player.number} ${player.name}` : player.name, color: null })),
-        };
-      case "parent":
-        return { type: "text", text: raw ? either("category", raw as string, side)?.name ?? "" : "" };
-      case "recording":
-        return { type: "text", text: either("recording", raw as string, side)?.videoName ?? "" };
-      case "color":
-        return { type: "color", color: raw as string };
-      case "pausePlayback":
-        return { type: "flag", on: raw === true };
-      case "status":
-        return { type: "status", status: raw as ParsedSession["clips"][number]["status"] };
-      case "court":
-        return { type: "court", set: raw !== null };
-      case "data":
-        return { type: "shapes", count: shapeCount(raw) };
-      default:
-        return { type: "text", text: (raw as string | null) ?? "" };
-    }
-  };
-  const fields = (changes: DiffItem["changes"]) => changes.map(change => ({
-    field: change.field, mine: value(change.field, change.mine, "mine"), theirs: value(change.field, change.theirs, "theirs"),
-  }));
-
-  const preview = (item: DiffItem): ReviewRow["preview"] => {
-    // The row as the coach knows it; their copy only for what is new here.
-    const side: Side = sides.mine[item.kind].has(item.uid) ? "mine" : "theirs";
-    switch (item.kind) {
-      case "clip": {
-        const clip = either("clip", item.uid, side)!;
-        const tags = value("categories", clip.categoryKeys, side);
-        return { title: clip.title, start: clip.startTime, end: clip.endTime, tags: tags.type === "tags" ? tags.tags : [] };
-      }
-      case "drawing": {
-        const drawing = either("drawing", item.uid, side)!;
-        const session = side === "theirs" ? theirs : mine;
-        const clip = session.clips.find(row => row.recordingUid === drawing.recordingUid &&
-          row.startTime <= drawing.timestamp && drawing.timestamp <= row.endTime);
-        return {
-          title: clip?.title ?? either("recording", drawing.recordingUid as string, side)?.videoName ?? "",
-          start: drawing.timestamp,
-        };
-      }
-      case "category": {
-        const cat = either("category", item.uid, side)!;
-        return {
-          title: cat.name,
-          color: cat.color,
-          detail: cat.parentKey ? either("category", cat.parentKey, side)?.name : undefined,
-        };
-      }
-      case "player": {
-        const player = either("player", item.uid, side)!;
-        return { title: player.name, detail: player.number ? `#${player.number}` : undefined };
-      }
-      case "recording":
-        return { title: either("recording", item.uid, side)!.videoName };
-    }
-  };
-
-  const inUse = (item: DiffItem): number => {
-    if (item.group !== "deleted") return 0;
-    return mine.clips.filter(clip =>
-      (item.kind === "category" && clip.categoryKeys.includes(item.uid)) ||
-      (item.kind === "player" && clip.playerKeys.includes(item.uid)) ||
-      (item.kind === "recording" && clip.recordingUid === item.uid)).length;
-  };
-
+  const clips = plan.clipFiles.flatMap(uid => {
+    const clip = pending.clips.get(uid);
+    return clip ? [{ uid, clip }] : [];
+  });
+  const planned = planImportCopies({
+    ...options, recordings: recordings.map(entry => entry.recording), clips: clips.map(entry => entry.clip),
+  });
   return {
-    hasBase: diff.hasBase,
-    rows: diff.items.map(item => ({
-      token: item.token,
-      kind: item.kind,
-      group: item.group,
-      ticked: item.ticked,
-      preview: preview(item),
-      changes: fields(item.changes),
-      conflicts: fields(item.conflicts),
-      inUse: inUse(item),
-    })),
+    copies: planned.copies,
+    totalBytes: planned.totalBytes,
+    files: {
+      recordingPaths: new Map(recordings.map((entry, index) => [entry.uid, planned.paths[index]])),
+      clipFiles: new Map(clips.map((entry, index) => [entry.uid, planned.clipFiles[index]!])),
+    },
   };
 };

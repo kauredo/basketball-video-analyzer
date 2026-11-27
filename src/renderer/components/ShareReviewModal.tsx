@@ -11,10 +11,10 @@ import { errorCode } from "../utils/errors";
 import { formatVideoTime } from "../utils/format";
 import { inkOn } from "../utils/contrast";
 import { statusLabelKey } from "../utils/constants";
-import { openSharedError, showMerged } from "./OpenSharedProjectModal";
+import { mergedMessage, openSharedError } from "../utils/shareMessages";
 import type {
   ReviewField, ReviewGroup, ReviewRow, ReviewSelections, ReviewValue, ShareReview,
-} from "../../types/global";
+} from "../../shared/shareReview";
 import type { Project } from "./ProjectSelector";
 
 const GROUPS: ReviewGroup[] = ["new", "changed", "conflict", "deleted"];
@@ -69,7 +69,7 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
         return;
       }
       if (result.status === "merged") {
-        showMerged(t, showSuccess, result.kept);
+        showSuccess(mergedMessage(t, result.kept, result.heldBack));
         onMerged(result.project);
       }
       onClose();
@@ -174,6 +174,7 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
       {row.changes.length > 0 && <dl className={styles.fields}>{row.changes.map(change)}</dl>}
       {row.conflicts.map(item => conflict(row, item))}
       {row.inUse > 0 && <p className={styles.note}>{t("app.review.inUse", { count: row.inUse })}</p>}
+      {row.recut && <p className={styles.note}>{t("app.review.recut")}</p>}
     </li>
   );
 

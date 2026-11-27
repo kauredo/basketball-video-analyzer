@@ -376,6 +376,13 @@ export const parseSessionData = (session: unknown): ParsedSession => {
   };
 };
 
+/**
+ * A local project in the shape a shared file arrives in, so the review
+ * compares like with like. The JSON round trip is part of that: keep it.
+ */
+export const sessionFromLocal = (source: SessionSource, isSamePath: (a: string, b: string) => boolean): ParsedSession =>
+  parseSessionData(JSON.parse(JSON.stringify(buildSession(source, isSamePath))));
+
 /** The same session with every uid dropped, so the import becomes a new copy. */
 export const withoutUids = (session: ParsedSession): ParsedSession => ({
   ...session,

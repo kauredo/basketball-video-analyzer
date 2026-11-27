@@ -1,5 +1,5 @@
 import type { ProjectVideo } from "./projectVideos";
-import type { ShareReview } from "./shareMerge";
+import type { OpenSharedResult, ReviewSelections } from "../shared/shareReview";
 import { contextBridge, ipcRenderer } from "electron";
 
 export interface ShareProgress {
@@ -7,18 +7,6 @@ export interface ShareProgress {
   totalBytes: number;
   copiedFiles: number;
   totalFiles: number;
-}
-
-export type OpenSharedResult =
-  | { status: "review"; name: string; review: ShareReview }
-  | { status: "choose"; videoBytes: number; canCopy: boolean }
-  | { status: "imported"; project: any }
-  | { status: "merged"; project: any; kept: number };
-
-/** What the review screen sends back: ticked rows, and a side per conflicting field. */
-export interface ReviewSelections {
-  selected: Record<string, boolean>;
-  choices: Record<string, Record<string, "mine" | "theirs">>;
 }
 
 export interface ElectronAPI {

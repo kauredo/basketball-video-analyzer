@@ -2,8 +2,87 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { EXISTS, diffSessions, type DiffItem } from "./shareDiff.ts";
 import {
-  ANA, BEA, C1, C2, C3, C4, C5, D1, D2, DEFENSE, R1, R2, baseSession, clip, clipOf, edit,
+  ANA, BEA, C1, C2, C3, C4, C5, CAT, D1, D2, DEFENSE, OFFENSE, PNR, PRESS, R1, R2, baseSession, clip, clipOf, edit,
 } from "./shareFixtures.test.mts";
+import type { ParsedSession } from "./sessionData.ts";
+
+// Each field of each kind, changed on their side only: one changed row naming that field.
+const FIELD_CHANGES: Array<[string, string, string, (s: ParsedSession) => void]> = [
+  ["clip", C1, "title", s => { clipOf(s, C1).title = "New"; }],
+  ["clip", C1, "notes", s => { clipOf(s, C1).notes = "New"; }],
+  ["clip", C1, "time", s => { clipOf(s, C1).startTime = 9; }],
+  ["clip", C1, "time", s => { clipOf(s, C1).duration = 6; }],
+  ["clip", C1, "categories", s => { clipOf(s, C1).categoryKeys = [DEFENSE]; }],
+  ["clip", C1, "players", s => { clipOf(s, C1).playerKeys = [BEA]; }],
+  ["clip", C1, "quarter", s => { clipOf(s, C1).quarter = "Q2"; }],
+  ["clip", C1, "quarter", s => { clipOf(s, C1).quarter = null; }],
+  ["clip", C1, "court", s => { Object.assign(clipOf(s, C1), { courtX: 0.5, courtY: 0.2 }); }],
+  ["clip", C1, "status", s => { clipOf(s, C1).status = "review"; }],
+  ["drawing", D1, "timestamp", s => { s.drawings[0].timestamp = 13; }],
+  ["drawing", D1, "data", s => { s.drawings[0].data = "[]"; }],
+  ["drawing", D1, "displaySeconds", s => { s.drawings[0].displaySeconds = 2; }],
+  ["drawing", D1, "pausePlayback", s => { s.drawings[0].pausePlayback = true; }],
+  ["category", DEFENSE, "name", s => { s.categories[2].name = "D"; }],
+  ["category", DEFENSE, "color", s => { s.categories[2].color = "#000000"; }],
+  ["category", DEFENSE, "description", s => { s.categories[2].description = "Half court"; }],
+  ["category", DEFENSE, "parent", s => { s.categories[2].parentKey = OFFENSE; }],
+  ["category", PNR, "parent", s => { s.categories[1].parentKey = null; }],
+  ["player", ANA, "name", s => { s.players[0].name = "Ana B"; }],
+  ["player", ANA, "number", s => { s.players[0].number = "5"; }],
+  ["player", ANA, "number", s => { s.players[0].number = null; }],
+];
+
+for (const [kind, uid, field, change] of FIELD_CHANGES) {
+  test(`${kind} ${field} changed by them: one changed row naming ${field}`, () => {
+    const base = baseSession();
+    const items = diffSessions(base, base, edit(base, change)).items;
+    assert.deepEqual(items.map(item => [item.token, item.group, item.changes.map(c => c.field)]),
+      [[`${kind}:${uid}`, "changed", [field]]]);
+  });
+}
+
+// Differences the UI does not show: no row.
+const NO_CHANGE: Array<[string, (s: ParsedSession) => void]> = [
+  ["player number empty vs none", s => { s.players[1].number = ""; }],
+  ["quarter empty vs none", s => { clipOf(s, C1).quarter = ""; }],
+  ["colour case", s => { s.categories[0].color = "#B15F43"; }],
+  ["tag order", s => { clipOf(s, C4).playerKeys = [BEA, ANA]; }],
+  ["the recording index alone", s => { s.clips[0].recording = 5; }],
+];
+
+for (const [label, change] of NO_CHANGE) {
+  test(`${label}: no row`, () => {
+    const base = edit(baseSession(), s => { s.players[1].number = null; clipOf(s, C1).quarter = null; });
+    assert.deepEqual(diffSessions(base, base, edit(base, change)).items, []);
+  });
+}
+
+test("a new category, player and drawing of theirs are each new and ticked", () => {
+  const base = baseSession();
+  const theirs = edit(base, s => {
+    s.categories.push({ uid: PRESS, key: PRESS, parentKey: null, name: "Press", color: "#123456", description: "" });
+    s.players.push({ uid: CAT, key: CAT, name: "Cat", number: null });
+    s.drawings.push({ ...s.drawings[0], uid: D2 });
+  });
+  assert.deepEqual(diffSessions(base, base, theirs).items.map(item => [item.token, item.group, item.ticked]), [
+    [`category:${PRESS}`, "new", true], [`player:${CAT}`, "new", true], [`drawing:${D2}`, "new", true],
+  ]);
+});
+
+test("no base and identical sides: no rows", () => {
+  const base = baseSession();
+  assert.deepEqual(diffSessions(null, base, structuredClone(base)), { hasBase: false, items: [] });
+});
+
+test("I edited it and they deleted it: a conflict, unticked, keeping mine by default", () => {
+  const base = baseSession();
+  const mine = edit(base, s => { clipOf(s, C3).notes = "mine"; });
+  const theirs = edit(base, s => { s.clips = s.clips.filter(row => row.uid !== C3); });
+  const item = only(diffSessions(base, mine, theirs).items);
+  assert.equal(item.group, "conflict");
+  assert.equal(item.ticked, false);
+  assert.deepEqual(item.conflicts, [{ field: EXISTS, mine: true, theirs: false }]);
+});
 
 const only = (items: DiffItem[]) => {
   assert.equal(items.length, 1, JSON.stringify(items));

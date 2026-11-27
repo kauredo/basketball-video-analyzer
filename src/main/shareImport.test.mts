@@ -9,11 +9,11 @@ import {
 } from "./bundleFiles.ts";
 import type { Fingerprint } from "./bundleManifest.ts";
 import {
-  IMPORT_CANCELLED, INVALID_INPUT, SHARE_BUSY, ShareOperations, alreadyHave, findLocalMatch, planImportCopies,
+  IMPORT_CANCELLED, SHARE_BUSY, ShareOperations, alreadyHave, findLocalMatch, planImportCopies,
   prepareNewImport, readSharedFile, receivedSnapshot, resolveBundleContents, resolveRecordings, runImport,
   shareBasedOn, sharedProjectName, type ContentLookups,
 } from "./shareImport.ts";
-import { SHARE_FAILED } from "./shareBundle.ts";
+import { INVALID_INPUT, SHARE_FAILED } from "./shareBundle.ts";
 import { createShareSnapshotsTable, latestReceivedSnapshot, saveShareSnapshot } from "./shareSnapshots.ts";
 
 const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "bva-share-import-")));
@@ -115,6 +115,17 @@ test("preferLocal: a video already here is used before the bundle's copy, which 
     preferLocal: true,
   });
   assert.deepEqual(sources, [{ kind: "local", path: "/local/g.mp4" }, { kind: "bundle", file: bundled }]);
+});
+
+test("preferLocal without a fingerprint falls through to the bundle and never looks locally", async () => {
+  const bundled = { path: "/b/videos/g.mp4", size: 5, rel: "videos/g.mp4" };
+  const sources = await resolveRecordings(1, {
+    bundleFile: async () => bundled,
+    fingerprint: () => null,
+    localMatch: async () => assert.fail("no fingerprint, no local lookup"),
+    preferLocal: true,
+  });
+  assert.deepEqual(sources, [{ kind: "bundle", file: bundled }]);
 });
 
 test("with neither a bundled file nor a fingerprint match, the recording goes to the file picker", async () => {

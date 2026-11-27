@@ -24,7 +24,7 @@ export interface DiffItem {
   changes: FieldChange[];
   /** Fields both sides changed to different values; the coach picks one side per field. */
   conflicts: FieldChange[];
-  /** Ticked by default: everything except a deletion. */
+  /** Ticked by default: everything except a deletion they propose. */
   ticked: boolean;
 }
 
@@ -89,7 +89,7 @@ export const sessionRows = (session: ParsedSession, kind: ItemKind): Map<string,
   return rows;
 };
 
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+export const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 const differing = (mine: Fields, theirs: Fields): FieldChange[] =>
   Object.keys(theirs)
@@ -113,7 +113,11 @@ const diffItem = (
     return item("conflict", [], existence(mine !== undefined));
   }
 
-  if (!theirs) return base && mine ? item("deleted", [], []) : null;
+  if (!theirs) {
+    if (!base || !mine) return null;
+    // They deleted what I edited: keeping mine stays the default, as for any deletion.
+    return same(base, mine) ? item("deleted", [], []) : { ...item("conflict", [], existence(true)), ticked: false };
+  }
   if (!mine) {
     if (!base) return item("new", [], []);
     return same(base, theirs) ? null : item("conflict", [], existence(false));
