@@ -323,7 +323,10 @@ export const ClipTable: React.FC<ClipTableProps> = ({
               const isEditingNotes = edit.isEditing(clip.id, "notes");
 
               return (
-                <tr key={clip.id} className={rowClass(clip.status)}>
+                <tr
+                  key={clip.id}
+                  className={`${rowClass(clip.status)} ${selected.has(clip.id) ? styles.rowSelected : ""}`}
+                >
                   <td className={styles.selectCell}>
                     <input
                       type="checkbox"

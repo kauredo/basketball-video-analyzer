@@ -13,6 +13,7 @@ import { withCause } from "../utils/errors";
 import { formatDuration } from "../utils/format";
 import {
   dotCategoryId,
+  familyLegendRows,
   legendRows,
   sameCategoryClips,
   type CategoryFilter,
@@ -222,7 +223,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     () =>
       flatCategories
         .filter((c): c is Category & { id: number } => c.id !== undefined)
-        .map(c => ({ id: c.id, name: c.name, color: c.color })),
+        .map(c => ({ id: c.id, name: c.name, color: c.color, parentId: c.parent_id ?? null })),
     [flatCategories]
   );
   const knownIds = useMemo(() => new Set(mapCategories.map(c => c.id)), [mapCategories]);
@@ -265,7 +266,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   // null: uncategorised. undefined: nothing selected.
   const selectedCat = selected ? dotCategoryId(selected, catFilter, knownIds) : undefined;
   const legend = useMemo(
-    () => legendRows(chartClips, mapCategories, catFilter),
+    () => familyLegendRows(legendRows(chartClips, mapCategories, catFilter), mapCategories),
     [chartClips, mapCategories, catFilter]
   );
   const siblings = selected
@@ -599,7 +600,10 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                     const cat = categoryOf(row.id);
                     const hollow = selectedCat !== undefined && row.id !== selectedCat;
                     return (
-                      <li key={row.id ?? "none"} className={styles.legendItem}>
+                      <li
+                        key={row.id ?? "none"}
+                        className={`${styles.legendItem} ${row.parentId !== null ? styles.legendSub : ""}`}
+                      >
                         <span
                           className={`${styles.legendSwatch} ${hollow ? styles.legendSwatchHollow : ""}`}
                           style={hollow ? undefined : { backgroundColor: cat.color }}

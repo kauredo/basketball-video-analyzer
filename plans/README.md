@@ -165,6 +165,31 @@ Recorded so nobody re-audits them:
 - **Worker-based download-count time series** — deferred inside plan 004
   (cumulative per-release counts answer the signing question without it).
 
+## Noticed, not planned
+
+Seen during the November 2026 UI polish pass (`fix/ui-polish-walkthrough`)
+and left alone, because each is bigger than a small fix or needs a decision:
+
+- **Card Play leaves the app.** The clip card's Play button calls
+  `shell.openPath`, so the clip opens in the system player instead of the
+  app's own.
+- **Project dates change format after a language round trip.** Switching the
+  language away and back turns "27 Nov 2026, 22:07" into "Nov 27, 2026,
+  10:07 PM".
+- **Clip cards have no selected state.** The bottom list and the table mark
+  the current clip; the card grid never does.
+- **Opening a project toasts "Drawings updated in 1 clip"** when a saved
+  drawing falls inside a clip, on a plain open with no edit behind it.
+- **The side-panel table's header does not stick.** `.tableScroll` has
+  `overflow: auto` for sideways scrolling, which makes it the sticky ancestor,
+  but the vertical scroll happens in `.clipLibraryContent`, so the header
+  scrolls away with the rows. Fixing it means choosing which element scrolls.
+- **Exporting a parent category may skip subcategory-only clips.** The
+  renderer sends `categories: [parentId]` for every clip so subcategory clips
+  count, but `export-clips-by-category` in `main.ts` re-reads each clip from
+  the database and groups by the stored ids, so a clip tagged only with a
+  subcategory never matches the parent. Found by reading the code, not run.
+
 ## Design-audit batch (010-038)
 
 The working log for plans 010-038 and the September 2026 releases is in [archive/2026-09-design-batch.md](archive/2026-09-design-batch.md). The status rows above are the summary.

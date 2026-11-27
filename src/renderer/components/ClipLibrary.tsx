@@ -12,7 +12,6 @@ import {
   faTrash,
   faCalendar,
   faClock,
-  faShare,
   faVideo,
   faChevronDown,
   faTable,
@@ -212,8 +211,10 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           comparison =
             b.end_time - b.start_time - (a.end_time - a.start_time);
           break;
+        // b before a like the other two, so "desc" really is Z to A and the
+        // arrow and aria-sort tell the truth.
         case "title":
-          comparison = a.title.localeCompare(b.title);
+          comparison = b.title.localeCompare(a.title);
           break;
       }
       return sortOrder === "asc" ? -comparison : comparison;
@@ -226,10 +227,12 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
       setSortOrder(newOrder);
       savePref(STORAGE_KEYS.CLIP_SORT_ORDER, newOrder);
     } else {
+      // Newest and longest first, but titles A to Z.
+      const firstOrder = field === "title" ? "asc" : "desc";
       setSortBy(field);
-      setSortOrder("desc");
+      setSortOrder(firstOrder);
       savePref(STORAGE_KEYS.CLIP_SORT_BY, field);
-      savePref(STORAGE_KEYS.CLIP_SORT_ORDER, "desc");
+      savePref(STORAGE_KEYS.CLIP_SORT_ORDER, firstOrder);
     }
   };
 
@@ -971,7 +974,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
             {filteredClips.length > 0 && (
               <div className={styles.exportInfo}>
                 <h4>
-                  <FontAwesomeIcon icon={faShare} /> {t("app.clips.sharingClips")}
+                  <FontAwesomeIcon icon={faFileExport} /> {t("app.clips.exportSectionTitle")}
                 </h4>
                 <p>
                   {filters.categoryId !== null

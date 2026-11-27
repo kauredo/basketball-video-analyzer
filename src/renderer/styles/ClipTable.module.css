@@ -38,7 +38,9 @@
   font-weight: 600;
   font-size: var(--font-size-xs);
   padding: var(--spacing-xs) var(--spacing-sm);
-  border-bottom: 1px solid var(--border-color-light);
+  /* A collapsed border stays with the table and scrolls away under the
+     sticky header; the inset shadow travels with the cell. */
+  box-shadow: inset 0 -1px 0 var(--border-color-light);
   white-space: nowrap;
 }
 
@@ -76,6 +78,16 @@
 .clipTable tbody tr.rowReview {
   border-left-color: var(--color-warning);
   background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+/* A ticked row. It takes over the wash but leaves a status rail in place, so
+   a selected Keep row still says Keep at its edge. */
+.clipTable tbody tr.rowSelected {
+  background: color-mix(in srgb, var(--color-accent-ink) 16%, transparent);
+}
+
+.clipTable tbody tr.rowSelected:not(.rowKeep, .rowCut, .rowReview) {
+  border-left-color: var(--color-accent-ink);
 }
 
 .selectCell {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   dotCategoryId,
+  familyLegendRows,
   legendRows,
   sameCategoryClips,
   stepClip,
@@ -80,6 +81,47 @@ test("legendRows under a parent filter counts its subcategory clips in the paren
   const drawn = [clip(1, [3]), clip(2, [5]), clip(3, [2, 5])];
   const rows = legendRows(drawn, categories, only(3, [3, 5]));
   assert.deepEqual(rows, [{ id: 3, count: 3 }]);
+});
+
+// 7 is Defense, 8 and 9 its subcategories, 3 a category with none.
+const withFamily: CourtMapCategory[] = [
+  { id: 7, name: "Defense", color: "#e57373" },
+  { id: 8, name: "Rotations", color: "#ffb74d", parentId: 7 },
+  { id: 9, name: "Zone press", color: "#ef5350", parentId: 7 },
+  { id: 3, name: "Turnovers", color: "#ff0000" },
+];
+
+test("familyLegendRows gives a parent its family total, children keep their own count", () => {
+  // Dots take the child's colour, so the children keep their rows. The parent
+  // row said 0 when every Defense clip was tagged with a subcategory.
+  const drawn = [clip(1, [8]), clip(2, [9]), clip(3, [9]), clip(4, [7]), clip(5, [3]), clip(6, [])];
+  const rows = legendRows(drawn, withFamily, "all");
+  assert.deepEqual(familyLegendRows(rows, withFamily), [
+    { id: 7, count: 4, parentId: null },
+    { id: 8, count: 1, parentId: 7 },
+    { id: 9, count: 2, parentId: 7 },
+    { id: 3, count: 1, parentId: null },
+    { id: null, count: 1, parentId: null },
+  ]);
+  // The per-dot rows underneath still sum to what is drawn.
+  assert.equal(sum(rows), drawn.length);
+});
+
+test("familyLegendRows: a parent with only subcategory clips is not 0", () => {
+  const rows = legendRows([clip(1, [8]), clip(2, [9])], withFamily, "all");
+  assert.equal(familyLegendRows(rows, withFamily)[0].count, 2);
+});
+
+test("familyLegendRows under a parent or child filter keeps the single row", () => {
+  const family = only(7, [7, 8, 9]);
+  const drawn = [clip(1, [8]), clip(2, [9]), clip(3, [7])];
+  assert.deepEqual(familyLegendRows(legendRows(drawn, withFamily, family), withFamily), [
+    { id: 7, count: 3, parentId: null },
+  ]);
+  // Shown alone, the subcategory is not nested under a parent that is not there.
+  assert.deepEqual(familyLegendRows(legendRows([clip(1, [9])], withFamily, only(9)), withFamily), [
+    { id: 9, count: 1, parentId: null },
+  ]);
 });
 
 test("legendRows treats a filter id missing from categories as no filter", () => {

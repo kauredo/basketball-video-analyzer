@@ -451,6 +451,9 @@
   /* Required: without it the flex item refuses to shrink and any pinned
      footer is pushed off screen again. */
   min-height: 0;
+  /* The pinned footer's height (a button plus its padding), so focus moves and
+     scrollIntoView stop above it instead of behind it. */
+  scroll-padding-bottom: calc(var(--button-height) + var(--spacing-md) * 2);
 }
 
 /* Header with Settings Button */

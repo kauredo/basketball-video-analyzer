@@ -205,11 +205,13 @@
 }
 
 /* Clips Table */
+/* No top padding: the sticky header pins to the padding edge, and the rows
+   scrolling through that gap showed above it. */
 .clipsTable {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--spacing-sm);
+  padding: 0 var(--spacing-sm) var(--spacing-sm);
 }
 
 .clipsTableElement {
@@ -219,21 +221,21 @@
   font-size: var(--font-size-sm);
 }
 
-.clipsTableElement thead {
+/* Sticky on the cells rather than the thead, with the panel's own ground, so
+   nothing shows through. The rule is an inset shadow because a collapsed
+   border stays with the table and scrolls away. */
+.clipsTableElement th {
   position: sticky;
   top: 0;
-  background: var(--bg-tertiary);
   z-index: 5;
-}
-
-.clipsTableElement th {
-  padding: var(--spacing-sm);
+  background: var(--bg-secondary);
+  box-shadow: inset 0 -2px 0 var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-xs);
   text-align: left;
   color: var(--text-secondary);
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-xs);
   text-transform: uppercase;
-  border-bottom: 2px solid var(--border-color);
 }
 
 .clipsTableElement tbody tr {
@@ -246,8 +248,21 @@
   background: var(--bg-tertiary);
 }
 
+/* The ink accent, not --color-primary: primary is tuned to carry white and
+   barely shows as a tint on the dark grounds. The bar sits on the first cell
+   because a collapsed-border row does not paint its own shadow. */
 .clipsTableElement tbody tr.selected {
-  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  background: color-mix(in srgb, var(--color-accent-ink) 16%, transparent);
+}
+
+.clipsTableElement tbody tr.selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-accent-ink);
+}
+
+/* Room for that bar, so it does not touch the clip number. */
+.clipsTableElement td:first-child,
+.clipsTableElement th:first-child {
+  padding-left: var(--spacing-sm);
 }
 
 .clipsTableElement tbody tr:focus-visible {
@@ -255,11 +270,15 @@
   outline-offset: -2px;
 }
 
-/* A long unbroken word wraps instead of widening the table past the panel. */
+/* break-word, not anywhere: anywhere also lowers the column's minimum width to
+   one character, so auto layout squeezed the title down to "covera / ge".
+   With whole words the columns need more room, so the side padding is the
+   narrow kind; at Narrow on a 1440 window the table then fits its panel. A
+   single word too long for the panel scrolls sideways instead of splitting. */
 .clipsTableElement td {
-  padding: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-xs);
   vertical-align: top;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 /* width: 1% makes auto layout shrink these to their content. */

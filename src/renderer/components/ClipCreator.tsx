@@ -73,6 +73,17 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
   const clipTitleInputRef = useRef<HTMLInputElement>(null);
   const clipNotesInputRef = useRef<HTMLTextAreaElement>(null);
   const cancelledRef = useRef(false);
+  const courtPickerRef = useRef<HTMLDivElement>(null);
+
+  // Opening the picker, or placing the first spot (which adds Clear location),
+  // grows the form under the sticky Create Clip bar. Bring it into view; the
+  // modal body's scroll padding keeps it clear of the bar.
+  const hasCourtPos = courtPos !== null;
+  useEffect(() => {
+    if (showCourtPicker) {
+      courtPickerRef.current?.scrollIntoView({ block: "nearest" });
+    }
+  }, [showCourtPicker, hasCourtPos]);
 
   useEffect(() => {
     loadCategories();
@@ -498,8 +509,10 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
           )}
         </button>
         {showCourtPicker && (
-          <div className={styles.courtPicker}>
-            <Court marker={courtPos} onSelect={setCourtPos} />
+          <div className={styles.courtPicker} ref={courtPickerRef}>
+            <div className={styles.courtFrame}>
+              <Court marker={courtPos} onSelect={setCourtPos} />
+            </div>
             {courtPos && (
               <button
                 type="button"
