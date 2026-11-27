@@ -421,6 +421,7 @@
       "errorVideoNetwork": "Erro de rede ao carregar vídeo",
       "errorVideoDecoding": "Não foi possível descodificar o vídeo. O formato pode não ser suportado.",
       "errorVideoFormat": "Formato de vídeo não suportado. Experimenta MP4, MOV, AVI, MKV ou WebM.",
+      "receivedVideoChanged": "Este vídeo mudou na pasta partilhada desde que abriste o projeto, por isso a aplicação não o vai usar. Copia o projeto outra vez para a aplicação.",
       "checkVideoFormat": "Verifica se o ficheiro de vídeo existe e está num formato suportado (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "A descarregar atualização... {{progress}}%",
       "preparingUpdate": "A preparar download da atualização...",

@@ -419,6 +419,7 @@
       "errorVideoNetwork": "Error de red al cargar el vídeo",
       "errorVideoDecoding": "No se pudo decodificar el vídeo. Puede que el formato no sea compatible.",
       "errorVideoFormat": "Formato de vídeo no compatible. Prueba MP4, MOV, AVI, MKV o WebM.",
+      "receivedVideoChanged": "Este vídeo ha cambiado en la carpeta compartida desde que abriste el proyecto, así que la aplicación no lo usará. Vuelve a copiar el proyecto en la aplicación.",
       "checkVideoFormat": "Comprueba que el archivo de vídeo existe y está en un formato compatible (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Descargando actualización... {{progress}}%",
       "preparingUpdate": "Preparando la descarga de la actualización...",

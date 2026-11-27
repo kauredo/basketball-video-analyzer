@@ -1,4 +1,7 @@
-import { insertProjectVideo, listProjectVideos, migrateProjectVideos } from "./projectVideos";
+import type { ReceivedInPlace } from "./bundleFiles";
+import {
+  findReceivedInPlace, insertProjectVideo, listProjectVideos, markReceivedInPlace, migrateProjectVideos,
+} from "./projectVideos";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -952,6 +955,11 @@ export const getProjectVideos = (projectId: number) => listProjectVideos(db, pro
 
 export const addProjectVideo = (projectId: number, videoPath: string, videoName: string, uid?: string) =>
   insertProjectVideo(db, projectId, videoPath, videoName, uid);
+
+export const setReceivedInPlace = (projectId: number, videoPath: string, file: ReceivedInPlace) =>
+  markReceivedInPlace(db, projectId, videoPath, file);
+
+export const getReceivedInPlace = (videoPath: string) => findReceivedInPlace(db, videoPath);
 
 export const getProjectVideoPaths = (): string[] =>
   (db.prepare("SELECT DISTINCT video_path FROM project_videos").all() as { video_path: string }[])

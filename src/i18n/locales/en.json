@@ -401,6 +401,7 @@
       "errorVideoNetwork": "Network error while loading video",
       "errorVideoDecoding": "Couldn't decode the video. The format may not be supported.",
       "errorVideoFormat": "Video format not supported. Try MP4, MOV, AVI, MKV or WebM.",
+      "receivedVideoChanged": "This video changed in the shared folder since you opened the project, so the app won't use it. Copy the project into the app again.",
       "checkVideoFormat": "Please check if the video file exists and is in a supported format (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Downloading update... {{progress}}%",
       "preparingUpdate": "Preparing update download...",

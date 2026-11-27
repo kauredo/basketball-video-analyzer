@@ -420,6 +420,7 @@
       "errorVideoNetwork": "Erreur réseau lors du chargement de la vidéo",
       "errorVideoDecoding": "Impossible de décoder la vidéo. Le format n'est peut-être pas pris en charge.",
       "errorVideoFormat": "Format vidéo non pris en charge. Essayez MP4, MOV, AVI, MKV ou WebM.",
+      "receivedVideoChanged": "Cette vidéo a changé dans le dossier partagé depuis que vous avez ouvert le projet, l'application ne l'utilisera donc pas. Copiez à nouveau le projet dans l'application.",
       "checkVideoFormat": "Veuillez vérifier que le fichier vidéo existe et qu'il est dans un format pris en charge (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Téléchargement de la mise à jour... {{progress}} %",
       "preparingUpdate": "Préparation du téléchargement de la mise à jour...",

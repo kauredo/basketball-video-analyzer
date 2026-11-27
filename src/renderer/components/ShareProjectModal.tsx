@@ -70,6 +70,7 @@ export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, pr
       else if (code === "ERROR_INSUFFICIENT_SPACE") setError(t("app.share.noSpace"));
       else if (code === "ERROR_SHARE_VIDEO_MISSING") setError(t("app.share.videoMissing", { name: detail(err, code) }));
       else if (code === "ERROR_SHARE_FILE_MISSING") setError(t("app.share.fileMissing", { name: detail(err, code) }));
+      else if (code === "ERROR_RECEIVED_VIDEO_CHANGED") setError(t("app.video.receivedVideoChanged"));
       else setError(t("app.share.failed"));
     } finally {
       setSharing(false);

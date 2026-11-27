@@ -419,6 +419,7 @@
       "errorVideoNetwork": "Errore di rete durante il caricamento del video",
       "errorVideoDecoding": "Impossibile decodificare il video. Il formato potrebbe non essere supportato.",
       "errorVideoFormat": "Formato video non supportato. Prova MP4, MOV, AVI, MKV o WebM.",
+      "receivedVideoChanged": "Questo video è cambiato nella cartella condivisa da quando hai aperto il progetto, quindi l'app non lo userà. Copia di nuovo il progetto nell'app.",
       "checkVideoFormat": "Verifica che il file video esista e sia in un formato supportato (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Download dell'aggiornamento... {{progress}}%",
       "preparingUpdate": "Preparazione del download dell'aggiornamento...",

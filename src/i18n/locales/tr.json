@@ -420,6 +420,7 @@
       "errorVideoNetwork": "Video yüklenirken ağ hatası",
       "errorVideoDecoding": "Video çözümlenemedi. Bu format desteklenmiyor olabilir.",
       "errorVideoFormat": "Video biçimi desteklenmiyor. MP4, MOV, AVI, MKV veya WebM deneyin.",
+      "receivedVideoChanged": "Bu video, projeyi açtığınızdan beri paylaşılan klasörde değişti, bu yüzden uygulama onu kullanmayacak. Projeyi uygulamaya yeniden kopyalayın.",
       "checkVideoFormat": "Lütfen video dosyasının var olup olmadığını ve desteklenen bir formatta olduğunu kontrol edin (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Güncelleme indiriliyor... {{progress}}%",
       "preparingUpdate": "Güncelleme indirmesi hazırlanıyor...",

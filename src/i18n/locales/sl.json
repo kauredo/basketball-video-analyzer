@@ -419,6 +419,7 @@
       "errorVideoNetwork": "Napaka omrežja pri nalaganju videa",
       "errorVideoDecoding": "Videa ni bilo mogoče dekodirati. Format morda ni podprt.",
       "errorVideoFormat": "Format videa ni podprt. Poskusite MP4, MOV, AVI, MKV ali WebM.",
+      "receivedVideoChanged": "Ta video se je v deljeni mapi spremenil, odkar ste odprli projekt, zato ga aplikacija ne bo uporabila. Projekt znova kopirajte v aplikacijo.",
       "checkVideoFormat": "Preverite, ali video datoteka obstaja in je v podprtem formatu (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Prenašanje posodobitve ... {{progress}} %",
       "preparingUpdate": "Pripravljanje prenosa posodobitve ...",

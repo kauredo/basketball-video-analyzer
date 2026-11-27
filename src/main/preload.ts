@@ -107,6 +107,7 @@ export interface ElectronAPI {
   ) => Promise<"ok" | "duplicate" | "failed">;
   deleteProject: (id: number) => Promise<boolean>;
   checkPathsExist: (paths: string[]) => Promise<Record<string, boolean>>;
+  receivedVideoChanged: (videoPath: string) => Promise<boolean>;
 
   // Category operations
   getCategories: (projectId: number) => Promise<any[]>;
@@ -251,6 +252,7 @@ const electronAPI: ElectronAPI = {
     ),
   deleteProject: id => ipcRenderer.invoke("delete-project", id),
   checkPathsExist: paths => ipcRenderer.invoke("check-paths-exist", paths),
+  receivedVideoChanged: videoPath => ipcRenderer.invoke("received-video-changed", videoPath),
 
   // Category operations
   getCategories: (projectId: number) =>

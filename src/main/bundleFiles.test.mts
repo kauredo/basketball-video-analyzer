@@ -5,8 +5,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
-  BUNDLE_FILE_CHANGED, BUNDLE_FILE_UNSAFE, BUNDLE_INCOMPLETE, copyBundleFile, hasMediaSignature, openNoFollow,
-  readBundleText, resolveBundleFile,
+  BUNDLE_FILE_CHANGED, BUNDLE_FILE_UNSAFE, BUNDLE_INCOMPLETE, RECEIVED_VIDEO_CHANGED, assertReceivedUnchanged,
+  checkReceivedInPlace, copyBundleFile, hasMediaSignature, openNoFollow, readBundleText, resolveBundleFile,
 } from "./bundleFiles.ts";
 
 const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "bva-bundle-files-")));
@@ -40,8 +40,10 @@ const quiet = () => {};
 
 test("a valid video, clip, thumbnail and .bvap resolve to their real path, size and bundle path", async () => {
   const root = bundle();
+  const video = path.join(root, "videos", "game.mp4");
+  const { dev, ino } = fs.statSync(video, { bigint: true });
   assert.deepEqual(await resolveBundleFile(root, "videos/game.mp4", { ...media, expectSize: MP4.length }),
-    { path: path.join(root, "videos", "game.mp4"), size: MP4.length, rel: "videos/game.mp4" });
+    { path: video, size: MP4.length, rel: "videos/game.mp4", dev: String(dev), ino: String(ino) });
   assert.equal((await resolveBundleFile(root, "clips/c.mp4", media)).size, MP4.length);
   assert.equal((await resolveBundleFile(root, "clips/c-thumb.jpg", media)).size, JPEG.length);
   assert.equal(await readBundleText(root, "Game.bvap", 1000), "{}");
@@ -218,4 +220,78 @@ test("a copy never replaces an existing target", async () => {
   fs.writeFileSync(target, "keep");
   await assert.rejects(copyBundleFile(copyOf(root, "videos/game.mp4", MP4.length, target), never, quiet), { code: "EEXIST" });
   assert.equal(fs.readFileSync(target, "utf8"), "keep");
+});
+
+/** A bundle's video as the import resolved it, ready to be used in place. */
+const received = async () => {
+  const root = bundle();
+  const file = await resolveBundleFile(root, "videos/game.mp4", { ...media, expectSize: MP4.length });
+  return { root, file: file.path, expected: { size: file.size, dev: file.dev, ino: file.ino } };
+};
+const refused = (reason: string) => ({ ok: false, reason });
+
+test("a received video left as it was passes the recheck", async () => {
+  const { file, expected } = await received();
+  assert.deepEqual(checkReceivedInPlace(file, expected), { ok: true });
+});
+
+test("a received video swapped for a symlink is refused, even to a file of the same size", unix, async () => {
+  const { file, expected } = await received();
+  fs.rmSync(file);
+  fs.symlinkSync(outside, file);
+  assert.deepEqual(checkReceivedInPlace(file, expected), refused("symlink"));
+});
+
+test("a received video replaced by a folder is refused", async () => {
+  const { file, expected } = await received();
+  fs.rmSync(file);
+  fs.mkdirSync(file);
+  assert.deepEqual(checkReceivedInPlace(file, expected), refused("not a file"));
+});
+
+test("a received video given a second hard link is refused", async () => {
+  const { file, expected } = await received();
+  fs.linkSync(file, path.join(base, `hard${n++}.mp4`));
+  assert.deepEqual(checkReceivedInPlace(file, expected), refused("hard linked"));
+});
+
+test("a received video that changed size is refused", async () => {
+  const { file, expected } = await received();
+  fs.appendFileSync(file, "more");
+  assert.deepEqual(checkReceivedInPlace(file, expected), refused("size"));
+});
+
+test("a received video replaced by a different file of the same size is refused", async () => {
+  const { file, expected } = await received();
+  const other = `${file}.new`;
+  fs.writeFileSync(other, MP4);
+  fs.renameSync(other, file);
+  assert.deepEqual(checkReceivedInPlace(file, expected), refused("replaced"));
+  // Same inode on another device is another file too.
+  const { file: kept, expected: keptExpected } = await received();
+  assert.deepEqual(checkReceivedInPlace(kept, { ...keptExpected, dev: `${keptExpected.dev}1` }), refused("replaced"));
+});
+
+test("a received video reached through a folder that became a symlink is refused", unix, async () => {
+  const { root, file, expected } = await received();
+  // The same file, moved with its folder and linked back: only its real path changed.
+  const moved = path.join(base, `moved${n++}`);
+  fs.renameSync(root, moved);
+  fs.symlinkSync(moved, root);
+  assert.deepEqual(checkReceivedInPlace(file, expected), refused("moved"));
+});
+
+test("a received video that is gone is refused", async () => {
+  const { file, expected } = await received();
+  fs.rmSync(file);
+  assert.deepEqual(checkReceivedInPlace(file, expected), refused("missing"));
+});
+
+test("only a recording with a received record is rechecked, and a failed recheck throws", async () => {
+  const { file, expected } = await received();
+  const neverCalled = () => assert.fail("an ordinary recording was checked");
+  assertReceivedUnchanged("/films/ordinary.mp4", () => null, neverCalled);
+  assertReceivedUnchanged(file, () => expected);
+  fs.appendFileSync(file, "more");
+  assert.throws(() => assertReceivedUnchanged(file, () => expected), { message: RECEIVED_VIDEO_CHANGED });
 });

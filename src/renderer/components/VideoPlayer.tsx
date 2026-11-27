@@ -51,7 +51,7 @@ import {
   ClipDrawingImage,
   ClipDrawings,
 } from "../../types/global";
-import { withCause } from "../utils/errors";
+import { errorCode, withCause } from "../utils/errors";
 import { savedDrawingsKey, selectSavedDrawings } from "../../shared/clipDrawings";
 import { projectPlaybackKey, resumePosition } from "../utils/projectPlayback";
 import { useClipDrawingSync } from "../hooks/useClipDrawingSync";
@@ -374,7 +374,9 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }
       } catch (error) {
         console.error("Error saving annotated still:", error);
-        showError(withCause(t("app.telestration.saveStillError"), error));
+        showError(errorCode(error) === "ERROR_RECEIVED_VIDEO_CHANGED"
+          ? t("app.video.receivedVideoChanged")
+          : withCause(t("app.telestration.saveStillError"), error));
       } finally {
         setSavingStill(false);
       }
@@ -656,6 +658,11 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }
       }
       setVideoError(errorMessage);
+      if (videoPath) {
+        window.electronAPI.receivedVideoChanged(videoPath).then(changed => {
+          if (changed) setVideoError(t("app.video.receivedVideoChanged"));
+        });
+      }
     };
 
     const togglePlay = () => {

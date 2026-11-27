@@ -63,7 +63,10 @@ import {
   saveShareSnapshot,
   insertShareSnapshotInTransaction,
   latestReceivedShareId,
+  setReceivedInPlace,
+  getReceivedInPlace,
 } from "./database";
+import { RECEIVED_VIDEO_CHANGED, assertReceivedUnchanged, checkReceivedInPlace } from "./bundleFiles";
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
 import { parseVideoLink } from "./videoLink";
@@ -348,6 +351,10 @@ const allowedMediaPaths = new Set<string>();
 // (clips dir), downloaded videos (downloads dir), or a source video registered
 // as a project. Everything else is rejected to prevent arbitrary file reads.
 // `resolved` is expected to already be a realpath (symlinks resolved).
+// A recording used in place from a received folder can still be changed by
+// its sender, so every read of one checks it first.
+const assertReceived = (file: string): void => assertReceivedUnchanged(path.resolve(file), getReceivedInPlace);
+
 const isAllowedMediaPath = (resolved: string): boolean => {
   if (allowedMediaPaths.has(resolved)) return true;
 
@@ -369,6 +376,9 @@ const isAllowedMediaPath = (resolved: string): boolean => {
   if (!allowed) {
     try {
       allowed = getProjectVideoPaths().some((videoPath) => {
+        // Never through a link: a sender could point one anywhere.
+        const received = getReceivedInPlace(videoPath);
+        if (received) return videoPath === resolved && checkReceivedInPlace(resolved, received).ok;
         try {
           return fs.realpathSync(path.resolve(videoPath)) === resolved;
         } catch {
@@ -404,6 +414,12 @@ app.whenReady().then(() => {
         resolved = fs.realpathSync(resolved);
       } catch {
         // File may not exist; the statSync below will 404.
+      }
+      try {
+        assertReceived(requested);
+        assertReceived(resolved);
+      } catch {
+        return new Response("Forbidden", { status: 403 });
       }
       if (!isAllowedMediaPath(resolved)) {
         console.warn("Blocked media request for disallowed path:", resolved);
@@ -588,6 +604,17 @@ ipcMain.handle("add-project-video", async (_event, id: number) => {
   return addProjectVideo(id, file, path.basename(file));
 });
 
+// Why a recording didn't play: the media scheme can only answer 403.
+ipcMain.handle("received-video-changed", (_event, videoPath: unknown) => {
+  if (typeof videoPath !== "string" || videoPath.length === 0) return false;
+  try {
+    assertReceived(videoPath);
+    return false;
+  } catch {
+    return true;
+  }
+});
+
 ipcMain.handle("check-paths-exist", async (_event, paths: string[]) => {
   const result: Record<string, boolean> = {};
   for (const p of paths) {
@@ -633,6 +660,7 @@ const FILE_INPUT_ONLY = ["-protocol_whitelist", "file"];
 // which is the only stream probe available now ffprobe isn't bundled.
 const hasAudioStream = (inputPath: string): Promise<boolean> =>
   new Promise(resolve => {
+    assertReceived(inputPath);
     let stderr = "";
     const probe = spawn(ffmpegPath, ["-hide_banner", ...FILE_INPUT_ONLY, "-i", inputPath]);
     probe.stderr.on("data", (data: Buffer) => (stderr += data.toString()));
@@ -679,6 +707,8 @@ const allowedInputPath = (inputPath: unknown): string | null => {
   } catch {
     // Falls through to the existence check below.
   }
+  assertReceived(normalized);
+  assertReceived(resolved);
   return isAllowedMediaPath(resolved) && fs.existsSync(normalized) ? normalized : null;
 };
 
@@ -714,6 +744,8 @@ ipcMain.handle(
     });
     if (result.canceled || !result.filePath) return null;
     const outputPath = result.filePath;
+    // The save dialog can stay open for a while.
+    assertReceived(normalizedInputPath);
 
     const overlayPath = writePngDataUrl(overlayImage, tempPngPath());
 
@@ -765,6 +797,7 @@ const encodeClip = async ({
 }: EncodeClipOptions): Promise<void> => {
   const selected = selectClipDrawings(startTime, duration, drawings);
   const hasAudio = selected.some(d => d.pause) && (await hasAudioStream(inputPath));
+  assertReceived(inputPath);
   return new Promise((resolve, reject) => {
     const clipDrawings = selected.flatMap(d => {
       try {
@@ -1128,7 +1161,7 @@ ipcMain.handle(
                 console.error("Output path:", outputPath);
                 console.error("Start time:", startTime);
                 console.error("Duration:", duration);
-                reject(new Error("ERROR_FFMPEG_FAILED"));
+                reject(new Error(error.message === RECEIVED_VIDEO_CHANGED ? RECEIVED_VIDEO_CHANGED : "ERROR_FFMPEG_FAILED"));
               });
           })
           .run();
@@ -2214,9 +2247,11 @@ const shareProject = async (
   sender: Electron.WebContents, signal: AbortSignal,
   { projectId, project, includeVideos }: { projectId: number; project: Project; includeVideos: boolean },
 ) => {
-  const plan = await planShareCopies({
-    recordings: getProjectVideos(projectId), clips: getClips(projectId), includeVideos,
-  });
+  const recordings = getProjectVideos(projectId);
+  // Sharing reads each recording, through any link, for its fingerprint and the copy.
+  const checkReceived = () => recordings.forEach(recording => assertReceived(recording.video_path));
+  checkReceived();
+  const plan = await planShareCopies({ recordings, clips: getClips(projectId), includeVideos });
 
   const picked = await dialog.showOpenDialog(mainWindow, {
     title: nt("shareDialogTitle"),
@@ -2226,6 +2261,7 @@ const shareProject = async (
   if (signal.aborted) throw new Error(SHARE_CANCELLED);
   const parent = await fs.promises.realpath(picked.filePaths[0]);
   if (!hasFreeSpace(() => fs.statfsSync(parent), plan.totalBytes)) throw new Error(INSUFFICIENT_SPACE);
+  checkReceived();
 
   const fingerprints = await Promise.all(plan.recordings.map(recording =>
     recording.path === null ? null : fingerprintFile(recording.path).catch(error => {
@@ -2296,6 +2332,11 @@ const importSharedProject = async (
       const created = writeSession(pending.session, plan.paths, {
         createProject, addProjectVideo, createCategory, createPlayer, createClip, createAnnotation,
       }, plan.clipFiles);
+      if (!copyVideos && created.id) {
+        pending.recordings.forEach((recording, index) => {
+          if (recording.bundle) setReceivedInPlace(created.id!, plan.paths[index], recording.bundle);
+        });
+      }
       if (pending.snapshot && created.id) {
         insertShareSnapshotInTransaction({ ...pending.snapshot, projectId: created.id, direction: "received" });
       }
@@ -2325,7 +2366,15 @@ const openSharedProject = async (sender: Electron.WebContents, signal: AbortSign
   }
 
   const contents = await resolveBundleContents(shared, {
-    localPaths: getProjectVideoPaths,
+    // A changed received recording is not read for a fingerprint.
+    localPaths: () => getProjectVideoPaths().filter(local => {
+      try {
+        assertReceived(local);
+        return true;
+      } catch {
+        return false;
+      }
+    }),
     sizeOf: async local => (await statSource(local, VIDEO_SOURCE))?.size ?? null,
     fingerprintOf: fingerprintFile,
     pick: pickSessionRecording,

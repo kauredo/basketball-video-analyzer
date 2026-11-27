@@ -419,6 +419,7 @@
       "errorVideoNetwork": "Tinklo klaida įkeliant vaizdo įrašą",
       "errorVideoDecoding": "Nepavyko dekoduoti vaizdo įrašo. Formatas gali būti nepalaikomas.",
       "errorVideoFormat": "Vaizdo formatas nepalaikomas. Išbandykite MP4, MOV, AVI, MKV arba WebM.",
+      "receivedVideoChanged": "Šis vaizdo įrašas bendrinamame aplanke pasikeitė po to, kai atidarėte projektą, todėl programa jo nenaudos. Dar kartą nukopijuokite projektą į programą.",
       "checkVideoFormat": "Patikrinkite, ar vaizdo įrašo failas egzistuoja ir yra palaikomo formato (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Atsisiunčiamas atnaujinimas... {{progress}}%",
       "preparingUpdate": "Ruošiamasi atsisiųsti atnaujinimą...",

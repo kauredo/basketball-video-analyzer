@@ -27,6 +27,9 @@ export interface BundleFile {
   size: number;
   /** Its path in the bundle (`videos/game.mp4`), for messages. */
   rel: string;
+  /** Device and inode when checked, as strings because Windows file ids pass 2^53. */
+  dev: string;
+  ino: string;
 }
 
 const unsafe = (rel: string) => new Error(`${BUNDLE_FILE_UNSAFE} ${rel}`);
@@ -137,7 +140,10 @@ const lstatIfThere = async (file: string): Promise<fs.Stats | null> => {
 export const resolveBundleFile = (
   root: string, rel: string, expect: Expect, noFollow?: number | null,
 ): Promise<BundleFile> =>
-  withBundleFile(root, rel, expect, noFollow, async (real, stats) => ({ path: real, size: stats.size, rel }));
+  withBundleFile(root, rel, expect, noFollow, async (real, stats, handle) => {
+    const { dev, ino } = await handle.stat({ bigint: true });
+    return { path: real, size: stats.size, rel, dev: String(dev), ino: String(ino) };
+  });
 
 /** A text file in the bundle (the .bvap), checked as resolveBundleFile does and read from that same open file. */
 export const readBundleText = (root: string, rel: string, maxBytes: number): Promise<string> =>
@@ -212,5 +218,53 @@ export const copyBundleFile = async (
     }
   } finally {
     await handle.close();
+  }
+};
+
+/** A recording used where it is in a received folder changed since the import checked it. */
+export const RECEIVED_VIDEO_CHANGED = "ERROR_RECEIVED_VIDEO_CHANGED";
+
+/** What a recording used in place from a received folder was when the import checked it. */
+export type ReceivedInPlace = Pick<BundleFile, "size" | "dev" | "ino">;
+
+export type ReceivedCheck = { ok: true } | { ok: false; reason: string };
+
+/**
+ * Rechecks a recording used in place from a received folder, whose sender
+ * can still change it: `file` must still be the same plain file (device,
+ * inode, size, one link), and its real path must still be `file`, so no
+ * folder on the way has become a link either.
+ */
+export const checkReceivedInPlace = (file: string, expected: ReceivedInPlace): ReceivedCheck => {
+  const refuse = (reason: string): ReceivedCheck => ({ ok: false, reason });
+  try {
+    const stats = fs.lstatSync(file, { bigint: true });
+    if (stats.isSymbolicLink()) return refuse("symlink");
+    if (!stats.isFile()) return refuse("not a file");
+    if (stats.nlink !== 1n) return refuse("hard linked");
+    if (Number(stats.size) !== expected.size) return refuse("size");
+    if (String(stats.dev) !== expected.dev || String(stats.ino) !== expected.ino) return refuse("replaced");
+    if (fs.realpathSync.native(file) !== file) return refuse("moved");
+    return { ok: true };
+  } catch {
+    return refuse("missing");
+  }
+};
+
+/**
+ * Throws RECEIVED_VIDEO_CHANGED when `file` is a recording used in place from
+ * a received folder and has changed. Any other file is not checked.
+ */
+export const assertReceivedUnchanged = (
+  file: string,
+  lookup: (file: string) => ReceivedInPlace | null,
+  check: typeof checkReceivedInPlace = checkReceivedInPlace,
+): void => {
+  const expected = lookup(file);
+  if (!expected) return;
+  const result = check(file, expected);
+  if (!result.ok) {
+    console.warn(`Refused a received video (${result.reason}):`, file);
+    throw new Error(RECEIVED_VIDEO_CHANGED);
   }
 };

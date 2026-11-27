@@ -419,6 +419,7 @@
       "errorVideoNetwork": "Mrežna greška pri učitavanju snimka",
       "errorVideoDecoding": "Snimak nije moguće dekodirati. Format možda nije podržan.",
       "errorVideoFormat": "Format videa nije podržan. Probajte MP4, MOV, AVI, MKV ili WebM.",
+      "receivedVideoChanged": "Ovaj snimak se promenio u deljenoj fascikli otkako ste otvorili projekat, pa ga aplikacija neće koristiti. Ponovo kopirajte projekat u aplikaciju.",
       "checkVideoFormat": "Proverite da li video fajl postoji i da li je u podržanom formatu (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Preuzimanje ažuriranja... {{progress}}%",
       "preparingUpdate": "Priprema preuzimanja ažuriranja...",
