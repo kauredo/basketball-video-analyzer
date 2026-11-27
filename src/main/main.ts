@@ -3,11 +3,11 @@ import { isSamePath } from "../shared/clipDrawings";
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
 import fs from "fs";
-import { Readable } from "stream";
 import { spawn, ChildProcess } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import { randomUUID } from "crypto";
 import { setupAutoUpdater, checkForUpdates } from "./autoUpdater";
+import { fileRangeStream } from "./fileStream";
 import { nt, setNativeLanguage } from "./nativeStrings";
 import {
   setupDatabase,
@@ -397,9 +397,6 @@ app.whenReady().then(() => {
       }
       const contentType = mediaContentType(resolved);
 
-      const toBody = (stream: fs.ReadStream) =>
-        Readable.toWeb(stream) as unknown as ReadableStream;
-
       const rangeMatch = /^bytes=(\d*)-(\d*)$/.exec(
         (request.headers.get("range") || "").trim(),
       );
@@ -414,7 +411,7 @@ app.whenReady().then(() => {
             headers: { "Content-Range": `bytes */${size}` },
           });
         }
-        return new Response(toBody(fs.createReadStream(resolved, { start, end })), {
+        return new Response(fileRangeStream(resolved, start, end), {
           status: 206,
           headers: {
             "Content-Type": contentType,
@@ -425,7 +422,7 @@ app.whenReady().then(() => {
         });
       }
 
-      return new Response(toBody(fs.createReadStream(resolved)), {
+      return new Response(fileRangeStream(resolved, 0, size - 1), {
         status: 200,
         headers: {
           "Content-Type": contentType,
