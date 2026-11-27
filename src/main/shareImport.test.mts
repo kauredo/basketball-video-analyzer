@@ -348,7 +348,8 @@ test("duplicate names get a number, ignoring case, extensions come out lowercase
   const two = fresh();
   const userData = fresh();
   fs.mkdirSync(path.join(userData, "clips"));
-  fs.writeFileSync(path.join(userData, "clips", "SAME.mp4"), "keep");
+  // Same case on purpose: Linux treats SAME.mp4 and same.mp4 as different files.
+  fs.writeFileSync(path.join(userData, "clips", "same.mp4"), "keep");
   const names = ["same", "same", "same"];
   const result = planImportCopies({
     recordings: [
