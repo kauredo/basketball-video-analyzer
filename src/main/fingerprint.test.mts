@@ -49,7 +49,7 @@ test("a file just over 8 MB hashes exactly the first and last 4 MB", async () =>
   assert.deepEqual(await fingerprintFile(write(bytes)), result);
 });
 
-test("files that differ only in the middle share a fingerprint (known limit)", async () => {
+test("documented limitation: files that differ only in the middle share a fingerprint, because only the first and last 4 MB are hashed", async () => {
   const bytes = randomBytes(3 * FINGERPRINT_BYTES);
   const other = Buffer.from(bytes);
   other[Math.floor(other.length / 2)] ^= 0xff;

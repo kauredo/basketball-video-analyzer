@@ -650,7 +650,7 @@
       "cancelled": "Teilen abgebrochen. Der unfertige Ordner wurde gelöscht.",
       "noSpace": "Im gewählten Ordner ist nicht genug Platz frei. Lass die Spielvideos weg oder wähle ein anderes Laufwerk.",
       "videoMissing": "Das Spielvideo {{name}} fehlt. Verknüpfe es neu oder lass die Spielvideos weg.",
-      "fileMissing": "Beim Kopieren ist eine Datei verschwunden, daher wurde nichts behalten. Versuche es erneut.",
+      "fileMissing": "Die Datei {{name}} ist verschwunden oder konnte nicht gelesen werden, daher wurde nichts behalten. Versuche es erneut.",
       "failed": "Das Projekt konnte nicht geteilt werden."
     },
     "native": {

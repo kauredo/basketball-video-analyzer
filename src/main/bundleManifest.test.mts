@@ -35,7 +35,7 @@ test("builds relative forward-slash paths, and fingerprints even for videos left
 });
 
 test("the builder refuses a name that would leave its folder", () => {
-  for (const videoFile of ["../x.mp4", "a/b.mp4", "a\\b.mp4", "..", "C:x.mp4"]) {
+  for (const videoFile of ["../x.mp4", "a/b.mp4", "a\\b.mp4", "..", "C:x.mp4", "CON.mp4", "x.exe", "x.MP4"]) {
     assert.throws(() => buildManifest({ recordings: [{ uid: R1, videoFile, fingerprint: null }], clips: [] }));
   }
 });
@@ -68,6 +68,35 @@ test("the parser rejects paths that could leave the bundle", () => {
   bad(m => { m.clips[C1].thumbnail = "videos/x.jpg"; });
 });
 
+test("the parser applies the shared name rule to each file name", () => {
+  const names: Record<string, string> = {
+    "a reserved device name": "videos/CON.mp4",
+    "a reserved name without extension": "videos/nul",
+    "a trailing dot": "videos/g.mp4.",
+    "a trailing space": "videos/g.mp4 ",
+    "a control character": "videos/g\u0001.mp4",
+    "a pipe": "videos/g|1.mp4",
+    "a leading dot": "videos/.g.mp4",
+    "a bare extension": "videos/.mp4",
+  };
+  for (const [reason, file] of Object.entries(names)) {
+    assert.throws(() => parseManifest({ ...manifest(), videos: { [R1]: file } }, uids), /INVALID_SESSION_FILE/, reason);
+  }
+});
+
+test("the parser only accepts allowlisted, lowercase extensions", () => {
+  bad(m => { m.videos[R1] = "videos/game.exe"; });
+  bad(m => { m.videos[R1] = "videos/game.MP4"; });
+  bad(m => { m.videos[R1] = "videos/game"; });
+  bad(m => { m.videos[R1] = "videos/game.jpg"; });
+  bad(m => { m.clips[C1].clip = `clips/${C1}.jpg`; });
+  bad(m => { m.clips[C1].thumbnail = `clips/${C1}-thumb.mp4`; });
+  bad(m => { m.clips[C1].thumbnail = `clips/${C1}-thumb.svg`; });
+  const ok = JSON.parse(JSON.stringify(manifest()));
+  ok.clips[C1].thumbnail = `clips/${C1}-thumb.png`;
+  assert.equal(parseManifest(ok, uids).clips[C1].thumbnail, `clips/${C1}-thumb.png`);
+});
+
 test("the parser rejects uids the session does not have", () => {
   bad(m => { m.videos["55555555-5555-4555-8555-555555555555"] = "videos/x.mp4"; });
   bad(m => { m.clips[R1] = { clip: "clips/x.mp4", thumbnail: null }; });
@@ -88,18 +117,19 @@ test("the parser rejects malformed blocks and fingerprints", () => {
 });
 
 test("isBundlePath accepts one plain name under the folder", () => {
-  assert.ok(isBundlePath("videos/Jogo 1 (2).mp4", "videos"));
-  assert.ok(isBundlePath("clips/Οδηγός.mp4", "clips"));
-  assert.ok(!isBundlePath("videos/a/b.mp4", "videos"));
+  assert.ok(isBundlePath("videos/Jogo 1 (2).mp4", "videos", [".mp4"]));
+  assert.ok(isBundlePath("clips/Οδηγός.mp4", "clips", [".mp4"]));
+  assert.ok(!isBundlePath("videos/a/b.mp4", "videos", [".mp4"]));
 });
 
-test("a .bvap file still loads as a v4 session, bundle block and all", () => {
+test("a .bvap file still loads as a v4 session, share and bundle blocks and all", () => {
   const session = {
     version: 4,
     exportedAt: "2026-11-27T00:00:00.000Z",
     project: { uid: "66666666-6666-4666-8666-666666666666", name: "P", videoName: "game.mp4", description: "" },
     recordings: [{ uid: R1, videoName: "game.mp4" }],
     drawings: [], players: [], categories: [], clips: [],
+    share: { id: "77777777-7777-4777-8777-777777777777", basedOn: null },
     bundle: manifest(),
   };
   assert.equal(parseSession(JSON.stringify(session)).recordings[0].uid, R1);

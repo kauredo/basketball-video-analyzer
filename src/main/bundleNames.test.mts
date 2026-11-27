@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MAX_BUNDLE_NAME, safeName, uidFileName, uniqueName, videoFileNames } from "./bundleNames.ts";
+import {
+  BUNDLE_IMAGE_EXTENSIONS, BUNDLE_VIDEO_EXTENSIONS, MAX_BUNDLE_NAME, clipFileName, hasBundleExtension,
+  isSafeBundleName, safeName, thumbnailFileName, uniqueName, videoFileNames,
+} from "./bundleNames.ts";
 
 test("characters Windows refuses and control characters are stripped", () => {
   assert.equal(safeName('Game <1>: "home"/away\\ |a?b*\u0001\u001f', "Project"), "Game 1 homeaway ab");
@@ -48,9 +51,55 @@ test("video names are made safe and unique ignoring case", () => {
   );
 });
 
-test("clip files are named by uid and keep a plain extension", () => {
-  assert.equal(uidFileName("u1", "/clips/x.MP4"), "u1.mp4");
-  assert.equal(uidFileName("u1", "C:\\clips\\x_thumb.jpg"), "u1.jpg");
-  assert.equal(uidFileName("u1", "/clips/noext"), "u1");
-  assert.equal(uidFileName("u1", "/clips/x.m:p4"), "u1");
+test("clip files are named by uid, thumbnails get -thumb, extensions lowercased", () => {
+  assert.equal(clipFileName("u1", "/clips/x.MP4"), "u1.mp4");
+  assert.equal(thumbnailFileName("u1", "C:\\clips\\x_thumb.JPG"), "u1-thumb.jpg");
+  assert.notEqual(clipFileName("u1", "/c/x.jpg"), thumbnailFileName("u1", "/c/x.jpg"));
+  assert.equal(clipFileName("u1", "/clips/noext"), "u1");
+  assert.equal(clipFileName("u1", "/clips/x.m:p4"), "u1");
+});
+
+test("a name over the cap loses stem, never its extension", () => {
+  const name = safeName(`${"a".repeat(300)}.mp4`, "video");
+  assert.equal(name, `${"a".repeat(MAX_BUNDLE_NAME - 4)}.mp4`);
+  assert.equal(safeName("b".repeat(300), "video"), "b".repeat(MAX_BUNDLE_NAME));
+});
+
+test("a dotfile keeps its extension behind the fallback", () => {
+  assert.equal(safeName(".mp4", "video"), "video.mp4");
+  assert.equal(safeName("..hidden.mov", "video"), "hidden.mov");
+});
+
+test("names with several dots get their suffix before the last extension", () => {
+  assert.deepEqual(videoFileNames(["a.b.c.mp4", "a.b.c.mp4", "noext", "noext"]), ["a.b.c.mp4", "a.b.c (2).mp4", "noext", "noext (2)"]);
+});
+
+test("video extensions are lowercased, and a case-only clash is a duplicate", () => {
+  assert.deepEqual(videoFileNames(["Game.MP4", "game.mp4"]), ["Game.mp4", "game (2).mp4"]);
+});
+
+test("every name safeName makes passes the shared rule", () => {
+  for (const name of ["CON", "aux.mp4", " .x. ", "a<b>.mp4", ".mp4", "...", "🏀".repeat(200), "Final. ", "x\u0007y"]) {
+    assert.ok(isSafeBundleName(safeName(name, "video")), name);
+  }
+});
+
+test("the shared rule refuses what Windows or the bundle cannot hold", () => {
+  for (const name of [
+    "", ".", "..", ".hidden.mp4", "CON", "con.mp4", "LPT1.jpg", "x.mp4.", "x.mp4 ", "a\u0001.mp4",
+    "a<b.mp4", "a>b.mp4", "a:b.mp4", "a\"b.mp4", "a/b.mp4", "a\\b.mp4", "a|b.mp4", "a?b.mp4", "a*b.mp4",
+  ]) {
+    assert.equal(isSafeBundleName(name), false, JSON.stringify(name));
+  }
+  assert.ok(isSafeBundleName("Jogo 1 (2).mp4"));
+  assert.ok(isSafeBundleName("Console.mp4"));
+});
+
+test("extensions must match the allowlist exactly", () => {
+  assert.ok(hasBundleExtension("a.mp4", BUNDLE_VIDEO_EXTENSIONS));
+  assert.ok(!hasBundleExtension("a.MP4", BUNDLE_VIDEO_EXTENSIONS));
+  assert.ok(!hasBundleExtension("a.exe", BUNDLE_VIDEO_EXTENSIONS));
+  assert.ok(!hasBundleExtension("a.jpg", BUNDLE_VIDEO_EXTENSIONS));
+  assert.ok(hasBundleExtension("a.jpeg", BUNDLE_IMAGE_EXTENSIONS));
+  assert.ok(!hasBundleExtension(".png", BUNDLE_IMAGE_EXTENSIONS));
 });

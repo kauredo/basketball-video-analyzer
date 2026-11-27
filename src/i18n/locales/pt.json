@@ -647,7 +647,7 @@
       "cancelled": "Partilha cancelada. A pasta incompleta foi apagada.",
       "noSpace": "Não há espaço livre suficiente nessa pasta. Deixa de fora os vídeos dos jogos ou escolhe outro disco.",
       "videoMissing": "O vídeo do jogo {{name}} não foi encontrado. Volta a ligá-lo ou deixa de fora os vídeos dos jogos.",
-      "fileMissing": "Um ficheiro desapareceu durante a cópia, por isso nada foi guardado. Tenta novamente.",
+      "fileMissing": "O ficheiro {{name}} desapareceu ou não pôde ser lido, por isso nada foi guardado. Tenta novamente.",
       "failed": "Não foi possível partilhar o projeto."
     },
     "native": {

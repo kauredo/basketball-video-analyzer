@@ -650,7 +650,7 @@
       "cancelled": "Bendrinimas atšauktas. Nebaigtas aplankas ištrintas.",
       "noSpace": "Tame aplanke nepakanka laisvos vietos. Neįtraukite rungtynių vaizdo įrašų arba pasirinkite kitą diską.",
       "videoMissing": "Trūksta rungtynių vaizdo įrašo {{name}}. Susiekite jį iš naujo arba neįtraukite rungtynių vaizdo įrašų.",
-      "fileMissing": "Kopijuojant dingo failas, todėl nieko neišsaugota. Bandykite dar kartą.",
+      "fileMissing": "Failas {{name}} dingo arba jo nepavyko perskaityti, todėl nieko neišsaugota. Bandykite dar kartą.",
       "failed": "Nepavyko bendrinti projekto."
     },
     "native": {

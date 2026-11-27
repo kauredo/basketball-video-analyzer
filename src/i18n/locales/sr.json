@@ -650,7 +650,7 @@
       "cancelled": "Deljenje je otkazano. Nedovršena fascikla je obrisana.",
       "noSpace": "U toj fascikli nema dovoljno slobodnog prostora. Izostavite video snimke utakmica ili izaberite drugi disk.",
       "videoMissing": "Video utakmice {{name}} nedostaje. Ponovo ga povežite ili izostavite video snimke utakmica.",
-      "fileMissing": "Jedan fajl je nestao tokom kopiranja, pa ništa nije sačuvano. Pokušajte ponovo.",
+      "fileMissing": "Fajl {{name}} je nestao ili nije mogao da se pročita, pa ništa nije sačuvano. Pokušajte ponovo.",
       "failed": "Projekat nije moguće podeliti."
     },
     "native": {

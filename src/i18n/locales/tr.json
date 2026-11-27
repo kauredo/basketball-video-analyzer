@@ -651,7 +651,7 @@
       "cancelled": "Paylaşım iptal edildi. Yarım kalan klasör silindi.",
       "noSpace": "Bu klasörde yeterli boş alan yok. Maç videolarını dışarıda bırakın veya başka bir sürücü seçin.",
       "videoMissing": "{{name}} maç videosu bulunamadı. Yeniden bağlayın veya maç videolarını dışarıda bırakın.",
-      "fileMissing": "Kopyalama sırasında bir dosya kayboldu, bu yüzden hiçbir şey saklanmadı. Tekrar deneyin.",
+      "fileMissing": "{{name}} dosyası kayboldu veya okunamadı, bu yüzden hiçbir şey saklanmadı. Tekrar deneyin.",
       "failed": "Proje paylaşılamadı."
     },
     "native": {

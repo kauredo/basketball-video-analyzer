@@ -9,6 +9,9 @@ import { relinkVideoRows } from "./relink";
 import { categoryUpdateFields } from "./categoryColumns";
 import { addPermanentIds, UID_TABLES, UidTable } from "./permanentIds";
 import { randomUUID } from "crypto";
+import {
+  createShareSnapshotsTable, latestReceivedSnapshot, saveShareSnapshot as insertShareSnapshot,
+} from "./shareSnapshots";
 
 let db: Database.Database;
 
@@ -752,16 +755,9 @@ const createTables = () => {
     )
   `);
 
-  // The session JSON a project was last shared as, so a copy that comes back
-  // can be compared against what was sent. One row per project.
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS share_snapshots (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-      data TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  // The session JSON of each share sent or received, so a copy that comes
+  // back can be compared against what was sent.
+  createShareSnapshotsTable(db);
 
   // Create indexes
   db.exec(`
@@ -991,13 +987,12 @@ export const anyUidExists = (table: UidTable, uids: string[]): boolean => {
   return db.prepare(`SELECT 1 FROM ${table} WHERE uid IN (${placeholders}) LIMIT 1`).get(...uids) !== undefined;
 };
 
-/** Replaces the project's share snapshot with `data`, the session JSON just shared. */
-export const saveShareSnapshot = (projectId: number, data: string): void => {
-  db.transaction(() => {
-    db.prepare("DELETE FROM share_snapshots WHERE project_id = ?").run(projectId);
-    db.prepare("INSERT INTO share_snapshots (project_id, data) VALUES (?, ?)").run(projectId, data);
-  })();
-};
+export const saveShareSnapshot = (snapshot: Parameters<typeof insertShareSnapshot>[1]): void =>
+  insertShareSnapshot(db, snapshot);
+
+/** The id of the last share this project came in with, or null. */
+export const latestReceivedShareId = (projectId: number): string | null =>
+  latestReceivedSnapshot(db, projectId)?.id ?? null;
 
 export const getProjects = (): Project[] => {
   try {

@@ -624,7 +624,7 @@
       "cancelled": "Sharing cancelled. The unfinished folder was removed.",
       "noSpace": "Not enough free space in that folder. Leave out the game videos or choose another drive.",
       "videoMissing": "The game video {{name}} is missing. Relink it, or leave out the game videos.",
-      "fileMissing": "A file went missing while copying, so nothing was kept. Try again.",
+      "fileMissing": "The file {{name}} went missing or could not be read, so nothing was kept. Try again.",
       "failed": "Could not share the project."
     },
     "native": {

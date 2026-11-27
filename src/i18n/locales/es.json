@@ -650,7 +650,7 @@
       "cancelled": "Se canceló el envío. La carpeta incompleta se ha eliminado.",
       "noSpace": "No hay suficiente espacio libre en esa carpeta. Deja fuera los vídeos de los partidos o elige otro disco.",
       "videoMissing": "Falta el vídeo del partido {{name}}. Vuelve a vincularlo o deja fuera los vídeos de los partidos.",
-      "fileMissing": "Un archivo desapareció durante la copia, así que no se guardó nada. Inténtalo de nuevo.",
+      "fileMissing": "El archivo {{name}} desapareció o no se pudo leer, así que no se guardó nada. Inténtalo de nuevo.",
       "failed": "No se pudo compartir el proyecto."
     },
     "native": {

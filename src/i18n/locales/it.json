@@ -650,7 +650,7 @@
       "cancelled": "Condivisione annullata. La cartella incompleta è stata eliminata.",
       "noSpace": "Non c'è abbastanza spazio libero in quella cartella. Escludi i video delle partite o scegli un altro disco.",
       "videoMissing": "Il video della partita {{name}} non si trova. Ricollegalo, oppure escludi i video delle partite.",
-      "fileMissing": "Un file è sparito durante la copia, quindi non è stato tenuto nulla. Riprova.",
+      "fileMissing": "Il file {{name}} è sparito o non si può leggere, quindi non è stato tenuto nulla. Riprova.",
       "failed": "Impossibile condividere il progetto."
     },
     "native": {

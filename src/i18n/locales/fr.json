@@ -651,7 +651,7 @@
       "cancelled": "Partage annulé. Le dossier incomplet a été supprimé.",
       "noSpace": "Pas assez d'espace libre dans ce dossier. Laissez de côté les vidéos des matchs ou choisissez un autre disque.",
       "videoMissing": "La vidéo du match {{name}} est introuvable. Reliez-la à nouveau, ou laissez de côté les vidéos des matchs.",
-      "fileMissing": "Un fichier a disparu pendant la copie, rien n'a donc été conservé. Réessayez.",
+      "fileMissing": "Le fichier {{name}} a disparu ou n'a pas pu être lu, rien n'a donc été conservé. Réessayez.",
       "failed": "Impossible de partager le projet."
     },
     "native": {

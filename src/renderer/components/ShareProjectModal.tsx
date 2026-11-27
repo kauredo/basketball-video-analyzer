@@ -22,6 +22,10 @@ const formatBytes = (bytes: number, locale: string): string => {
   return new Intl.NumberFormat(locale, { style: "unit", unit, maximumFractionDigits: 1 }).format(value);
 };
 
+/** The file name main appends after the error code. */
+const detail = (error: unknown, code: string): string =>
+  causeOf(error)?.split(code)[1]?.trim() ?? "";
+
 export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, project, onClose }) => {
   const { t, i18n } = useTranslation();
   const { showSuccess, showInfo } = useToastContext();
@@ -64,11 +68,8 @@ export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, pr
       const code = errorCode(err);
       if (code === "ERROR_SHARE_CANCELLED") showInfo(t("app.share.cancelled"));
       else if (code === "ERROR_INSUFFICIENT_SPACE") setError(t("app.share.noSpace"));
-      else if (code === "ERROR_SHARE_VIDEO_MISSING") {
-        setError(t("app.share.videoMissing", {
-          name: causeOf(err)?.replace(/^.*ERROR_SHARE_VIDEO_MISSING\s*/, "") ?? "",
-        }));
-      } else if (code === "ERROR_SHARE_FILE_MISSING") setError(t("app.share.fileMissing"));
+      else if (code === "ERROR_SHARE_VIDEO_MISSING") setError(t("app.share.videoMissing", { name: detail(err, code) }));
+      else if (code === "ERROR_SHARE_FILE_MISSING") setError(t("app.share.fileMissing", { name: detail(err, code) }));
       else setError(t("app.share.failed"));
     } finally {
       setSharing(false);
@@ -77,7 +78,7 @@ export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, pr
   };
 
   const percent = progress && progress.totalBytes > 0
-    ? Math.round((progress.copiedBytes / progress.totalBytes) * 100)
+    ? Math.min(100, Math.max(0, Math.round((progress.copiedBytes / progress.totalBytes) * 100)))
     : 0;
 
   // Portal to body: the clip library is a containing block for fixed

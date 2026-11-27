@@ -1,3 +1,5 @@
+import { BUNDLE_IMAGE_EXTENSIONS, BUNDLE_VIDEO_EXTENSIONS, hasBundleExtension, isSafeBundleName } from "./bundleNames.ts";
+
 export const BUNDLE_VERSION = 1;
 export const VIDEOS_DIR = "videos";
 export const CLIPS_DIR = "clips";
@@ -29,31 +31,36 @@ const record = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
 /**
- * True for `<dir>/<name>` and nothing else: one forward slash, no `..`, no
- * drive letter or stream (`:`), no backslash, so it can never leave the bundle.
+ * True for `<dir>/<name>` and nothing else: one forward slash, a name that
+ * passes isSafeBundleName (so no `..`, drive letter, stream or backslash) and
+ * ends in one of `extensions`. It can never leave the bundle.
  */
-export const isBundlePath = (value: unknown, dir: string): value is string => {
+export const isBundlePath = (value: unknown, dir: string, extensions: readonly string[]): value is string => {
   if (typeof value !== "string" || value.length > 300 || !value.startsWith(`${dir}/`)) return false;
   const name = value.slice(dir.length + 1);
-  return name !== "" && name !== "." && name !== ".." && !/[/\\:\u0000]/.test(name);
+  return isSafeBundleName(name) && hasBundleExtension(name, extensions);
 };
 
-const bundlePath = (dir: string, name: string): string => {
+const bundlePath = (dir: string, name: string, extensions: readonly string[]): string => {
   const joined = `${dir}/${name}`;
-  if (!isBundlePath(joined, dir)) throw new Error(`Unsafe bundle name: ${name}`);
+  if (!isBundlePath(joined, dir, extensions)) throw new Error(`Unsafe bundle name: ${name}`);
   return joined;
 };
 
 export const buildManifest = (input: ManifestInput): BundleManifest => {
   const manifest: BundleManifest = { version: BUNDLE_VERSION, videos: {}, clips: {}, fingerprints: {} };
   for (const recording of input.recordings) {
-    if (recording.videoFile !== null) manifest.videos[recording.uid] = bundlePath(VIDEOS_DIR, recording.videoFile);
+    if (recording.videoFile !== null) {
+      manifest.videos[recording.uid] = bundlePath(VIDEOS_DIR, recording.videoFile, BUNDLE_VIDEO_EXTENSIONS);
+    }
     if (recording.fingerprint !== null) manifest.fingerprints[recording.uid] = recording.fingerprint;
   }
   for (const clip of input.clips) {
     manifest.clips[clip.uid] = {
-      clip: bundlePath(CLIPS_DIR, clip.clipFile),
-      thumbnail: clip.thumbnailFile === null ? null : bundlePath(CLIPS_DIR, clip.thumbnailFile),
+      clip: bundlePath(CLIPS_DIR, clip.clipFile, BUNDLE_VIDEO_EXTENSIONS),
+      thumbnail: clip.thumbnailFile === null
+        ? null
+        : bundlePath(CLIPS_DIR, clip.thumbnailFile, BUNDLE_IMAGE_EXTENSIONS),
     };
   }
   return manifest;
@@ -87,12 +94,12 @@ export const parseManifest = (
 
   const manifest: BundleManifest = { version: BUNDLE_VERSION, videos: {}, clips: {}, fingerprints: {} };
   for (const [uid, file] of entries(value.videos, uids.recordings)) {
-    if (!isBundlePath(file, VIDEOS_DIR)) throw invalid();
+    if (!isBundlePath(file, VIDEOS_DIR, BUNDLE_VIDEO_EXTENSIONS)) throw invalid();
     manifest.videos[uid] = file;
   }
   for (const [uid, entry] of entries(value.clips, uids.clips)) {
-    if (!record(entry) || !isBundlePath(entry.clip, CLIPS_DIR) ||
-        !(entry.thumbnail === null || isBundlePath(entry.thumbnail, CLIPS_DIR))) throw invalid();
+    if (!record(entry) || !isBundlePath(entry.clip, CLIPS_DIR, BUNDLE_VIDEO_EXTENSIONS) ||
+        !(entry.thumbnail === null || isBundlePath(entry.thumbnail, CLIPS_DIR, BUNDLE_IMAGE_EXTENSIONS))) throw invalid();
     manifest.clips[uid] = { clip: entry.clip, thumbnail: entry.thumbnail };
   }
   for (const [uid, fingerprint] of entries(value.fingerprints, uids.recordings)) {

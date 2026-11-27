@@ -650,7 +650,7 @@
       "cancelled": "Deljenje preklicano. Nedokončana mapa je bila izbrisana.",
       "noSpace": "V tej mapi ni dovolj prostora. Izpustite videe tekem ali izberite drug disk.",
       "videoMissing": "Video tekme {{name}} manjka. Znova ga povežite ali izpustite videe tekem.",
-      "fileMissing": "Med kopiranjem je datoteka izginila, zato ni bilo nič shranjeno. Poskusite znova.",
+      "fileMissing": "Datoteka {{name}} je izginila ali je ni bilo mogoče prebrati, zato ni bilo nič shranjeno. Poskusite znova.",
       "failed": "Projekta ni bilo mogoče deliti."
     },
     "native": {
