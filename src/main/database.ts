@@ -7,6 +7,8 @@ import log from "electron-log";
 import { dropProjectsVideoPathUnique } from "./projectsMigration";
 import { relinkVideoRows } from "./relink";
 import { categoryUpdateFields } from "./categoryColumns";
+import { addPermanentIds } from "./permanentIds";
+import { randomUUID } from "crypto";
 
 let db: Database.Database;
 
@@ -35,7 +37,9 @@ export interface Category {
   description?: string;
   parent_id?: number | null; // For subcategories
   project_id: number; // Required for project-specific categories
+  uid?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface CategoryPreset {
@@ -55,6 +59,7 @@ export interface Project {
   video_path: string;
   video_name: string;
   description?: string;
+  uid?: string;
   created_at?: string;
   last_opened?: string;
 }
@@ -64,7 +69,9 @@ export interface Player {
   name: string;
   number?: string | null; // Jersey number, optional
   project_id: number;
+  uid?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface Annotation {
@@ -75,7 +82,9 @@ export interface Annotation {
   data: string; // JSON-encoded shape list
   display_seconds?: number | null; // null = use the global replay setting
   pause_playback?: boolean; // stored as 0/1
+  uid?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface Clip {
@@ -106,7 +115,9 @@ export interface Clip {
   /** The live drawing burned into the whole clip at creation, kept so a
       re-cut can burn it again. */
   overlay_path?: string | null;
+  uid?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface KeyBindings {
@@ -131,6 +142,8 @@ export const setupDatabase = () => {
     migrateProjectVideos(db);
     migrateClipColumns();
     migrateAnnotationColumns();
+    const backfilled = addPermanentIds(db);
+    if (backfilled > 0) console.log(`Gave ${backfilled} rows a permanent uid`);
     insertDefaultCategories();
     migrateClipPaths();
     dbInitError = null;
@@ -897,23 +910,26 @@ const insertDefaultCategories = () => {
 
 // Project operations
 export const createProject = (
-  project: Omit<Project, "id" | "created_at" | "last_opened">,
+  project: Omit<Project, "id" | "uid" | "created_at" | "last_opened">,
+  uid: string = randomUUID(),
+  recordingUid: string = randomUUID(),
 ): Project => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO projects (name, video_path, video_name, description, last_opened)
-      VALUES (?, ?, ?, ?, STRFTIME('%Y-%m-%d %H:%M:%f', 'now'))
+      INSERT INTO projects (name, video_path, video_name, description, uid, last_opened)
+      VALUES (?, ?, ?, ?, ?, STRFTIME('%Y-%m-%d %H:%M:%f', 'now'))
     `);
 
     const result = db.transaction(() => {
-      const created = stmt.run(project.name, project.video_path, project.video_name, project.description || null);
-      insertProjectVideo(db, Number(created.lastInsertRowid), project.video_path, project.video_name);
+      const created = stmt.run(project.name, project.video_path, project.video_name, project.description || null, uid);
+      insertProjectVideo(db, Number(created.lastInsertRowid), project.video_path, project.video_name, recordingUid);
       return created;
     })();
 
     return {
       id: result.lastInsertRowid as number,
       ...project,
+      uid,
       created_at: new Date().toISOString(),
       last_opened: new Date().toISOString(),
     };
@@ -927,8 +943,8 @@ export const inProjectTransaction = <T>(operation: () => T): T => db.transaction
 
 export const getProjectVideos = (projectId: number) => listProjectVideos(db, projectId);
 
-export const addProjectVideo = (projectId: number, videoPath: string, videoName: string) =>
-  insertProjectVideo(db, projectId, videoPath, videoName);
+export const addProjectVideo = (projectId: number, videoPath: string, videoName: string, uid?: string) =>
+  insertProjectVideo(db, projectId, videoPath, videoName, uid);
 
 export const getProjectVideoPaths = (): string[] =>
   (db.prepare("SELECT DISTINCT video_path FROM project_videos").all() as { video_path: string }[])
@@ -956,6 +972,9 @@ export const getProjectById = (id: number): Project | null => {
     return null;
   }
 };
+
+export const getProjectByUid = (uid: string): Project | null =>
+  (db.prepare("SELECT * FROM projects WHERE uid = ?").get(uid) as Project | undefined) ?? null;
 
 export const getProjects = (): Project[] => {
   try {
@@ -1043,12 +1062,13 @@ export const getCategoriesHierarchical = (
 };
 
 export const createCategory = (
-  category: Omit<Category, "id" | "created_at">,
+  category: Omit<Category, "id" | "uid" | "created_at" | "updated_at">,
+  uid: string = randomUUID(),
 ): Category => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO categories (name, color, description, parent_id, project_id)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO categories (name, color, description, parent_id, project_id, uid, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
     const result = stmt.run(
@@ -1057,12 +1077,16 @@ export const createCategory = (
       category.description || null,
       category.parent_id || null,
       category.project_id,
+      uid,
     );
 
+    const createdAt = new Date().toISOString();
     return {
       id: result.lastInsertRowid as number,
       ...category,
-      created_at: new Date().toISOString(),
+      uid,
+      created_at: createdAt,
+      updated_at: createdAt,
     };
   } catch (error) {
     console.error("Error creating category:", error);
@@ -1214,7 +1238,7 @@ export const updateCategory = (
     const setClause = fields.map((field) => `${field} = ?`).join(", ");
     const values = fields.map((field) => updates[field as keyof Category]);
 
-    const stmt = db.prepare(`UPDATE categories SET ${setClause} WHERE id = ?`);
+    const stmt = db.prepare(`UPDATE categories SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
     stmt.run(...values, id);
   } catch (error) {
     console.error("Error updating category:", error);
@@ -1248,24 +1272,29 @@ export const getPlayers = (projectId: number): Player[] => {
 };
 
 export const createPlayer = (
-  player: Omit<Player, "id" | "created_at">,
+  player: Omit<Player, "id" | "uid" | "created_at" | "updated_at">,
+  uid: string = randomUUID(),
 ): Player => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO players (name, number, project_id)
-      VALUES (?, ?, ?)
+      INSERT INTO players (name, number, project_id, uid, updated_at)
+      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
     const result = stmt.run(
       player.name,
       player.number || null,
       player.project_id,
+      uid,
     );
 
+    const createdAt = new Date().toISOString();
     return {
       id: result.lastInsertRowid as number,
       ...player,
-      created_at: new Date().toISOString(),
+      uid,
+      created_at: createdAt,
+      updated_at: createdAt,
     };
   } catch (error) {
     console.error("Error creating player:", error);
@@ -1284,7 +1313,7 @@ export const updatePlayer = (id: number, updates: Partial<Player>): void => {
     const setClause = fields.map((field) => `${field} = ?`).join(", ");
     const values = fields.map((field) => updates[field]);
 
-    const stmt = db.prepare(`UPDATE players SET ${setClause} WHERE id = ?`);
+    const stmt = db.prepare(`UPDATE players SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
     stmt.run(...values, id);
   } catch (error) {
     console.error("Error updating player:", error);
@@ -1353,13 +1382,14 @@ export const getAnnotations = (
 };
 
 export const createAnnotation = (
-  annotation: Omit<Annotation, "id" | "created_at">,
+  annotation: Omit<Annotation, "id" | "uid" | "created_at" | "updated_at">,
+  uid: string = randomUUID(),
 ): Annotation => {
   try {
     const displaySeconds = toDisplaySeconds(annotation.display_seconds);
     const stmt = db.prepare(`
-      INSERT INTO annotations (project_id, video_path, timestamp, data, display_seconds, pause_playback)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO annotations (project_id, video_path, timestamp, data, display_seconds, pause_playback, uid, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
     const result = stmt.run(
@@ -1369,14 +1399,18 @@ export const createAnnotation = (
       annotation.data,
       displaySeconds,
       annotation.pause_playback === true ? 1 : 0,
+      uid,
     );
 
+    const createdAt = new Date().toISOString();
     return {
       id: result.lastInsertRowid as number,
       ...annotation,
       display_seconds: displaySeconds,
       pause_playback: annotation.pause_playback === true,
-      created_at: new Date().toISOString(),
+      uid,
+      created_at: createdAt,
+      updated_at: createdAt,
     };
   } catch (error) {
     console.error("Error creating annotation:", error);
@@ -1408,7 +1442,7 @@ export const updateAnnotationTiming = (
     }
     if (sets.length === 0) return;
 
-    const stmt = db.prepare(`UPDATE annotations SET ${sets.join(", ")} WHERE id = ?`);
+    const stmt = db.prepare(`UPDATE annotations SET ${sets.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
     stmt.run(...values, id);
   } catch (error) {
     console.error("Error updating annotation:", error);
@@ -1445,11 +1479,14 @@ export const getClips = (projectId?: number): Clip[] => {
   }
 };
 
-export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
+export const createClip = (
+  clip: Omit<Clip, "id" | "uid" | "created_at" | "updated_at">,
+  uid: string = randomUUID(),
+): Clip => {
   try {
     const stmt = db.prepare(`
-      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes, drawings_key, overlay_path, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clips (project_id, video_path, output_path, thumbnail_path, start_time, end_time, duration, title, categories, players, quarter, court_x, court_y, notes, drawings_key, overlay_path, status, uid, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
     const result = stmt.run(
@@ -1470,12 +1507,16 @@ export const createClip = (clip: Omit<Clip, "id" | "created_at">): Clip => {
       clip.drawings_key ?? null,
       clip.overlay_path ?? null,
       clip.status ?? null,
+      uid,
     );
 
+    const createdAt = new Date().toISOString();
     return {
       id: result.lastInsertRowid as number,
       ...clip,
-      created_at: new Date().toISOString(),
+      uid,
+      created_at: createdAt,
+      updated_at: createdAt,
     };
   } catch (error) {
     console.error("Error creating clip:", error);
@@ -1520,7 +1561,7 @@ export const updateClip = (id: number, updates: Partial<Clip>): void => {
     const setClause = fields.map((field) => `${field} = ?`).join(", ");
     const values = fields.map((field) => updates[field as keyof Clip]);
 
-    const stmt = db.prepare(`UPDATE clips SET ${setClause} WHERE id = ?`);
+    const stmt = db.prepare(`UPDATE clips SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
     stmt.run(...values, id);
   } catch (error) {
     console.error("Error updating clip:", error);
@@ -1568,6 +1609,7 @@ export const resetDatabase = () => {
 
     // Recreate tables and insert default data
     createTables();
+    addPermanentIds(db);
     insertDefaultCategories();
     console.log("Database reset complete");
   } catch (error) {

@@ -21,3 +21,15 @@ test("backfills once, lets projects share a file and isolates each project's rec
   assert.equal(listProjectVideos(db, 1).length, 0);
   assert.equal(listProjectVideos(db, 2).length, 1);
 });
+
+test("a new recording gets a fresh uid unless one is given", () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec("CREATE TABLE projects (id INTEGER PRIMARY KEY, video_path TEXT, video_name TEXT)");
+  migrateProjectVideos(db);
+  db.exec("INSERT INTO projects VALUES (1, '/a.mp4', 'a')");
+  const first = insertProjectVideo(db, 1, "/b.mp4", "b");
+  const second = insertProjectVideo(db, 1, "/c.mp4", "c");
+  assert.match(first.uid, /^[0-9a-f-]{36}$/);
+  assert.notEqual(first.uid, second.uid);
+  assert.equal(insertProjectVideo(db, 1, "/d.mp4", "d", "kept-uid").uid, "kept-uid");
+});

@@ -1,5 +1,8 @@
+import { randomUUID } from "crypto";
+
 export interface ProjectVideo {
   id: number;
+  uid: string;
   project_id: number;
   video_path: string;
   video_name: string;
@@ -20,6 +23,7 @@ export const migrateProjectVideos = (db: ProjectVideosDb): void => {
       project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
       video_path TEXT NOT NULL,
       video_name TEXT NOT NULL,
+      uid TEXT,
       UNIQUE(project_id, video_path)
     );
 
@@ -33,12 +37,12 @@ export const listProjectVideos = (db: ProjectVideosDb, projectId: number): Proje
     .all(projectId) as ProjectVideo[];
 
 export const insertProjectVideo = (
-  db: ProjectVideosDb, projectId: number, videoPath: string, videoName: string,
+  db: ProjectVideosDb, projectId: number, videoPath: string, videoName: string, uid: string = randomUUID(),
 ): ProjectVideo => {
   db.prepare(`
-    INSERT INTO project_videos (project_id, video_path, video_name)
-    VALUES (?, ?, ?) ON CONFLICT(project_id, video_path) DO NOTHING
-  `).run(projectId, videoPath, videoName);
+    INSERT INTO project_videos (project_id, video_path, video_name, uid)
+    VALUES (?, ?, ?, ?) ON CONFLICT(project_id, video_path) DO NOTHING
+  `).run(projectId, videoPath, videoName, uid);
   return db.prepare("SELECT * FROM project_videos WHERE project_id = ? AND video_path = ?")
     .all(projectId, videoPath)[0] as ProjectVideo;
 };

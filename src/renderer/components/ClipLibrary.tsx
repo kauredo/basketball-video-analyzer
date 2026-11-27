@@ -73,7 +73,9 @@ export interface Clip {
   status?: ClipStatus | null;
   drawings_key?: string | null;
   overlay_path?: string | null;
+  uid: string;
   created_at: string;
+  updated_at: string;
 }
 
 interface ClipLibraryProps {
