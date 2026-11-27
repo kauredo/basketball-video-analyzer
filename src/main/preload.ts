@@ -169,7 +169,6 @@ export interface ElectronAPI {
 
   // Session operations
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
-  loadSession: () => Promise<{ success: boolean; project: any } | null>;
 
   // Share project
   getShareSize: (projectId: number) => Promise<number>;
@@ -308,7 +307,6 @@ const electronAPI: ElectronAPI = {
   // Session operations
   saveSession: (projectId: number) =>
     ipcRenderer.invoke("save-session", projectId),
-  loadSession: () => ipcRenderer.invoke("load-session"),
 
   // Share project
   getShareSize: (projectId: number) => ipcRenderer.invoke("get-share-size", projectId),

@@ -10,7 +10,6 @@ import {
   faPen,
   faFilm,
   faTimes,
-  faFileImport,
   faFolderOpen,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
@@ -20,7 +19,7 @@ import { OpenSharedProjectModal, openSharedError } from "./OpenSharedProjectModa
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
-import { errorCode, withCause } from "../utils/errors";
+import { withCause } from "../utils/errors";
 import { removePref } from "../utils/storage";
 import { projectPrefKeys } from "../utils/projectPlayback";
 import { formatDateTime } from "../utils/format";
@@ -158,22 +157,6 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     }
   };
 
-  const handleImportSession = async () => {
-    try {
-      const result = await window.electronAPI.loadSession();
-      if (result?.success && result.project) {
-        showSuccess(t("app.projects.importSessionSuccess"));
-        onSelectProject(result.project);
-      }
-    } catch (error) {
-      console.error("Error importing session:", error);
-      const message = errorCode(error) === "INVALID_SESSION_FILE"
-        ? t("app.projects.importSessionInvalidFile")
-        : t("app.projects.importSessionError");
-      showError(message);
-    }
-  };
-
   const handleOpenShared = async () => {
     try {
       const result = await window.electronAPI.openSharedProject();
@@ -238,13 +221,6 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                   <div>
                     <h3>{t("app.projects.createNew")}</h3>
                     <p>{t("app.projects.createNewDescription")}</p>
-                  </div>
-                </button>
-                <button type="button" className={styles.secondaryActionBtn} onClick={handleImportSession}>
-                  <FontAwesomeIcon icon={faFileImport} />
-                  <div>
-                    <h3>{t("app.projects.importSession")}</h3>
-                    <p>{t("app.projects.importSessionDescription")}</p>
                   </div>
                 </button>
                 <button type="button" className={styles.secondaryActionBtn} onClick={handleOpenShared}>

@@ -2,7 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import {
-  MAX_SNAPSHOTS_PER_PROJECT, createShareSnapshotsTable, getShareSnapshot, latestReceivedSnapshot, saveShareSnapshot,
+  MAX_SNAPSHOTS_PER_PROJECT, createShareSnapshotsTable, getShareSnapshot, insertShareSnapshot, latestReceivedSnapshot,
+  saveShareSnapshot,
 } from "./shareSnapshots.ts";
 
 const setup = () => {
@@ -71,6 +72,23 @@ test("a prune that fails takes the new row back out with it", () => {
   };
   assert.throws(() => saveShareSnapshot(failingPrune, { id: "s1", projectId: 1, direction: "sent", data: "{}" }));
   assert.equal(getShareSnapshot(db, "s1"), null);
+});
+
+test("inside a caller's transaction, a snapshot that fails takes the caller's rows back out", () => {
+  const db = setup();
+  saveShareSnapshot(db, { id: "dup", projectId: 1, direction: "received", data: "{}" });
+  db.exec("BEGIN");
+  db.exec("INSERT INTO projects (name) VALUES ('Imported')");
+  assert.throws(() => insertShareSnapshot(db, { id: "dup", projectId: 3, direction: "received", data: "{}" }));
+  db.exec("ROLLBACK");
+  assert.equal((db.prepare("SELECT COUNT(*) AS n FROM projects").get() as { n: number }).n, 2);
+
+  db.exec("BEGIN");
+  for (let i = 0; i < MAX_SNAPSHOTS_PER_PROJECT + 2; i++) {
+    insertShareSnapshot(db, { id: `in${i}`, projectId: 2, direction: "received", data: "{}" });
+  }
+  db.exec("COMMIT");
+  assert.equal(count(db, 2), MAX_SNAPSHOTS_PER_PROJECT, "it still prunes");
 });
 
 test("deleting a project deletes its snapshots", () => {

@@ -38,21 +38,33 @@ export const createShareSnapshotsTable = (db: ShareSnapshotsDb): void => {
   `);
 };
 
-/** Saves a snapshot and prunes the project's oldest beyond the cap, in one transaction. */
-export const saveShareSnapshot = (
-  db: ShareSnapshotsDb,
-  snapshot: { id: string; projectId: number; direction: ShareDirection; data: string },
-): void => {
+export interface NewShareSnapshot {
+  id: string;
+  projectId: number;
+  direction: ShareDirection;
+  data: string;
+}
+
+/**
+ * Inserts a snapshot and prunes the project's oldest beyond the cap, with no
+ * transaction of its own: for use inside a caller's transaction.
+ */
+export const insertShareSnapshot = (db: ShareSnapshotsDb, snapshot: NewShareSnapshot): void => {
+  db.prepare("INSERT INTO share_snapshots (id, project_id, direction, data) VALUES (?, ?, ?, ?)")
+    .run(snapshot.id, snapshot.projectId, snapshot.direction, snapshot.data);
+  // rowid follows insertion order; created_at only has whole seconds.
+  db.prepare(`
+    DELETE FROM share_snapshots WHERE project_id = ? AND rowid NOT IN (
+      SELECT rowid FROM share_snapshots WHERE project_id = ? ORDER BY rowid DESC LIMIT ?
+    )
+  `).run(snapshot.projectId, snapshot.projectId, MAX_SNAPSHOTS_PER_PROJECT);
+};
+
+/** insertShareSnapshot in a transaction of its own. */
+export const saveShareSnapshot = (db: ShareSnapshotsDb, snapshot: NewShareSnapshot): void => {
   db.exec("BEGIN");
   try {
-    db.prepare("INSERT INTO share_snapshots (id, project_id, direction, data) VALUES (?, ?, ?, ?)")
-      .run(snapshot.id, snapshot.projectId, snapshot.direction, snapshot.data);
-    // rowid follows insertion order; created_at only has whole seconds.
-    db.prepare(`
-      DELETE FROM share_snapshots WHERE project_id = ? AND rowid NOT IN (
-        SELECT rowid FROM share_snapshots WHERE project_id = ? ORDER BY rowid DESC LIMIT ?
-      )
-    `).run(snapshot.projectId, snapshot.projectId, MAX_SNAPSHOTS_PER_PROJECT);
+    insertShareSnapshot(db, snapshot);
     db.exec("COMMIT");
   } catch (error) {
     db.exec("ROLLBACK");

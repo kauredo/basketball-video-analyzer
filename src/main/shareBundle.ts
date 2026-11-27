@@ -163,9 +163,9 @@ export interface CopyState {
  * reports progress as it goes. Throws SHARE_CANCELLED on abort; `state` says
  * which files to remove afterwards.
  */
-export const copyFiles = async (
-  copies: ShareCopy[], signal: AbortSignal, onProgress: (progress: ShareProgress) => void,
-  state: CopyState, tryClone?: boolean,
+export const copyFiles = async <T extends ShareCopy>(
+  copies: T[], signal: AbortSignal, onProgress: (progress: ShareProgress) => void,
+  state: CopyState, copyOne: (copy: T, signal: AbortSignal, onBytes: (bytes: number) => void) => Promise<void>,
 ): Promise<void> => {
   const totalBytes = copies.reduce((total, copy) => total + copy.size, 0);
   let copiedBytes = 0;
@@ -182,10 +182,10 @@ export const copyFiles = async (
     state.current = copy;
     const before = copiedBytes;
     try {
-      await copyForShare(copy.source, copy.target, signal, bytes => {
+      await copyOne(copy, signal, bytes => {
         copiedBytes += bytes;
         progress(index, false);
-      }, tryClone);
+      });
     } catch (error) {
       // EEXIST means the file was there before this copy, so it is not ours to remove.
       if ((error as NodeJS.ErrnoException).code !== "EEXIST") state.written.push(copy.target);
@@ -196,6 +196,23 @@ export const copyFiles = async (
     progress(index + 1, true);
   }
   state.current = null;
+};
+
+const APP_ERROR = /^(?:ERROR_[A-Z_]+|INVALID_[A-Z_]+)(?: |$)/;
+
+/**
+ * The error to hand the renderer: one of the app's own codes (with the file
+ * name some of them carry) as it is, an errno as its code, anything else as
+ * `fallback`. A raw Node or SQLite message, which can hold local paths,
+ * never crosses IPC.
+ */
+export const appError = (error: unknown, fallback: string): Error => {
+  const message = error instanceof Error ? error.message : "";
+  if (APP_ERROR.test(message)) return new Error(message);
+  const code = (error as NodeJS.ErrnoException | null)?.code;
+  if (code === "ENOSPC") return new Error(INSUFFICIENT_SPACE);
+  if (code === "ENOENT") return new Error(SHARE_FILE_MISSING);
+  return new Error(fallback);
 };
 
 /** The error code for a failed copy, naming the file when its source went missing. */
@@ -241,7 +258,8 @@ export const runShare = async (input: RunShareInput): Promise<string> => {
     }
     await copyFiles(
       copies.map(copy => ({ ...copy, target: path.join(folder, ...copy.target.split("/")) })),
-      signal, onProgress, state, input.tryClone,
+      signal, onProgress, state,
+      (copy, copySignal, onBytes) => copyForShare(copy.source, copy.target, copySignal, onBytes, input.tryClone),
     );
     if (signal.aborted) throw new Error(SHARE_CANCELLED);
     await writeBvap(folder);

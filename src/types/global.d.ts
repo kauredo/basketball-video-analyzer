@@ -206,7 +206,6 @@ export interface ElectronAPI {
 
   // Session operations
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
-  loadSession: () => Promise<{ success: boolean; project: any } | null>;
 
   // Share project
   getShareSize: (projectId: number) => Promise<number>;

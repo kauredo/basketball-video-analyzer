@@ -22,6 +22,10 @@ export const openSharedError = (t: TFunction, error: unknown): string => {
       return t("app.openShared.unsafeFile", { name: detail(error, code) });
     case "ERROR_BUNDLE_FILE_CHANGED":
       return t("app.openShared.changedFile", { name: detail(error, code) });
+    case "ERROR_BUNDLE_INCOMPLETE":
+      return t("app.openShared.incomplete", { name: detail(error, code) });
+    case "ERROR_BUNDLE_NO_FINGERPRINT":
+      return t("app.openShared.noFingerprint", { name: detail(error, code) });
     case "ERROR_SHARE_FILE_MISSING":
       return t("app.share.fileMissing", { name: detail(error, code) });
     case "ERROR_INSUFFICIENT_SPACE":
@@ -42,9 +46,11 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ 
   const { t, i18n } = useTranslation();
   const { showSuccess, showInfo, showError } = useToastContext();
   const trapRef = useFocusTrap(true);
+  const [canCopy, setCanCopy] = useState(choice.canCopy);
   const [copyVideos, setCopyVideos] = useState(choice.canCopy);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState<ShareProgress | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     window.electronAPI.onImportProgress(setProgress);
@@ -59,6 +65,7 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ 
 
   const open = async () => {
     setProgress(null);
+    setError(null);
     setImporting(true);
     try {
       const result = await window.electronAPI.finishSharedProject(copyVideos);
@@ -69,11 +76,21 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ 
       onClose();
     } catch (err) {
       const code = errorCode(err);
+      if (code === "ERROR_INSUFFICIENT_SPACE") {
+        // Main keeps the import, so the coach can still use the videos where they are.
+        setError(t("app.openShared.noSpace"));
+        if (copyVideos) {
+          setCanCopy(false);
+          setCopyVideos(false);
+        }
+        return;
+      }
       if (code === "ERROR_IMPORT_CANCELLED") {
         showInfo(t("app.openShared.cancelled"));
       } else {
         showError(openSharedError(t, err));
       }
+      window.electronAPI.discardSharedProject();
       onClose();
     } finally {
       setImporting(false);
@@ -125,12 +142,12 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ 
                 type="radio"
                 name="shared-videos"
                 checked={copyVideos}
-                disabled={!choice.canCopy}
+                disabled={!canCopy}
                 onChange={() => setCopyVideos(true)}
               />
               {t("app.openShared.copyVideos")}
             </label>
-            {!choice.canCopy && <p className={styles.hint}>{t("app.openShared.copyNoSpace")}</p>}
+            {!canCopy && <p className={styles.hint}>{t("app.openShared.copyNoSpace")}</p>}
             <label className={styles.checkbox}>
               <input
                 type="radio"
@@ -142,6 +159,8 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ 
             </label>
             <p className={styles.hint}>{t("app.openShared.useInPlaceWarning")}</p>
           </fieldset>
+
+          {error && <p className={styles.error} role="alert">{error}</p>}
 
           {importing && progress && (
             <div className={styles.progress}>

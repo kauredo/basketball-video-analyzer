@@ -219,7 +219,7 @@ export const buildSession = (
 };
 
 /**
- * What load-session writes. `key` is what clips and child categories use to
+ * What an import writes. `key` is what clips and child categories use to
  * point at a row: the name before v4 (as those files did), the uid from v4 on.
  * Every uid is null when the file had none. `recording` indexes the picked files.
  */
@@ -310,6 +310,11 @@ export const parseSession = (json: string): ParsedSession => {
   } catch {
     throw invalid();
   }
+  return parseSessionData(session);
+};
+
+/** parseSession on JSON already parsed. A v4 file's uids are lowercased in place. */
+export const parseSessionData = (session: unknown): ParsedSession => {
   const names = sessionRecordings(session);
   const data = session as Row;
   const project = data.project as Row;

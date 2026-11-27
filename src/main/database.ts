@@ -10,7 +10,8 @@ import { categoryUpdateFields } from "./categoryColumns";
 import { addPermanentIds, UID_TABLES, UidTable } from "./permanentIds";
 import { randomUUID } from "crypto";
 import {
-  createShareSnapshotsTable, latestReceivedSnapshot, saveShareSnapshot as insertShareSnapshot,
+  NewShareSnapshot, createShareSnapshotsTable, insertShareSnapshot, latestReceivedSnapshot,
+  saveShareSnapshot as saveShareSnapshotRow,
 } from "./shareSnapshots";
 
 let db: Database.Database;
@@ -990,7 +991,10 @@ export const anyUidExists = (table: UidTable, uids: string[]): boolean => {
 export const getProjectIdByUid = (uid: string): number | null =>
   (db.prepare("SELECT id FROM projects WHERE uid = ?").get(uid) as { id: number } | undefined)?.id ?? null;
 
-export const saveShareSnapshot = (snapshot: Parameters<typeof insertShareSnapshot>[1]): void =>
+export const saveShareSnapshot = (snapshot: NewShareSnapshot): void => saveShareSnapshotRow(db, snapshot);
+
+/** For use inside inProjectTransaction, so the snapshot commits or rolls back with the rows. */
+export const insertShareSnapshotInTransaction = (snapshot: NewShareSnapshot): void =>
   insertShareSnapshot(db, snapshot);
 
 /** The id of the last share this project came in with, or null. */
