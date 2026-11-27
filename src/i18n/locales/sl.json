@@ -636,6 +636,23 @@
       "checkFailed": "Aplikacija je ob zagonu naletela na napako. {{error}}",
       "apiUnavailable": "Aplikacija se ni pravilno zagnala. Znova namestite najnovejšo različico."
     },
+    "share": {
+      "button": "Deli projekt",
+      "title": "Deli projekt",
+      "intro": "Aplikacija ustvari mapo, ki jo lahko pošljete z USB ključkom, prek Google Drive, Dropbox ali kako drugače. Drugi trener jo odpre z gumbom »Odpri deljeni projekt«.",
+      "includeVideos": "Vključi videe tekem ({{size}})",
+      "includeVideosNoSize": "Vključi videe tekem",
+      "chooseFolder": "Izberi mapo...",
+      "copying": "Kopiranje...",
+      "progress": "{{copied}} od {{total}} · {{files}} od {{fileCount}} datotek",
+      "success": "Projekt je deljen v mapi »{{name}}«",
+      "showInFolder": "Pokaži v mapi",
+      "cancelled": "Deljenje preklicano. Nedokončana mapa je bila izbrisana.",
+      "noSpace": "V tej mapi ni dovolj prostora. Izpustite videe tekem ali izberite drug disk.",
+      "videoMissing": "Video tekme {{name}} manjka. Znova ga povežite ali izpustite videe tekem.",
+      "fileMissing": "Med kopiranjem je datoteka izginila, zato ni bilo nič shranjeno. Poskusite znova.",
+      "failed": "Projekta ni bilo mogoče deliti."
+    },
     "native": {
       "checkForUpdates": "Preveri Posodobitve...",
       "file": "Datoteka",
@@ -659,7 +676,8 @@
       "checkingTitle": "Preverjanje Posodobitev",
       "checking": "Preverjanje posodobitev...",
       "checkFailedTitle": "Preverjanje Posodobitev ni Uspelo",
-      "checkFailed": "Posodobitev ni bilo mogoče preveriti: {{message}}"
+      "checkFailed": "Posodobitev ni bilo mogoče preveriti: {{message}}",
+      "shareDialogTitle": "Izberite mesto za deljeni projekt"
     }
   }
 }

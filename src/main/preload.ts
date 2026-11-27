@@ -1,6 +1,13 @@
 import type { ProjectVideo } from "./projectVideos";
 import { contextBridge, ipcRenderer } from "electron";
 
+export interface ShareProgress {
+  copiedBytes: number;
+  totalBytes: number;
+  copiedFiles: number;
+  totalFiles: number;
+}
+
 export interface ElectronAPI {
   // System operations
   systemCheck: () => Promise<{
@@ -159,6 +166,14 @@ export interface ElectronAPI {
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
   loadSession: () => Promise<{ success: boolean; project: any } | null>;
 
+  // Share project
+  getShareSize: (projectId: number) => Promise<number>;
+  shareProject: (params: { projectId: number; includeVideos: boolean }) =>
+    Promise<{ folderName: string; clips: number; videos: number } | null>;
+  cancelShare: () => Promise<boolean>;
+  showSharedProject: () => Promise<void>;
+  onShareProgress: (callback: (data: ShareProgress) => void) => void;
+
   // YouTube operations
   downloadYoutubeVideo: (url: string) => Promise<{ filePath: string; fileName: string; success: boolean }>;
   cancelYoutubeDownload: () => Promise<boolean>;
@@ -282,6 +297,15 @@ const electronAPI: ElectronAPI = {
   saveSession: (projectId: number) =>
     ipcRenderer.invoke("save-session", projectId),
   loadSession: () => ipcRenderer.invoke("load-session"),
+
+  // Share project
+  getShareSize: (projectId: number) => ipcRenderer.invoke("get-share-size", projectId),
+  shareProject: params => ipcRenderer.invoke("share-project", params),
+  cancelShare: () => ipcRenderer.invoke("cancel-share"),
+  showSharedProject: () => ipcRenderer.invoke("show-shared-project"),
+  onShareProgress: callback => {
+    ipcRenderer.on("share-progress", (_event, data) => callback(data));
+  },
 
   // YouTube operations
   downloadYoutubeVideo: (url: string) =>

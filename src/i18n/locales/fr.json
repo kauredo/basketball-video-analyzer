@@ -637,6 +637,23 @@
       "checkFailed": "L'application a rencontré une erreur au démarrage. {{error}}",
       "apiUnavailable": "L'application n'a pas démarré correctement. Réinstallez la version la plus récente."
     },
+    "share": {
+      "button": "Partager le projet",
+      "title": "Partager le projet",
+      "intro": "L'application crée un dossier que vous pouvez envoyer par clé USB, Google Drive, Dropbox ou tout autre moyen. L'autre entraîneur l'ouvre avec « Ouvrir un projet partagé ».",
+      "includeVideos": "Inclure les vidéos des matchs ({{size}})",
+      "includeVideosNoSize": "Inclure les vidéos des matchs",
+      "chooseFolder": "Choisir un dossier...",
+      "copying": "Copie en cours...",
+      "progress": "{{copied}} sur {{total}} · {{files}} sur {{fileCount}} fichiers",
+      "success": "Projet partagé dans le dossier « {{name}} »",
+      "showInFolder": "Afficher dans le dossier",
+      "cancelled": "Partage annulé. Le dossier incomplet a été supprimé.",
+      "noSpace": "Pas assez d'espace libre dans ce dossier. Laissez de côté les vidéos des matchs ou choisissez un autre disque.",
+      "videoMissing": "La vidéo du match {{name}} est introuvable. Reliez-la à nouveau, ou laissez de côté les vidéos des matchs.",
+      "fileMissing": "Un fichier a disparu pendant la copie, rien n'a donc été conservé. Réessayez.",
+      "failed": "Impossible de partager le projet."
+    },
     "native": {
       "checkForUpdates": "Rechercher des Mises à Jour...",
       "file": "Fichier",
@@ -660,7 +677,8 @@
       "checkingTitle": "Recherche de Mises à Jour",
       "checking": "Recherche de mises à jour...",
       "checkFailedTitle": "Échec de la Recherche de Mises à Jour",
-      "checkFailed": "Impossible de rechercher des mises à jour : {{message}}"
+      "checkFailed": "Impossible de rechercher des mises à jour : {{message}}",
+      "shareDialogTitle": "Choisissez où placer le projet partagé"
     }
   }
 }

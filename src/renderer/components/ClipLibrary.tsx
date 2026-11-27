@@ -23,12 +23,14 @@ import {
   faPlayCircle,
   faTableCells,
   faList,
+  faShareNodes,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ClipLibrary.module.css";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
 import { ContextualHint } from "./ContextualHint";
 import { PresentMode } from "./PresentMode";
+import { ShareProjectModal } from "./ShareProjectModal";
 import { ClipTable } from "./ClipTable";
 import { ClipFilterBar } from "./ClipFilterBar";
 import { loadPref, savePref, STORAGE_KEYS } from "../utils/storage";
@@ -131,6 +133,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [showPresent, setShowPresent] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">(
     () => loadPref(STORAGE_KEYS.CLIP_VIEW_MODE, "grid") as "grid" | "table"
   );
@@ -614,6 +617,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           >
             <FontAwesomeIcon icon={faFolder} /> {t("app.clips.openFolder")}
           </button>
+          <button
+            type="button"
+            onClick={() => setShowShare(true)}
+            disabled={!currentProject}
+            className={styles.presentBtn}
+          >
+            <FontAwesomeIcon icon={faShareNodes} /> {t("app.share.button")}
+          </button>
           <div className={styles.exportDropdown} ref={exportMenuRef}>
             <button
               type="button"
@@ -978,6 +989,14 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
           clips={sortedClips}
           categories={categories}
           onClose={() => setShowPresent(false)}
+        />
+      )}
+
+      {currentProject && (
+        <ShareProjectModal
+          isOpen={showShare}
+          project={currentProject}
+          onClose={() => setShowShare(false)}
         />
       )}
     </div>

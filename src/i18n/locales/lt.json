@@ -636,6 +636,23 @@
       "checkFailed": "Paleidžiant programą įvyko klaida. {{error}}",
       "apiUnavailable": "Programa nepasileido tinkamai. Įdiekite naujausią versiją iš naujo."
     },
+    "share": {
+      "button": "Bendrinti projektą",
+      "title": "Bendrinti projektą",
+      "intro": "Programa sukuria aplanką, kurį galite nusiųsti USB atmintuku, per Google Drive, Dropbox ar bet kuriuo kitu būdu. Kitas treneris jį atidaro mygtuku „Atidaryti bendrinamą projektą“.",
+      "includeVideos": "Įtraukti rungtynių vaizdo įrašus ({{size}})",
+      "includeVideosNoSize": "Įtraukti rungtynių vaizdo įrašus",
+      "chooseFolder": "Pasirinkti aplanką...",
+      "copying": "Kopijuojama...",
+      "progress": "{{copied}} iš {{total}} · {{files}} iš {{fileCount}} failų",
+      "success": "Projektas bendrinamas aplanke „{{name}}“",
+      "showInFolder": "Rodyti aplanke",
+      "cancelled": "Bendrinimas atšauktas. Nebaigtas aplankas ištrintas.",
+      "noSpace": "Tame aplanke nepakanka laisvos vietos. Neįtraukite rungtynių vaizdo įrašų arba pasirinkite kitą diską.",
+      "videoMissing": "Trūksta rungtynių vaizdo įrašo {{name}}. Susiekite jį iš naujo arba neįtraukite rungtynių vaizdo įrašų.",
+      "fileMissing": "Kopijuojant dingo failas, todėl nieko neišsaugota. Bandykite dar kartą.",
+      "failed": "Nepavyko bendrinti projekto."
+    },
     "native": {
       "checkForUpdates": "Tikrinti Atnaujinimus...",
       "file": "Failas",
@@ -659,7 +676,8 @@
       "checkingTitle": "Tikrinami Atnaujinimai",
       "checking": "Tikrinami atnaujinimai...",
       "checkFailedTitle": "Nepavyko Patikrinti Atnaujinimų",
-      "checkFailed": "Nepavyko patikrinti atnaujinimų: {{message}}"
+      "checkFailed": "Nepavyko patikrinti atnaujinimų: {{message}}",
+      "shareDialogTitle": "Pasirinkite, kur įdėti bendrinamą projektą"
     }
   }
 }

@@ -610,6 +610,23 @@
       "nudge": "You've exported {{count}}+ clips with this free app. If it saves you time, a coffee on Ko-fi helps keep it going.",
       "nudgeAction": "Buy a coffee"
     },
+    "share": {
+      "button": "Share project",
+      "title": "Share project",
+      "intro": "The app makes a folder you can send by USB stick, Google Drive, Dropbox or any other way. The other coach opens it with \"Open shared project\".",
+      "includeVideos": "Include game videos ({{size}})",
+      "includeVideosNoSize": "Include game videos",
+      "chooseFolder": "Choose folder...",
+      "copying": "Copying...",
+      "progress": "{{copied}} of {{total}} · {{files}} of {{fileCount}} files",
+      "success": "Project shared as the folder \"{{name}}\"",
+      "showInFolder": "Show in folder",
+      "cancelled": "Sharing cancelled. The unfinished folder was removed.",
+      "noSpace": "Not enough free space in that folder. Leave out the game videos or choose another drive.",
+      "videoMissing": "The game video {{name}} is missing. Relink it, or leave out the game videos.",
+      "fileMissing": "A file went missing while copying, so nothing was kept. Try again.",
+      "failed": "Could not share the project."
+    },
     "native": {
       "checkForUpdates": "Check for Updates...",
       "file": "File",
@@ -633,7 +650,8 @@
       "checkingTitle": "Checking for Updates",
       "checking": "Checking for updates...",
       "checkFailedTitle": "Update Check Failed",
-      "checkFailed": "Could not check for updates: {{message}}"
+      "checkFailed": "Could not check for updates: {{message}}",
+      "shareDialogTitle": "Choose where to put the shared project"
     }
   }
 }

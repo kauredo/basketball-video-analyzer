@@ -633,6 +633,23 @@
       "nudge": "Já exportaste mais de {{count}} clipes com esta aplicação gratuita. Se te poupa tempo, um café no Ko-fi ajuda a mantê-la.",
       "nudgeAction": "Oferecer um café"
     },
+    "share": {
+      "button": "Partilhar projeto",
+      "title": "Partilhar projeto",
+      "intro": "A aplicação cria uma pasta que podes enviar por pen USB, Google Drive, Dropbox ou de qualquer outra forma. O outro treinador abre-a com \"Abrir projeto partilhado\".",
+      "includeVideos": "Incluir vídeos dos jogos ({{size}})",
+      "includeVideosNoSize": "Incluir vídeos dos jogos",
+      "chooseFolder": "Escolher pasta...",
+      "copying": "A copiar...",
+      "progress": "{{copied}} de {{total}} · {{files}} de {{fileCount}} ficheiros",
+      "success": "Projeto partilhado na pasta \"{{name}}\"",
+      "showInFolder": "Mostrar na pasta",
+      "cancelled": "Partilha cancelada. A pasta incompleta foi apagada.",
+      "noSpace": "Não há espaço livre suficiente nessa pasta. Deixa de fora os vídeos dos jogos ou escolhe outro disco.",
+      "videoMissing": "O vídeo do jogo {{name}} não foi encontrado. Volta a ligá-lo ou deixa de fora os vídeos dos jogos.",
+      "fileMissing": "Um ficheiro desapareceu durante a cópia, por isso nada foi guardado. Tenta novamente.",
+      "failed": "Não foi possível partilhar o projeto."
+    },
     "native": {
       "checkForUpdates": "Procurar Atualizações...",
       "file": "Ficheiro",
@@ -656,7 +673,8 @@
       "checkingTitle": "A Procurar Atualizações",
       "checking": "A procurar atualizações...",
       "checkFailedTitle": "Falha ao Procurar Atualizações",
-      "checkFailed": "Não foi possível procurar atualizações: {{message}}"
+      "checkFailed": "Não foi possível procurar atualizações: {{message}}",
+      "shareDialogTitle": "Escolhe onde guardar o projeto partilhado"
     }
   }
 }

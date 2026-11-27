@@ -80,6 +80,13 @@ export interface Clip {
   updated_at: string;
 }
 
+export interface ShareProgress {
+  copiedBytes: number;
+  totalBytes: number;
+  copiedFiles: number;
+  totalFiles: number;
+}
+
 export interface ElectronAPI {
   // System operations
   systemCheck: () => Promise<{
@@ -195,6 +202,14 @@ export interface ElectronAPI {
   // Session operations
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
   loadSession: () => Promise<{ success: boolean; project: any } | null>;
+
+  // Share project
+  getShareSize: (projectId: number) => Promise<number>;
+  shareProject: (params: { projectId: number; includeVideos: boolean }) =>
+    Promise<{ folderName: string; clips: number; videos: number } | null>;
+  cancelShare: () => Promise<boolean>;
+  showSharedProject: () => Promise<void>;
+  onShareProgress: (callback: (data: ShareProgress) => void) => void;
 
   // YouTube operations
   downloadYoutubeVideo: (url: string) => Promise<{ filePath: string; fileName: string; success: boolean }>;

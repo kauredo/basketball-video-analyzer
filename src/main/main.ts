@@ -3,6 +3,7 @@ import { isSamePath } from "../shared/clipDrawings";
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
 import fs from "fs";
+import { pipeline } from "stream/promises";
 import { spawn, ChildProcess } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import { randomUUID } from "crypto";
@@ -59,6 +60,7 @@ import {
   loadPreset,
   getPresets,
   deletePreset,
+  saveShareSnapshot,
 } from "./database";
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
@@ -72,6 +74,9 @@ import { isInsideDir } from "./insideDir";
 import { RECORDING_ALREADY_IN_PROJECT } from "./relink";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
+import { safeName, uidFileName, uniqueName, videoFileNames } from "./bundleNames";
+import { CLIPS_DIR, VIDEOS_DIR, buildManifest } from "./bundleManifest";
+import { fingerprintFile } from "./fingerprint";
 import { courtSvg, CourtDot, CourtLegendItem } from "../shared/courtSvg";
 import { normalizeReport, scoutingReportHtml } from "../shared/scoutingReport";
 import yazl from "yazl";
@@ -2078,22 +2083,25 @@ ipcMain.handle("export-clips-xml", async (_event, projectId: number) => {
   }
 });
 
+const projectSession = (projectId: number, project: Project) =>
+  buildSession({
+    project,
+    recordings: getProjectVideos(projectId).map(video => ({
+      ...video,
+      drawings: getAnnotations(projectId, video.video_path),
+    })),
+    categories: getCategories(projectId),
+    players: getPlayers(projectId),
+    clips: getClips(projectId),
+  }, isSamePath);
+
 // Save analysis session as JSON
 ipcMain.handle("save-session", async (_event, projectId: number) => {
   try {
     const project = getProjectById(projectId);
     if (!project) throw new Error("Project not found");
 
-    const sessionData = buildSession({
-      project,
-      recordings: getProjectVideos(projectId).map(video => ({
-        ...video,
-        drawings: getAnnotations(projectId, video.video_path),
-      })),
-      categories: getCategories(projectId),
-      players: getPlayers(projectId),
-      clips: getClips(projectId),
-    }, isSamePath);
+    const sessionData = projectSession(projectId, project);
 
     const result = await dialog.showSaveDialog(mainWindow, {
       title: "Save Analysis Session",
@@ -2154,6 +2162,179 @@ ipcMain.handle("load-session", async () => {
     console.error("Error loading session:", error);
     throw error;
   }
+});
+
+const validProjectId = (id: unknown): id is number => Number.isSafeInteger(id) && (id as number) > 0;
+
+/** Size of a file that exists, else null. */
+const existingSize = (file: string): number | null => {
+  try {
+    const stats = fs.statSync(file);
+    return stats.isFile() ? stats.size : null;
+  } catch {
+    return null;
+  }
+};
+
+// The share running now, so the renderer can cancel it, and the .bvap the
+// last one wrote, for "Show in folder". The renderer never sends a path.
+let activeShare: AbortController | null = null;
+let lastSharedFile: string | null = null;
+
+// The total behind "Include game videos (X GB)".
+ipcMain.handle("get-share-size", (_event, projectId: number) => {
+  if (!validProjectId(projectId) || !getProjectById(projectId)) throw new Error("ERROR_INVALID_INPUT");
+  return getProjectVideos(projectId).reduce((total, video) => total + (existingSize(video.video_path) ?? 0), 0);
+});
+
+/**
+ * Copies without ever replacing a file. A clone when the volume can make one
+ * (APFS, Btrfs), which is instant. Otherwise a stream copy, which reports
+ * bytes as it goes and stops when the share is cancelled.
+ */
+const copyForShare = async (
+  source: string, target: string, signal: AbortSignal, onBytes: (bytes: number) => void,
+): Promise<void> => {
+  try {
+    await fs.promises.copyFile(source, target, fs.constants.COPYFILE_EXCL | fs.constants.COPYFILE_FICLONE_FORCE);
+    return;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT" || code === "EEXIST") throw error;
+  }
+  const read = fs.createReadStream(source);
+  read.on("data", chunk => onBytes(chunk.length));
+  await pipeline(read, fs.createWriteStream(target, { flags: "wx" }), { signal });
+};
+
+// Write the project, its cut clips and (optionally) its videos into a new
+// folder the coach can send any way they like. Main picks the folder.
+ipcMain.handle("share-project", async (event, params: { projectId: number; includeVideos: boolean }) => {
+  const projectId = params?.projectId;
+  const includeVideos = params?.includeVideos;
+  if (!validProjectId(projectId) || typeof includeVideos !== "boolean") throw new Error("ERROR_INVALID_INPUT");
+  const project = getProjectById(projectId);
+  if (!project) throw new Error("ERROR_INVALID_INPUT");
+  if (activeShare) throw new Error("ERROR_SHARE_BUSY");
+
+  const session = projectSession(projectId, project);
+  const recordings = getProjectVideos(projectId).map(video => ({ ...video, size: existingSize(video.video_path) }));
+  const missing = recordings.find(video => video.size === null);
+  if (includeVideos && missing) throw new Error(`ERROR_SHARE_VIDEO_MISSING ${missing.video_name}`);
+
+  const picked = await dialog.showOpenDialog(mainWindow, {
+    title: nt("shareDialogTitle"),
+    properties: ["openDirectory", "createDirectory"],
+  });
+  if (picked.canceled || !picked.filePaths[0]) return null;
+  const parent = fs.realpathSync(picked.filePaths[0]);
+  const folderName = uniqueName(safeName(project.name, "Project"), name => fs.existsSync(path.join(parent, name)));
+  const folder = path.join(parent, folderName);
+
+  const copies: Array<{ source: string; target: string; size: number }> = [];
+  const videoNames = videoFileNames(recordings.map(video => video.video_name));
+  if (includeVideos) {
+    recordings.forEach((video, index) =>
+      copies.push({ source: video.video_path, target: `${VIDEOS_DIR}/${videoNames[index]}`, size: video.size ?? 0 }));
+  }
+  const clipFiles = getClips(projectId).flatMap(clip => {
+    const size = clip.output_path ? existingSize(clip.output_path) : null;
+    if (size === null || !clip.uid) return [];
+    const uid = clip.uid.toLowerCase();
+    const clipFile = uidFileName(uid, clip.output_path);
+    copies.push({ source: clip.output_path, target: `${CLIPS_DIR}/${clipFile}`, size });
+    const thumbnailSize = clip.thumbnail_path ? existingSize(clip.thumbnail_path) : null;
+    let thumbnailFile = thumbnailSize === null ? null : uidFileName(uid, clip.thumbnail_path!);
+    if (thumbnailFile === clipFile) thumbnailFile = null;
+    if (thumbnailFile !== null) {
+      copies.push({ source: clip.thumbnail_path!, target: `${CLIPS_DIR}/${thumbnailFile}`, size: thumbnailSize! });
+    }
+    return [{ uid, clipFile, thumbnailFile }];
+  });
+
+  const totalBytes = copies.reduce((total, copy) => total + copy.size, 0);
+  try {
+    const { bavail, bsize } = fs.statfsSync(parent);
+    if (bavail * bsize < totalBytes * 1.05) throw new Error("ERROR_INSUFFICIENT_SPACE");
+  } catch (error) {
+    if ((error as Error).message === "ERROR_INSUFFICIENT_SPACE") throw error;
+    // A copy onto a full disk still fails below, with ENOSPC.
+    console.warn("Could not check free space:", error);
+  }
+
+  const fingerprints = await Promise.all(
+    recordings.map(video => (video.size === null ? null : fingerprintFile(video.video_path))));
+  const bundle = buildManifest({
+    recordings: recordings.map((video, index) => ({
+      uid: video.uid.toLowerCase(),
+      videoFile: includeVideos ? videoNames[index] : null,
+      fingerprint: fingerprints[index],
+    })),
+    clips: clipFiles,
+  });
+
+  const share = new AbortController();
+  activeShare = share;
+  let copiedBytes = 0;
+  let sentAt = 0;
+  const progress = (copiedFiles: number, now = false) => {
+    if (!now && Date.now() - sentAt < 100) return;
+    sentAt = Date.now();
+    event.sender.send("share-progress", { copiedBytes, totalBytes, copiedFiles, totalFiles: copies.length });
+  };
+  try {
+    fs.mkdirSync(folder);
+  } catch (error) {
+    activeShare = null;
+    console.error("Error creating share folder:", error);
+    throw new Error("ERROR_SHARE_FAILED");
+  }
+  const bvapPath = path.join(folder, `${folderName}.bvap`);
+  try {
+    progress(0, true);
+    for (const dir of new Set(copies.map(copy => copy.target.split("/")[0]))) fs.mkdirSync(path.join(folder, dir));
+    for (const [index, copy] of copies.entries()) {
+      if (share.signal.aborted) throw new Error("ERROR_SHARE_CANCELLED");
+      const before = copiedBytes;
+      await copyForShare(copy.source, path.join(folder, ...copy.target.split("/")), share.signal, bytes => {
+        copiedBytes += bytes;
+        progress(index);
+      });
+      copiedBytes = before + copy.size;
+      progress(index + 1, true);
+    }
+    if (share.signal.aborted) throw new Error("ERROR_SHARE_CANCELLED");
+    // Last, so a folder without a .bvap is visibly unfinished.
+    fs.writeFileSync(bvapPath, JSON.stringify({ ...session, bundle }, null, 2), { encoding: "utf-8", flag: "wx" });
+    saveShareSnapshot(projectId, JSON.stringify(session));
+  } catch (error) {
+    try {
+      if (isInsideDir(fs.realpathSync(folder), parent)) fs.rmSync(folder, { recursive: true, force: true });
+    } catch (cleanup) {
+      console.error("Error removing unfinished share folder:", cleanup);
+    }
+    if (share.signal.aborted) throw new Error("ERROR_SHARE_CANCELLED");
+    const code = (error as NodeJS.ErrnoException).code;
+    console.error("Error sharing project:", error);
+    if (code === "ENOSPC") throw new Error("ERROR_INSUFFICIENT_SPACE");
+    if (code === "ENOENT") throw new Error("ERROR_SHARE_FILE_MISSING");
+    throw new Error("ERROR_SHARE_FAILED");
+  } finally {
+    activeShare = null;
+  }
+
+  lastSharedFile = bvapPath;
+  return { folderName, clips: clipFiles.length, videos: includeVideos ? recordings.length : 0 };
+});
+
+ipcMain.handle("cancel-share", () => {
+  if (!activeShare) return false;
+  activeShare.abort();
+  return true;
+});
+
+ipcMain.handle("show-shared-project", () => {
+  if (lastSharedFile) shell.showItemInFolder(lastSharedFile);
 });
 
 // Resolve bundled yt-dlp binary path (handles ASAR unpacking)
