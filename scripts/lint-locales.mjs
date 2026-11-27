@@ -57,6 +57,14 @@ const TITLE_CASE = /^(?:[A-ZÀ-ÞΑ-Ω0-9][^\s]*)(?:\s+(?:[A-ZÀ-ÞΑ-Ω0-9&/-][
 /** Names that keep their capital mid-sentence in every language. */
 const PROPER_NOUN = /\b(YouTube|GitHub|Basketball Video Analyzer|Sportscode|Google Drive|Documents|MP4|MOV|AVI|MKV|WebM|WMV|FLV|M4V|CSV|JSON|XML|GB|Esc|Alt|Cmd|Ctrl|Shift)\b/;
 
+/**
+ * English has only _one and _other, but Slovenian, Serbian and Lithuanian
+ * also pick _two, _few or _many for some counts. Without those keys i18next
+ * skips to the fallback language, so a Lithuanian coach saw "3 selecionados".
+ * Such a key is checked against the English _other.
+ */
+const extraPluralOf = k => k.replace(/_(zero|two|few|many)$/, "_other");
+
 const placeholders = s => [...s.matchAll(/\{\{(\w+)\}\}/g)].map(m => m[1]).sort().join(",");
 
 const files = readdirSync(DIR).filter(f => f.endsWith(".json")).sort();
@@ -69,14 +77,14 @@ const errors = [];
 const fail = (loc, key, msg) => errors.push(`${loc}  ${key}\n      ${msg}`);
 
 for (const [loc, strings] of Object.entries(parsed)) {
-  // Key parity. A missing key falls back to English at runtime.
+  // Key parity. A missing key falls back to the fallback language at runtime.
   if (loc !== BASE) {
     for (const k of Object.keys(base)) if (!(k in strings)) fail(loc, k, "missing");
-    for (const k of Object.keys(strings)) if (!(k in base)) fail(loc, k, "not in en.json");
+    for (const k of Object.keys(strings)) if (!(k in base) && !(extraPluralOf(k) in base)) fail(loc, k, "not in en.json");
   }
 
   for (const [key, value] of Object.entries(strings)) {
-    const en = base[key];
+    const en = base[key] ?? base[extraPluralOf(key)];
 
     if (!value.trim()) fail(loc, key, "empty");
 
