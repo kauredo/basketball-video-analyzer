@@ -9,6 +9,9 @@ import { relinkVideoRows } from "./relink";
 import { categoryUpdateFields } from "./categoryColumns";
 import { addPermanentIds, UID_TABLES, UidTable } from "./permanentIds";
 import { randomUUID } from "crypto";
+import {
+  createShareSnapshotsTable, latestReceivedSnapshot, saveShareSnapshot as insertShareSnapshot,
+} from "./shareSnapshots";
 
 let db: Database.Database;
 
@@ -752,6 +755,10 @@ const createTables = () => {
     )
   `);
 
+  // The session JSON of each share sent or received, so a copy that comes
+  // back can be compared against what was sent.
+  createShareSnapshotsTable(db);
+
   // Create indexes
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_projects_video_path ON projects(video_path);
@@ -979,6 +986,13 @@ export const anyUidExists = (table: UidTable, uids: string[]): boolean => {
   const placeholders = uids.map(() => "?").join(", ");
   return db.prepare(`SELECT 1 FROM ${table} WHERE uid IN (${placeholders}) LIMIT 1`).get(...uids) !== undefined;
 };
+
+export const saveShareSnapshot = (snapshot: Parameters<typeof insertShareSnapshot>[1]): void =>
+  insertShareSnapshot(db, snapshot);
+
+/** The id of the last share this project came in with, or null. */
+export const latestReceivedShareId = (projectId: number): string | null =>
+  latestReceivedSnapshot(db, projectId)?.id ?? null;
 
 export const getProjects = (): Project[] => {
   try {

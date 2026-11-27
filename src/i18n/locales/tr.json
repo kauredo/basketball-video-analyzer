@@ -637,6 +637,23 @@
       "checkFailed": "Uygulama başlatılırken bir hatayla karşılaştı. {{error}}",
       "apiUnavailable": "Uygulama düzgün başlatılamadı. En son sürümü yeniden kurun."
     },
+    "share": {
+      "button": "Projeyi paylaş",
+      "title": "Projeyi paylaş",
+      "intro": "Uygulama, USB bellek, Google Drive, Dropbox veya başka herhangi bir yolla gönderebileceğiniz bir klasör oluşturur. Diğer antrenör bu klasörü \"Paylaşılan projeyi aç\" ile açar.",
+      "includeVideos": "Maç videolarını dahil et ({{size}})",
+      "includeVideosNoSize": "Maç videolarını dahil et",
+      "chooseFolder": "Klasör seç...",
+      "copying": "Kopyalanıyor...",
+      "progress": "{{copied}} / {{total}} · {{files}} / {{fileCount}} dosya",
+      "success": "Proje \"{{name}}\" klasörü olarak paylaşıldı",
+      "showInFolder": "Klasörde göster",
+      "cancelled": "Paylaşım iptal edildi. Yarım kalan klasör silindi.",
+      "noSpace": "Bu klasörde yeterli boş alan yok. Maç videolarını dışarıda bırakın veya başka bir sürücü seçin.",
+      "videoMissing": "{{name}} maç videosu bulunamadı. Yeniden bağlayın veya maç videolarını dışarıda bırakın.",
+      "fileMissing": "{{name}} dosyası kayboldu veya okunamadı, bu yüzden hiçbir şey saklanmadı. Tekrar deneyin.",
+      "failed": "Proje paylaşılamadı."
+    },
     "native": {
       "checkForUpdates": "Güncellemeleri Denetle...",
       "file": "Dosya",
@@ -660,7 +677,8 @@
       "checkingTitle": "Güncellemeler Denetleniyor",
       "checking": "Güncellemeler denetleniyor...",
       "checkFailedTitle": "Güncelleme Denetimi Başarısız",
-      "checkFailed": "Güncellemeler denetlenemedi: {{message}}"
+      "checkFailed": "Güncellemeler denetlenemedi: {{message}}",
+      "shareDialogTitle": "Paylaşılan projenin nereye konacağını seçin"
     }
   }
 }

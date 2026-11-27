@@ -636,6 +636,23 @@
       "checkFailed": "Die App ist beim Start auf einen Fehler gestoßen. {{error}}",
       "apiUnavailable": "Die App ist nicht richtig gestartet. Installiere die neueste Version neu."
     },
+    "share": {
+      "button": "Projekt teilen",
+      "title": "Projekt teilen",
+      "intro": "Die App erstellt einen Ordner, den du per USB-Stick, Google Drive, Dropbox oder auf jedem anderen Weg schicken kannst. Der andere Trainer öffnet ihn mit „Geteiltes Projekt öffnen“.",
+      "includeVideos": "Spielvideos einschließen ({{size}})",
+      "includeVideosNoSize": "Spielvideos einschließen",
+      "chooseFolder": "Ordner wählen...",
+      "copying": "Wird kopiert...",
+      "progress": "{{copied}} von {{total}} · {{files}} von {{fileCount}} Dateien",
+      "success": "Projekt als Ordner „{{name}}“ geteilt",
+      "showInFolder": "Im Ordner zeigen",
+      "cancelled": "Teilen abgebrochen. Der unfertige Ordner wurde gelöscht.",
+      "noSpace": "Im gewählten Ordner ist nicht genug Platz frei. Lass die Spielvideos weg oder wähle ein anderes Laufwerk.",
+      "videoMissing": "Das Spielvideo {{name}} fehlt. Verknüpfe es neu oder lass die Spielvideos weg.",
+      "fileMissing": "Die Datei {{name}} ist verschwunden oder konnte nicht gelesen werden, daher wurde nichts behalten. Versuche es erneut.",
+      "failed": "Das Projekt konnte nicht geteilt werden."
+    },
     "native": {
       "checkForUpdates": "Nach Updates Suchen...",
       "file": "Datei",
@@ -659,7 +676,8 @@
       "checkingTitle": "Suche nach Updates",
       "checking": "Suche nach Updates...",
       "checkFailedTitle": "Update-Prüfung Fehlgeschlagen",
-      "checkFailed": "Updates konnten nicht geprüft werden: {{message}}"
+      "checkFailed": "Updates konnten nicht geprüft werden: {{message}}",
+      "shareDialogTitle": "Wähle, wo das geteilte Projekt gespeichert wird"
     }
   }
 }

@@ -636,6 +636,23 @@
       "checkFailed": "Aplikacija je naišla na grešku pri pokretanju. {{error}}",
       "apiUnavailable": "Aplikacija se nije pokrenula ispravno. Ponovo instalirajte najnoviju verziju."
     },
+    "share": {
+      "button": "Podeli projekat",
+      "title": "Podeli projekat",
+      "intro": "Aplikacija pravi fasciklu koju možete poslati USB fleš diskom, preko Google Drive-a, Dropbox-a ili na bilo koji drugi način. Drugi trener je otvara dugmetom „Otvori deljeni projekat“.",
+      "includeVideos": "Uključi video snimke utakmica ({{size}})",
+      "includeVideosNoSize": "Uključi video snimke utakmica",
+      "chooseFolder": "Izaberi fasciklu...",
+      "copying": "Kopiranje...",
+      "progress": "{{copied}} od {{total}} · {{files}} od {{fileCount}} fajlova",
+      "success": "Projekat je podeljen u fasciklu „{{name}}“",
+      "showInFolder": "Prikaži u fascikli",
+      "cancelled": "Deljenje je otkazano. Nedovršena fascikla je obrisana.",
+      "noSpace": "U toj fascikli nema dovoljno slobodnog prostora. Izostavite video snimke utakmica ili izaberite drugi disk.",
+      "videoMissing": "Video utakmice {{name}} nedostaje. Ponovo ga povežite ili izostavite video snimke utakmica.",
+      "fileMissing": "Fajl {{name}} je nestao ili nije mogao da se pročita, pa ništa nije sačuvano. Pokušajte ponovo.",
+      "failed": "Projekat nije moguće podeliti."
+    },
     "native": {
       "checkForUpdates": "Proveri Ažuriranja...",
       "file": "Datoteka",
@@ -659,7 +676,8 @@
       "checkingTitle": "Provera Ažuriranja",
       "checking": "Provera ažuriranja...",
       "checkFailedTitle": "Provera Ažuriranja Nije Uspela",
-      "checkFailed": "Provera ažuriranja nije uspela: {{message}}"
+      "checkFailed": "Provera ažuriranja nije uspela: {{message}}",
+      "shareDialogTitle": "Izaberite gde da sačuvate deljeni projekat"
     }
   }
 }

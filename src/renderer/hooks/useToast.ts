@@ -34,8 +34,8 @@ export const useToast = () => {
   }, []);
 
   const showSuccess = useCallback(
-    (message: string, duration?: number) => {
-      return addToast(message, "success", duration);
+    (message: string, duration?: number, action?: ToastAction) => {
+      return addToast(message, "success", duration, action);
     },
     [addToast],
   );

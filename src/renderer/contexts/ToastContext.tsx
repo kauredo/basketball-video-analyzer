@@ -3,7 +3,7 @@ import { useToast } from "../hooks/useToast";
 import { ToastContainer, ToastAction } from "../components/Toast";
 
 interface ToastContextValue {
-  showSuccess: (message: string, duration?: number) => string;
+  showSuccess: (message: string, duration?: number, action?: ToastAction) => string;
   showError: (message: string, duration?: number) => string;
   showWarning: (message: string, duration?: number) => string;
   showInfo: (message: string, duration?: number, action?: ToastAction) => string;

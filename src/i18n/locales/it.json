@@ -636,6 +636,23 @@
       "checkFailed": "L'applicazione ha riscontrato un errore all'avvio. {{error}}",
       "apiUnavailable": "L'applicazione non si è avviata correttamente. Reinstalla la versione più recente."
     },
+    "share": {
+      "button": "Condividi progetto",
+      "title": "Condividi progetto",
+      "intro": "L'app crea una cartella che puoi inviare con una chiavetta USB, Google Drive, Dropbox o in qualsiasi altro modo. L'altro allenatore la apre con \"Apri progetto condiviso\".",
+      "includeVideos": "Includi i video delle partite ({{size}})",
+      "includeVideosNoSize": "Includi i video delle partite",
+      "chooseFolder": "Scegli cartella...",
+      "copying": "Copia in corso...",
+      "progress": "{{copied}} di {{total}} · {{files}} di {{fileCount}} file",
+      "success": "Progetto condiviso nella cartella \"{{name}}\"",
+      "showInFolder": "Mostra nella cartella",
+      "cancelled": "Condivisione annullata. La cartella incompleta è stata eliminata.",
+      "noSpace": "Non c'è abbastanza spazio libero in quella cartella. Escludi i video delle partite o scegli un altro disco.",
+      "videoMissing": "Il video della partita {{name}} non si trova. Ricollegalo, oppure escludi i video delle partite.",
+      "fileMissing": "Il file {{name}} è sparito o non si può leggere, quindi non è stato tenuto nulla. Riprova.",
+      "failed": "Impossibile condividere il progetto."
+    },
     "native": {
       "checkForUpdates": "Cerca Aggiornamenti...",
       "file": "File",
@@ -659,7 +676,8 @@
       "checkingTitle": "Ricerca Aggiornamenti",
       "checking": "Ricerca aggiornamenti in corso...",
       "checkFailedTitle": "Ricerca Aggiornamenti Non Riuscita",
-      "checkFailed": "Impossibile cercare aggiornamenti: {{message}}"
+      "checkFailed": "Impossibile cercare aggiornamenti: {{message}}",
+      "shareDialogTitle": "Scegli dove mettere il progetto condiviso"
     }
   }
 }
