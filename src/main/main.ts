@@ -204,10 +204,15 @@ const createMenu = (mainWindow: BrowserWindow): void => {
     {
       label: nt("view"),
       submenu: [
-        { role: "reload" },
-        { role: "forceReload" },
-        { role: "toggleDevTools" },
-        { type: "separator" },
+        // A reload mid-session drops unsaved work, so coaches don't get it.
+        ...(app.isPackaged
+          ? []
+          : [
+              { role: "reload" },
+              { role: "forceReload" },
+              { role: "toggleDevTools" },
+              { type: "separator" },
+            ]),
         { role: "resetZoom" },
         { role: "zoomIn" },
         { role: "zoomOut" },
