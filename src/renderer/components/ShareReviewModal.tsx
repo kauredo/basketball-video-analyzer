@@ -12,8 +12,10 @@ import { formatVideoTime } from "../utils/format";
 import { inkOn } from "../utils/contrast";
 import { statusLabelKey } from "../utils/constants";
 import { mergedMessage, openSharedError } from "../utils/shareMessages";
-import type {
-  ReviewField, ReviewGroup, ReviewRow, ReviewSelections, ReviewValue, ShareReview,
+import {
+  appliedCount, hasRowCheckbox, initialChoices, initialSelected, pickAll,
+  type ReviewField, type ReviewGroup, type ReviewRow, type ReviewSelections, type ReviewSide, type ReviewValue,
+  type ShareReview,
 } from "../../shared/shareReview";
 import type { Project } from "./ProjectSelector";
 
@@ -46,12 +48,8 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
   const { t } = useTranslation();
   const { showSuccess, showInfo, showError } = useToastContext();
   const trapRef = useFocusTrap(true);
-  // A conflict row has no tick of its own: it is always sent, and its Yours/Theirs picks decide.
-  const [selected, setSelected] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(review.rows.map(row => [row.token, row.group === "conflict" || row.ticked])));
-  const [choices, setChoices] = useState<Record<string, Record<string, "mine" | "theirs">>>(() =>
-    Object.fromEntries(review.rows.filter(row => row.conflicts.length > 0).map(row =>
-      [row.token, Object.fromEntries(row.conflicts.map(conflict => [conflict.field, "mine" as const]))])));
+  const [selected, setSelected] = useState(() => initialSelected(review.rows));
+  const [choices, setChoices] = useState(() => initialChoices(review.rows));
   const [applying, setApplying] = useState(false);
 
   const close = () => {
@@ -116,11 +114,11 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
   const setAll = (rows: ReviewRow[], on: boolean) =>
     setSelected(current => ({ ...current, ...Object.fromEntries(rows.map(row => [row.token, on])) }));
 
-  const pickAll = (rows: ReviewRow[], side: "mine" | "theirs") =>
-    setChoices(current => ({
-      ...current,
-      ...Object.fromEntries(rows.map(row => [row.token, Object.fromEntries(row.conflicts.map(item => [item.field, side]))])),
-    }));
+  const pickSide = (rows: ReviewRow[], side: ReviewSide) => {
+    const next = pickAll(choices, selected, rows, side);
+    setChoices(next.choices);
+    setSelected(next.selected);
+  };
 
   const change = (item: ReviewField) => (
     <div key={item.field} className={styles.field}>
@@ -149,7 +147,7 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
       </label>
     );
     return (
-      <fieldset key={item.field} className={styles.conflict} disabled={applying}>
+      <fieldset key={item.field} className={styles.conflict} disabled={!selected[row.token] || applying}>
         <legend>{fieldLabel(item.field)}</legend>
         {side("mine")}
         {side("theirs")}
@@ -158,12 +156,12 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
   };
 
   const rowView = (row: ReviewRow) => {
-    const isConflict = row.group === "conflict";
-    const Head = isConflict ? "div" : "label";
+    const checkbox = hasRowCheckbox(row);
+    const Head = checkbox ? "label" : "div";
     return (
       <li key={row.token} className={styles.row}>
-        <Head className={`${styles.rowHead} ${isConflict ? styles.rowHeadStatic : ""}`}>
-          {isConflict ? (
+        <Head className={`${styles.rowHead} ${checkbox ? "" : styles.rowHeadStatic}`}>
+          {!checkbox ? (
             <span className={styles.checkSpace} aria-hidden="true" />
           ) : (
             <input
@@ -193,11 +191,7 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
     );
   };
 
-  // Only rows that change something: a conflict row's own changes, or a field where Theirs is picked.
-  const changesSomething = (row: ReviewRow) => row.group === "conflict"
-    ? row.changes.length > 0 || row.conflicts.some(item => choices[row.token]?.[item.field] === "theirs")
-    : selected[row.token] === true;
-  const tickedCount = review.rows.filter(changesSomething).length;
+  const tickedCount = appliedCount(review.rows, selected, choices);
 
   return createPortal(
     <div
@@ -251,7 +245,7 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
                               type="button"
                               className={styles.bulkPick}
                               disabled={applying}
-                              onClick={() => pickAll(rows, "mine")}
+                              onClick={() => pickSide(rows, "mine")}
                             >
                               {t("app.review.keepAllMine")}
                             </button>
@@ -259,7 +253,7 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
                               type="button"
                               className={styles.bulkPick}
                               disabled={applying}
-                              onClick={() => pickAll(rows, "theirs")}
+                              onClick={() => pickSide(rows, "theirs")}
                             >
                               {t("app.review.takeAllTheirs")}
                             </button>

@@ -160,6 +160,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       markOutKey: "m",
     });
     const [videoError, setVideoError] = useState<string | null>(null);
+    // The error is a received video that changed in its shared folder: offer Locate video.
+    const [receivedChanged, setReceivedChanged] = useState(false);
     const [replayEnabled, setReplayEnabled] = useState(() =>
       loadPref(STORAGE_KEYS.ANNOTATION_REPLAY, true)
     );
@@ -665,9 +667,12 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }
       }
       setVideoError(errorMessage);
+      setReceivedChanged(false);
       if (videoPath) {
         window.electronAPI.receivedVideoChanged(videoPath).then(changed => {
-          if (changed) setVideoError(t("app.video.receivedVideoChanged"));
+          if (!changed) return;
+          setVideoError(t("app.video.receivedVideoChanged"));
+          setReceivedChanged(true);
         });
       }
     };
@@ -866,7 +871,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   <FontAwesomeIcon icon={faFilm} /> {videoError}
                 </h3>
                 <p>{t("app.video.pathLabel")} {videoPath}</p>
-                {videoError !== t("app.video.receivedVideoChanged") ? (
+                {!receivedChanged ? (
                   <p>
                     {t("app.video.checkVideoFormat")}
                   </p>

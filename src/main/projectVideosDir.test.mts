@@ -62,6 +62,50 @@ test("refuses a file named like the folder", async () => {
   assert.equal(fs.existsSync(path.join(videos, "flat")), true);
 });
 
+test("refuses uids that are the folder itself or a nested path", async () => {
+  const { videos, folder } = setup("dot");
+  folder("a", []);
+  fs.mkdirSync(path.join(videos, "a", "b"));
+  assert.equal(await removeProjectVideosDir(videos, ".", []), "refused");
+  assert.equal(await removeProjectVideosDir(videos, "a/b", []), "refused");
+  assert.equal(fs.existsSync(path.join(videos, "a", "b")), true);
+});
+
+test("a recording reached through a symlink elsewhere that resolves into the folder keeps it", async () => {
+  const { userData, videos, folder } = setup("linked-use");
+  const mine = folder("mine", ["game.mp4"]);
+  const elsewhere = path.join(userData, "elsewhere");
+  fs.mkdirSync(elsewhere);
+  fs.symlinkSync(path.join(mine, "game.mp4"), path.join(elsewhere, "game.mp4"));
+  assert.equal(await removeProjectVideosDir(videos, "mine", [path.join(elsewhere, "game.mp4")]), "in-use");
+  assert.equal(fs.existsSync(path.join(mine, "game.mp4")), true);
+});
+
+test("an in-use path whose file is missing still keeps the folder", async () => {
+  const { videos, folder } = setup("missing-use");
+  const mine = folder("mine", []);
+  assert.equal(await removeProjectVideosDir(videos, "mine", [path.join(mine, "gone.mp4")]), "in-use");
+  assert.equal(fs.existsSync(mine), true);
+});
+
+test("a sibling folder sharing the uid as a prefix does not count as in use", async () => {
+  const { videos, folder } = setup("prefix");
+  const mine = folder("mine", ["game.mp4"]);
+  const sibling = folder("mine2", ["x.mp4"]);
+  assert.equal(await removeProjectVideosDir(videos, "mine", [path.join(sibling, "x.mp4")]), "removed");
+  assert.equal(fs.existsSync(mine), false);
+  assert.equal(fs.existsSync(path.join(sibling, "x.mp4")), true);
+});
+
+test("one recording relinked out and one still inside keeps the folder", async () => {
+  const { userData, videos, folder } = setup("half-relinked");
+  const mine = folder("mine", ["old.mp4", "kept.mp4"]);
+  fs.writeFileSync(path.join(userData, "moved.mp4"), "video");
+  assert.equal(await removeProjectVideosDir(videos, "mine",
+    [path.join(userData, "moved.mp4"), path.join(mine, "kept.mp4")]), "in-use");
+  assert.equal(fs.existsSync(path.join(mine, "old.mp4")), true);
+});
+
 test("keeps the folder while another project still plays a recording from it", async () => {
   const { videos, folder } = setup("in-use");
   const mine = folder("mine", ["game.mp4"]);

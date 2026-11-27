@@ -56,8 +56,12 @@ test("relink of an unknown path changes nothing", () => {
 
 test("picking a changed received recording at its own path again clears its received record", () => {
   const db = database();
+  const clipsBefore = paths(db, "clips");
   assert.equal(relinkVideoRows(db, "/films/other.mp4", "/films/other.mp4", "other.mp4"), 1);
   assert.deepEqual(paths(db, "project_videos")[2], [32, "/films/other.mp4"]);
+  assert.deepEqual(paths(db, "clips"), clipsBefore);
+  assert.deepEqual(db.prepare("SELECT video_name FROM project_videos WHERE id = 32").all().map(row => row.video_name),
+    ["other.mp4"]);
   assert.deepEqual(db.prepare("SELECT id FROM project_videos WHERE received_size IS NOT NULL").all()
     .map((row) => row.id), [30]);
 });

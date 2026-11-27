@@ -81,6 +81,7 @@ import { hasVideoExtension } from "../shared/videoPath";
 import { isInsideDir } from "./insideDir";
 import { RECORDING_ALREADY_IN_PROJECT } from "./relink";
 import { removeProjectVideosDir } from "./projectVideosDir";
+import { createPickedPaths } from "./pickedPaths";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
 import { safeName, uniqueName } from "./bundleNames";
@@ -602,7 +603,14 @@ const selectVideoFile = async () => {
   }
 };
 
-ipcMain.handle("select-video-file", selectVideoFile);
+// Locate video relinks only to a file this picker returned.
+const pickedVideos = createPickedPaths(10 * 60_000);
+
+ipcMain.handle("select-video-file", async () => {
+  const file = await selectVideoFile();
+  if (file) pickedVideos.remember(file);
+  return file;
+});
 
 ipcMain.handle("get-project-videos", (_event, id: number) =>
   Number.isSafeInteger(id) && id > 0 ? getProjectVideos(id) : []);
@@ -1547,7 +1555,8 @@ ipcMain.handle(
     newVideoName: string
   ) => {
     try {
-      if (!isVideoFile(newVideoPath)) return "failed";
+      // The renderer is not trusted with the path, and relinking clears a received record.
+      if (!pickedVideos.consume(newVideoPath) || !isVideoFile(newVideoPath)) return "failed";
       const relinked = relinkVideoPath(oldVideoPath, newVideoPath, newVideoName) > 0;
       // The old path is no longer a project video, so it must stop being served.
       if (relinked) allowedMediaPaths.clear();
@@ -2234,15 +2243,16 @@ const sendProgress = (sender: Electron.WebContents, channel: string, progress: u
 // counted as share-project's plan counts them so the progress total matches.
 ipcMain.handle("get-share-size", async (_event, projectId: number) => {
   if (!validProjectId(projectId) || !getProjectById(projectId)) throw new Error("ERROR_INVALID_INPUT");
-  const videos = await Promise.all(
-    getProjectVideos(projectId).map(video => statSource(video.video_path, VIDEO_SOURCE)));
-  const clipsOnly = await planShareCopies({
-    recordings: getProjectVideos(projectId), clips: getClips(projectId), includeVideos: false,
-  });
-  return {
-    videoBytes: videos.reduce((total, video) => total + (video?.size ?? 0), 0),
-    clipBytes: clipsOnly.totalBytes,
-  };
+  const recordings = getProjectVideos(projectId);
+  const videos = await Promise.all(recordings.map(video => statSource(video.video_path, VIDEO_SOURCE)));
+  // The checkbox still shows the videos' size when the plan cannot be made (a recording without a uid).
+  const clipBytes = await planShareCopies({ recordings, clips: getClips(projectId), includeVideos: false })
+    .then(plan => plan.totalBytes)
+    .catch(error => {
+      console.error("Error sizing a share's clips:", error);
+      return 0;
+    });
+  return { videoBytes: videos.reduce((total, video) => total + (video?.size ?? 0), 0), clipBytes };
 });
 
 // Write the project, its cut clips and (optionally) its videos into a new
