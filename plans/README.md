@@ -184,11 +184,6 @@ and left alone, because each is bigger than a small fix or needs a decision:
   `overflow: auto` for sideways scrolling, which makes it the sticky ancestor,
   but the vertical scroll happens in `.clipLibraryContent`, so the header
   scrolls away with the rows. Fixing it means choosing which element scrolls.
-- **Exporting a parent category may skip subcategory-only clips.** The
-  renderer sends `categories: [parentId]` for every clip so subcategory clips
-  count, but `export-clips-by-category` in `main.ts` re-reads each clip from
-  the database and groups by the stored ids, so a clip tagged only with a
-  subcategory never matches the parent. Found by reading the code, not run.
 
 ## Design-audit batch (010-038)
 

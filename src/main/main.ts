@@ -84,6 +84,7 @@ import { removeProjectVideosDir } from "./projectVideosDir";
 import { createPickedPaths } from "./pickedPaths";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
+import { exportFoldersFor } from "./exportGroups";
 import { safeName, uniqueName } from "./bundleNames";
 import { buildManifest } from "./bundleManifest";
 import { fingerprintFile } from "./fingerprint";
@@ -1256,12 +1257,10 @@ ipcMain.handle(
       const clipsByCategory = new Map<number, typeof storedClips>();
       storedClips.forEach(clip => {
         try {
-          const clipCategories = JSON.parse(clip.categories);
-          clipCategories.forEach((catId: number) => {
-            if (params.categoryIds.includes(catId)) {
-              const existing = clipsByCategory.get(catId) || [];
-              clipsByCategory.set(catId, [...existing, clip]);
-            }
+          const clipCategories: number[] = JSON.parse(clip.categories);
+          exportFoldersFor(clipCategories, params.categoryIds, categories).forEach(catId => {
+            const existing = clipsByCategory.get(catId) || [];
+            clipsByCategory.set(catId, [...existing, clip]);
           });
         } catch (error) {
           console.warn(`Failed to parse categories for clip ${clip.id}`);
