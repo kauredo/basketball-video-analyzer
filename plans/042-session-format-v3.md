@@ -23,10 +23,21 @@
 
 | Step | What | Done |
 |---|---|---|
-| 1 | Load a session in one transaction, and validate it before writing | [ ] |
-| 2 | Write version 3: court position, status, drawings, parent-keyed categories | [ ] |
-| 3 | Read version 3, keep reading 1 and 2, refuse anything newer | [ ] |
+| 1 | Load a session in one transaction, and validate it before writing | [x] |
+| 2 | Write version 3: court position, status, drawings, parent-keyed categories | [x] |
+| 3 | Read version 3, keep reading 1 and 2, refuse anything newer | [x] |
 | 4 | Re-cut loaded clips (`output_path: ""`) from the library | [ ] |
+
+Correction, 27 Nov 2026: steps 1 to 3 were already in `main` at c030f98
+(`save-session` wrote version 3 with drawings, court position, status and
+parent-keyed categories, and `load-session` wrote in one transaction), so
+this table was stale. The 1.16.0 sharing stack then moved the format to
+version 4 (permanent uids) in `src/main/sessionData.ts`, which reads 1 to 4
+and refuses newer.
+
+Step 4 shrinks: a project opened with **Open shared project** arrives with
+its cut clips, so only old `.json` sessions still load clips with
+`output_path: ""`.
 
 ## Why
 

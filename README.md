@@ -155,6 +155,13 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 - **Organized Folders**: Creates hierarchical folders by category for intuitive team sharing
 - **Data Export**: Export the clip list as CSV or JSON, or as Sportscode-compatible timeline XML for coaches already on that workflow
 
+### 🤝 Share a Project with Another Coach
+
+- **Share project** writes one folder with the project file (`.bvap`), every cut clip and, if you tick the box, the game videos. Send it any way you like: a USB stick, Google Drive, Dropbox.
+- **Open shared project** in the project selector reads that folder. It finds videos you already have, so they aren't copied twice, and asks whether to copy the rest into the app or use them where they are.
+- When a project you shared comes back with changes, the app shows what's new, changed or deleted before anything is applied. If you both edited the same thing, you pick which version to keep. Deletions come unticked.
+- Old session files (`.json`) open through the same button.
+
 ### 🌐 Multi-Language Support
 
 - **Eleven Languages**: English, Portuguese, Spanish, French, Italian, German, Greek, Lithuanian, Slovenian, Serbian, and Turkish
@@ -246,6 +253,7 @@ The mark keys are rebindable in Settings. Z and M are the defaults.
 - Maintain folder structure that matches your category organization
 - Export specific categories or entire project libraries
 - Share organized folders with team via cloud storage, USB, or team platforms
+- To hand the whole project to another coach so they can keep working on it, use **Share project** in the clip library instead. They open it with **Open shared project**, and when they send it back you review their changes before applying them.
 
 ## 🎯 Typical Workflows
 
