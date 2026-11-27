@@ -99,6 +99,7 @@ export const App: React.FC = () => {
   const recordingRequest = useRef(0);
   const [startAt, setStartAt] = useState<number | null>(null);
   const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [playerReload, setPlayerReload] = useState(0);
   const [currentProject, setCurrentProject] = useState<any | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -484,8 +485,9 @@ export const App: React.FC = () => {
   };
 
   // Asks for the moved file and relinks the recording to it. Null when the coach gives up or it fails.
-  const locateRecording = async (missingPath: string) => {
-    if (!(await confirm({ message: t("app.projects.videoMissingMessage", { path: missingPath }),
+  // `ask` is false when the coach already pressed Locate video.
+  const locateRecording = async (missingPath: string, ask = true) => {
+    if (ask && !(await confirm({ message: t("app.projects.videoMissingMessage", { path: missingPath }),
       confirmLabel: t("app.projects.videoMissingLocate") }))) return null;
     const path = await window.electronAPI.selectVideoFile();
     if (!path) return null;
@@ -507,20 +509,40 @@ export const App: React.FC = () => {
       const files = await window.electronAPI.checkPathsExist([recording.video_path]);
       if (request !== recordingRequest.current) return;
       if (!files[recording.video_path]) {
-        const located = await locateRecording(recording.video_path);
-        if (!located || request !== recordingRequest.current) return;
-        const videos = await window.electronAPI.getProjectVideos(id);
-        const updated = videos.find(video => video.id === recording.id);
-        if (!updated || request !== recordingRequest.current) return;
-        setRecordings(videos);
-        if (currentProject.video_path === recording.video_path) {
-          setCurrentProject({ ...currentProject, video_path: located.path, video_name: located.name });
-        }
-        activateRecording(id, updated, time);
-        refreshClips();
+        await relocate(recording, request, time, true);
         return;
       }
       activateRecording(id, recording, time);
+    } catch (error) {
+      showError(withCause(t("app.projects.recordingError"), error));
+    }
+  };
+
+  // Relinks a recording to the file the coach picks and plays it from there.
+  const relocate = async (recording: ProjectVideo, request: number, time: number | null, ask: boolean) => {
+    if (!currentProject) return;
+    const id = currentProject.id;
+    const located = await locateRecording(recording.video_path, ask);
+    if (!located || request !== recordingRequest.current) return;
+    const videos = await window.electronAPI.getProjectVideos(id);
+    const updated = videos.find(video => video.id === recording.id);
+    if (!updated || request !== recordingRequest.current) return;
+    setRecordings(videos);
+    if (currentProject.video_path === recording.video_path) {
+      setCurrentProject({ ...currentProject, video_path: located.path, video_name: located.name });
+    }
+    // Picking the same file again keeps the path, so the player has to be remounted to retry it.
+    setPlayerReload(count => count + 1);
+    activateRecording(id, updated, time);
+    refreshClips();
+  };
+
+  // The player's Locate video button, for a received video that changed in the shared folder.
+  const locateActiveRecording = async () => {
+    const recording = recordings.find(item => item.video_path === videoPath);
+    if (!recording) return;
+    try {
+      await relocate(recording, ++recordingRequest.current, null, false);
     } catch (error) {
       showError(withCause(t("app.projects.recordingError"), error));
     }
@@ -911,7 +933,7 @@ export const App: React.FC = () => {
                 </div>
               )}
               <VideoPlayer
-                key={`${currentProject?.id}:${videoPath}`}
+                key={`${currentProject?.id}:${videoPath}:${playerReload}`}
                 ref={videoPlayerRef}
                 videoPath={videoPath}
                 projectId={currentProject?.id}
@@ -928,6 +950,8 @@ export const App: React.FC = () => {
                 onQuickTag={handleQuickTag}
                 clips={gameClips}
                 onClipsUpdated={refreshClips}
+                onLocate={locateActiveRecording}
+                reloadToken={playerReload}
               />
             </div>
 

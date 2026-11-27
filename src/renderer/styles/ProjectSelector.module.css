@@ -109,6 +109,8 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   color: var(--text-primary);
+  font-family: inherit;
+  text-align: left;
 }
 
 .createNewBtn:hover {
@@ -147,6 +149,8 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   color: var(--text-primary);
+  font-family: inherit;
+  text-align: left;
 }
 
 .secondaryActionBtn:hover {
@@ -159,6 +163,13 @@
 .secondaryActionBtn svg {
   font-size: var(--font-size-lg);
   color: var(--text-secondary);
+}
+
+/* The same icon column in both, so their titles start at the same x. */
+.createNewBtn svg,
+.secondaryActionBtn svg {
+  width: 2rem;
+  flex-shrink: 0;
 }
 
 .secondaryActionBtn h3 {

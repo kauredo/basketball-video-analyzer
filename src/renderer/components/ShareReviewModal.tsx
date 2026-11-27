@@ -12,8 +12,10 @@ import { formatVideoTime } from "../utils/format";
 import { inkOn } from "../utils/contrast";
 import { statusLabelKey } from "../utils/constants";
 import { mergedMessage, openSharedError } from "../utils/shareMessages";
-import type {
-  ReviewField, ReviewGroup, ReviewRow, ReviewSelections, ReviewValue, ShareReview,
+import {
+  appliedCount, hasRowCheckbox, initialChoices, initialSelected, pickAll,
+  type ReviewField, type ReviewGroup, type ReviewRow, type ReviewSelections, type ReviewSide, type ReviewValue,
+  type ShareReview,
 } from "../../shared/shareReview";
 import type { Project } from "./ProjectSelector";
 
@@ -46,11 +48,8 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
   const { t } = useTranslation();
   const { showSuccess, showInfo, showError } = useToastContext();
   const trapRef = useFocusTrap(true);
-  const [selected, setSelected] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(review.rows.map(row => [row.token, row.ticked])));
-  const [choices, setChoices] = useState<Record<string, Record<string, "mine" | "theirs">>>(() =>
-    Object.fromEntries(review.rows.filter(row => row.conflicts.length > 0).map(row =>
-      [row.token, Object.fromEntries(row.conflicts.map(conflict => [conflict.field, "mine" as const]))])));
+  const [selected, setSelected] = useState(() => initialSelected(review.rows));
+  const [choices, setChoices] = useState(() => initialChoices(review.rows));
   const [applying, setApplying] = useState(false);
 
   const close = () => {
@@ -115,6 +114,12 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
   const setAll = (rows: ReviewRow[], on: boolean) =>
     setSelected(current => ({ ...current, ...Object.fromEntries(rows.map(row => [row.token, on])) }));
 
+  const pickSide = (rows: ReviewRow[], side: ReviewSide) => {
+    const next = pickAll(choices, selected, rows, side);
+    setChoices(next.choices);
+    setSelected(next.selected);
+  };
+
   const change = (item: ReviewField) => (
     <div key={item.field} className={styles.field}>
       <dt>{fieldLabel(item.field)}</dt>
@@ -150,35 +155,43 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
     );
   };
 
-  const rowView = (row: ReviewRow) => (
-    <li key={row.token} className={styles.row}>
-      <label className={styles.rowHead}>
-        <input
-          type="checkbox"
-          checked={selected[row.token] === true}
-          disabled={applying}
-          onChange={event => setSelected(current => ({ ...current, [row.token]: event.target.checked }))}
-        />
-        <span className={styles.kind}>{t(`app.review.kinds.${row.kind}`)}</span>
-        {row.preview.color && <span className={styles.swatch} style={{ backgroundColor: row.preview.color }} />}
-        <span className={styles.title}>{row.preview.title || t("app.review.none")}</span>
-        {row.preview.start !== undefined && (
-          <span className={styles.time}>
-            {formatVideoTime(row.preview.start)}
-            {row.preview.end !== undefined && `–${formatVideoTime(row.preview.end)}`}
-          </span>
-        )}
-        {row.preview.detail && <span className={styles.detail}>{row.preview.detail}</span>}
-        {row.preview.tags && <span className={styles.tags}><Tags tags={row.preview.tags} /></span>}
-      </label>
-      {row.changes.length > 0 && <dl className={styles.fields}>{row.changes.map(change)}</dl>}
-      {row.conflicts.map(item => conflict(row, item))}
-      {row.inUse > 0 && <p className={styles.note}>{t("app.review.inUse", { count: row.inUse })}</p>}
-      {row.recut && <p className={styles.note}>{t("app.review.recut")}</p>}
-    </li>
-  );
+  const rowView = (row: ReviewRow) => {
+    const checkbox = hasRowCheckbox(row);
+    const Head = checkbox ? "label" : "div";
+    return (
+      <li key={row.token} className={styles.row}>
+        <Head className={`${styles.rowHead} ${checkbox ? "" : styles.rowHeadStatic}`}>
+          {!checkbox ? (
+            <span className={styles.checkSpace} aria-hidden="true" />
+          ) : (
+            <input
+              type="checkbox"
+              checked={selected[row.token] === true}
+              disabled={applying}
+              onChange={event => setSelected(current => ({ ...current, [row.token]: event.target.checked }))}
+            />
+          )}
+          <span className={styles.kind}>{t(`app.review.kinds.${row.kind}`)}</span>
+          {row.preview.color && <span className={styles.swatch} style={{ backgroundColor: row.preview.color }} />}
+          <span className={styles.title}>{row.preview.title || t("app.review.none")}</span>
+          {row.preview.start !== undefined && (
+            <span className={styles.time}>
+              {formatVideoTime(row.preview.start)}
+              {row.preview.end !== undefined && `–${formatVideoTime(row.preview.end)}`}
+            </span>
+          )}
+          {row.preview.detail && <span className={styles.detail}>{row.preview.detail}</span>}
+          {row.preview.tags && <span className={styles.tags}><Tags tags={row.preview.tags} /></span>}
+        </Head>
+        {row.changes.length > 0 && <dl className={styles.fields}>{row.changes.map(change)}</dl>}
+        {row.conflicts.map(item => conflict(row, item))}
+        {row.inUse > 0 && <p className={styles.note}>{t("app.review.inUse", { count: row.inUse })}</p>}
+        {row.recut && <p className={styles.note}>{t("app.review.recut")}</p>}
+      </li>
+    );
+  };
 
-  const tickedCount = review.rows.filter(row => selected[row.token]).length;
+  const tickedCount = appliedCount(review.rows, selected, choices);
 
   return createPortal(
     <div
@@ -223,20 +236,46 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
                 return (
                   <section key={group} className={styles.group} aria-label={label}>
                     <h4 className={styles.groupHeader}>
-                      <label className={base.checkbox}>
-                        <input
-                          type="checkbox"
-                          checked={ticked === rows.length}
-                          ref={input => {
-                            if (input) input.indeterminate = ticked > 0 && ticked < rows.length;
-                          }}
-                          disabled={applying}
-                          onChange={event => setAll(rows, event.target.checked)}
-                          aria-label={t("app.review.selectAll", { group: label })}
-                        />
-                        {label}
-                        <span className={styles.count}>{rows.length}</span>
-                      </label>
+                      {group === "conflict" ? (
+                        <div className={styles.conflictHeader}>
+                          <span className={styles.checkSpace} aria-hidden="true" />
+                          {label}
+                          <span className={styles.bulkPicks}>
+                            <button
+                              type="button"
+                              className={styles.bulkPick}
+                              disabled={applying}
+                              onClick={() => pickSide(rows, "mine")}
+                            >
+                              {t("app.review.keepAllMine")}
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.bulkPick}
+                              disabled={applying}
+                              onClick={() => pickSide(rows, "theirs")}
+                            >
+                              {t("app.review.takeAllTheirs")}
+                            </button>
+                          </span>
+                          <span className={styles.count}>{rows.length}</span>
+                        </div>
+                      ) : (
+                        <label className={base.checkbox}>
+                          <input
+                            type="checkbox"
+                            checked={ticked === rows.length}
+                            ref={input => {
+                              if (input) input.indeterminate = ticked > 0 && ticked < rows.length;
+                            }}
+                            disabled={applying}
+                            onChange={event => setAll(rows, event.target.checked)}
+                            aria-label={t("app.review.selectAll", { group: label })}
+                          />
+                          {label}
+                          <span className={styles.count}>{rows.length}</span>
+                        </label>
+                      )}
                     </h4>
                     <ul className={styles.rows}>{rows.map(rowView)}</ul>
                   </section>
@@ -259,10 +298,15 @@ export const ShareReviewModal: React.FC<ShareReviewModalProps> = ({ name, review
                   type="button"
                   className={base.primaryButton}
                   onClick={apply}
-                  disabled={applying || tickedCount === 0}
+                  disabled={applying}
                 >
                   <FontAwesomeIcon icon={applying ? faSpinner : faCodeMerge} spin={applying} />
-                  {applying ? t("app.review.applying") : t("app.review.apply", { count: tickedCount })}
+                  {/* Applying nothing still records the folder, so it isn't offered again. */}
+                  {applying
+                    ? t("app.review.applying")
+                    : tickedCount === 0
+                      ? t("app.review.keepMine")
+                      : t("app.review.apply", { count: tickedCount })}
                 </button>
               </>
             )}

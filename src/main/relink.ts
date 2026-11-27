@@ -21,7 +21,8 @@ export const relinkVideoRows = (
     SELECT 1 FROM project_videos moving JOIN project_videos kept ON moving.project_id = kept.project_id
     WHERE moving.video_path = ? AND kept.video_path = ? LIMIT 1
   `).all(oldVideoPath, newVideoPath);
-  if (clash.length > 0) throw new Error(RECORDING_ALREADY_IN_PROJECT);
+  // The same path twice is a received recording picked again, which only clears its record.
+  if (clash.length > 0 && oldVideoPath !== newVideoPath) throw new Error(RECORDING_ALREADY_IN_PROJECT);
   const { changes } = db
     // The coach picked the new file, so it is no longer one used in place from a received folder.
     .prepare(`UPDATE project_videos SET video_path = ?, video_name = ?,

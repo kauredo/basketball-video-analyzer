@@ -15,8 +15,10 @@ export const useFocusTrap = (isActive: boolean) => {
     const container = containerRef.current;
     if (!container) return;
 
+    // A `data-autofocus` element wins over the first focusable one (often the close button).
     const focusFirst = () => {
       const firstFocusable =
+        container.querySelector<HTMLElement>("[data-autofocus]") ??
         container.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
       firstFocusable?.focus();
     };

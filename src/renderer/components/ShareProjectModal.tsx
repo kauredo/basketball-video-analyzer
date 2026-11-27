@@ -28,7 +28,7 @@ export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, pr
   const { showSuccess, showInfo } = useToastContext();
   const trapRef = useFocusTrap(isOpen);
   const [includeVideos, setIncludeVideos] = useState(true);
-  const [videoBytes, setVideoBytes] = useState<number | null>(null);
+  const [sizes, setSizes] = useState<{ videoBytes: number; clipBytes: number } | null>(null);
   const [sharing, setSharing] = useState(false);
   const [progress, setProgress] = useState<ShareProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +36,8 @@ export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, pr
   useEffect(() => {
     if (!isOpen) return;
     setError(null);
-    setVideoBytes(null);
-    window.electronAPI.getShareSize(project.id).then(setVideoBytes).catch(() => setVideoBytes(null));
+    setSizes(null);
+    window.electronAPI.getShareSize(project.id).then(setSizes).catch(() => setSizes(null));
     window.electronAPI.onShareProgress(setProgress);
     return () => window.electronAPI.removeAllListeners("share-progress");
   }, [isOpen, project.id]);
@@ -115,10 +115,17 @@ export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, pr
               disabled={sharing}
               onChange={e => setIncludeVideos(e.target.checked)}
             />
-            {videoBytes === null
+            {sizes === null
               ? t("app.share.includeVideosNoSize")
-              : t("app.share.includeVideos", { size: formatBytes(videoBytes, i18n.language) })}
+              : t("app.share.includeVideos", { size: formatBytes(sizes.videoBytes, i18n.language) })}
           </label>
+          {sizes !== null && (
+            <p className={styles.hint}>
+              {t("app.share.totalSize", {
+                size: formatBytes(sizes.clipBytes + (includeVideos ? sizes.videoBytes : 0), i18n.language),
+              })}
+            </p>
+          )}
 
           {error && <p className={styles.error} role="alert">{error}</p>}
 
@@ -160,7 +167,7 @@ export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, pr
                 {t("app.buttons.close")}
               </button>
             )}
-            <button type="button" className={styles.primaryButton} onClick={share} disabled={sharing}>
+            <button type="button" className={styles.primaryButton} onClick={share} disabled={sharing} data-autofocus>
               <FontAwesomeIcon icon={sharing ? faSpinner : faFolderOpen} spin={sharing} />
               {sharing ? t("app.share.copying") : t("app.share.chooseFolder")}
             </button>

@@ -20,6 +20,7 @@ import {
   faLocationPin,
   faTrash,
   faFilm,
+  faFolderOpen,
   faKeyboard,
   faAnglesLeft,
   faAnglesRight,
@@ -73,6 +74,10 @@ interface VideoPlayerProps {
   /** The project's clips, kept in step with the saved drawings. */
   clips: Clip[];
   onClipsUpdated: () => void;
+  /** Picks the file again when a received video changed in its shared folder. */
+  onLocate?: () => void;
+  /** Bumped after Locate video: a new URL, so Chromium does not reuse the refused response for the same path. */
+  reloadToken?: number;
 }
 
 interface VideoPlayerRef {
@@ -100,6 +105,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onQuickTag,
       clips,
       onClipsUpdated,
+      onLocate,
+      reloadToken = 0,
     },
     ref
   ) => {
@@ -153,6 +160,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       markOutKey: "m",
     });
     const [videoError, setVideoError] = useState<string | null>(null);
+    // The error is a received video that changed in its shared folder: offer Locate video.
+    const [receivedChanged, setReceivedChanged] = useState(false);
     const [replayEnabled, setReplayEnabled] = useState(() =>
       loadPref(STORAGE_KEYS.ANNOTATION_REPLAY, true)
     );
@@ -658,9 +667,12 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }
       }
       setVideoError(errorMessage);
+      setReceivedChanged(false);
       if (videoPath) {
         window.electronAPI.receivedVideoChanged(videoPath).then(changed => {
-          if (changed) setVideoError(t("app.video.receivedVideoChanged"));
+          if (!changed) return;
+          setVideoError(t("app.video.receivedVideoChanged"));
+          setReceivedChanged(true);
         });
       }
     };
@@ -859,17 +871,21 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                   <FontAwesomeIcon icon={faFilm} /> {videoError}
                 </h3>
                 <p>{t("app.video.pathLabel")} {videoPath}</p>
-                {videoError !== t("app.video.receivedVideoChanged") && (
+                {!receivedChanged ? (
                   <p>
                     {t("app.video.checkVideoFormat")}
                   </p>
+                ) : onLocate && (
+                  <button type="button" className={styles.locateButton} onClick={onLocate}>
+                    <FontAwesomeIcon icon={faFolderOpen} /> {t("app.projects.videoMissingLocate")}
+                  </button>
                 )}
               </div>
             </div>
           ) : (
             <video
               ref={videoRef}
-              src={formatVideoSrc(videoPath)}
+              src={formatVideoSrc(videoPath) + (reloadToken ? `&reload=${reloadToken}` : "")}
               onTimeUpdate={handleTimeUpdate}
               onLoadedMetadata={handleLoadedMetadata}
               onError={handleVideoError}

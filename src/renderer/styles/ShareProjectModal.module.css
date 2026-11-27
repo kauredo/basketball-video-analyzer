@@ -93,6 +93,27 @@
   margin: 0;
 }
 
+/* Drawn by hand: Chromium paints a disabled radio grey whether or not it is checked,
+   so the chosen option vanished while the import copied. */
+.checkbox input[type="radio"] {
+  appearance: none;
+  flex-shrink: 0;
+  border: 2px solid var(--border-color-hover);
+  border-radius: 50%;
+  background: transparent;
+  cursor: inherit;
+}
+
+.checkbox input[type="radio"]:checked {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  box-shadow: inset 0 0 0 3px var(--bg-secondary);
+}
+
+.checkbox input[type="radio"]:disabled {
+  opacity: 0.6;
+}
+
 .choices {
   margin: 0;
   padding: 0;

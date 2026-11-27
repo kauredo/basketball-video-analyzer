@@ -250,8 +250,60 @@
   font-size: var(--font-size-xs);
 }
 
+/* Keeps a conflict row, which has no checkbox, in line with the rows that do. */
+.checkSpace {
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+.rowHeadStatic {
+  cursor: default;
+}
+
+.conflictHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.bulkPicks {
+  margin-left: auto;
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.conflictHeader .count {
+  margin-left: var(--spacing-sm);
+}
+
+.bulkPick {
+  height: 1.75rem;
+  padding: 0 var(--spacing-sm);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-sm);
+  background: var(--bg-quaternary);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.bulkPick:hover:not(:disabled) {
+  border-color: var(--border-color-hover);
+  color: var(--text-primary);
+}
+
+.bulkPick:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .rowHead input:focus-visible,
-.side input:focus-visible {
+.side input:focus-visible,
+.bulkPick:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: 2px;
 }
