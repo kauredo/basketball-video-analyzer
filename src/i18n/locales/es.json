@@ -653,6 +653,22 @@
       "fileMissing": "El archivo {{name}} desapareció o no se pudo leer, así que no se guardó nada. Inténtalo de nuevo.",
       "failed": "No se pudo compartir el proyecto."
     },
+    "openShared": {
+      "title": "Abrir proyecto compartido",
+      "description": "Abre una carpeta que otro entrenador compartió contigo",
+      "intro": "La carpeta compartida trae los vídeos de los partidos ({{size}}). ¿Dónde debe guardarlos la aplicación?",
+      "copyVideos": "Copiar los vídeos a la aplicación",
+      "copyNoSpace": "No hay suficiente espacio libre en este ordenador para copiarlos.",
+      "useInPlace": "Usarlos donde están",
+      "useInPlaceWarning": "Si esa carpeta se mueve, o una unidad en la nube deja los archivos solo en línea, el proyecto pierde sus vídeos.",
+      "open": "Abrir proyecto",
+      "alreadyHave": "Ya tienes \"{{name}}\", así que no se importó nada.",
+      "cancelled": "Apertura cancelada. Los archivos copiados se han eliminado.",
+      "noSpace": "No hay suficiente espacio libre para copiar el proyecto compartido. Libera espacio o usa los vídeos donde están.",
+      "unsafeFile": "La carpeta compartida tiene un archivo que la aplicación no abrirá ({{name}}), así que no se importó nada.",
+      "changedFile": "El archivo {{name}} de la carpeta compartida está incompleto o se ha modificado. Copia la carpeta de nuevo y vuelve a intentarlo.",
+      "failed": "No se pudo abrir el proyecto compartido."
+    },
     "native": {
       "checkForUpdates": "Buscar Actualizaciones...",
       "file": "Archivo",
@@ -677,7 +693,10 @@
       "checking": "Buscando actualizaciones...",
       "checkFailedTitle": "Error al Buscar Actualizaciones",
       "checkFailed": "No se pudo buscar actualizaciones: {{message}}",
-      "shareDialogTitle": "Elige dónde guardar el proyecto compartido"
+      "shareDialogTitle": "Elige dónde guardar el proyecto compartido",
+      "openSharedDialogTitle": "Abrir proyecto compartido",
+      "sharedProjectFiles": "Proyectos compartidos",
+      "sharedProjectSuffix": "(compartido)"
     }
   }
 }

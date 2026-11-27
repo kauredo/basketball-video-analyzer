@@ -654,6 +654,22 @@
       "fileMissing": "{{name}} dosyası kayboldu veya okunamadı, bu yüzden hiçbir şey saklanmadı. Tekrar deneyin.",
       "failed": "Proje paylaşılamadı."
     },
+    "openShared": {
+      "title": "Paylaşılan projeyi aç",
+      "description": "Başka bir antrenörün sizinle paylaştığı klasörü açın",
+      "intro": "Paylaşılan klasörde maç videoları var ({{size}}). Uygulama bunları nerede saklasın?",
+      "copyVideos": "Videoları uygulamaya kopyala",
+      "copyNoSpace": "Bu bilgisayarda bunları kopyalamak için yeterli boş alan yok.",
+      "useInPlace": "Oldukları yerde kullan",
+      "useInPlaceWarning": "Klasör taşınırsa veya bir bulut sürücüsü dosyaları yalnızca çevrimiçi tutarsa proje videolarını kaybeder.",
+      "open": "Projeyi aç",
+      "alreadyHave": "\"{{name}}\" projesi zaten sizde, bu yüzden hiçbir şey içe aktarılmadı.",
+      "cancelled": "Açma iptal edildi. Kopyalanan dosyalar silindi.",
+      "noSpace": "Paylaşılan projeyi kopyalamak için yeterli boş alan yok. Yer açın veya videoları oldukları yerde kullanın.",
+      "unsafeFile": "Paylaşılan klasörde uygulamanın açmayacağı bir dosya var ({{name}}), bu yüzden hiçbir şey içe aktarılmadı.",
+      "changedFile": "Paylaşılan klasördeki {{name}} dosyası eksik veya değiştirilmiş. Klasörü yeniden kopyalayıp tekrar deneyin.",
+      "failed": "Paylaşılan proje açılamadı."
+    },
     "native": {
       "checkForUpdates": "Güncellemeleri Denetle...",
       "file": "Dosya",
@@ -678,7 +694,10 @@
       "checking": "Güncellemeler denetleniyor...",
       "checkFailedTitle": "Güncelleme Denetimi Başarısız",
       "checkFailed": "Güncellemeler denetlenemedi: {{message}}",
-      "shareDialogTitle": "Paylaşılan projenin nereye konacağını seçin"
+      "shareDialogTitle": "Paylaşılan projenin nereye konacağını seçin",
+      "openSharedDialogTitle": "Paylaşılan projeyi aç",
+      "sharedProjectFiles": "Paylaşılan projeler",
+      "sharedProjectSuffix": "(paylaşılan)"
     }
   }
 }

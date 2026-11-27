@@ -653,6 +653,22 @@
       "fileMissing": "Fajl {{name}} je nestao ili nije mogao da se pročita, pa ništa nije sačuvano. Pokušajte ponovo.",
       "failed": "Projekat nije moguće podeliti."
     },
+    "openShared": {
+      "title": "Otvori deljeni projekat",
+      "description": "Otvorite fasciklu koju je drugi trener podelio sa vama",
+      "intro": "Deljena fascikla sadrži video snimke utakmica ({{size}}). Gde aplikacija treba da ih čuva?",
+      "copyVideos": "Kopiraj snimke u aplikaciju",
+      "copyNoSpace": "Na ovom računaru nema dovoljno slobodnog prostora da se kopiraju.",
+      "useInPlace": "Koristi ih tamo gde jesu",
+      "useInPlaceWarning": "Ako se fascikla premesti ili cloud disk drži fajlove samo na mreži, projekat gubi snimke.",
+      "open": "Otvori projekat",
+      "alreadyHave": "Već imate „{{name}}“, pa ništa nije uvezeno.",
+      "cancelled": "Otvaranje je otkazano. Kopirani fajlovi su obrisani.",
+      "noSpace": "Nema dovoljno slobodnog prostora za kopiranje deljenog projekta. Oslobodite prostor ili koristite snimke tamo gde jesu.",
+      "unsafeFile": "Deljena fascikla sadrži fajl koji aplikacija neće otvoriti ({{name}}), pa ništa nije uvezeno.",
+      "changedFile": "Fajl {{name}} u deljenoj fascikli je nepotpun ili izmenjen. Ponovo kopirajte fasciklu i pokušajte opet.",
+      "failed": "Deljeni projekat nije moguće otvoriti."
+    },
     "native": {
       "checkForUpdates": "Proveri Ažuriranja...",
       "file": "Datoteka",
@@ -677,7 +693,10 @@
       "checking": "Provera ažuriranja...",
       "checkFailedTitle": "Provera Ažuriranja Nije Uspela",
       "checkFailed": "Provera ažuriranja nije uspela: {{message}}",
-      "shareDialogTitle": "Izaberite gde da sačuvate deljeni projekat"
+      "shareDialogTitle": "Izaberite gde da sačuvate deljeni projekat",
+      "openSharedDialogTitle": "Otvori deljeni projekat",
+      "sharedProjectFiles": "Deljeni projekti",
+      "sharedProjectSuffix": "(deljeno)"
     }
   }
 }

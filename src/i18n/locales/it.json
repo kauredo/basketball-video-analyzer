@@ -653,6 +653,22 @@
       "fileMissing": "Il file {{name}} è sparito o non si può leggere, quindi non è stato tenuto nulla. Riprova.",
       "failed": "Impossibile condividere il progetto."
     },
+    "openShared": {
+      "title": "Apri progetto condiviso",
+      "description": "Apri una cartella che un altro allenatore ha condiviso con te",
+      "intro": "La cartella condivisa contiene i video delle partite ({{size}}). Dove deve conservarli l'app?",
+      "copyVideos": "Copia i video nell'app",
+      "copyNoSpace": "Su questo computer non c'è abbastanza spazio libero per copiarli.",
+      "useInPlace": "Usali dove si trovano",
+      "useInPlaceWarning": "Se quella cartella viene spostata, o un disco cloud tiene i file solo online, il progetto perde i video.",
+      "open": "Apri progetto",
+      "alreadyHave": "Hai già \"{{name}}\", quindi non è stato importato nulla.",
+      "cancelled": "Apertura annullata. I file copiati sono stati eliminati.",
+      "noSpace": "Non c'è abbastanza spazio libero per copiare il progetto condiviso. Libera spazio o usa i video dove si trovano.",
+      "unsafeFile": "La cartella condivisa contiene un file che l'app non aprirà ({{name}}), quindi non è stato importato nulla.",
+      "changedFile": "Il file {{name}} nella cartella condivisa è incompleto o è stato modificato. Copia di nuovo la cartella e riprova.",
+      "failed": "Impossibile aprire il progetto condiviso."
+    },
     "native": {
       "checkForUpdates": "Cerca Aggiornamenti...",
       "file": "File",
@@ -677,7 +693,10 @@
       "checking": "Ricerca aggiornamenti in corso...",
       "checkFailedTitle": "Ricerca Aggiornamenti Non Riuscita",
       "checkFailed": "Impossibile cercare aggiornamenti: {{message}}",
-      "shareDialogTitle": "Scegli dove mettere il progetto condiviso"
+      "shareDialogTitle": "Scegli dove mettere il progetto condiviso",
+      "openSharedDialogTitle": "Apri progetto condiviso",
+      "sharedProjectFiles": "Progetti condivisi",
+      "sharedProjectSuffix": "(condiviso)"
     }
   }
 }

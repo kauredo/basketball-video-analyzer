@@ -653,6 +653,22 @@
       "fileMissing": "Die Datei {{name}} ist verschwunden oder konnte nicht gelesen werden, daher wurde nichts behalten. Versuche es erneut.",
       "failed": "Das Projekt konnte nicht geteilt werden."
     },
+    "openShared": {
+      "title": "Geteiltes Projekt öffnen",
+      "description": "Einen Ordner öffnen, den ein anderer Trainer mit dir geteilt hat",
+      "intro": "Der geteilte Ordner enthält die Spielvideos ({{size}}). Wo soll die App sie aufbewahren?",
+      "copyVideos": "Videos in die App kopieren",
+      "copyNoSpace": "Auf diesem Computer ist nicht genug Platz frei, um sie zu kopieren.",
+      "useInPlace": "Dort verwenden, wo sie liegen",
+      "useInPlaceWarning": "Wird der Ordner verschoben oder hält ein Cloud-Laufwerk die Dateien nur online, verliert das Projekt seine Videos.",
+      "open": "Projekt öffnen",
+      "alreadyHave": "Du hast „{{name}}“ schon, daher wurde nichts importiert.",
+      "cancelled": "Öffnen abgebrochen. Die kopierten Dateien wurden gelöscht.",
+      "noSpace": "Nicht genug Platz frei, um das geteilte Projekt zu kopieren. Schaffe Platz oder verwende die Videos dort, wo sie liegen.",
+      "unsafeFile": "Der geteilte Ordner enthält eine Datei, die die App nicht öffnet ({{name}}), daher wurde nichts importiert.",
+      "changedFile": "Die Datei {{name}} im geteilten Ordner ist unvollständig oder wurde geändert. Kopiere den Ordner noch einmal und versuche es erneut.",
+      "failed": "Das geteilte Projekt konnte nicht geöffnet werden."
+    },
     "native": {
       "checkForUpdates": "Nach Updates Suchen...",
       "file": "Datei",
@@ -677,7 +693,10 @@
       "checking": "Suche nach Updates...",
       "checkFailedTitle": "Update-Prüfung Fehlgeschlagen",
       "checkFailed": "Updates konnten nicht geprüft werden: {{message}}",
-      "shareDialogTitle": "Wähle, wo das geteilte Projekt gespeichert wird"
+      "shareDialogTitle": "Wähle, wo das geteilte Projekt gespeichert wird",
+      "openSharedDialogTitle": "Geteiltes Projekt öffnen",
+      "sharedProjectFiles": "Geteilte Projekte",
+      "sharedProjectSuffix": "(geteilt)"
     }
   }
 }

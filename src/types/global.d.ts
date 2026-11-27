@@ -87,6 +87,11 @@ export interface ShareProgress {
   totalFiles: number;
 }
 
+export type OpenSharedResult =
+  | { status: "already-have"; projectId: number; name: string }
+  | { status: "choose"; videoBytes: number; canCopy: boolean }
+  | { status: "imported"; project: any };
+
 export interface ElectronAPI {
   // System operations
   systemCheck: () => Promise<{
@@ -210,6 +215,13 @@ export interface ElectronAPI {
   cancelShare: () => Promise<boolean>;
   showSharedProject: () => Promise<void>;
   onShareProgress: (callback: (data: ShareProgress) => void) => void;
+
+  // Open shared project
+  openSharedProject: () => Promise<OpenSharedResult | null>;
+  finishSharedProject: (copyVideos: boolean) => Promise<OpenSharedResult>;
+  discardSharedProject: () => Promise<void>;
+  cancelSharedImport: () => Promise<boolean>;
+  onImportProgress: (callback: (data: ShareProgress) => void) => void;
 
   // YouTube operations
   downloadYoutubeVideo: (url: string) => Promise<{ filePath: string; fileName: string; success: boolean }>;

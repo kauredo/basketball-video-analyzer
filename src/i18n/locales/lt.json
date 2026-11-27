@@ -653,6 +653,22 @@
       "fileMissing": "Failas {{name}} dingo arba jo nepavyko perskaityti, todėl nieko neišsaugota. Bandykite dar kartą.",
       "failed": "Nepavyko bendrinti projekto."
     },
+    "openShared": {
+      "title": "Atidaryti bendrinamą projektą",
+      "description": "Atidarykite aplanką, kurį su jumis pasidalijo kitas treneris",
+      "intro": "Bendrinamame aplanke yra rungtynių vaizdo įrašai ({{size}}). Kur programa turėtų juos laikyti?",
+      "copyVideos": "Nukopijuoti vaizdo įrašus į programą",
+      "copyNoSpace": "Šiame kompiuteryje nepakanka laisvos vietos jiems nukopijuoti.",
+      "useInPlace": "Naudoti juos ten, kur jie yra",
+      "useInPlaceWarning": "Jei aplankas bus perkeltas arba debesies diskas laikys failus tik internete, projektas neteks vaizdo įrašų.",
+      "open": "Atidaryti projektą",
+      "alreadyHave": "Jūs jau turite „{{name}}“, todėl niekas nebuvo importuota.",
+      "cancelled": "Atidarymas atšauktas. Nukopijuoti failai ištrinti.",
+      "noSpace": "Nepakanka laisvos vietos bendrinamam projektui nukopijuoti. Atlaisvinkite vietos arba naudokite vaizdo įrašus ten, kur jie yra.",
+      "unsafeFile": "Bendrinamame aplanke yra failas, kurio programa neatidarys ({{name}}), todėl niekas nebuvo importuota.",
+      "changedFile": "Failas {{name}} bendrinamame aplanke yra nepilnas arba pakeistas. Nukopijuokite aplanką dar kartą ir bandykite iš naujo.",
+      "failed": "Nepavyko atidaryti bendrinamo projekto."
+    },
     "native": {
       "checkForUpdates": "Tikrinti Atnaujinimus...",
       "file": "Failas",
@@ -677,7 +693,10 @@
       "checking": "Tikrinami atnaujinimai...",
       "checkFailedTitle": "Nepavyko Patikrinti Atnaujinimų",
       "checkFailed": "Nepavyko patikrinti atnaujinimų: {{message}}",
-      "shareDialogTitle": "Pasirinkite, kur įdėti bendrinamą projektą"
+      "shareDialogTitle": "Pasirinkite, kur įdėti bendrinamą projektą",
+      "openSharedDialogTitle": "Atidaryti bendrinamą projektą",
+      "sharedProjectFiles": "Bendrinami projektai",
+      "sharedProjectSuffix": "(bendrinamas)"
     }
   }
 }

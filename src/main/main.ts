@@ -1,4 +1,6 @@
-import { MAX_SESSION_BYTES, buildSession, parseSession, prepareImport, writeSession } from "./sessionData";
+import {
+  MAX_SESSION_BYTES, ParsedSession, buildSession, parseSession, prepareImport, writeSession,
+} from "./sessionData";
 import { isSamePath } from "../shared/clipDrawings";
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
@@ -39,6 +41,7 @@ import {
   getProjectsByVideoPath,
   getProjectById,
   anyUidExists,
+  getProjectIdByUid,
   getProjects,
   updateProjectLastOpened,
   renameProject,
@@ -75,8 +78,15 @@ import { RECORDING_ALREADY_IN_PROJECT } from "./relink";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
 import { safeName, uniqueName } from "./bundleNames";
-import { buildManifest } from "./bundleManifest";
+import { Fingerprint, buildManifest, parseManifest } from "./bundleManifest";
+import {
+  BUNDLE_FILE_UNSAFE, MAX_BUNDLE_CLIP_BYTES, MAX_BUNDLE_THUMBNAIL_BYTES, MAX_BUNDLE_VIDEO_BYTES, resolveBundleFile,
+} from "./bundleFiles";
 import { fingerprintFile } from "./fingerprint";
+import {
+  BundledClip, alreadyHave, findLocalMatch, planImportCopies, receivedSnapshot,
+  resolveRecordings, runImport, sharedProjectName,
+} from "./shareImport";
 import {
   INSUFFICIENT_SPACE, SHARE_CANCELLED, SHARE_FILE_MISSING, VIDEO_SOURCE,
   hasFreeSpace, mapShareError, planShareCopies, runShare, statSource,
@@ -2123,6 +2133,25 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
   }
 });
 
+// Asks for one recording of a loaded session. Null when the coach cancels.
+const pickSessionRecording = async (
+  name: string, index: number, count: number, taken: string[],
+): Promise<string | null> => {
+  const videoResult = await dialog.showOpenDialog(mainWindow, {
+    title: count > 1
+      ? `${index + 1}/${count} · ${name}`
+      : name || "Select Video File for This Session",
+    properties: ["openFile"],
+    filters: [{ name: "Videos", extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"] }],
+  });
+  const file = videoResult.filePaths[0];
+  if (videoResult.canceled || !file) return null;
+  if (!isVideoFile(file) || taken.some(existing => isSamePath(existing, file))) {
+    throw new Error("INVALID_SESSION_FILE");
+  }
+  return file;
+};
+
 // Load analysis session from JSON
 ipcMain.handle("load-session", async () => {
   try {
@@ -2141,18 +2170,8 @@ ipcMain.handle("load-session", async () => {
     const recordingNames = session.recordings.map(video => video.videoName);
     const paths: string[] = [];
     for (const [index, name] of recordingNames.entries()) {
-      const videoResult = await dialog.showOpenDialog(mainWindow, {
-        title: recordingNames.length > 1
-          ? `${index + 1}/${recordingNames.length} · ${name}`
-          : name || "Select Video File for This Session",
-        properties: ["openFile"],
-        filters: [{ name: "Videos", extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"] }],
-      });
-      const file = videoResult.filePaths[0];
-      if (videoResult.canceled || !file) return null;
-      if (!isVideoFile(file) || paths.some(existing => isSamePath(existing, file))) {
-        throw new Error("INVALID_SESSION_FILE");
-      }
+      const file = await pickSessionRecording(name, index, recordingNames.length, paths);
+      if (!file) return null;
       paths.push(file);
     }
 
@@ -2259,6 +2278,202 @@ ipcMain.handle("cancel-share", () => {
 
 ipcMain.handle("show-shared-project", () => {
   if (lastSharedFile) shell.showItemInFolder(lastSharedFile);
+});
+
+// A shared project that has been read and checked, waiting for the coach to
+// choose between copying its videos and using them where they are. Main keeps
+// it, so the renderer only ever sends that choice.
+interface SharedImport {
+  session: ParsedSession;
+  recordings: Array<{ path: string; size: number; bundled: boolean }>;
+  clips: Array<BundledClip | null>;
+  snapshot: { id: string; data: string } | null;
+}
+let pendingSharedImport: SharedImport | null = null;
+let activeSharedImport: AbortController | null = null;
+
+const finishSharedImport = async (sender: Electron.WebContents, copyVideos: boolean) => {
+  const pending = pendingSharedImport;
+  pendingSharedImport = null;
+  if (!pending) throw new Error("ERROR_INVALID_INPUT");
+  const userData = app.getPath("userData");
+  const plan = planImportCopies({
+    recordings: pending.recordings,
+    clips: pending.clips,
+    copyVideos,
+    videosDir: path.join(userData, "videos", pending.session.project.uid as string),
+    clipsDir: getClipsDirectory(),
+    exists: fs.existsSync,
+    newName: randomUUID,
+  });
+  if (!hasFreeSpace(() => fs.statfsSync(userData), plan.totalBytes)) throw new Error(INSUFFICIENT_SPACE);
+
+  const controller = new AbortController();
+  activeSharedImport = controller;
+  try {
+    const project = await runImport({
+      copies: plan.copies,
+      signal: controller.signal,
+      onProgress: progress => sender.send("import-progress", progress),
+      write: () => inProjectTransaction(() => writeSession(pending.session, plan.paths, {
+        createProject, addProjectVideo, createCategory, createPlayer, createClip, createAnnotation,
+      }, plan.clipFiles)),
+    });
+    if (pending.snapshot && project.id) {
+      try {
+        saveShareSnapshot({ ...pending.snapshot, projectId: project.id, direction: "received" });
+      } catch (error) {
+        console.error("Imported, but saving the received snapshot failed:", error);
+      }
+    }
+    return { status: "imported" as const, project };
+  } finally {
+    if (activeSharedImport === controller) activeSharedImport = null;
+  }
+};
+
+// Open a .bvap folder another coach shared, or an old .json session. Every
+// file in the folder goes through resolveBundleFile; the copying and the
+// rollback are in shareImport.ts.
+ipcMain.handle("open-shared-project", async event => {
+  if (activeSharedImport) throw new Error("ERROR_IMPORT_BUSY");
+  pendingSharedImport = null;
+  try {
+    const picked = await dialog.showOpenDialog(mainWindow, {
+      title: nt("openSharedDialogTitle"),
+      properties: ["openFile"],
+      filters: [{ name: nt("sharedProjectFiles"), extensions: ["bvap", "json"] }],
+    });
+    const file = picked.filePaths[0];
+    if (picked.canceled || !file) return null;
+    const bvap = path.extname(file).toLowerCase() === ".bvap";
+    const root = path.dirname(file);
+
+    let json: string;
+    if (bvap) {
+      const bvapFile = await resolveBundleFile(root, path.basename(file), { maxBytes: MAX_SESSION_BYTES });
+      if (!bvapFile) throw new Error("INVALID_SESSION_FILE");
+      json = await fs.promises.readFile(bvapFile.path, "utf-8");
+    } else {
+      if (fs.statSync(file).size > MAX_SESSION_BYTES) throw new Error("INVALID_SESSION_FILE");
+      json = fs.readFileSync(file, "utf-8");
+    }
+    const parsed = parseSession(json);
+
+    const existing = alreadyHave({ bvap, version: parsed.version, projectUid: parsed.project.uid }, getProjectIdByUid);
+    if (existing !== null) {
+      return { status: "already-have" as const, projectId: existing, name: getProjectById(existing)?.name ?? "" };
+    }
+
+    // Only a v4 .bvap has a bundle and a share block worth reading.
+    const raw: Record<string, unknown> = bvap && parsed.version === 4 ? JSON.parse(json) : {};
+    const manifest = raw.bundle === undefined ? null : parseManifest(raw.bundle, {
+      recordings: new Set(parsed.recordings.map(video => video.uid as string)),
+      clips: new Set(parsed.clips.map(clip => clip.uid as string)),
+    });
+    const fingerprintOf = (index: number) => {
+      const uid = parsed.recordings[index].uid;
+      return (uid && manifest?.fingerprints[uid]) || null;
+    };
+
+    const localFingerprints = new Map<string, Promise<Fingerprint | null>>();
+    const sources = await resolveRecordings(parsed.recordings.length, {
+      bundleFile: async index => {
+        const uid = parsed.recordings[index].uid;
+        const rel = uid ? manifest?.videos[uid] : undefined;
+        if (!rel) return null;
+        const expected = fingerprintOf(index);
+        if (!expected) throw new Error(`${BUNDLE_FILE_UNSAFE} ${rel}`);
+        return resolveBundleFile(root, rel, { maxBytes: MAX_BUNDLE_VIDEO_BYTES, expectSize: expected.size });
+      },
+      fingerprint: fingerprintOf,
+      localMatch: (fingerprint, taken) => findLocalMatch(
+        fingerprint,
+        getProjectVideoPaths().filter(local => !taken.some(other => isSamePath(other, local))),
+        async local => (await statSource(local, VIDEO_SOURCE))?.size ?? null,
+        local => {
+          if (!localFingerprints.has(local)) localFingerprints.set(local, fingerprintFile(local).catch(() => null));
+          return localFingerprints.get(local)!;
+        },
+      ),
+    });
+
+    const clips: Array<BundledClip | null> = [];
+    for (const clip of parsed.clips) {
+      const entry = clip.uid ? manifest?.clips[clip.uid] : undefined;
+      const clipFile = entry ? await resolveBundleFile(root, entry.clip, { maxBytes: MAX_BUNDLE_CLIP_BYTES }) : null;
+      clips.push(entry && clipFile ? {
+        clip: clipFile,
+        thumbnail: entry.thumbnail
+          ? await resolveBundleFile(root, entry.thumbnail, { maxBytes: MAX_BUNDLE_THUMBNAIL_BYTES })
+          : null,
+      } : null);
+    }
+
+    // Pickers last, so a refused bundle never costs the coach a file dialog.
+    const recordings: SharedImport["recordings"] = [];
+    for (const [index, source] of sources.entries()) {
+      if (source.kind === "bundle") {
+        recordings.push({ path: source.file.path, size: source.file.size, bundled: true });
+        continue;
+      }
+      const taken = [
+        ...recordings.map(recording => recording.path),
+        ...sources.slice(index + 1).flatMap(later => (later.kind === "local" ? [later.path] : [])),
+      ];
+      const chosen = source.kind === "local"
+        ? source.path
+        : await pickSessionRecording(parsed.recordings[index].videoName, index, sources.length, taken);
+      if (!chosen) return null;
+      recordings.push({ path: chosen, size: 0, bundled: false });
+    }
+
+    const prepared = prepareImport(parsed, anyUidExists);
+    const names = new Set(getProjects().map(project => project.name));
+    pendingSharedImport = {
+      session: {
+        ...prepared,
+        project: {
+          ...prepared.project,
+          // The copied videos' folder is named after it, so a fresh copy gets one now.
+          uid: prepared.project.uid ?? randomUUID(),
+          name: sharedProjectName(prepared.project.name, name => names.has(name), nt("sharedProjectSuffix")),
+        },
+      },
+      recordings,
+      clips,
+      // A fresh-uid copy cannot match the sender's rows, so it keeps no base.
+      snapshot: prepared.project.uid !== null ? receivedSnapshot(raw) : null,
+    };
+
+    if (!recordings.some(recording => recording.bundled)) return await finishSharedImport(event.sender, false);
+    const videoBytes = recordings.reduce((total, recording) => total + (recording.bundled ? recording.size : 0), 0);
+    const clipBytes = clips.reduce((total, clip) => total + (clip ? clip.clip.size + (clip.thumbnail?.size ?? 0) : 0), 0);
+    return {
+      status: "choose" as const,
+      videoBytes,
+      canCopy: hasFreeSpace(() => fs.statfsSync(app.getPath("userData")), videoBytes + clipBytes),
+    };
+  } catch (error) {
+    console.error("Error opening shared project:", error);
+    throw error;
+  }
+});
+
+ipcMain.handle("finish-shared-project", (event, copyVideos: unknown) => {
+  if (typeof copyVideos !== "boolean") throw new Error("ERROR_INVALID_INPUT");
+  if (activeSharedImport) throw new Error("ERROR_IMPORT_BUSY");
+  return finishSharedImport(event.sender, copyVideos);
+});
+
+ipcMain.handle("discard-shared-project", () => {
+  if (!activeSharedImport) pendingSharedImport = null;
+});
+
+ipcMain.handle("cancel-shared-import", () => {
+  if (!activeSharedImport) return false;
+  activeSharedImport.abort();
+  return true;
 });
 
 // Resolve bundled yt-dlp binary path (handles ASAR unpacking)

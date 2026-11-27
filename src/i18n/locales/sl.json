@@ -653,6 +653,22 @@
       "fileMissing": "Datoteka {{name}} je izginila ali je ni bilo mogoče prebrati, zato ni bilo nič shranjeno. Poskusite znova.",
       "failed": "Projekta ni bilo mogoče deliti."
     },
+    "openShared": {
+      "title": "Odpri deljeni projekt",
+      "description": "Odprite mapo, ki jo je z vami delil drug trener",
+      "intro": "Deljena mapa vsebuje videe tekem ({{size}}). Kje naj jih aplikacija hrani?",
+      "copyVideos": "Kopiraj videe v aplikacijo",
+      "copyNoSpace": "V tem računalniku ni dovolj prostora, da bi jih kopirali.",
+      "useInPlace": "Uporabi jih tam, kjer so",
+      "useInPlaceWarning": "Če mapo premaknete ali oblačni disk datoteke hrani samo na spletu, projekt izgubi videe.",
+      "open": "Odpri projekt",
+      "alreadyHave": "Projekt »{{name}}« že imate, zato ni bilo nič uvoženo.",
+      "cancelled": "Odpiranje preklicano. Kopirane datoteke so bile izbrisane.",
+      "noSpace": "Ni dovolj prostora za kopiranje deljenega projekta. Sprostite prostor ali uporabite videe tam, kjer so.",
+      "unsafeFile": "Deljena mapa vsebuje datoteko, ki je aplikacija ne bo odprla ({{name}}), zato ni bilo nič uvoženo.",
+      "changedFile": "Datoteka {{name}} v deljeni mapi je nepopolna ali spremenjena. Ponovno kopirajte mapo in poskusite znova.",
+      "failed": "Deljenega projekta ni bilo mogoče odpreti."
+    },
     "native": {
       "checkForUpdates": "Preveri Posodobitve...",
       "file": "Datoteka",
@@ -677,7 +693,10 @@
       "checking": "Preverjanje posodobitev...",
       "checkFailedTitle": "Preverjanje Posodobitev ni Uspelo",
       "checkFailed": "Posodobitev ni bilo mogoče preveriti: {{message}}",
-      "shareDialogTitle": "Izberite mesto za deljeni projekt"
+      "shareDialogTitle": "Izberite mesto za deljeni projekt",
+      "openSharedDialogTitle": "Odpri deljeni projekt",
+      "sharedProjectFiles": "Deljeni projekti",
+      "sharedProjectSuffix": "(deljeno)"
     }
   }
 }

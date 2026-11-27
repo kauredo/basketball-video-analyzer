@@ -8,6 +8,11 @@ export interface ShareProgress {
   totalFiles: number;
 }
 
+export type OpenSharedResult =
+  | { status: "already-have"; projectId: number; name: string }
+  | { status: "choose"; videoBytes: number; canCopy: boolean }
+  | { status: "imported"; project: any };
+
 export interface ElectronAPI {
   // System operations
   systemCheck: () => Promise<{
@@ -174,6 +179,13 @@ export interface ElectronAPI {
   showSharedProject: () => Promise<void>;
   onShareProgress: (callback: (data: ShareProgress) => void) => void;
 
+  // Open shared project
+  openSharedProject: () => Promise<OpenSharedResult | null>;
+  finishSharedProject: (copyVideos: boolean) => Promise<OpenSharedResult>;
+  discardSharedProject: () => Promise<void>;
+  cancelSharedImport: () => Promise<boolean>;
+  onImportProgress: (callback: (data: ShareProgress) => void) => void;
+
   // YouTube operations
   downloadYoutubeVideo: (url: string) => Promise<{ filePath: string; fileName: string; success: boolean }>;
   cancelYoutubeDownload: () => Promise<boolean>;
@@ -305,6 +317,15 @@ const electronAPI: ElectronAPI = {
   showSharedProject: () => ipcRenderer.invoke("show-shared-project"),
   onShareProgress: callback => {
     ipcRenderer.on("share-progress", (_event, data) => callback(data));
+  },
+
+  // Open shared project
+  openSharedProject: () => ipcRenderer.invoke("open-shared-project"),
+  finishSharedProject: (copyVideos: boolean) => ipcRenderer.invoke("finish-shared-project", copyVideos),
+  discardSharedProject: () => ipcRenderer.invoke("discard-shared-project"),
+  cancelSharedImport: () => ipcRenderer.invoke("cancel-shared-import"),
+  onImportProgress: callback => {
+    ipcRenderer.on("import-progress", (_event, data) => callback(data));
   },
 
   // YouTube operations

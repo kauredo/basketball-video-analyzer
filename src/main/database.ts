@@ -987,6 +987,9 @@ export const anyUidExists = (table: UidTable, uids: string[]): boolean => {
   return db.prepare(`SELECT 1 FROM ${table} WHERE uid IN (${placeholders}) LIMIT 1`).get(...uids) !== undefined;
 };
 
+export const getProjectIdByUid = (uid: string): number | null =>
+  (db.prepare("SELECT id FROM projects WHERE uid = ?").get(uid) as { id: number } | undefined)?.id ?? null;
+
 export const saveShareSnapshot = (snapshot: Parameters<typeof insertShareSnapshot>[1]): void =>
   insertShareSnapshot(db, snapshot);
 

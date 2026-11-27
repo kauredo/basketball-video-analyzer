@@ -654,6 +654,22 @@
       "fileMissing": "Le fichier {{name}} a disparu ou n'a pas pu être lu, rien n'a donc été conservé. Réessayez.",
       "failed": "Impossible de partager le projet."
     },
+    "openShared": {
+      "title": "Ouvrir un projet partagé",
+      "description": "Ouvrir un dossier qu'un autre entraîneur a partagé avec vous",
+      "intro": "Le dossier partagé contient les vidéos des matchs ({{size}}). Où l'application doit-elle les garder ?",
+      "copyVideos": "Copier les vidéos dans l'application",
+      "copyNoSpace": "Pas assez d'espace libre sur cet ordinateur pour les copier.",
+      "useInPlace": "Les utiliser là où elles sont",
+      "useInPlaceWarning": "Si ce dossier est déplacé, ou si un disque cloud ne garde les fichiers qu'en ligne, le projet perd ses vidéos.",
+      "open": "Ouvrir le projet",
+      "alreadyHave": "Vous avez déjà « {{name}} », donc rien n'a été importé.",
+      "cancelled": "Ouverture annulée. Les fichiers copiés ont été supprimés.",
+      "noSpace": "Pas assez d'espace libre pour copier le projet partagé. Libérez de l'espace ou utilisez les vidéos là où elles sont.",
+      "unsafeFile": "Le dossier partagé contient un fichier que l'application n'ouvrira pas ({{name}}), donc rien n'a été importé.",
+      "changedFile": "Le fichier {{name}} du dossier partagé est incomplet ou a été modifié. Copiez à nouveau le dossier et réessayez.",
+      "failed": "Impossible d'ouvrir le projet partagé."
+    },
     "native": {
       "checkForUpdates": "Rechercher des Mises à Jour...",
       "file": "Fichier",
@@ -678,7 +694,10 @@
       "checking": "Recherche de mises à jour...",
       "checkFailedTitle": "Échec de la Recherche de Mises à Jour",
       "checkFailed": "Impossible de rechercher des mises à jour : {{message}}",
-      "shareDialogTitle": "Choisissez où placer le projet partagé"
+      "shareDialogTitle": "Choisissez où placer le projet partagé",
+      "openSharedDialogTitle": "Ouvrir un projet partagé",
+      "sharedProjectFiles": "Projets partagés",
+      "sharedProjectSuffix": "(partagé)"
     }
   }
 }

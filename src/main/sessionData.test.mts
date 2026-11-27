@@ -268,6 +268,14 @@ test("writing a v3 file passes no uids, so every row gets a fresh one", () => {
   assert.equal(calls.drawing[0].row.video_path, "/second-half.mp4");
 });
 
+test("a clip that arrived with its cut file keeps it; one without keeps an empty path", () => {
+  const { store, calls } = fakeStore();
+  writeSession(parses(v3), ["/game.mp4", "/second-half.mp4"], store as never,
+    [{ output: "/clips/a.mp4", thumbnail: "/clips/a-thumb.jpg" }, null]);
+  assert.deepEqual(calls.clip.map(call => [call.row.output_path, call.row.thumbnail_path]),
+    [["/clips/a.mp4", "/clips/a-thumb.jpg"], ["", ""]]);
+});
+
 const source = () => {
   const project = { id: 1, uid: randomUUID(), name: "Scouting", video_path: "/a.mp4", video_name: "a.mp4" };
   const recordings = [

@@ -93,6 +93,33 @@
   margin: 0;
 }
 
+.choices {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.choices legend {
+  padding: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.checkbox:has(input:disabled) {
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+/* Indented to sit under its option's label, past the 1rem control. */
+.hint {
+  margin: calc(-1 * var(--spacing-xs)) 0 0 calc(1rem + var(--spacing-sm));
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}
+
 .error {
   margin: 0;
   color: var(--color-danger-ink);
