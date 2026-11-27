@@ -7,7 +7,7 @@ import log from "electron-log";
 import { dropProjectsVideoPathUnique } from "./projectsMigration";
 import { relinkVideoRows } from "./relink";
 import { categoryUpdateFields } from "./categoryColumns";
-import { addPermanentIds } from "./permanentIds";
+import { addPermanentIds, UID_TABLES, UidTable } from "./permanentIds";
 import { randomUUID } from "crypto";
 
 let db: Database.Database;
@@ -911,8 +911,7 @@ const insertDefaultCategories = () => {
 // Project operations
 export const createProject = (
   project: Omit<Project, "id" | "uid" | "created_at" | "last_opened">,
-  uid: string = randomUUID(),
-  recordingUid: string = randomUUID(),
+  { uid = randomUUID(), recordingUid = randomUUID() }: { uid?: string; recordingUid?: string } = {},
 ): Project => {
   try {
     const stmt = db.prepare(`
@@ -973,8 +972,13 @@ export const getProjectById = (id: number): Project | null => {
   }
 };
 
-export const getProjectByUid = (uid: string): Project | null =>
-  (db.prepare("SELECT * FROM projects WHERE uid = ?").get(uid) as Project | undefined) ?? null;
+// Table names are interpolated into SQL, so they must be one of UID_TABLES.
+export const anyUidExists = (table: UidTable, uids: string[]): boolean => {
+  if (!UID_TABLES.includes(table)) throw new Error(`Unknown uid table: ${table}`);
+  if (uids.length === 0) return false;
+  const placeholders = uids.map(() => "?").join(", ");
+  return db.prepare(`SELECT 1 FROM ${table} WHERE uid IN (${placeholders}) LIMIT 1`).get(...uids) !== undefined;
+};
 
 export const getProjects = (): Project[] => {
   try {

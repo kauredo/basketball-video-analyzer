@@ -8,10 +8,14 @@ export interface PermanentIdsDb {
   };
 }
 
-export const UID_TABLES = ["projects", "project_videos", "clips", "categories", "players", "annotations"];
-export const EDITED_TABLES = ["clips", "annotations", "categories", "players"];
+export const UID_TABLES = ["projects", "project_videos", "clips", "categories", "players", "annotations"] as const;
+export type UidTable = typeof UID_TABLES[number];
+export const EDITED_TABLES: readonly UidTable[] = ["clips", "annotations", "categories", "players"];
 
-/** Gives every row a permanent uid and the edited tables an updated_at. Returns the rows it gave a uid. */
+/**
+ * Gives every row a permanent uid and the edited tables an updated_at, which
+ * starts as created_at (NULL when created_at is NULL). Returns the rows it gave a uid.
+ */
 export const addPermanentIds = (db: PermanentIdsDb, newUid: () => string = randomUUID): number => {
   let backfilled = 0;
   db.exec("BEGIN");
@@ -20,15 +24,20 @@ export const addPermanentIds = (db: PermanentIdsDb, newUid: () => string = rando
       const columns = (db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>)
         .map((col) => col.name);
       if (!columns.includes("uid")) db.exec(`ALTER TABLE ${table} ADD COLUMN uid TEXT`);
-      if (EDITED_TABLES.includes(table) && !columns.includes("updated_at")) {
-        db.exec(`ALTER TABLE ${table} ADD COLUMN updated_at DATETIME`);
-        db.exec(`UPDATE ${table} SET updated_at = created_at`);
-      }
+      const addingUpdatedAt = EDITED_TABLES.includes(table) && !columns.includes("updated_at");
+      if (addingUpdatedAt) db.exec(`ALTER TABLE ${table} ADD COLUMN updated_at DATETIME`);
 
-      const missing = db.prepare(`SELECT id FROM ${table} WHERE uid IS NULL`).all() as Array<{ id: number }>;
-      const setUid = db.prepare(`UPDATE ${table} SET uid = ? WHERE id = ?`);
-      for (const { id } of missing) setUid.run(newUid(), id);
-      backfilled += missing.length;
+      // A table gaining updated_at touches every row anyway, so its uid goes in the same write.
+      const rows = db
+        .prepare(`SELECT id, uid FROM ${table}${addingUpdatedAt ? "" : " WHERE uid IS NULL"}`)
+        .all() as Array<{ id: number; uid: string | null }>;
+      const update = db.prepare(addingUpdatedAt
+        ? `UPDATE ${table} SET uid = ?, updated_at = created_at WHERE id = ?`
+        : `UPDATE ${table} SET uid = ? WHERE id = ?`);
+      for (const row of rows) {
+        if (!row.uid) backfilled++;
+        update.run(row.uid ?? newUid(), row.id);
+      }
 
       db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_${table}_uid ON ${table}(uid)`);
     }

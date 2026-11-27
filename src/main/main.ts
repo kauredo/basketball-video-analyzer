@@ -1,4 +1,4 @@
-import { buildSession, parseSession, withoutUids } from "./sessionData";
+import { MAX_SESSION_BYTES, buildSession, parseSession, prepareImport, writeSession } from "./sessionData";
 import { isSamePath } from "../shared/clipDrawings";
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
@@ -38,7 +38,7 @@ import {
   createProject,
   getProjectsByVideoPath,
   getProjectById,
-  getProjectByUid,
+  anyUidExists,
   getProjects,
   updateProjectLastOpened,
   renameProject,
@@ -2123,10 +2123,9 @@ ipcMain.handle("load-session", async () => {
 
     if (jsonResult.canceled || jsonResult.filePaths.length === 0) return null;
 
-    const parsed = parseSession(fs.readFileSync(jsonResult.filePaths[0], "utf-8"));
-    // A project already here keeps its uids; the import becomes a new copy.
-    const session = parsed.project.uid && getProjectByUid(parsed.project.uid) ? withoutUids(parsed) : parsed;
-    const uidOf = (row: { uid: string | null }) => row.uid ?? undefined;
+    const sessionFile = jsonResult.filePaths[0];
+    if (fs.statSync(sessionFile).size > MAX_SESSION_BYTES) throw new Error("INVALID_SESSION_FILE");
+    const session = prepareImport(parseSession(fs.readFileSync(sessionFile, "utf-8")), anyUidExists);
     const recordingNames = session.recordings.map(video => video.videoName);
     const paths: string[] = [];
     for (const [index, name] of recordingNames.entries()) {
@@ -2145,91 +2144,12 @@ ipcMain.handle("load-session", async () => {
       paths.push(file);
     }
 
-    return inProjectTransaction(() => {
-      const videoPath = paths[0];
-      const videoName = path.basename(videoPath);
-
-      // Step 3: Create project
-      const project = createProject({
-        name: session.project.name,
-        video_path: videoPath,
-        video_name: videoName,
-        description: session.project.description || undefined,
-      }, uidOf(session.project), uidOf(session.recordings[0]));
-
-      if (!project.id) throw new Error("INVALID_SESSION_FILE");
-      paths.slice(1).forEach((file, index) =>
-        addProjectVideo(project.id as number, file, path.basename(file), uidOf(session.recordings[index + 1])));
-
-      // Step 4: Create categories (two-pass: parents first, then children)
-      const categoryKeyToId = new Map<string, number>();
-      const parentsFirst = [
-        ...session.categories.filter(cat => !cat.parentKey),
-        ...session.categories.filter(cat => cat.parentKey),
-      ];
-      for (const cat of parentsFirst) {
-        const created = createCategory({
-          name: cat.name,
-          color: cat.color,
-          description: cat.description || undefined,
-          parent_id: cat.parentKey ? categoryKeyToId.get(cat.parentKey) : undefined,
-          project_id: project.id as number,
-        }, uidOf(cat));
-        if (created.id) categoryKeyToId.set(cat.key, created.id);
-      }
-
-      // Step 4b: Create players and map their keys to new IDs
-      const playerKeyToId = new Map<string, number>();
-      for (const p of session.players) {
-        const created = createPlayer({
-          name: p.name,
-          number: p.number,
-          project_id: project.id as number,
-        }, uidOf(p));
-        if (created.id) playerKeyToId.set(p.key, created.id);
-      }
-
-      // Step 5: Create clip metadata
-      for (const clip of session.clips) {
-        const categoryIds = clip.categoryKeys
-          .map(key => categoryKeyToId.get(key))
-          .filter((id): id is number => id !== undefined);
-        const playerIds = clip.playerKeys
-          .map(key => playerKeyToId.get(key))
-          .filter((id): id is number => id !== undefined);
-
-        createClip({
-          project_id: project.id as number,
-          video_path: paths[clip.recording],
-          output_path: "",
-          thumbnail_path: "",
-          start_time: clip.startTime,
-          end_time: clip.endTime,
-          duration: clip.duration,
-          title: clip.title,
-          categories: JSON.stringify(categoryIds),
-          players: JSON.stringify(playerIds),
-          quarter: clip.quarter,
-          notes: clip.notes || undefined,
-          court_x: clip.courtX,
-          court_y: clip.courtY,
-          status: clip.status,
-        }, uidOf(clip));
-      }
-
-      for (const drawing of session.drawings) {
-        createAnnotation({
-          project_id: project.id,
-          video_path: paths[drawing.recording],
-          timestamp: drawing.timestamp,
-          data: drawing.data,
-          display_seconds: drawing.displaySeconds,
-          pause_playback: drawing.pausePlayback,
-        }, uidOf(drawing));
-      }
-
-      return { success: true, project };
-    });
+    return inProjectTransaction(() => ({
+      success: true,
+      project: writeSession(session, paths, {
+        createProject, addProjectVideo, createCategory, createPlayer, createClip, createAnnotation,
+      }),
+    }));
   } catch (error) {
     console.error("Error loading session:", error);
     throw error;
