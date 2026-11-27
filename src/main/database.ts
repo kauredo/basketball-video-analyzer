@@ -1014,7 +1014,8 @@ export const getShareSnapshotById = (id: string) => getShareSnapshot(db, id);
 export const applyShareMerge = (
   projectId: number, plan: MergePlan, files: MergeFiles, snapshot: { id: string; data: string } | null,
   check: () => void,
-) => applyMerge(db, projectId, plan, files, snapshot, check);
+  afterOps?: () => void,
+) => applyMerge(db, projectId, plan, files, snapshot, check, afterOps);
 
 /** The rows a session of this project is built from. */
 export const getSessionSource = (projectId: number) => readSessionSource(db, projectId);

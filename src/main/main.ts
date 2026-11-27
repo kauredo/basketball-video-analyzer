@@ -2439,7 +2439,14 @@ const mergeSharedProject = async (
     copies: planned.copies,
     signal,
     onProgress: progress => sendProgress(sender, "import-progress", progress),
-    write: () => applyShareMerge(pending.projectId, plan, planned.files, pending.snapshot, () => assertFresh(pending)),
+    write: () => applyShareMerge(pending.projectId, plan, planned.files, pending.snapshot, () => assertFresh(pending), () => {
+      if (copyVideos) return;
+      for (const uid of plan.newRecordings) {
+        const bundle = pending.recordings.get(uid)?.bundle;
+        const videoPath = planned.files.recordingPaths.get(uid);
+        if (bundle && videoPath) setReceivedInPlace(pending.projectId, videoPath, bundle);
+      }
+    }),
   });
   await removeMergedFiles(removedFiles, getClipsDirectory());
   return {

@@ -180,6 +180,30 @@ test("apply: a new recording and a clip moved onto it use the resolved path", ()
   assert.equal(drawing.display_seconds, null, "an out-of-range replay time falls back to the setting");
 });
 
+test("apply: the after-ops hook sees the new rows inside the transaction, and its failure rolls them back", () => {
+  const db = schema();
+  const base = baseSession();
+  seed(db, base);
+  const theirs = edit(base, s => {
+    s.recordings.push({ uid: R2, videoName: "second.mp4" });
+  });
+  const files = { recordingPaths: new Map([[R2, "/v/second.mp4"]]), clipFiles: new Map() };
+  let seen: unknown;
+  applyMerge(db, 1, plan(base, base, theirs), files, null, () => {}, () => {
+    seen = rowOf(db, "project_videos", R2)?.video_path;
+  });
+  assert.equal(seen, "/v/second.mp4", "the hook runs after the new recording row is written");
+
+  const db2 = schema();
+  seed(db2, base);
+  const before = dump(db2);
+  assert.throws(() => applyMerge(db2, 1, plan(base, base, theirs), files, { id: "share-b", data: "{}" }, () => {}, () => {
+    throw new Error("mark failed");
+  }), /mark failed/);
+  assert.equal(dump(db2), before);
+  assert.equal(getShareSnapshot(db2, "share-b"), null);
+});
+
 test("apply: a new player named like one I have becomes mine instead of failing", () => {
   const db = schema();
   const base = baseSession();

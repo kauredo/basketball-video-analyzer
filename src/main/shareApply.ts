@@ -44,6 +44,7 @@ export const applyMerge = (
   files: MergeFiles,
   snapshot: { id: string; data: string } | null,
   check: () => void = () => {},
+  afterOps: () => void = () => {},
 ): { removedFiles: string[] } => {
   // A new player or category with the same name as one here becomes that one.
   const aliases = new Map<string, number>();
@@ -156,6 +157,7 @@ export const applyMerge = (
   try {
     check();
     for (const op of plan.ops) run(op);
+    afterOps();
     if (snapshot) insertShareSnapshot(db, { ...snapshot, projectId, direction: "received" });
     db.exec("COMMIT");
   } catch (error) {
