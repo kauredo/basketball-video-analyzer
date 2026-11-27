@@ -29,6 +29,7 @@ export interface Project {
   video_path: string;
   video_name: string;
   description?: string;
+  uid: string;
   created_at: string;
   last_opened: string;
 }

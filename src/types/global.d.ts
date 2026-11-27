@@ -3,7 +3,9 @@ export interface Category {
   name: string;
   color: string;
   description?: string;
+  uid?: string;
   created_at?: string;
+  updated_at?: string;
   parent_id?: number;
   children?: Category[];
 }
@@ -13,7 +15,9 @@ export interface Player {
   name: string;
   number?: string | null;
   project_id?: number;
+  uid?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface Annotation {
@@ -24,7 +28,9 @@ export interface Annotation {
   data: string; // JSON-encoded shape list
   display_seconds?: number | null; // null = use the global replay setting
   pause_playback?: boolean;
+  uid?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export type AnnotationTiming = Pick<
@@ -69,7 +75,9 @@ export interface Clip {
   status?: ClipStatus | null;
   drawings_key?: string | null;
   overlay_path?: string | null;
+  uid: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface ElectronAPI {
