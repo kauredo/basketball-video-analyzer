@@ -87,10 +87,60 @@ export interface ShareProgress {
   totalFiles: number;
 }
 
+/** A value on the review screen, as main describes it (src/main/shareMerge.ts). */
+export type ReviewValue =
+  | { type: "text"; text: string }
+  | { type: "time"; start: number; end: number }
+  | { type: "seconds"; seconds: number | null }
+  | { type: "tags"; tags: Array<{ name: string; color: string | null }> }
+  | { type: "color"; color: string }
+  | { type: "flag"; on: boolean }
+  | { type: "status"; status: ClipStatus | null }
+  | { type: "court"; set: boolean }
+  | { type: "shapes"; count: number }
+  | { type: "exists"; exists: boolean };
+
+export interface ReviewField {
+  field: string;
+  mine: ReviewValue;
+  theirs: ReviewValue;
+}
+
+export type ReviewGroup = "new" | "changed" | "conflict" | "deleted";
+
+export interface ReviewRow {
+  token: string;
+  kind: "recording" | "category" | "player" | "clip" | "drawing";
+  group: ReviewGroup;
+  ticked: boolean;
+  preview: {
+    title: string;
+    start?: number;
+    end?: number;
+    tags?: Array<{ name: string; color: string | null }>;
+    color?: string;
+    detail?: string;
+  };
+  changes: ReviewField[];
+  conflicts: ReviewField[];
+  inUse: number;
+}
+
+export interface ShareReview {
+  hasBase: boolean;
+  rows: ReviewRow[];
+}
+
+export interface ReviewSelections {
+  selected: Record<string, boolean>;
+  choices: Record<string, Record<string, "mine" | "theirs">>;
+}
+
 export type OpenSharedResult =
-  | { status: "already-have"; projectId: number; name: string }
+  | { status: "review"; name: string; review: ShareReview }
   | { status: "choose"; videoBytes: number; canCopy: boolean }
-  | { status: "imported"; project: any };
+  | { status: "imported"; project: any }
+  | { status: "merged"; project: any; kept: number };
 
 export interface ElectronAPI {
   // System operations
@@ -220,6 +270,7 @@ export interface ElectronAPI {
   finishSharedProject: (copyVideos: boolean) => Promise<OpenSharedResult>;
   discardSharedProject: () => Promise<void>;
   cancelSharedImport: () => Promise<boolean>;
+  applySharedReview: (selections: ReviewSelections, copyVideos?: boolean) => Promise<OpenSharedResult>;
   onImportProgress: (callback: (data: ShareProgress) => void) => void;
 
   // YouTube operations

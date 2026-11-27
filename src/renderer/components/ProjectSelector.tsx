@@ -16,6 +16,8 @@ import {
 import styles from "../styles/ProjectSelector.module.css";
 import { YouTubeImport } from "./YouTubeImport";
 import { OpenSharedProjectModal, openSharedError } from "./OpenSharedProjectModal";
+import { ShareReviewModal } from "./ShareReviewModal";
+import type { ReviewSelections, ShareReview } from "../../types/global";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
@@ -54,8 +56,13 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const trapRef = useFocusTrap(isOpen);
-  const { showError, showSuccess, showInfo } = useToastContext();
+  const { showError, showSuccess } = useToastContext();
   const [sharedChoice, setSharedChoice] = useState<{ videoBytes: number; canCopy: boolean } | null>(null);
+  const [sharedReview, setSharedReview] = useState<{ name: string; review: ShareReview } | null>(null);
+  const [reviewChoice, setReviewChoice] = useState<{
+    choice: { videoBytes: number; canCopy: boolean };
+    selections: ReviewSelections;
+  } | null>(null);
   const { confirm } = useConfirm();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -160,8 +167,8 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   const handleOpenShared = async () => {
     try {
       const result = await window.electronAPI.openSharedProject();
-      if (result?.status === "already-have") {
-        showInfo(t("app.openShared.alreadyHave", { name: result.name }), 8000);
+      if (result?.status === "review") {
+        setSharedReview(result);
       } else if (result?.status === "choose") {
         setSharedChoice(result);
       } else if (result?.status === "imported") {
@@ -236,6 +243,26 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                   choice={sharedChoice}
                   onImported={onSelectProject}
                   onClose={() => setSharedChoice(null)}
+                />
+              )}
+              {sharedReview && (
+                <ShareReviewModal
+                  name={sharedReview.name}
+                  review={sharedReview.review}
+                  onMerged={onSelectProject}
+                  onChoose={(choice, selections) => {
+                    setSharedReview(null);
+                    setReviewChoice({ choice, selections });
+                  }}
+                  onClose={() => setSharedReview(null)}
+                />
+              )}
+              {reviewChoice && (
+                <OpenSharedProjectModal
+                  choice={reviewChoice.choice}
+                  finish={copyVideos => window.electronAPI.applySharedReview(reviewChoice.selections, copyVideos)}
+                  onImported={onSelectProject}
+                  onClose={() => setReviewChoice(null)}
                 />
               )}
 

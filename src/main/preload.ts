@@ -1,4 +1,5 @@
 import type { ProjectVideo } from "./projectVideos";
+import type { ShareReview } from "./shareMerge";
 import { contextBridge, ipcRenderer } from "electron";
 
 export interface ShareProgress {
@@ -9,9 +10,16 @@ export interface ShareProgress {
 }
 
 export type OpenSharedResult =
-  | { status: "already-have"; projectId: number; name: string }
+  | { status: "review"; name: string; review: ShareReview }
   | { status: "choose"; videoBytes: number; canCopy: boolean }
-  | { status: "imported"; project: any };
+  | { status: "imported"; project: any }
+  | { status: "merged"; project: any; kept: number };
+
+/** What the review screen sends back: ticked rows, and a side per conflicting field. */
+export interface ReviewSelections {
+  selected: Record<string, boolean>;
+  choices: Record<string, Record<string, "mine" | "theirs">>;
+}
 
 export interface ElectronAPI {
   // System operations
@@ -184,6 +192,7 @@ export interface ElectronAPI {
   finishSharedProject: (copyVideos: boolean) => Promise<OpenSharedResult>;
   discardSharedProject: () => Promise<void>;
   cancelSharedImport: () => Promise<boolean>;
+  applySharedReview: (selections: ReviewSelections, copyVideos?: boolean) => Promise<OpenSharedResult>;
   onImportProgress: (callback: (data: ShareProgress) => void) => void;
 
   // YouTube operations
@@ -324,6 +333,7 @@ const electronAPI: ElectronAPI = {
   finishSharedProject: (copyVideos: boolean) => ipcRenderer.invoke("finish-shared-project", copyVideos),
   discardSharedProject: () => ipcRenderer.invoke("discard-shared-project"),
   cancelSharedImport: () => ipcRenderer.invoke("cancel-shared-import"),
+  applySharedReview: (selections, copyVideos) => ipcRenderer.invoke("apply-shared-review", selections, copyVideos),
   onImportProgress: callback => {
     ipcRenderer.on("import-progress", (_event, data) => callback(data));
   },

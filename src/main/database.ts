@@ -13,9 +13,10 @@ import { categoryUpdateFields } from "./categoryColumns";
 import { addPermanentIds, UID_TABLES, UidTable } from "./permanentIds";
 import { randomUUID } from "crypto";
 import {
-  NewShareSnapshot, createShareSnapshotsTable, insertShareSnapshot, latestReceivedSnapshot,
+  NewShareSnapshot, createShareSnapshotsTable, getShareSnapshot, insertShareSnapshot, latestReceivedSnapshot,
   saveShareSnapshot as saveShareSnapshotRow,
 } from "./shareSnapshots";
+import { MergeFiles, MergePlan, applyMerge } from "./shareMerge";
 
 let db: Database.Database;
 
@@ -1004,6 +1005,13 @@ export const saveShareSnapshot = (snapshot: NewShareSnapshot): void => saveShare
 /** For use inside inProjectTransaction, so the snapshot commits or rolls back with the rows. */
 export const insertShareSnapshotInTransaction = (snapshot: NewShareSnapshot): void =>
   insertShareSnapshot(db, snapshot);
+
+export const getShareSnapshotById = (id: string) => getShareSnapshot(db, id);
+
+/** Runs a reviewed merge and saves the 'received' snapshot in one transaction; shareMerge.ts does the work. */
+export const applyShareMerge = (
+  projectId: number, plan: MergePlan, files: MergeFiles, snapshot: { id: string; data: string } | null,
+) => applyMerge(db, projectId, plan, files, snapshot);
 
 /** The id of the last share this project came in with, or null. */
 export const latestReceivedShareId = (projectId: number): string | null =>

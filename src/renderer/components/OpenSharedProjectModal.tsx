@@ -9,11 +9,15 @@ import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { errorCode } from "../utils/errors";
 import { detail, formatBytes } from "./ShareProjectModal";
-import { ShareProgress } from "../../types/global";
+import { OpenSharedResult, ShareProgress } from "../../types/global";
 import type { Project } from "./ProjectSelector";
 
+/** The toast after a merge, saying when ticked deletions stayed because clips use them. */
+export const showMerged = (t: TFunction, showSuccess: (message: string) => void, kept: number) =>
+  showSuccess(kept > 0 ? t("app.review.appliedKept", { count: kept }) : t("app.review.applied"));
+
 /** The message for a shared project that could not be opened. */
-export const openSharedError = (t: TFunction, error: unknown): string => {
+export const openSharedError = (t: TFunction, error: unknown, fallback = "app.openShared.failed"): string => {
   const code = errorCode(error);
   switch (code) {
     case "INVALID_SESSION_FILE":
@@ -31,18 +35,22 @@ export const openSharedError = (t: TFunction, error: unknown): string => {
     case "ERROR_INSUFFICIENT_SPACE":
       return t("app.openShared.noSpace");
     default:
-      return t("app.openShared.failed");
+      return t(fallback);
   }
 };
 
 interface OpenSharedProjectModalProps {
   /** What main found in the folder: the bundled videos' total, and whether they fit on this computer. */
   choice: { videoBytes: number; canCopy: boolean };
+  /** Runs the import with the coach's choice; a review passes its apply here. */
+  finish?: (copyVideos: boolean) => Promise<OpenSharedResult>;
   onImported: (project: Project) => void;
   onClose: () => void;
 }
 
-export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ choice, onImported, onClose }) => {
+export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({
+  choice, finish = window.electronAPI.finishSharedProject, onImported, onClose,
+}) => {
   const { t, i18n } = useTranslation();
   const { showSuccess, showInfo, showError } = useToastContext();
   const trapRef = useFocusTrap(true);
@@ -68,9 +76,12 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ 
     setError(null);
     setImporting(true);
     try {
-      const result = await window.electronAPI.finishSharedProject(copyVideos);
+      const result = await finish(copyVideos);
       if (result.status === "imported") {
         showSuccess(t("app.projects.importSessionSuccess"));
+        onImported(result.project);
+      } else if (result.status === "merged") {
+        showMerged(t, showSuccess, result.kept);
         onImported(result.project);
       }
       onClose();
