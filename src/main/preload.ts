@@ -8,6 +8,11 @@ export interface ShareProgress {
   totalFiles: number;
 }
 
+export type OpenSharedResult =
+  | { status: "already-have"; projectId: number; name: string }
+  | { status: "choose"; videoBytes: number; canCopy: boolean }
+  | { status: "imported"; project: any };
+
 export interface ElectronAPI {
   // System operations
   systemCheck: () => Promise<{
@@ -102,6 +107,7 @@ export interface ElectronAPI {
   ) => Promise<"ok" | "duplicate" | "failed">;
   deleteProject: (id: number) => Promise<boolean>;
   checkPathsExist: (paths: string[]) => Promise<Record<string, boolean>>;
+  receivedVideoChanged: (videoPath: string) => Promise<boolean>;
 
   // Category operations
   getCategories: (projectId: number) => Promise<any[]>;
@@ -164,7 +170,6 @@ export interface ElectronAPI {
 
   // Session operations
   saveSession: (projectId: number) => Promise<{ filePath: string; success: boolean } | null>;
-  loadSession: () => Promise<{ success: boolean; project: any } | null>;
 
   // Share project
   getShareSize: (projectId: number) => Promise<number>;
@@ -173,6 +178,13 @@ export interface ElectronAPI {
   cancelShare: () => Promise<boolean>;
   showSharedProject: () => Promise<void>;
   onShareProgress: (callback: (data: ShareProgress) => void) => void;
+
+  // Open shared project
+  openSharedProject: () => Promise<OpenSharedResult | null>;
+  finishSharedProject: (copyVideos: boolean) => Promise<OpenSharedResult>;
+  discardSharedProject: () => Promise<void>;
+  cancelSharedImport: () => Promise<boolean>;
+  onImportProgress: (callback: (data: ShareProgress) => void) => void;
 
   // YouTube operations
   downloadYoutubeVideo: (url: string) => Promise<{ filePath: string; fileName: string; success: boolean }>;
@@ -240,6 +252,7 @@ const electronAPI: ElectronAPI = {
     ),
   deleteProject: id => ipcRenderer.invoke("delete-project", id),
   checkPathsExist: paths => ipcRenderer.invoke("check-paths-exist", paths),
+  receivedVideoChanged: videoPath => ipcRenderer.invoke("received-video-changed", videoPath),
 
   // Category operations
   getCategories: (projectId: number) =>
@@ -296,7 +309,6 @@ const electronAPI: ElectronAPI = {
   // Session operations
   saveSession: (projectId: number) =>
     ipcRenderer.invoke("save-session", projectId),
-  loadSession: () => ipcRenderer.invoke("load-session"),
 
   // Share project
   getShareSize: (projectId: number) => ipcRenderer.invoke("get-share-size", projectId),
@@ -305,6 +317,15 @@ const electronAPI: ElectronAPI = {
   showSharedProject: () => ipcRenderer.invoke("show-shared-project"),
   onShareProgress: callback => {
     ipcRenderer.on("share-progress", (_event, data) => callback(data));
+  },
+
+  // Open shared project
+  openSharedProject: () => ipcRenderer.invoke("open-shared-project"),
+  finishSharedProject: (copyVideos: boolean) => ipcRenderer.invoke("finish-shared-project", copyVideos),
+  discardSharedProject: () => ipcRenderer.invoke("discard-shared-project"),
+  cancelSharedImport: () => ipcRenderer.invoke("cancel-shared-import"),
+  onImportProgress: callback => {
+    ipcRenderer.on("import-progress", (_event, data) => callback(data));
   },
 
   // YouTube operations

@@ -23,7 +23,9 @@ export const relinkVideoRows = (
   `).all(oldVideoPath, newVideoPath);
   if (clash.length > 0) throw new Error(RECORDING_ALREADY_IN_PROJECT);
   const { changes } = db
-    .prepare("UPDATE project_videos SET video_path = ?, video_name = ? WHERE video_path = ?")
+    // The coach picked the new file, so it is no longer one used in place from a received folder.
+    .prepare(`UPDATE project_videos SET video_path = ?, video_name = ?,
+      received_size = NULL, received_dev = NULL, received_ino = NULL WHERE video_path = ?`)
     .run(newVideoPath, newVideoName, oldVideoPath);
   db.prepare("UPDATE projects SET video_path = ?, video_name = ? WHERE video_path = ?")
     .run(newVideoPath, newVideoName, oldVideoPath);

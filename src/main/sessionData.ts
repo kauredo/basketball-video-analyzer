@@ -219,7 +219,7 @@ export const buildSession = (
 };
 
 /**
- * What load-session writes. `key` is what clips and child categories use to
+ * What an import writes. `key` is what clips and child categories use to
  * point at a row: the name before v4 (as those files did), the uid from v4 on.
  * Every uid is null when the file had none. `recording` indexes the picked files.
  */
@@ -310,6 +310,11 @@ export const parseSession = (json: string): ParsedSession => {
   } catch {
     throw invalid();
   }
+  return parseSessionData(session);
+};
+
+/** parseSession on JSON already parsed. A v4 file's uids are lowercased in place. */
+export const parseSessionData = (session: unknown): ParsedSession => {
   const names = sessionRecordings(session);
   const data = session as Row;
   const project = data.project as Row;
@@ -408,8 +413,14 @@ export const prepareImport = (
 export type SessionStore = Pick<typeof Db,
   "createProject" | "addProjectVideo" | "createCategory" | "createPlayer" | "createClip" | "createAnnotation">;
 
-/** Writes a parsed session as a new project. `paths` are the picked files, one per recording. */
-export const writeSession = (session: ParsedSession, paths: string[], store: SessionStore): Project => {
+/**
+ * Writes a parsed session as a new project. `paths` are the picked files, one
+ * per recording. `clipFiles` gives a clip, by index, the cut file it arrived with.
+ */
+export const writeSession = (
+  session: ParsedSession, paths: string[], store: SessionStore,
+  clipFiles: Array<{ output: string; thumbnail: string } | null> = [],
+): Project => {
   const uidOf = (row: { uid: string | null }) => row.uid ?? undefined;
   const project = store.createProject({
     name: session.project.name,
@@ -446,14 +457,14 @@ export const writeSession = (session: ParsedSession, paths: string[], store: Ses
     if (created.id) playerKeyToId.set(player.key, created.id);
   }
 
-  for (const clip of session.clips) {
+  for (const [index, clip] of session.clips.entries()) {
     const ids = (keys: string[], map: Map<string, number>) =>
       JSON.stringify(keys.map(key => map.get(key)).filter((id): id is number => id !== undefined));
     store.createClip({
       project_id: projectId,
       video_path: paths[clip.recording],
-      output_path: "",
-      thumbnail_path: "",
+      output_path: clipFiles[index]?.output ?? "",
+      thumbnail_path: clipFiles[index]?.thumbnail ?? "",
       start_time: clip.startTime,
       end_time: clip.endTime,
       duration: clip.duration,

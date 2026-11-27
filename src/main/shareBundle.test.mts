@@ -6,8 +6,20 @@ import os from "node:os";
 import path from "node:path";
 import {
   INSUFFICIENT_SPACE, SHARE_CANCELLED, SHARE_FAILED, SHARE_FILE_MISSING, SHARE_VIDEO_MISSING,
-  copyForShare, hasFreeSpace, mapShareError, planShareCopies, runShare, statSource, type ShareCopy,
+  appError, copyForShare, hasFreeSpace, mapShareError, planShareCopies, runShare, statSource, type ShareCopy,
 } from "./shareBundle.ts";
+
+test("only the app's own codes cross IPC; raw messages with local paths become the fallback", () => {
+  assert.equal(appError(new Error("ERROR_BUNDLE_FILE_UNSAFE videos/a <b>.mp4"), "F").message,
+    "ERROR_BUNDLE_FILE_UNSAFE videos/a <b>.mp4");
+  assert.equal(appError(new Error("INVALID_SESSION_FILE"), "F").message, "INVALID_SESSION_FILE");
+  assert.equal(appError(new Error("EACCES: permission denied, open '/Users/coach/x.mp4'"), "F").message, "F");
+  assert.equal(appError(Object.assign(new Error("ENOSPC: /Users/coach"), { code: "ENOSPC" }), "F").message, INSUFFICIENT_SPACE);
+  assert.equal(appError(Object.assign(new Error("ENOENT: /Users/coach"), { code: "ENOENT" }), "F").message, SHARE_FILE_MISSING);
+  assert.equal(appError(new Error("SQLITE_CONSTRAINT: UNIQUE failed"), "F").message, "F");
+  assert.equal(appError(new Error("prefix ERROR_SHARE_FAILED"), "F").message, "F");
+  assert.equal(appError("not an error", "F").message, "F");
+});
 
 const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "bva-share-")));
 after(() => fs.rmSync(root, { recursive: true, force: true }));

@@ -7,9 +7,6 @@
       "app.clips.saveSession",
       "app.clips.saveSessionError",
       "app.clips.saveSessionSuccess",
-      "app.projects.importSession",
-      "app.projects.importSessionDescription",
-      "app.projects.importSessionError",
       "app.projects.importSessionInvalidFile",
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
@@ -423,6 +420,7 @@
       "errorVideoNetwork": "Video yüklenirken ağ hatası",
       "errorVideoDecoding": "Video çözümlenemedi. Bu format desteklenmiyor olabilir.",
       "errorVideoFormat": "Video biçimi desteklenmiyor. MP4, MOV, AVI, MKV veya WebM deneyin.",
+      "receivedVideoChanged": "Bu video, projeyi açtığınızdan beri paylaşılan klasörde değişti, bu yüzden uygulama onu kullanmayacak. Projeyi uygulamaya yeniden kopyalayın.",
       "checkVideoFormat": "Lütfen video dosyasının var olup olmadığını ve desteklenen bir formatta olduğunu kontrol edin (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Güncelleme indiriliyor... {{progress}}%",
       "preparingUpdate": "Güncelleme indirmesi hazırlanıyor...",
@@ -468,10 +466,7 @@
       "deleteProject": "Projeyi sil",
       "confirmDelete": "\"{{name}}\" projesini silmek istediğinizden emin misiniz? Bu işlem ilişkili tüm klipleri de silecektir.",
       "deleteError": "Proje silinirken hata oluştu. Lütfen tekrar deneyin.",
-      "importSession": "Proje içe aktar",
-      "importSessionDescription": "Daha önce kaydettiğiniz bir projeyi yükleyin",
       "importSessionSuccess": "Proje içe aktarıldı",
-      "importSessionError": "Proje içe aktarılamadı",
       "importSessionInvalidFile": "Bu dosya kayıtlı bir proje değil.",
       "youtubeImport": "YouTube veya Vimeo'dan İçe Aktar",
       "youtubeUrlPlaceholder": "Bir YouTube veya Vimeo bağlantısı yapıştırın...",
@@ -654,6 +649,24 @@
       "fileMissing": "{{name}} dosyası kayboldu veya okunamadı, bu yüzden hiçbir şey saklanmadı. Tekrar deneyin.",
       "failed": "Proje paylaşılamadı."
     },
+    "openShared": {
+      "title": "Paylaşılan projeyi aç",
+      "description": "Başka bir antrenörün paylaştığı klasörü veya daha önce kaydettiğiniz bir projeyi açın",
+      "intro": "Paylaşılan klasörde maç videoları var ({{size}}). Uygulama bunları nerede saklasın?",
+      "copyVideos": "Videoları uygulamaya kopyala",
+      "copyNoSpace": "Bu bilgisayarda bunları kopyalamak için yeterli boş alan yok.",
+      "useInPlace": "Oldukları yerde kullan",
+      "useInPlaceWarning": "Yalnızca güvendiğiniz birinden gelen bir klasör için ve klasör yerinde kalmalı. Klasör taşınırsa veya bir bulut sürücüsü dosyaları yalnızca çevrimiçi tutarsa proje videolarını kaybeder.",
+      "open": "Projeyi aç",
+      "alreadyHave": "\"{{name}}\" projesi zaten sizde, bu yüzden hiçbir şey içe aktarılmadı.",
+      "cancelled": "Açma iptal edildi. Kopyalanan dosyalar silindi.",
+      "noSpace": "Paylaşılan projeyi kopyalamak için yeterli boş alan yok. Yer açın veya videoları oldukları yerde kullanın.",
+      "unsafeFile": "Paylaşılan klasörde uygulamanın açmayacağı bir dosya var ({{name}}), bu yüzden hiçbir şey içe aktarılmadı.",
+      "changedFile": "Paylaşılan klasördeki {{name}} dosyası eksik veya değiştirilmiş. Klasörü yeniden kopyalayıp tekrar deneyin.",
+      "incomplete": "Bu paylaşılan klasör eksik ({{name}} yok), bu yüzden hiçbir şey içe aktarılmadı. Klasörün tamamını yeniden isteyin.",
+      "noFingerprint": "Paylaşılan klasör {{name}} dosyasını, uygulamanın ihtiyaç duyduğu boyut kontrolü olmadan listeliyor, bu yüzden hiçbir şey içe aktarılmadı. Projenin yeniden paylaşılmasını isteyin.",
+      "failed": "Paylaşılan proje açılamadı."
+    },
     "native": {
       "checkForUpdates": "Güncellemeleri Denetle...",
       "file": "Dosya",
@@ -678,7 +691,10 @@
       "checking": "Güncellemeler denetleniyor...",
       "checkFailedTitle": "Güncelleme Denetimi Başarısız",
       "checkFailed": "Güncellemeler denetlenemedi: {{message}}",
-      "shareDialogTitle": "Paylaşılan projenin nereye konacağını seçin"
+      "shareDialogTitle": "Paylaşılan projenin nereye konacağını seçin",
+      "openSharedDialogTitle": "Paylaşılan projeyi aç",
+      "sharedProjectFiles": "Paylaşılan projeler",
+      "sharedProjectSuffix": "(paylaşılan)"
     }
   }
 }

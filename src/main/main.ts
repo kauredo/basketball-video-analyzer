@@ -1,4 +1,4 @@
-import { MAX_SESSION_BYTES, buildSession, parseSession, prepareImport, writeSession } from "./sessionData";
+import { buildSession, writeSession } from "./sessionData";
 import { isSamePath } from "../shared/clipDrawings";
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
@@ -39,6 +39,7 @@ import {
   getProjectsByVideoPath,
   getProjectById,
   anyUidExists,
+  getProjectIdByUid,
   getProjects,
   updateProjectLastOpened,
   renameProject,
@@ -60,8 +61,12 @@ import {
   getPresets,
   deletePreset,
   saveShareSnapshot,
+  insertShareSnapshotInTransaction,
   latestReceivedShareId,
+  setReceivedInPlace,
+  getReceivedInPlace,
 } from "./database";
+import { RECEIVED_VIDEO_CHANGED, assertReceivedUnchanged, checkReceivedInPlace } from "./bundleFiles";
 import { MEDIA_SCHEME } from "../shared/media";
 import { buildDrawingGraph, selectClipDrawings, MAX_CLIP_DRAWINGS } from "../shared/clipDrawings";
 import { parseVideoLink } from "./videoLink";
@@ -78,8 +83,12 @@ import { safeName, uniqueName } from "./bundleNames";
 import { buildManifest } from "./bundleManifest";
 import { fingerprintFile } from "./fingerprint";
 import {
-  INSUFFICIENT_SPACE, SHARE_CANCELLED, SHARE_FILE_MISSING, VIDEO_SOURCE,
-  hasFreeSpace, mapShareError, planShareCopies, runShare, statSource,
+  IMPORT_FAILED, INVALID_INPUT, PendingShare, ShareOperations, alreadyHave, planImportCopies,
+  prepareNewImport, readSharedFile, resolveBundleContents, runImport,
+} from "./shareImport";
+import {
+  INSUFFICIENT_SPACE, SHARE_CANCELLED, SHARE_FAILED, SHARE_FILE_MISSING, VIDEO_SOURCE,
+  appError, hasFreeSpace, mapShareError, planShareCopies, runShare, statSource,
 } from "./shareBundle";
 import { courtSvg, CourtDot, CourtLegendItem } from "../shared/courtSvg";
 import { normalizeReport, scoutingReportHtml } from "../shared/scoutingReport";
@@ -342,6 +351,10 @@ const allowedMediaPaths = new Set<string>();
 // (clips dir), downloaded videos (downloads dir), or a source video registered
 // as a project. Everything else is rejected to prevent arbitrary file reads.
 // `resolved` is expected to already be a realpath (symlinks resolved).
+// A recording used in place from a received folder can still be changed by
+// its sender, so every read of one checks it first.
+const assertReceived = (file: string): void => assertReceivedUnchanged(path.resolve(file), getReceivedInPlace);
+
 const isAllowedMediaPath = (resolved: string): boolean => {
   if (allowedMediaPaths.has(resolved)) return true;
 
@@ -363,6 +376,9 @@ const isAllowedMediaPath = (resolved: string): boolean => {
   if (!allowed) {
     try {
       allowed = getProjectVideoPaths().some((videoPath) => {
+        // Never through a link: a sender could point one anywhere.
+        const received = getReceivedInPlace(videoPath);
+        if (received) return videoPath === resolved && checkReceivedInPlace(resolved, received).ok;
         try {
           return fs.realpathSync(path.resolve(videoPath)) === resolved;
         } catch {
@@ -398,6 +414,12 @@ app.whenReady().then(() => {
         resolved = fs.realpathSync(resolved);
       } catch {
         // File may not exist; the statSync below will 404.
+      }
+      try {
+        assertReceived(requested);
+        assertReceived(resolved);
+      } catch {
+        return new Response("Forbidden", { status: 403 });
       }
       if (!isAllowedMediaPath(resolved)) {
         console.warn("Blocked media request for disallowed path:", resolved);
@@ -582,6 +604,17 @@ ipcMain.handle("add-project-video", async (_event, id: number) => {
   return addProjectVideo(id, file, path.basename(file));
 });
 
+// Why a recording didn't play: the media scheme can only answer 403.
+ipcMain.handle("received-video-changed", (_event, videoPath: unknown) => {
+  if (typeof videoPath !== "string" || videoPath.length === 0) return false;
+  try {
+    assertReceived(videoPath);
+    return false;
+  } catch {
+    return true;
+  }
+});
+
 ipcMain.handle("check-paths-exist", async (_event, paths: string[]) => {
   const result: Record<string, boolean> = {};
   for (const p of paths) {
@@ -619,12 +652,17 @@ const writePngDataUrl = (overlayImage: string, overlayPath: string): string => {
   return overlayPath;
 };
 
+// Every ffmpeg input reads plain files only, so a crafted container (an HLS
+// playlist renamed .mp4, say) can't fetch URLs or pull in other local files.
+const FILE_INPUT_ONLY = ["-protocol_whitelist", "file"];
+
 // ffmpeg prints the input's streams before complaining there is no output,
 // which is the only stream probe available now ffprobe isn't bundled.
 const hasAudioStream = (inputPath: string): Promise<boolean> =>
   new Promise(resolve => {
+    assertReceived(inputPath);
     let stderr = "";
-    const probe = spawn(ffmpegPath, ["-hide_banner", "-i", inputPath]);
+    const probe = spawn(ffmpegPath, ["-hide_banner", ...FILE_INPUT_ONLY, "-i", inputPath]);
     probe.stderr.on("data", (data: Buffer) => (stderr += data.toString()));
     probe.on("close", () => resolve(/Stream #\d+:\d+.*: Audio:/.test(stderr)));
     probe.on("error", () => resolve(false));
@@ -669,6 +707,8 @@ const allowedInputPath = (inputPath: unknown): string | null => {
   } catch {
     // Falls through to the existence check below.
   }
+  assertReceived(normalized);
+  assertReceived(resolved);
   return isAllowedMediaPath(resolved) && fs.existsSync(normalized) ? normalized : null;
 };
 
@@ -704,13 +744,17 @@ ipcMain.handle(
     });
     if (result.canceled || !result.filePath) return null;
     const outputPath = result.filePath;
+    // The save dialog can stay open for a while.
+    assertReceived(normalizedInputPath);
 
     const overlayPath = writePngDataUrl(overlayImage, tempPngPath());
 
     return new Promise((resolve, reject) => {
       ffmpeg(normalizedInputPath.replace(/\\/g, "/"))
+        .inputOptions(FILE_INPUT_ONLY)
         .seekInput(time)
         .input(overlayPath.replace(/\\/g, "/"))
+        .inputOptions(FILE_INPUT_ONLY)
         .complexFilter(["[0:v][1:v]overlay=0:0[outv]"])
         .outputOptions(["-map", "[outv]", "-frames:v", "1", "-y"])
         .output(outputPath.replace(/\\/g, "/"))
@@ -753,6 +797,7 @@ const encodeClip = async ({
 }: EncodeClipOptions): Promise<void> => {
   const selected = selectClipDrawings(startTime, duration, drawings);
   const hasAudio = selected.some(d => d.pause) && (await hasAudioStream(inputPath));
+  assertReceived(inputPath);
   return new Promise((resolve, reject) => {
     const clipDrawings = selected.flatMap(d => {
       try {
@@ -783,15 +828,15 @@ const encodeClip = async ({
         "44100", // Audio sample rate - standard for video
       ];
 
-      const clipCommand = ffmpeg(inputPath);
+      const clipCommand = ffmpeg(inputPath).inputOptions(FILE_INPUT_ONLY);
       let addedSeconds = 0;
 
       if (clipDrawings.length > 0) {
         // -t goes on the input here: freezes make the output longer
         // than the source range.
         clipCommand.inputOptions(["-ss", String(startTime), "-t", String(duration)]);
-        clipDrawings.forEach(d => clipCommand.input(d.path));
-        if (overlayPath) clipCommand.input(overlayPath);
+        clipDrawings.forEach(d => clipCommand.input(d.path).inputOptions(FILE_INPUT_ONLY));
+        if (overlayPath) clipCommand.input(overlayPath).inputOptions(FILE_INPUT_ONLY);
         const graph = buildDrawingGraph(
           duration,
           clipDrawings,
@@ -811,6 +856,7 @@ const encodeClip = async ({
         clipCommand.setStartTime(startTime).setDuration(duration);
         clipCommand
           .input(overlayPath)
+          .inputOptions(FILE_INPUT_ONLY)
           .complexFilter(["[0:v][1:v]overlay=0:0[outv]"])
           .outputOptions(["-map", "[outv]", "-map", "0:a?", ...videoOutputOptions]);
       } else {
@@ -994,7 +1040,7 @@ ipcMain.handle(
         mainWindow.webContents.send("clip-process-id", { processId });
 
         // First, generate the thumbnail
-        const thumbnailCommand = ffmpeg(ffmpegInputPath);
+        const thumbnailCommand = ffmpeg(ffmpegInputPath).inputOptions(FILE_INPUT_ONLY);
 
         thumbnailCommand
           .setStartTime(startTime)
@@ -1115,7 +1161,7 @@ ipcMain.handle(
                 console.error("Output path:", outputPath);
                 console.error("Start time:", startTime);
                 console.error("Duration:", duration);
-                reject(new Error("ERROR_FFMPEG_FAILED"));
+                reject(new Error(error.message === RECEIVED_VIDEO_CHANGED ? RECEIVED_VIDEO_CHANGED : "ERROR_FFMPEG_FAILED"));
               });
           })
           .run();
@@ -2123,57 +2169,52 @@ ipcMain.handle("save-session", async (_event, projectId: number) => {
   }
 });
 
-// Load analysis session from JSON
-ipcMain.handle("load-session", async () => {
-  try {
-    // Step 1: Pick session JSON file
-    const jsonResult = await dialog.showOpenDialog(mainWindow, {
-      title: "Load Analysis Session",
-      properties: ["openFile"],
-      filters: [{ name: "JSON", extensions: ["json"] }],
-    });
-
-    if (jsonResult.canceled || jsonResult.filePaths.length === 0) return null;
-
-    const sessionFile = jsonResult.filePaths[0];
-    if (fs.statSync(sessionFile).size > MAX_SESSION_BYTES) throw new Error("INVALID_SESSION_FILE");
-    const session = prepareImport(parseSession(fs.readFileSync(sessionFile, "utf-8")), anyUidExists);
-    const recordingNames = session.recordings.map(video => video.videoName);
-    const paths: string[] = [];
-    for (const [index, name] of recordingNames.entries()) {
-      const videoResult = await dialog.showOpenDialog(mainWindow, {
-        title: recordingNames.length > 1
-          ? `${index + 1}/${recordingNames.length} · ${name}`
-          : name || "Select Video File for This Session",
-        properties: ["openFile"],
-        filters: [{ name: "Videos", extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"] }],
-      });
-      const file = videoResult.filePaths[0];
-      if (videoResult.canceled || !file) return null;
-      if (!isVideoFile(file) || paths.some(existing => isSamePath(existing, file))) {
-        throw new Error("INVALID_SESSION_FILE");
-      }
-      paths.push(file);
-    }
-
-    return inProjectTransaction(() => ({
-      success: true,
-      project: writeSession(session, paths, {
-        createProject, addProjectVideo, createCategory, createPlayer, createClip, createAnnotation,
-      }),
-    }));
-  } catch (error) {
-    console.error("Error loading session:", error);
-    throw error;
+// Asks for one recording of a loaded session. Null when the coach cancels.
+const pickSessionRecording = async (
+  name: string, index: number, count: number, taken: string[],
+): Promise<string | null> => {
+  const videoResult = await dialog.showOpenDialog(mainWindow, {
+    title: count > 1
+      ? `${index + 1}/${count} · ${name}`
+      : name || "Select Video File for This Session",
+    properties: ["openFile"],
+    filters: [{ name: "Videos", extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"] }],
+  });
+  const file = videoResult.filePaths[0];
+  if (videoResult.canceled || !file) return null;
+  if (!isVideoFile(file) || taken.some(existing => isSamePath(existing, file))) {
+    throw new Error("INVALID_SESSION_FILE");
   }
-});
+  return file;
+};
 
 const validProjectId = (id: unknown): id is number => Number.isSafeInteger(id) && (id as number) > 0;
 
-// The share running now, so the renderer can cancel it, and the .bvap the
-// last one wrote, for "Show in folder". The renderer never sends a path.
-let activeShare: AbortController | null = null;
+// The one share or import running now, so the renderer can cancel it, the
+// shared project waiting for the coach's choice, and the .bvap the last share
+// wrote, for "Show in folder". The renderer never sends a path.
+const shareOperations = new ShareOperations<PendingShare>();
 let lastSharedFile: string | null = null;
+
+// A closed window can't see progress or press Cancel, so its operation stops.
+const whileSenderLives = <T>(sender: Electron.WebContents, work: () => Promise<T>): Promise<T> => {
+  const stop = () => shareOperations.cancel();
+  sender.once("destroyed", stop);
+  return work().finally(() => sender.removeListener("destroyed", stop));
+};
+
+// Closing the window quits the app. A share or import still running is
+// cancelled first, and the quit waits until it has removed what it copied.
+app.on("before-quit", event => {
+  if (!shareOperations.running) return;
+  event.preventDefault();
+  shareOperations.cancel();
+  shareOperations.idle().then(() => app.quit());
+});
+
+const sendProgress = (sender: Electron.WebContents, channel: string, progress: unknown) => {
+  if (!sender.isDestroyed()) sender.send(channel, progress);
+};
 
 // The total behind "Include game videos (X GB)".
 ipcMain.handle("get-share-size", async (_event, projectId: number) => {
@@ -2192,74 +2233,204 @@ ipcMain.handle("share-project", async (event, params: { projectId: number; inclu
   if (!validProjectId(projectId) || typeof includeVideos !== "boolean") throw new Error("ERROR_INVALID_INPUT");
   const project = getProjectById(projectId);
   if (!project) throw new Error("ERROR_INVALID_INPUT");
-  if (activeShare) throw new Error("ERROR_SHARE_BUSY");
-  const share = new AbortController();
-  activeShare = share;
+  const sender = event.sender;
   try {
-    const plan = await planShareCopies({
-      recordings: getProjectVideos(projectId), clips: getClips(projectId), includeVideos,
-    });
-
-    const picked = await dialog.showOpenDialog(mainWindow, {
-      title: nt("shareDialogTitle"),
-      properties: ["openDirectory", "createDirectory"],
-    });
-    if (picked.canceled || !picked.filePaths[0]) return null;
-    if (share.signal.aborted) throw new Error(SHARE_CANCELLED);
-    const parent = await fs.promises.realpath(picked.filePaths[0]);
-    if (!hasFreeSpace(() => fs.statfsSync(parent), plan.totalBytes)) throw new Error(INSUFFICIENT_SPACE);
-
-    const fingerprints = await Promise.all(plan.recordings.map(recording =>
-      recording.path === null ? null : fingerprintFile(recording.path).catch(error => {
-        console.error("Error fingerprinting a recording:", error);
-        const code = mapShareError((error as NodeJS.ErrnoException).code);
-        throw new Error(code === SHARE_FILE_MISSING ? `${code} ${path.basename(recording.path!)}` : code);
-      })));
-    if (share.signal.aborted) throw new Error(SHARE_CANCELLED);
-
-    const bundle = buildManifest({
-      recordings: plan.recordings.map((recording, index) => ({
-        uid: recording.uid, videoFile: recording.videoFile, fingerprint: fingerprints[index],
-      })),
-      clips: plan.clipFiles,
-    });
-    const shareBlock = { id: randomUUID(), basedOn: latestReceivedShareId(projectId) };
-    // One stringify: the snapshot stores it as is, the .bvap appends its two blocks.
-    const sessionJson = JSON.stringify(projectSession(projectId, project));
-    const bvap = `${sessionJson.slice(0, -1)},"share":${JSON.stringify(shareBlock)},"bundle":${JSON.stringify(bundle)}}`;
-
-    const folderName = uniqueName(safeName(project.name, "Project"), name => fs.existsSync(path.join(parent, name)));
-    const bvapName = `${folderName}.bvap`;
-    const folder = await runShare({
-      parent,
-      folderName,
-      copies: plan.copies,
-      signal: share.signal,
-      onProgress: progress => event.sender.send("share-progress", progress),
-      writeBvap: dir => fs.promises.writeFile(path.join(dir, bvapName), bvap, { encoding: "utf-8", flag: "wx" }),
-      onComplete: () => saveShareSnapshot({ id: shareBlock.id, projectId, direction: "sent", data: sessionJson }),
-    });
-
-    lastSharedFile = path.join(folder, bvapName);
-    return {
-      folderName,
-      clips: plan.clipFiles.length,
-      videos: plan.recordings.filter(recording => recording.videoFile !== null).length,
-    };
-  } finally {
-    if (activeShare === share) activeShare = null;
+    return await whileSenderLives(sender, () => shareOperations.run(signal => shareProject(sender, signal, {
+      projectId, project, includeVideos,
+    })));
+  } catch (error) {
+    throw appError(error, SHARE_FAILED);
   }
 });
 
-ipcMain.handle("cancel-share", () => {
-  if (!activeShare) return false;
-  activeShare.abort();
-  return true;
-});
+const shareProject = async (
+  sender: Electron.WebContents, signal: AbortSignal,
+  { projectId, project, includeVideos }: { projectId: number; project: Project; includeVideos: boolean },
+) => {
+  const recordings = getProjectVideos(projectId);
+  // Sharing reads each recording, through any link, for its fingerprint and the copy.
+  const checkReceived = () => recordings.forEach(recording => assertReceived(recording.video_path));
+  checkReceived();
+  const plan = await planShareCopies({ recordings, clips: getClips(projectId), includeVideos });
+
+  const picked = await dialog.showOpenDialog(mainWindow, {
+    title: nt("shareDialogTitle"),
+    properties: ["openDirectory", "createDirectory"],
+  });
+  if (picked.canceled || !picked.filePaths[0]) return null;
+  if (signal.aborted) throw new Error(SHARE_CANCELLED);
+  const parent = await fs.promises.realpath(picked.filePaths[0]);
+  if (!hasFreeSpace(() => fs.statfsSync(parent), plan.totalBytes)) throw new Error(INSUFFICIENT_SPACE);
+  checkReceived();
+
+  const fingerprints = await Promise.all(plan.recordings.map(recording =>
+    recording.path === null ? null : fingerprintFile(recording.path).catch(error => {
+      console.error("Error fingerprinting a recording:", error);
+      const code = mapShareError((error as NodeJS.ErrnoException).code);
+      throw new Error(code === SHARE_FILE_MISSING ? `${code} ${path.basename(recording.path!)}` : code);
+    })));
+  if (signal.aborted) throw new Error(SHARE_CANCELLED);
+
+  const bundle = buildManifest({
+    recordings: plan.recordings.map((recording, index) => ({
+      uid: recording.uid, videoFile: recording.videoFile, fingerprint: fingerprints[index],
+    })),
+    clips: plan.clipFiles,
+  });
+  const shareBlock = { id: randomUUID(), basedOn: latestReceivedShareId(projectId) };
+  // One stringify: the snapshot stores it as is, the .bvap appends its two blocks.
+  const sessionJson = JSON.stringify(projectSession(projectId, project));
+  const bvap = `${sessionJson.slice(0, -1)},"share":${JSON.stringify(shareBlock)},"bundle":${JSON.stringify(bundle)}}`;
+
+  const folderName = uniqueName(safeName(project.name, "Project"), name => fs.existsSync(path.join(parent, name)));
+  const bvapName = `${folderName}.bvap`;
+  const folder = await runShare({
+    parent,
+    folderName,
+    copies: plan.copies,
+    signal,
+    onProgress: progress => sendProgress(sender, "share-progress", progress),
+    writeBvap: dir => fs.promises.writeFile(path.join(dir, bvapName), bvap, { encoding: "utf-8", flag: "wx" }),
+    onComplete: () => saveShareSnapshot({ id: shareBlock.id, projectId, direction: "sent", data: sessionJson }),
+  });
+
+  lastSharedFile = path.join(folder, bvapName);
+  return {
+    folderName,
+    clips: plan.clipFiles.length,
+    videos: plan.recordings.filter(recording => recording.videoFile !== null).length,
+  };
+};
+
+ipcMain.handle("cancel-share", () => shareOperations.cancel());
 
 ipcMain.handle("show-shared-project", () => {
   if (lastSharedFile) shell.showItemInFolder(lastSharedFile);
 });
+
+// Copies a checked shared project's files and writes its rows and its
+// 'received' snapshot in one transaction; shareImport.ts does the work.
+const importSharedProject = async (
+  pending: PendingShare, copyVideos: boolean, signal: AbortSignal, sender: Electron.WebContents,
+) => {
+  const userData = app.getPath("userData");
+  const plan = planImportCopies({
+    recordings: pending.recordings,
+    clips: pending.clips,
+    copyVideos,
+    videosDir: path.join(userData, "videos", pending.session.project.uid as string),
+    clipsDir: getClipsDirectory(),
+    exists: fs.existsSync,
+    newName: randomUUID,
+  });
+  if (!hasFreeSpace(() => fs.statfsSync(userData), plan.totalBytes)) throw new Error(INSUFFICIENT_SPACE);
+  const project = await runImport({
+    copies: plan.copies,
+    signal,
+    onProgress: progress => sendProgress(sender, "import-progress", progress),
+    write: () => inProjectTransaction(() => {
+      const created = writeSession(pending.session, plan.paths, {
+        createProject, addProjectVideo, createCategory, createPlayer, createClip, createAnnotation,
+      }, plan.clipFiles);
+      if (!copyVideos && created.id) {
+        pending.recordings.forEach((recording, index) => {
+          if (recording.bundle) setReceivedInPlace(created.id!, plan.paths[index], recording.bundle);
+        });
+      }
+      if (pending.snapshot && created.id) {
+        insertShareSnapshotInTransaction({ ...pending.snapshot, projectId: created.id, direction: "received" });
+      }
+      return created;
+    }),
+  });
+  return { status: "imported" as const, project };
+};
+
+// Open a .bvap folder another coach shared, or an old .json session: a
+// project already here goes to the review (layer 6), anything else imports
+// as new. Every file in the folder goes through resolveBundleFile.
+const openSharedProject = async (sender: Electron.WebContents, signal: AbortSignal) => {
+  const picked = await dialog.showOpenDialog(mainWindow, {
+    title: nt("openSharedDialogTitle"),
+    properties: ["openFile"],
+    filters: [{ name: nt("sharedProjectFiles"), extensions: ["bvap", "json"] }],
+  });
+  const file = picked.filePaths[0];
+  if (picked.canceled || !file) return null;
+
+  const shared = await readSharedFile(file);
+  const { parsed } = shared;
+  const existing = alreadyHave({ bvap: shared.bvap, version: parsed.version, projectUid: parsed.project.uid }, getProjectIdByUid);
+  if (existing !== null) {
+    return { status: "already-have" as const, projectId: existing, name: getProjectById(existing)?.name ?? "" };
+  }
+
+  const contents = await resolveBundleContents(shared, {
+    // A changed received recording is not read for a fingerprint.
+    localPaths: () => getProjectVideoPaths().filter(local => {
+      try {
+        assertReceived(local);
+        return true;
+      } catch {
+        return false;
+      }
+    }),
+    sizeOf: async local => (await statSource(local, VIDEO_SOURCE))?.size ?? null,
+    fingerprintOf: fingerprintFile,
+    pick: pickSessionRecording,
+    isSamePath,
+  });
+  if (!contents) return null;
+  if (signal.aborted) throw new Error(SHARE_CANCELLED);
+
+  const names = new Set(getProjects().map(project => project.name));
+  const pending = prepareNewImport(shared, contents, {
+    uidExists: anyUidExists,
+    nameTaken: name => names.has(name),
+    suffix: nt("sharedProjectSuffix"),
+    newUid: randomUUID,
+  });
+  if (!pending.recordings.some(recording => recording.bundle)) {
+    return importSharedProject(pending, false, signal, sender);
+  }
+
+  shareOperations.hold(pending);
+  const videoBytes = pending.recordings.reduce((total, recording) => total + (recording.bundle?.size ?? 0), 0);
+  const clipBytes = pending.clips.reduce(
+    (total, clip) => total + (clip ? clip.clip.size + (clip.thumbnail?.size ?? 0) : 0), 0);
+  return {
+    status: "choose" as const,
+    videoBytes,
+    canCopy: hasFreeSpace(() => fs.statfsSync(app.getPath("userData")), videoBytes + clipBytes),
+  };
+};
+
+ipcMain.handle("open-shared-project", async event => {
+  const sender = event.sender;
+  try {
+    shareOperations.discard();
+    return await whileSenderLives(sender, () => shareOperations.run(signal => openSharedProject(sender, signal)));
+  } catch (error) {
+    console.error("Error opening shared project:", error);
+    throw appError(error, IMPORT_FAILED);
+  }
+});
+
+ipcMain.handle("finish-shared-project", async (event, copyVideos: unknown) => {
+  if (typeof copyVideos !== "boolean") throw new Error(INVALID_INPUT);
+  const sender = event.sender;
+  try {
+    return await whileSenderLives(sender, () =>
+      shareOperations.finish((pending, signal) => importSharedProject(pending, copyVideos, signal, sender)));
+  } catch (error) {
+    console.error("Error importing shared project:", error);
+    throw appError(error, IMPORT_FAILED);
+  }
+});
+
+ipcMain.handle("discard-shared-project", () => shareOperations.discard());
+
+ipcMain.handle("cancel-shared-import", () => shareOperations.cancel());
 
 // Resolve bundled yt-dlp binary path (handles ASAR unpacking)
 const getYtdlpPath = (): string => {

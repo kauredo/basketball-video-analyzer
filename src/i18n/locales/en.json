@@ -401,6 +401,7 @@
       "errorVideoNetwork": "Network error while loading video",
       "errorVideoDecoding": "Couldn't decode the video. The format may not be supported.",
       "errorVideoFormat": "Video format not supported. Try MP4, MOV, AVI, MKV or WebM.",
+      "receivedVideoChanged": "This video changed in the shared folder since you opened the project, so the app won't use it. Copy the project into the app again.",
       "checkVideoFormat": "Please check if the video file exists and is in a supported format (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Downloading update... {{progress}}%",
       "preparingUpdate": "Preparing update download...",
@@ -446,10 +447,7 @@
       "deleteProject": "Delete project",
       "confirmDelete": "Are you sure you want to delete the project \"{{name}}\"? This will also delete all associated clips.",
       "deleteError": "Error deleting project. Please try again.",
-      "importSession": "Import project",
-      "importSessionDescription": "Load a project you saved earlier",
       "importSessionSuccess": "Project imported",
-      "importSessionError": "Could not import the project",
       "importSessionInvalidFile": "That file is not a saved project.",
       "youtubeImport": "Import from YouTube or Vimeo",
       "youtubeUrlPlaceholder": "Paste a YouTube or Vimeo link...",
@@ -627,6 +625,24 @@
       "fileMissing": "The file {{name}} went missing or could not be read, so nothing was kept. Try again.",
       "failed": "Could not share the project."
     },
+    "openShared": {
+      "title": "Open shared project",
+      "description": "Open a folder another coach shared, or a project you saved earlier",
+      "intro": "The shared folder has the game videos ({{size}}). Where should the app keep them?",
+      "copyVideos": "Copy the videos into the app",
+      "copyNoSpace": "Not enough free space on this computer to copy them.",
+      "useInPlace": "Use them where they are",
+      "useInPlaceWarning": "Only for a folder from someone you trust, and it has to stay where it is. If it moves, or a cloud drive keeps the files online only, the project loses its videos.",
+      "open": "Open project",
+      "alreadyHave": "You already have \"{{name}}\", so nothing was imported.",
+      "cancelled": "Opening cancelled. The copied files were removed.",
+      "noSpace": "Not enough free space to copy the shared project. Free some space, or use the videos where they are.",
+      "unsafeFile": "The shared folder has a file the app will not open ({{name}}), so nothing was imported.",
+      "changedFile": "The file {{name}} in the shared folder is incomplete or was changed. Copy the folder again and retry.",
+      "incomplete": "This shared folder is incomplete ({{name}} is missing), so nothing was imported. Ask for the whole folder again.",
+      "noFingerprint": "The shared folder lists {{name}} without the size check the app needs, so nothing was imported. Ask for the project to be shared again.",
+      "failed": "Could not open the shared project."
+    },
     "native": {
       "checkForUpdates": "Check for Updates...",
       "file": "File",
@@ -651,7 +667,10 @@
       "checking": "Checking for updates...",
       "checkFailedTitle": "Update Check Failed",
       "checkFailed": "Could not check for updates: {{message}}",
-      "shareDialogTitle": "Choose where to put the shared project"
+      "shareDialogTitle": "Choose where to put the shared project",
+      "openSharedDialogTitle": "Open shared project",
+      "sharedProjectFiles": "Shared projects",
+      "sharedProjectSuffix": "(shared)"
     }
   }
 }

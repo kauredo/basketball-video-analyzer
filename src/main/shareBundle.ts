@@ -152,6 +152,75 @@ export const mapShareError = (code: string | undefined): string => {
   return SHARE_FAILED;
 };
 
+/** What copyFiles was doing when it stopped, and every file it created, a partial one included. */
+export interface CopyState {
+  current: ShareCopy | null;
+  written: string[];
+}
+
+/**
+ * Copies each file to its absolute `target` in turn, never replacing one, and
+ * reports progress as it goes. Throws SHARE_CANCELLED on abort; `state` says
+ * which files to remove afterwards.
+ */
+export const copyFiles = async <T extends ShareCopy>(
+  copies: T[], signal: AbortSignal, onProgress: (progress: ShareProgress) => void,
+  state: CopyState, copyOne: (copy: T, signal: AbortSignal, onBytes: (bytes: number) => void) => Promise<void>,
+): Promise<void> => {
+  const totalBytes = copies.reduce((total, copy) => total + copy.size, 0);
+  let copiedBytes = 0;
+  let sentAt = 0;
+  const progress = (copiedFiles: number, now: boolean) => {
+    if (!now && Date.now() - sentAt < PROGRESS_INTERVAL_MS) return;
+    sentAt = Date.now();
+    onProgress({ copiedBytes, totalBytes, copiedFiles, totalFiles: copies.length });
+  };
+
+  progress(0, true);
+  for (const [index, copy] of copies.entries()) {
+    if (signal.aborted) throw new Error(SHARE_CANCELLED);
+    state.current = copy;
+    const before = copiedBytes;
+    try {
+      await copyOne(copy, signal, bytes => {
+        copiedBytes += bytes;
+        progress(index, false);
+      });
+    } catch (error) {
+      // EEXIST means the file was there before this copy, so it is not ours to remove.
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") state.written.push(copy.target);
+      throw error;
+    }
+    state.written.push(copy.target);
+    copiedBytes = before + copy.size;
+    progress(index + 1, true);
+  }
+  state.current = null;
+};
+
+const APP_ERROR = /^(?:ERROR_[A-Z_]+|INVALID_[A-Z_]+)(?: |$)/;
+
+/**
+ * The error to hand the renderer: one of the app's own codes (with the file
+ * name some of them carry) as it is, an errno as its code, anything else as
+ * `fallback`. A raw Node or SQLite message, which can hold local paths,
+ * never crosses IPC.
+ */
+export const appError = (error: unknown, fallback: string): Error => {
+  const message = error instanceof Error ? error.message : "";
+  if (APP_ERROR.test(message)) return new Error(message);
+  const code = (error as NodeJS.ErrnoException | null)?.code;
+  if (code === "ENOSPC") return new Error(INSUFFICIENT_SPACE);
+  if (code === "ENOENT") return new Error(SHARE_FILE_MISSING);
+  return new Error(fallback);
+};
+
+/** The error code for a failed copy, naming the file when its source went missing. */
+export const copyErrorCode = (error: unknown, state: CopyState): string => {
+  const code = mapShareError((error as NodeJS.ErrnoException).code);
+  return code === SHARE_FILE_MISSING && state.current ? `${code} ${path.basename(state.current.source)}` : code;
+};
+
 export interface RunShareInput {
   /** Real path of the folder the coach picked. */
   parent: string;
@@ -182,41 +251,23 @@ export const runShare = async (input: RunShareInput): Promise<string> => {
     throw new Error(SHARE_FAILED);
   }
 
-  const totalBytes = copies.reduce((total, copy) => total + copy.size, 0);
-  let copiedBytes = 0;
-  let sentAt = 0;
-  const progress = (copiedFiles: number, now: boolean) => {
-    if (!now && Date.now() - sentAt < PROGRESS_INTERVAL_MS) return;
-    sentAt = Date.now();
-    onProgress({ copiedBytes, totalBytes, copiedFiles, totalFiles: copies.length });
-  };
-
-  let current: ShareCopy | null = null;
+  const state: CopyState = { current: null, written: [] };
   try {
-    progress(0, true);
     for (const dir of new Set(copies.map(copy => copy.target.split("/")[0]))) {
       await fs.promises.mkdir(path.join(folder, dir));
     }
-    for (const [index, copy] of copies.entries()) {
-      if (signal.aborted) throw new Error(SHARE_CANCELLED);
-      current = copy;
-      const before = copiedBytes;
-      await copyForShare(copy.source, path.join(folder, ...copy.target.split("/")), signal, bytes => {
-        copiedBytes += bytes;
-        progress(index, false);
-      }, input.tryClone);
-      copiedBytes = before + copy.size;
-      progress(index + 1, true);
-    }
-    current = null;
+    await copyFiles(
+      copies.map(copy => ({ ...copy, target: path.join(folder, ...copy.target.split("/")) })),
+      signal, onProgress, state,
+      (copy, copySignal, onBytes) => copyForShare(copy.source, copy.target, copySignal, onBytes, input.tryClone),
+    );
     if (signal.aborted) throw new Error(SHARE_CANCELLED);
     await writeBvap(folder);
   } catch (error) {
     await removeShareFolder(folder, parent);
     if (signal.aborted) throw new Error(SHARE_CANCELLED);
     console.error("Error sharing project:", error);
-    const code = mapShareError((error as NodeJS.ErrnoException).code);
-    throw new Error(code === SHARE_FILE_MISSING && current ? `${code} ${path.basename(current.source)}` : code);
+    throw new Error(copyErrorCode(error, state));
   }
 
   try {

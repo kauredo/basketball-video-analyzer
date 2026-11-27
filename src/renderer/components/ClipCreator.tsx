@@ -393,6 +393,9 @@ export const ClipCreator: React.FC<ClipCreatorProps> = ({
         case "ERROR_FILE_NOT_FOUND":
           translationKey = "app.clips.creator.errorFileNotFound";
           break;
+        case "ERROR_RECEIVED_VIDEO_CHANGED":
+          translationKey = "app.video.receivedVideoChanged";
+          break;
         case "ERROR_FFMPEG_FAILED":
           translationKey = "app.clips.creator.errorFFmpegFailed";
           break;

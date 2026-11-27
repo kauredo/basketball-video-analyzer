@@ -7,9 +7,6 @@
       "app.clips.saveSession",
       "app.clips.saveSessionError",
       "app.clips.saveSessionSuccess",
-      "app.projects.importSession",
-      "app.projects.importSessionDescription",
-      "app.projects.importSessionError",
       "app.projects.importSessionInvalidFile",
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
@@ -422,6 +419,7 @@
       "errorVideoNetwork": "Tinklo klaida įkeliant vaizdo įrašą",
       "errorVideoDecoding": "Nepavyko dekoduoti vaizdo įrašo. Formatas gali būti nepalaikomas.",
       "errorVideoFormat": "Vaizdo formatas nepalaikomas. Išbandykite MP4, MOV, AVI, MKV arba WebM.",
+      "receivedVideoChanged": "Šis vaizdo įrašas bendrinamame aplanke pasikeitė po to, kai atidarėte projektą, todėl programa jo nenaudos. Dar kartą nukopijuokite projektą į programą.",
       "checkVideoFormat": "Patikrinkite, ar vaizdo įrašo failas egzistuoja ir yra palaikomo formato (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "Atsisiunčiamas atnaujinimas... {{progress}}%",
       "preparingUpdate": "Ruošiamasi atsisiųsti atnaujinimą...",
@@ -467,10 +465,7 @@
       "deleteProject": "Ištrinti projektą",
       "confirmDelete": "Ar tikrai norite ištrinti projektą „{{name}}“? Taip pat bus ištrinti visi susiję klipai.",
       "deleteError": "Klaida trinant projektą. Bandykite dar kartą.",
-      "importSession": "Importuoti projektą",
-      "importSessionDescription": "Įkelti anksčiau išsaugotą projektą",
       "importSessionSuccess": "Projektas importuotas",
-      "importSessionError": "Nepavyko importuoti projekto",
       "importSessionInvalidFile": "Šis failas nėra išsaugotas projektas.",
       "youtubeImport": "Importuoti iš „YouTube“ arba „Vimeo“",
       "youtubeUrlPlaceholder": "Įklijuokite „YouTube“ arba „Vimeo“ nuorodą...",
@@ -653,6 +648,24 @@
       "fileMissing": "Failas {{name}} dingo arba jo nepavyko perskaityti, todėl nieko neišsaugota. Bandykite dar kartą.",
       "failed": "Nepavyko bendrinti projekto."
     },
+    "openShared": {
+      "title": "Atidaryti bendrinamą projektą",
+      "description": "Atidarykite kito trenerio bendrinamą aplanką arba anksčiau išsaugotą projektą",
+      "intro": "Bendrinamame aplanke yra rungtynių vaizdo įrašai ({{size}}). Kur programa turėtų juos laikyti?",
+      "copyVideos": "Nukopijuoti vaizdo įrašus į programą",
+      "copyNoSpace": "Šiame kompiuteryje nepakanka laisvos vietos jiems nukopijuoti.",
+      "useInPlace": "Naudoti juos ten, kur jie yra",
+      "useInPlaceWarning": "Tik aplankui iš žmogaus, kuriuo pasitikite, ir jis turi likti savo vietoje. Jei aplankas bus perkeltas arba debesies diskas laikys failus tik internete, projektas neteks vaizdo įrašų.",
+      "open": "Atidaryti projektą",
+      "alreadyHave": "Jūs jau turite „{{name}}“, todėl niekas nebuvo importuota.",
+      "cancelled": "Atidarymas atšauktas. Nukopijuoti failai ištrinti.",
+      "noSpace": "Nepakanka laisvos vietos bendrinamam projektui nukopijuoti. Atlaisvinkite vietos arba naudokite vaizdo įrašus ten, kur jie yra.",
+      "unsafeFile": "Bendrinamame aplanke yra failas, kurio programa neatidarys ({{name}}), todėl niekas nebuvo importuota.",
+      "changedFile": "Failas {{name}} bendrinamame aplanke yra nepilnas arba pakeistas. Nukopijuokite aplanką dar kartą ir bandykite iš naujo.",
+      "incomplete": "Šis bendrinamas aplankas nepilnas (trūksta {{name}}), todėl niekas nebuvo importuota. Paprašykite viso aplanko dar kartą.",
+      "noFingerprint": "Bendrinamame aplanke nurodytas {{name}} be dydžio patikros, kurios reikia programai, todėl niekas nebuvo importuota. Paprašykite projektą bendrinti dar kartą.",
+      "failed": "Nepavyko atidaryti bendrinamo projekto."
+    },
     "native": {
       "checkForUpdates": "Tikrinti Atnaujinimus...",
       "file": "Failas",
@@ -677,7 +690,10 @@
       "checking": "Tikrinami atnaujinimai...",
       "checkFailedTitle": "Nepavyko Patikrinti Atnaujinimų",
       "checkFailed": "Nepavyko patikrinti atnaujinimų: {{message}}",
-      "shareDialogTitle": "Pasirinkite, kur įdėti bendrinamą projektą"
+      "shareDialogTitle": "Pasirinkite, kur įdėti bendrinamą projektą",
+      "openSharedDialogTitle": "Atidaryti bendrinamą projektą",
+      "sharedProjectFiles": "Bendrinami projektai",
+      "sharedProjectSuffix": "(bendrinamas)"
     }
   }
 }

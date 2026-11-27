@@ -1,4 +1,7 @@
-import { insertProjectVideo, listProjectVideos, migrateProjectVideos } from "./projectVideos";
+import type { ReceivedInPlace } from "./bundleFiles";
+import {
+  findReceivedInPlace, insertProjectVideo, listProjectVideos, markReceivedInPlace, migrateProjectVideos,
+} from "./projectVideos";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -10,7 +13,8 @@ import { categoryUpdateFields } from "./categoryColumns";
 import { addPermanentIds, UID_TABLES, UidTable } from "./permanentIds";
 import { randomUUID } from "crypto";
 import {
-  createShareSnapshotsTable, latestReceivedSnapshot, saveShareSnapshot as insertShareSnapshot,
+  NewShareSnapshot, createShareSnapshotsTable, insertShareSnapshot, latestReceivedSnapshot,
+  saveShareSnapshot as saveShareSnapshotRow,
 } from "./shareSnapshots";
 
 let db: Database.Database;
@@ -952,6 +956,11 @@ export const getProjectVideos = (projectId: number) => listProjectVideos(db, pro
 export const addProjectVideo = (projectId: number, videoPath: string, videoName: string, uid?: string) =>
   insertProjectVideo(db, projectId, videoPath, videoName, uid);
 
+export const setReceivedInPlace = (projectId: number, videoPath: string, file: ReceivedInPlace) =>
+  markReceivedInPlace(db, projectId, videoPath, file);
+
+export const getReceivedInPlace = (videoPath: string) => findReceivedInPlace(db, videoPath);
+
 export const getProjectVideoPaths = (): string[] =>
   (db.prepare("SELECT DISTINCT video_path FROM project_videos").all() as { video_path: string }[])
     .map(row => row.video_path);
@@ -987,7 +996,13 @@ export const anyUidExists = (table: UidTable, uids: string[]): boolean => {
   return db.prepare(`SELECT 1 FROM ${table} WHERE uid IN (${placeholders}) LIMIT 1`).get(...uids) !== undefined;
 };
 
-export const saveShareSnapshot = (snapshot: Parameters<typeof insertShareSnapshot>[1]): void =>
+export const getProjectIdByUid = (uid: string): number | null =>
+  (db.prepare("SELECT id FROM projects WHERE uid = ?").get(uid) as { id: number } | undefined)?.id ?? null;
+
+export const saveShareSnapshot = (snapshot: NewShareSnapshot): void => saveShareSnapshotRow(db, snapshot);
+
+/** For use inside inProjectTransaction, so the snapshot commits or rolls back with the rows. */
+export const insertShareSnapshotInTransaction = (snapshot: NewShareSnapshot): void =>
   insertShareSnapshot(db, snapshot);
 
 /** The id of the last share this project came in with, or null. */

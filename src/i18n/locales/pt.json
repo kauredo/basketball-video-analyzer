@@ -7,9 +7,6 @@
       "app.clips.saveSession",
       "app.clips.saveSessionError",
       "app.clips.saveSessionSuccess",
-      "app.projects.importSession",
-      "app.projects.importSessionDescription",
-      "app.projects.importSessionError",
       "app.projects.importSessionInvalidFile",
       "app.projects.importSessionSuccess",
       "app.shortcuts.markIn",
@@ -424,6 +421,7 @@
       "errorVideoNetwork": "Erro de rede ao carregar vídeo",
       "errorVideoDecoding": "Não foi possível descodificar o vídeo. O formato pode não ser suportado.",
       "errorVideoFormat": "Formato de vídeo não suportado. Experimenta MP4, MOV, AVI, MKV ou WebM.",
+      "receivedVideoChanged": "Este vídeo mudou na pasta partilhada desde que abriste o projeto, por isso a aplicação não o vai usar. Copia o projeto outra vez para a aplicação.",
       "checkVideoFormat": "Verifica se o ficheiro de vídeo existe e está num formato suportado (MP4, MOV, AVI, MKV, WebM)",
       "downloadingUpdate": "A descarregar atualização... {{progress}}%",
       "preparingUpdate": "A preparar download da atualização...",
@@ -469,10 +467,7 @@
       "deleteProject": "Eliminar projeto",
       "confirmDelete": "Tens a certeza que queres eliminar o projeto \"{{name}}\"? Isto irá também eliminar todos os clips associados.",
       "deleteError": "Erro ao eliminar projeto. Tenta novamente.",
-      "importSession": "Importar projeto",
-      "importSessionDescription": "Carregar um projeto que guardaste antes",
       "importSessionSuccess": "Projeto importado",
-      "importSessionError": "Não foi possível importar o projeto",
       "importSessionInvalidFile": "Esse ficheiro não é um projeto guardado.",
       "youtubeImport": "Importar do YouTube ou Vimeo",
       "youtubeUrlPlaceholder": "Cole um link do YouTube ou do Vimeo...",
@@ -650,6 +645,24 @@
       "fileMissing": "O ficheiro {{name}} desapareceu ou não pôde ser lido, por isso nada foi guardado. Tenta novamente.",
       "failed": "Não foi possível partilhar o projeto."
     },
+    "openShared": {
+      "title": "Abrir projeto partilhado",
+      "description": "Abrir uma pasta que outro treinador partilhou, ou um projeto que guardaste antes",
+      "intro": "A pasta partilhada traz os vídeos dos jogos ({{size}}). Onde deve a aplicação guardá-los?",
+      "copyVideos": "Copiar os vídeos para a aplicação",
+      "copyNoSpace": "Não há espaço livre suficiente neste computador para os copiar.",
+      "useInPlace": "Usá-los onde estão",
+      "useInPlaceWarning": "Só para uma pasta de alguém em quem confias, e tem de ficar onde está. Se for movida, ou se um disco na nuvem deixar os ficheiros só online, o projeto perde os vídeos.",
+      "open": "Abrir projeto",
+      "alreadyHave": "Já tens \"{{name}}\", por isso nada foi importado.",
+      "cancelled": "Abertura cancelada. Os ficheiros copiados foram apagados.",
+      "noSpace": "Não há espaço livre suficiente para copiar o projeto partilhado. Liberta espaço ou usa os vídeos onde estão.",
+      "unsafeFile": "A pasta partilhada tem um ficheiro que a aplicação não abre ({{name}}), por isso nada foi importado.",
+      "changedFile": "O ficheiro {{name}} na pasta partilhada está incompleto ou foi alterado. Copia a pasta outra vez e tenta de novo.",
+      "incomplete": "Esta pasta partilhada está incompleta (falta {{name}}), por isso nada foi importado. Pede a pasta completa outra vez.",
+      "noFingerprint": "A pasta partilhada lista {{name}} sem a verificação de tamanho de que a aplicação precisa, por isso nada foi importado. Pede que o projeto seja partilhado outra vez.",
+      "failed": "Não foi possível abrir o projeto partilhado."
+    },
     "native": {
       "checkForUpdates": "Procurar Atualizações...",
       "file": "Ficheiro",
@@ -674,7 +687,10 @@
       "checking": "A procurar atualizações...",
       "checkFailedTitle": "Falha ao Procurar Atualizações",
       "checkFailed": "Não foi possível procurar atualizações: {{message}}",
-      "shareDialogTitle": "Escolhe onde guardar o projeto partilhado"
+      "shareDialogTitle": "Escolhe onde guardar o projeto partilhado",
+      "openSharedDialogTitle": "Abrir projeto partilhado",
+      "sharedProjectFiles": "Projetos partilhados",
+      "sharedProjectSuffix": "(partilhado)"
     }
   }
 }

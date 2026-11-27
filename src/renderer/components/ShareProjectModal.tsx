@@ -16,14 +16,14 @@ interface ShareProjectModalProps {
 }
 
 /** Decimal units, as Finder and Explorer's drive labels show them. */
-const formatBytes = (bytes: number, locale: string): string => {
+export const formatBytes = (bytes: number, locale: string): string => {
   const [value, unit] =
     bytes >= 1e9 ? [bytes / 1e9, "gigabyte"] : bytes >= 1e6 ? [bytes / 1e6, "megabyte"] : [bytes / 1e3, "kilobyte"];
   return new Intl.NumberFormat(locale, { style: "unit", unit, maximumFractionDigits: 1 }).format(value);
 };
 
 /** The file name main appends after the error code. */
-const detail = (error: unknown, code: string): string =>
+export const detail = (error: unknown, code: string): string =>
   causeOf(error)?.split(code)[1]?.trim() ?? "";
 
 export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, project, onClose }) => {
@@ -70,6 +70,7 @@ export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, pr
       else if (code === "ERROR_INSUFFICIENT_SPACE") setError(t("app.share.noSpace"));
       else if (code === "ERROR_SHARE_VIDEO_MISSING") setError(t("app.share.videoMissing", { name: detail(err, code) }));
       else if (code === "ERROR_SHARE_FILE_MISSING") setError(t("app.share.fileMissing", { name: detail(err, code) }));
+      else if (code === "ERROR_RECEIVED_VIDEO_CHANGED") setError(t("app.video.receivedVideoChanged"));
       else setError(t("app.share.failed"));
     } finally {
       setSharing(false);

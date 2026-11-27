@@ -10,15 +10,16 @@ import {
   faPen,
   faFilm,
   faTimes,
-  faFileImport,
+  faFolderOpen,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ProjectSelector.module.css";
 import { YouTubeImport } from "./YouTubeImport";
+import { OpenSharedProjectModal, openSharedError } from "./OpenSharedProjectModal";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
-import { errorCode, withCause } from "../utils/errors";
+import { withCause } from "../utils/errors";
 import { removePref } from "../utils/storage";
 import { projectPrefKeys } from "../utils/projectPlayback";
 import { formatDateTime } from "../utils/format";
@@ -53,7 +54,8 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const trapRef = useFocusTrap(isOpen);
-  const { showError, showSuccess } = useToastContext();
+  const { showError, showSuccess, showInfo } = useToastContext();
+  const [sharedChoice, setSharedChoice] = useState<{ videoBytes: number; canCopy: boolean } | null>(null);
   const { confirm } = useConfirm();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -155,19 +157,20 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     }
   };
 
-  const handleImportSession = async () => {
+  const handleOpenShared = async () => {
     try {
-      const result = await window.electronAPI.loadSession();
-      if (result?.success && result.project) {
+      const result = await window.electronAPI.openSharedProject();
+      if (result?.status === "already-have") {
+        showInfo(t("app.openShared.alreadyHave", { name: result.name }), 8000);
+      } else if (result?.status === "choose") {
+        setSharedChoice(result);
+      } else if (result?.status === "imported") {
         showSuccess(t("app.projects.importSessionSuccess"));
         onSelectProject(result.project);
       }
     } catch (error) {
-      console.error("Error importing session:", error);
-      const message = errorCode(error) === "INVALID_SESSION_FILE"
-        ? t("app.projects.importSessionInvalidFile")
-        : t("app.projects.importSessionError");
-      showError(message);
+      console.error("Error opening shared project:", error);
+      showError(openSharedError(t, error));
     }
   };
 
@@ -220,14 +223,21 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                     <p>{t("app.projects.createNewDescription")}</p>
                   </div>
                 </button>
-                <button type="button" className={styles.secondaryActionBtn} onClick={handleImportSession}>
-                  <FontAwesomeIcon icon={faFileImport} />
+                <button type="button" className={styles.secondaryActionBtn} onClick={handleOpenShared}>
+                  <FontAwesomeIcon icon={faFolderOpen} />
                   <div>
-                    <h3>{t("app.projects.importSession")}</h3>
-                    <p>{t("app.projects.importSessionDescription")}</p>
+                    <h3>{t("app.openShared.title")}</h3>
+                    <p>{t("app.openShared.description")}</p>
                   </div>
                 </button>
               </div>
+              {sharedChoice && (
+                <OpenSharedProjectModal
+                  choice={sharedChoice}
+                  onImported={onSelectProject}
+                  onClose={() => setSharedChoice(null)}
+                />
+              )}
 
               {onLoadVideoByPath && (
                 <YouTubeImport onVideoDownloaded={onLoadVideoByPath} />
