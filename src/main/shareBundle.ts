@@ -12,6 +12,14 @@ export const SHARE_FILE_MISSING = "ERROR_SHARE_FILE_MISSING";
 export const SHARE_VIDEO_MISSING = "ERROR_SHARE_VIDEO_MISSING";
 export const SHARE_FAILED = "ERROR_SHARE_FAILED";
 export const INSUFFICIENT_SPACE = "ERROR_INSUFFICIENT_SPACE";
+export const IMPORT_FAILED = "ERROR_IMPORT_FAILED";
+export const INVALID_INPUT = "ERROR_INVALID_INPUT";
+/** The file's share id is already another share's here, so it is not opened. */
+export const SHARE_ID_TAKEN = "ERROR_SHARE_ID_TAKEN";
+/** A row in the file already belongs to another project here; nothing is applied. */
+export const SHARE_ROWS_TAKEN = "ERROR_SHARE_ROWS_TAKEN";
+/** The project changed after its review was opened; nothing is applied. */
+export const REVIEW_STALE = "ERROR_REVIEW_STALE";
 
 const COPY_CHUNK = 1024 * 1024;
 const PROGRESS_INTERVAL_MS = 100;

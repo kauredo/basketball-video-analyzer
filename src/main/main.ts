@@ -1,4 +1,4 @@
-import { buildSession, writeSession } from "./sessionData";
+import { buildSession, parseSession, sessionFromLocal, writeSession } from "./sessionData";
 import { isSamePath } from "../shared/clipDrawings";
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, protocol } from "electron";
 import path from "path";
@@ -65,6 +65,9 @@ import {
   latestReceivedShareId,
   setReceivedInPlace,
   getReceivedInPlace,
+  getShareSnapshotById,
+  applyShareMerge,
+  getSessionSource,
 } from "./database";
 import { RECEIVED_VIDEO_CHANGED, assertReceivedUnchanged, checkReceivedInPlace } from "./bundleFiles";
 import { MEDIA_SCHEME } from "../shared/media";
@@ -83,11 +86,17 @@ import { safeName, uniqueName } from "./bundleNames";
 import { buildManifest } from "./bundleManifest";
 import { fingerprintFile } from "./fingerprint";
 import {
-  IMPORT_FAILED, INVALID_INPUT, PendingShare, ShareOperations, alreadyHave, planImportCopies,
+  ContentLookups, MergeShare, NewShare, PendingShare, SharedFile, ShareOperations, alreadyHave, planImportCopies,
   prepareNewImport, readSharedFile, resolveBundleContents, runImport,
 } from "./shareImport";
+import { diffSessions } from "./shareDiff";
 import {
-  INSUFFICIENT_SPACE, SHARE_CANCELLED, SHARE_FAILED, SHARE_FILE_MISSING, VIDEO_SOURCE,
+  MergePlan, classifyShare, copyChoice, mergeNeeds, planMerge, planMergeCopies, sessionsMatch, validateSelections,
+} from "./shareMerge";
+import { removeMergedFiles } from "./shareApply";
+import { reviewSummary } from "./shareReview";
+import {
+  IMPORT_FAILED, INVALID_INPUT, REVIEW_STALE, INSUFFICIENT_SPACE, SHARE_CANCELLED, SHARE_FAILED, SHARE_FILE_MISSING, VIDEO_SOURCE,
   appError, hasFreeSpace, mapShareError, planShareCopies, runShare, statSource,
 } from "./shareBundle";
 import { courtSvg, CourtDot, CourtLegendItem } from "../shared/courtSvg";
@@ -2133,17 +2142,12 @@ ipcMain.handle("export-clips-xml", async (_event, projectId: number) => {
   }
 });
 
-const projectSession = (projectId: number, project: Project) =>
-  buildSession({
-    project,
-    recordings: getProjectVideos(projectId).map(video => ({
-      ...video,
-      drawings: getAnnotations(projectId, video.video_path),
-    })),
-    categories: getCategories(projectId),
-    players: getPlayers(projectId),
-    clips: getClips(projectId),
-  }, isSamePath);
+// The same reader the review builds the local side with, so a sent snapshot and the project compare alike.
+const projectSession = (projectId: number, project: Project) => {
+  const source = getSessionSource(projectId);
+  if (!source) throw new Error(INVALID_INPUT);
+  return buildSession({ ...source, project }, isSamePath);
+};
 
 // Save analysis session as JSON
 ipcMain.handle("save-session", async (_event, projectId: number) => {
@@ -2311,7 +2315,7 @@ ipcMain.handle("show-shared-project", () => {
 // Copies a checked shared project's files and writes its rows and its
 // 'received' snapshot in one transaction; shareImport.ts does the work.
 const importSharedProject = async (
-  pending: PendingShare, copyVideos: boolean, signal: AbortSignal, sender: Electron.WebContents,
+  pending: NewShare, copyVideos: boolean, signal: AbortSignal, sender: Electron.WebContents,
 ) => {
   const userData = app.getPath("userData");
   const plan = planImportCopies({
@@ -2346,9 +2350,116 @@ const importSharedProject = async (
   return { status: "imported" as const, project };
 };
 
+const contentLookups: ContentLookups = {
+  // A changed received recording is not read for a fingerprint.
+  localPaths: () => getProjectVideoPaths().filter(local => {
+    try {
+      assertReceived(local);
+      return true;
+    } catch {
+      return false;
+    }
+  }),
+  sizeOf: async local => (await statSource(local, VIDEO_SOURCE))?.size ?? null,
+  fingerprintOf: fingerprintFile,
+  pick: pickSessionRecording,
+  isSamePath,
+};
+
+const localSession = (projectId: number) => {
+  const source = getSessionSource(projectId);
+  if (!source) throw new Error(INVALID_INPUT);
+  return sessionFromLocal(source, isSamePath);
+};
+
+// A project that comes back: compare it with what was sent and hold the
+// differences for the review screen. Only what a merge can use is resolved:
+// the recordings this project lacks, and the cut files of new or moved clips.
+const openReview = async (shared: SharedFile, projectId: number, signal: AbortSignal) => {
+  const project = getProjectById(projectId);
+  if (!project) throw new Error(INVALID_INPUT);
+  const standing = classifyShare(shared, projectId, getShareSnapshotById);
+  if (standing.kind === "applied") return { status: "applied" as const, name: project.name };
+  const mine = localSession(projectId);
+  const theirs = shared.parsed;
+  const diff = diffSessions(standing.base ? parseSession(standing.base.data) : null, mine, theirs);
+
+  const needs = mergeNeeds(diff, mine, theirs);
+  const recordings = theirs.recordings.filter(video => needs.recordings.includes(video.uid as string));
+  const clips = theirs.clips.filter(clip => needs.clips.includes(clip.uid as string));
+  const contents = await resolveBundleContents(
+    { ...shared, parsed: { ...theirs, recordings, clips } }, { ...contentLookups, preferLocal: true });
+  if (!contents) return null;
+  if (signal.aborted) throw new Error(SHARE_CANCELLED);
+
+  const clipFiles = new Map(clips.flatMap((clip, index) => {
+    const bundled = contents.clips[index];
+    return bundled ? [[clip.uid as string, bundled] as const] : [];
+  }));
+  shareOperations.hold({
+    kind: "merge",
+    projectId,
+    session: theirs,
+    mine,
+    diff,
+    recordings: new Map(recordings.map((video, index) => [video.uid as string, contents.recordings[index]])),
+    clips: clipFiles,
+    snapshot: standing.snapshot,
+  });
+  return {
+    status: "review" as const,
+    name: project.name,
+    review: reviewSummary(diff, mine, theirs, new Set(clipFiles.keys())),
+  };
+};
+
+// The review compared the project as it was when it opened; an edit since then refuses the apply.
+const assertFresh = (pending: MergeShare) => {
+  if (!sessionsMatch(localSession(pending.projectId), pending.mine)) throw new Error(REVIEW_STALE);
+};
+
+// Copies what the ticked rows need, then applies them and saves the
+// 'received' snapshot in one transaction. The files of deleted or re-timed
+// clips are removed only once that has committed.
+const mergeSharedProject = async (
+  pending: MergeShare, plan: MergePlan, copyVideos: boolean, signal: AbortSignal, sender: Electron.WebContents,
+) => {
+  const project = getProjectById(pending.projectId);
+  if (!project) throw new Error(INVALID_INPUT);
+  const userData = app.getPath("userData");
+  const planned = planMergeCopies(plan, pending, {
+    copyVideos,
+    videosDir: path.join(userData, "videos", project.uid as string),
+    clipsDir: getClipsDirectory(),
+    exists: fs.existsSync,
+    newName: randomUUID,
+  });
+  if (!hasFreeSpace(() => fs.statfsSync(userData), planned.totalBytes)) throw new Error(INSUFFICIENT_SPACE);
+  const { removedFiles } = await runImport({
+    copies: planned.copies,
+    signal,
+    onProgress: progress => sendProgress(sender, "import-progress", progress),
+    write: () => applyShareMerge(pending.projectId, plan, planned.files, pending.snapshot, () => assertFresh(pending), () => {
+      if (copyVideos) return;
+      for (const uid of plan.newRecordings) {
+        const bundle = pending.recordings.get(uid)?.bundle;
+        const videoPath = planned.files.recordingPaths.get(uid);
+        if (bundle && videoPath) setReceivedInPlace(pending.projectId, videoPath, bundle);
+      }
+    }),
+  });
+  await removeMergedFiles(removedFiles, getClipsDirectory());
+  return {
+    status: "merged" as const,
+    project: getProjectById(pending.projectId),
+    kept: plan.kept.length,
+    heldBack: plan.heldBack,
+  };
+};
+
 // Open a .bvap folder another coach shared, or an old .json session: a
-// project already here goes to the review (layer 6), anything else imports
-// as new. Every file in the folder goes through resolveBundleFile.
+// project already here goes to the review, anything else imports as new.
+// Every file in the folder goes through resolveBundleFile.
 const openSharedProject = async (sender: Electron.WebContents, signal: AbortSignal) => {
   const picked = await dialog.showOpenDialog(mainWindow, {
     title: nt("openSharedDialogTitle"),
@@ -2361,25 +2472,9 @@ const openSharedProject = async (sender: Electron.WebContents, signal: AbortSign
   const shared = await readSharedFile(file);
   const { parsed } = shared;
   const existing = alreadyHave({ bvap: shared.bvap, version: parsed.version, projectUid: parsed.project.uid }, getProjectIdByUid);
-  if (existing !== null) {
-    return { status: "already-have" as const, projectId: existing, name: getProjectById(existing)?.name ?? "" };
-  }
+  if (existing !== null) return openReview(shared, existing, signal);
 
-  const contents = await resolveBundleContents(shared, {
-    // A changed received recording is not read for a fingerprint.
-    localPaths: () => getProjectVideoPaths().filter(local => {
-      try {
-        assertReceived(local);
-        return true;
-      } catch {
-        return false;
-      }
-    }),
-    sizeOf: async local => (await statSource(local, VIDEO_SOURCE))?.size ?? null,
-    fingerprintOf: fingerprintFile,
-    pick: pickSessionRecording,
-    isSamePath,
-  });
+  const contents = await resolveBundleContents(shared, contentLookups);
   if (!contents) return null;
   if (signal.aborted) throw new Error(SHARE_CANCELLED);
 
@@ -2420,10 +2515,41 @@ ipcMain.handle("finish-shared-project", async (event, copyVideos: unknown) => {
   if (typeof copyVideos !== "boolean") throw new Error(INVALID_INPUT);
   const sender = event.sender;
   try {
-    return await whileSenderLives(sender, () =>
-      shareOperations.finish((pending, signal) => importSharedProject(pending, copyVideos, signal, sender)));
+    return await whileSenderLives(sender, () => shareOperations.finish((pending, signal) => {
+      if (pending.kind !== "new") throw new Error(INVALID_INPUT);
+      return importSharedProject(pending, copyVideos, signal, sender);
+    }));
   } catch (error) {
     console.error("Error importing shared project:", error);
+    throw appError(error, IMPORT_FAILED);
+  }
+});
+
+// The coach's picks on the review screen. When a ticked new recording comes
+// in the bundle and the coach has not said yet, it asks to copy or use in place.
+ipcMain.handle("apply-shared-review", async (event, selections: unknown, copyVideos: unknown) => {
+  if (copyVideos !== undefined && typeof copyVideos !== "boolean") throw new Error(INVALID_INPUT);
+  const pending = shareOperations.waiting;
+  if (pending?.kind !== "merge") throw new Error(INVALID_INPUT);
+  const plan = planMerge(pending.diff, pending.mine, pending.session, validateSelections(pending.diff, selections));
+
+  const sender = event.sender;
+  try {
+    assertFresh(pending);
+    const choice = copyVideos === undefined ? copyChoice(plan, pending) : null;
+    if (choice) {
+      return {
+        status: "choose" as const,
+        videoBytes: choice.videoBytes,
+        canCopy: hasFreeSpace(() => fs.statfsSync(app.getPath("userData")), choice.totalBytes),
+      };
+    }
+    return await whileSenderLives(sender, () => shareOperations.finish((held, signal) => {
+      if (held !== pending) throw new Error(INVALID_INPUT);
+      return mergeSharedProject(pending, plan, copyVideos === true, signal, sender);
+    }));
+  } catch (error) {
+    console.error("Error applying shared project changes:", error);
     throw appError(error, IMPORT_FAILED);
   }
 });

@@ -15,7 +15,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ProjectSelector.module.css";
 import { YouTubeImport } from "./YouTubeImport";
-import { OpenSharedProjectModal, openSharedError } from "./OpenSharedProjectModal";
+import { OpenSharedProjectModal } from "./OpenSharedProjectModal";
+import { ShareReviewModal } from "./ShareReviewModal";
+import type { OpenSharedResult, ShareReview } from "../../shared/shareReview";
+import { openSharedError } from "../utils/shareMessages";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { useConfirm } from "../contexts/ConfirmContext";
@@ -55,7 +58,13 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   const { t, i18n } = useTranslation();
   const trapRef = useFocusTrap(isOpen);
   const { showError, showSuccess, showInfo } = useToastContext();
-  const [sharedChoice, setSharedChoice] = useState<{ videoBytes: number; canCopy: boolean } | null>(null);
+  // The copy-or-use-in-place question, for a new project or for a review's new videos.
+  const [sharedChoice, setSharedChoice] = useState<{
+    choice: { videoBytes: number; canCopy: boolean };
+    finish: (copyVideos: boolean) => Promise<OpenSharedResult>;
+    failure: string;
+  } | null>(null);
+  const [sharedReview, setSharedReview] = useState<{ name: string; review: ShareReview } | null>(null);
   const { confirm } = useConfirm();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -160,10 +169,12 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   const handleOpenShared = async () => {
     try {
       const result = await window.electronAPI.openSharedProject();
-      if (result?.status === "already-have") {
-        showInfo(t("app.openShared.alreadyHave", { name: result.name }), 8000);
+      if (result?.status === "review") {
+        setSharedReview(result);
+      } else if (result?.status === "applied") {
+        showInfo(t("app.review.alreadyApplied", { name: result.name }), 8000);
       } else if (result?.status === "choose") {
-        setSharedChoice(result);
+        setSharedChoice({ choice: result, finish: window.electronAPI.finishSharedProject, failure: "app.openShared.failed" });
       } else if (result?.status === "imported") {
         showSuccess(t("app.projects.importSessionSuccess"));
         onSelectProject(result.project);
@@ -233,9 +244,25 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
               </div>
               {sharedChoice && (
                 <OpenSharedProjectModal
-                  choice={sharedChoice}
+                  {...sharedChoice}
                   onImported={onSelectProject}
                   onClose={() => setSharedChoice(null)}
+                />
+              )}
+              {sharedReview && (
+                <ShareReviewModal
+                  name={sharedReview.name}
+                  review={sharedReview.review}
+                  onMerged={onSelectProject}
+                  onChoose={(choice, selections) => {
+                    setSharedReview(null);
+                    setSharedChoice({
+                      choice,
+                      finish: copyVideos => window.electronAPI.applySharedReview(selections, copyVideos),
+                      failure: "app.review.failed",
+                    });
+                  }}
+                  onClose={() => setSharedReview(null)}
                 />
               )}
 

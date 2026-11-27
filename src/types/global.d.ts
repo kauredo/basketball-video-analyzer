@@ -1,3 +1,5 @@
+import type { OpenSharedResult, ReviewSelections } from "../shared/shareReview";
+
 export interface Category {
   id?: number;
   name: string;
@@ -87,10 +89,6 @@ export interface ShareProgress {
   totalFiles: number;
 }
 
-export type OpenSharedResult =
-  | { status: "already-have"; projectId: number; name: string }
-  | { status: "choose"; videoBytes: number; canCopy: boolean }
-  | { status: "imported"; project: any };
 
 export interface ElectronAPI {
   // System operations
@@ -220,6 +218,7 @@ export interface ElectronAPI {
   finishSharedProject: (copyVideos: boolean) => Promise<OpenSharedResult>;
   discardSharedProject: () => Promise<void>;
   cancelSharedImport: () => Promise<boolean>;
+  applySharedReview: (selections: ReviewSelections, copyVideos?: boolean) => Promise<OpenSharedResult>;
   onImportProgress: (callback: (data: ShareProgress) => void) => void;
 
   // YouTube operations

@@ -1,4 +1,5 @@
 import type { ProjectVideo } from "./projectVideos";
+import type { OpenSharedResult, ReviewSelections } from "../shared/shareReview";
 import { contextBridge, ipcRenderer } from "electron";
 
 export interface ShareProgress {
@@ -7,11 +8,6 @@ export interface ShareProgress {
   copiedFiles: number;
   totalFiles: number;
 }
-
-export type OpenSharedResult =
-  | { status: "already-have"; projectId: number; name: string }
-  | { status: "choose"; videoBytes: number; canCopy: boolean }
-  | { status: "imported"; project: any };
 
 export interface ElectronAPI {
   // System operations
@@ -184,6 +180,7 @@ export interface ElectronAPI {
   finishSharedProject: (copyVideos: boolean) => Promise<OpenSharedResult>;
   discardSharedProject: () => Promise<void>;
   cancelSharedImport: () => Promise<boolean>;
+  applySharedReview: (selections: ReviewSelections, copyVideos?: boolean) => Promise<OpenSharedResult>;
   onImportProgress: (callback: (data: ShareProgress) => void) => void;
 
   // YouTube operations
@@ -324,6 +321,7 @@ const electronAPI: ElectronAPI = {
   finishSharedProject: (copyVideos: boolean) => ipcRenderer.invoke("finish-shared-project", copyVideos),
   discardSharedProject: () => ipcRenderer.invoke("discard-shared-project"),
   cancelSharedImport: () => ipcRenderer.invoke("cancel-shared-import"),
+  applySharedReview: (selections, copyVideos) => ipcRenderer.invoke("apply-shared-review", selections, copyVideos),
   onImportProgress: callback => {
     ipcRenderer.on("import-progress", (_event, data) => callback(data));
   },

@@ -8,13 +8,14 @@ import { parseManifest, type BundleManifest, type Fingerprint } from "./bundleMa
 import { uniqueName } from "./bundleNames.ts";
 import type { UidTable } from "./permanentIds.ts";
 import { MAX_SESSION_BYTES, parseSessionData, prepareImport, type ParsedSession } from "./sessionData.ts";
-import { SHARE_CANCELLED, copyErrorCode, copyFiles, type CopyState, type ShareProgress } from "./shareBundle.ts";
+import {
+  INVALID_INPUT, SHARE_CANCELLED, copyErrorCode, copyFiles, type CopyState, type ShareProgress,
+} from "./shareBundle.ts";
+import type { ShareDiff } from "./shareDiff.ts";
 
 export const IMPORT_CANCELLED = "ERROR_IMPORT_CANCELLED";
-export const IMPORT_FAILED = "ERROR_IMPORT_FAILED";
 /** Another share or import is running. Both take the same lock. */
 export const SHARE_BUSY = "ERROR_SHARE_BUSY";
-export const INVALID_INPUT = "ERROR_INVALID_INPUT";
 
 const UID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -47,6 +48,12 @@ export const receivedSnapshot = (raw: unknown): { id: string; data: string } | n
   return { id: (share as { id: string }).id.toLowerCase(), data: JSON.stringify(session) };
 };
 
+/** The sender's base for this share: the id of the share it last received, or null. */
+export const shareBasedOn = (raw: unknown): string | null =>
+  record(raw) && record(raw.share) && typeof raw.share.basedOn === "string" && UID.test(raw.share.basedOn)
+    ? raw.share.basedOn.toLowerCase()
+    : null;
+
 export interface SharedFile {
   bvap: boolean;
   /** Real path of the folder the file sits in. */
@@ -55,6 +62,7 @@ export interface SharedFile {
   /** Only a v4 .bvap's bundle and share blocks are read; anything else has neither. */
   manifest: BundleManifest | null;
   snapshot: { id: string; data: string } | null;
+  basedOn: string | null;
 }
 
 /**
@@ -80,14 +88,14 @@ export const readSharedFile = async (file: string): Promise<SharedFile> => {
     throw invalid();
   }
   const parsed = parseSessionData(raw);
-  if (!bvap || parsed.version !== 4) return { bvap, root, parsed, manifest: null, snapshot: null };
+  if (!bvap || parsed.version !== 4) return { bvap, root, parsed, manifest: null, snapshot: null, basedOn: null };
 
   const data = raw as Record<string, unknown>;
   const manifest = data.bundle === undefined ? null : parseManifest(data.bundle, {
     recordings: new Set(parsed.recordings.map(video => video.uid as string)),
     clips: new Set(parsed.clips.map(clip => clip.uid as string)),
   });
-  return { bvap, root, parsed, manifest, snapshot: receivedSnapshot(data) };
+  return { bvap, root, parsed, manifest, snapshot: receivedSnapshot(data), basedOn: shareBasedOn(data) };
 };
 
 export type RecordingSource =
@@ -101,6 +109,8 @@ export interface RecordingLookups {
   fingerprint: (index: number) => Fingerprint | null;
   /** A local recording with this fingerprint that is not in `taken`. */
   localMatch: (fingerprint: Fingerprint, taken: string[]) => Promise<string | null>;
+  /** Looks for a local file before the bundle's, so a video already here is never copied again. */
+  preferLocal?: boolean;
 }
 
 /** Where each recording comes from: the bundle, a local file with its fingerprint, or else the file picker. */
@@ -108,13 +118,17 @@ export const resolveRecordings = async (count: number, lookups: RecordingLookups
   const sources: RecordingSource[] = [];
   const taken: string[] = [];
   for (let index = 0; index < count; index++) {
-    const file = await lookups.bundleFile(index);
+    const localMatch = () => {
+      const fingerprint = lookups.fingerprint(index);
+      return fingerprint ? lookups.localMatch(fingerprint, taken) : Promise.resolve(null);
+    };
+    const first = lookups.preferLocal ? await localMatch() : null;
+    const file = first ? null : await lookups.bundleFile(index);
     if (file) {
       sources.push({ kind: "bundle", file });
       continue;
     }
-    const fingerprint = lookups.fingerprint(index);
-    const local = fingerprint ? await lookups.localMatch(fingerprint, taken) : null;
+    const local = first ?? (lookups.preferLocal ? null : await localMatch());
     if (local) {
       taken.push(local);
       sources.push({ kind: "local", path: local });
@@ -158,6 +172,7 @@ export interface ContentLookups {
   /** Asks the coach for one recording; null when they cancel. No file in `taken` may be picked. */
   pick: (name: string, index: number, count: number, taken: string[]) => Promise<string | null>;
   isSamePath: (a: string, b: string) => boolean;
+  preferLocal?: boolean;
   /** For tests: resolveBundleFile otherwise. */
   resolve?: typeof resolveBundleFile;
 }
@@ -192,6 +207,7 @@ export const resolveBundleContents = async (
       return resolve(root, rel, { maxBytes: MAX_BUNDLE_VIDEO_BYTES, expectSize: expected.size, media: true });
     },
     fingerprint,
+    preferLocal: lookups.preferLocal,
     localMatch: (expected, taken) => findLocalMatch(
       expected,
       lookups.localPaths().filter(local => !taken.some(other => lookups.isSamePath(other, local))),
@@ -239,14 +255,30 @@ export const resolveBundleContents = async (
   return { recordings, clips };
 };
 
-/** A shared project read and checked, waiting for the coach. Layer 6 adds `{ kind: "merge" }`. */
-export type PendingShare = {
+/** A shared project read and checked, waiting for the coach: a new project, or changes to review. */
+export type PendingShare = NewShare | MergeShare;
+
+export interface NewShare {
   kind: "new";
   session: ParsedSession;
   recordings: ImportRecording[];
   clips: Array<BundledClip | null>;
   snapshot: { id: string; data: string } | null;
-};
+}
+
+export interface MergeShare {
+  kind: "merge";
+  projectId: number;
+  /** Theirs: the incoming file. */
+  session: ParsedSession;
+  /** The local project when it was opened, which the diff and plan read. */
+  mine: ParsedSession;
+  diff: ShareDiff;
+  /** By uid: each recording I don't have, and the bundled files of new or moved clips. */
+  recordings: Map<string, ImportRecording>;
+  clips: Map<string, BundledClip>;
+  snapshot: { id: string; data: string } | null;
+}
 
 /**
  * The new-project import for a shared file: uids from prepareImport, the
@@ -262,7 +294,7 @@ export const prepareNewImport = (
     suffix: string;
     newUid: () => string;
   },
-): PendingShare => {
+): NewShare => {
   const prepared = prepareImport(shared.parsed, options.uidExists);
   return {
     kind: "new",

@@ -1,48 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faFolderOpen, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ShareProjectModal.module.css";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
 import { errorCode } from "../utils/errors";
-import { detail, formatBytes } from "./ShareProjectModal";
+import { mergedMessage, openSharedError } from "../utils/shareMessages";
+import { formatBytes } from "./ShareProjectModal";
 import { ShareProgress } from "../../types/global";
+import type { OpenSharedResult } from "../../shared/shareReview";
 import type { Project } from "./ProjectSelector";
-
-/** The message for a shared project that could not be opened. */
-export const openSharedError = (t: TFunction, error: unknown): string => {
-  const code = errorCode(error);
-  switch (code) {
-    case "INVALID_SESSION_FILE":
-      return t("app.projects.importSessionInvalidFile");
-    case "ERROR_BUNDLE_FILE_UNSAFE":
-      return t("app.openShared.unsafeFile", { name: detail(error, code) });
-    case "ERROR_BUNDLE_FILE_CHANGED":
-      return t("app.openShared.changedFile", { name: detail(error, code) });
-    case "ERROR_BUNDLE_INCOMPLETE":
-      return t("app.openShared.incomplete", { name: detail(error, code) });
-    case "ERROR_BUNDLE_NO_FINGERPRINT":
-      return t("app.openShared.noFingerprint", { name: detail(error, code) });
-    case "ERROR_SHARE_FILE_MISSING":
-      return t("app.share.fileMissing", { name: detail(error, code) });
-    case "ERROR_INSUFFICIENT_SPACE":
-      return t("app.openShared.noSpace");
-    default:
-      return t("app.openShared.failed");
-  }
-};
 
 interface OpenSharedProjectModalProps {
   /** What main found in the folder: the bundled videos' total, and whether they fit on this computer. */
   choice: { videoBytes: number; canCopy: boolean };
+  /** Runs the import with the coach's choice; a review passes its apply here. */
+  finish: (copyVideos: boolean) => Promise<OpenSharedResult>;
+  /** The message key when `finish` fails for a reason without a message of its own. */
+  failure: string;
   onImported: (project: Project) => void;
   onClose: () => void;
 }
 
-export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ choice, onImported, onClose }) => {
+export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({
+  choice, finish, failure, onImported, onClose,
+}) => {
   const { t, i18n } = useTranslation();
   const { showSuccess, showInfo, showError } = useToastContext();
   const trapRef = useFocusTrap(true);
@@ -68,9 +52,12 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ 
     setError(null);
     setImporting(true);
     try {
-      const result = await window.electronAPI.finishSharedProject(copyVideos);
+      const result = await finish(copyVideos);
       if (result.status === "imported") {
         showSuccess(t("app.projects.importSessionSuccess"));
+        onImported(result.project);
+      } else if (result.status === "merged") {
+        showSuccess(mergedMessage(t, result.kept, result.heldBack));
         onImported(result.project);
       }
       onClose();
@@ -88,7 +75,7 @@ export const OpenSharedProjectModal: React.FC<OpenSharedProjectModalProps> = ({ 
       if (code === "ERROR_IMPORT_CANCELLED") {
         showInfo(t("app.openShared.cancelled"));
       } else {
-        showError(openSharedError(t, err));
+        showError(openSharedError(t, err, failure));
       }
       window.electronAPI.discardSharedProject();
       onClose();

@@ -9,11 +9,11 @@ import {
 } from "./bundleFiles.ts";
 import type { Fingerprint } from "./bundleManifest.ts";
 import {
-  IMPORT_CANCELLED, INVALID_INPUT, SHARE_BUSY, ShareOperations, alreadyHave, findLocalMatch, planImportCopies,
+  IMPORT_CANCELLED, SHARE_BUSY, ShareOperations, alreadyHave, findLocalMatch, planImportCopies,
   prepareNewImport, readSharedFile, receivedSnapshot, resolveBundleContents, resolveRecordings, runImport,
-  sharedProjectName, type ContentLookups,
+  shareBasedOn, sharedProjectName, type ContentLookups,
 } from "./shareImport.ts";
-import { SHARE_FAILED } from "./shareBundle.ts";
+import { INVALID_INPUT, SHARE_FAILED } from "./shareBundle.ts";
 import { createShareSnapshotsTable, latestReceivedSnapshot, saveShareSnapshot } from "./shareSnapshots.ts";
 
 const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "bva-share-import-")));
@@ -104,6 +104,28 @@ test("a recording in the bundle is used without asking", async () => {
     localMatch: async () => assert.fail("no local lookup once the bundle has it"),
   });
   assert.deepEqual(sources, [{ kind: "bundle", file: { path: "/b/videos/g.mp4", size: 5, rel: "videos/g.mp4" } }]);
+});
+
+test("preferLocal: a video already here is used before the bundle's copy, which is never resolved", async () => {
+  const bundled = { path: "/b/videos/g.mp4", size: 5, rel: "videos/g.mp4" };
+  const sources = await resolveRecordings(2, {
+    bundleFile: async index => (index === 0 ? assert.fail("the local match comes first") : bundled),
+    fingerprint: () => fp(5),
+    localMatch: async (_fingerprint, taken) => (taken.length === 0 ? "/local/g.mp4" : null),
+    preferLocal: true,
+  });
+  assert.deepEqual(sources, [{ kind: "local", path: "/local/g.mp4" }, { kind: "bundle", file: bundled }]);
+});
+
+test("preferLocal without a fingerprint falls through to the bundle and never looks locally", async () => {
+  const bundled = { path: "/b/videos/g.mp4", size: 5, rel: "videos/g.mp4" };
+  const sources = await resolveRecordings(1, {
+    bundleFile: async () => bundled,
+    fingerprint: () => null,
+    localMatch: async () => assert.fail("no fingerprint, no local lookup"),
+    preferLocal: true,
+  });
+  assert.deepEqual(sources, [{ kind: "bundle", file: bundled }]);
 });
 
 test("with neither a bundled file nor a fingerprint match, the recording goes to the file picker", async () => {
@@ -501,6 +523,13 @@ test("the received snapshot keeps the share id and drops the share and bundle bl
   assert.deepEqual(receivedSnapshot(raw), { id: UID, data: JSON.stringify({ version: 4, project: { uid: UID } }) });
   assert.equal(receivedSnapshot({ version: 4 }), null);
   assert.equal(receivedSnapshot({ share: { id: "not-a-uid" } }), null);
+});
+
+test("basedOn is read only as a uid, lowercased", () => {
+  assert.equal(shareBasedOn({ share: { id: UID, basedOn: SHARE.toUpperCase() } }), SHARE);
+  assert.equal(shareBasedOn({ share: { id: UID, basedOn: null } }), null);
+  assert.equal(shareBasedOn({ share: { id: UID, basedOn: "../x" } }), null);
+  assert.equal(shareBasedOn({ version: 4 }), null);
 });
 
 test("a saved received snapshot is the one the next share names as basedOn", () => {

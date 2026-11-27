@@ -13,9 +13,12 @@ import { categoryUpdateFields } from "./categoryColumns";
 import { addPermanentIds, UID_TABLES, UidTable } from "./permanentIds";
 import { randomUUID } from "crypto";
 import {
-  NewShareSnapshot, createShareSnapshotsTable, insertShareSnapshot, latestReceivedSnapshot,
+  NewShareSnapshot, createShareSnapshotsTable, getShareSnapshot, insertShareSnapshot, latestReceivedSnapshot,
   saveShareSnapshot as saveShareSnapshotRow,
 } from "./shareSnapshots";
+import { MergeFiles, applyMerge } from "./shareApply";
+import { MergePlan } from "./shareMerge";
+import { readSessionSource } from "./sessionSource";
 
 let db: Database.Database;
 
@@ -1004,6 +1007,18 @@ export const saveShareSnapshot = (snapshot: NewShareSnapshot): void => saveShare
 /** For use inside inProjectTransaction, so the snapshot commits or rolls back with the rows. */
 export const insertShareSnapshotInTransaction = (snapshot: NewShareSnapshot): void =>
   insertShareSnapshot(db, snapshot);
+
+export const getShareSnapshotById = (id: string) => getShareSnapshot(db, id);
+
+/** Runs a reviewed merge and saves the 'received' snapshot in one transaction; shareApply.ts does the work. */
+export const applyShareMerge = (
+  projectId: number, plan: MergePlan, files: MergeFiles, snapshot: { id: string; data: string } | null,
+  check: () => void,
+  afterOps?: () => void,
+) => applyMerge(db, projectId, plan, files, snapshot, check, afterOps);
+
+/** The rows a session of this project is built from. */
+export const getSessionSource = (projectId: number) => readSessionSource(db, projectId);
 
 /** The id of the last share this project came in with, or null. */
 export const latestReceivedShareId = (projectId: number): string | null =>

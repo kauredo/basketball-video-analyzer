@@ -6,7 +6,8 @@ import { faTimes, faShareNodes, faFolderOpen, faSpinner } from "@fortawesome/fre
 import styles from "../styles/ShareProjectModal.module.css";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useToastContext } from "../contexts/ToastContext";
-import { causeOf, errorCode } from "../utils/errors";
+import { errorCode } from "../utils/errors";
+import { detail } from "../utils/shareMessages";
 import { ShareProgress } from "../../types/global";
 
 interface ShareProjectModalProps {
@@ -21,10 +22,6 @@ export const formatBytes = (bytes: number, locale: string): string => {
     bytes >= 1e9 ? [bytes / 1e9, "gigabyte"] : bytes >= 1e6 ? [bytes / 1e6, "megabyte"] : [bytes / 1e3, "kilobyte"];
   return new Intl.NumberFormat(locale, { style: "unit", unit, maximumFractionDigits: 1 }).format(value);
 };
-
-/** The file name main appends after the error code. */
-export const detail = (error: unknown, code: string): string =>
-  causeOf(error)?.split(code)[1]?.trim() ?? "";
 
 export const ShareProjectModal: React.FC<ShareProjectModalProps> = ({ isOpen, project, onClose }) => {
   const { t, i18n } = useTranslation();
