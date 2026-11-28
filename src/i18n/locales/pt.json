@@ -724,6 +724,7 @@
       "title": "A criar uma cópia reproduzível",
       "intro": "A copiar {{name}} para um MP4 que a app consegue reproduzir. O ficheiro original fica como está.",
       "percent": "{{percent}}% concluído",
+      "written": "{{time}} de vídeo concluídos",
       "button": "Criar cópia reproduzível"
     },
     "native": {

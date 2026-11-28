@@ -704,6 +704,7 @@
       "title": "Making a playable copy",
       "intro": "Copying {{name}} into an MP4 the app can play. Your original file stays as it is.",
       "percent": "{{percent}}% done",
+      "written": "{{time}} of video done",
       "button": "Make a playable copy"
     },
     "native": {

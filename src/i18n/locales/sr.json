@@ -736,6 +736,7 @@
       "title": "Pravljenje kopije za puštanje",
       "intro": "Kopiranje {{name}} u MP4 koji aplikacija može da pusti. Originalna datoteka ostaje nepromenjena.",
       "percent": "{{percent}}% gotovo",
+      "written": "{{time}} videa gotovo",
       "button": "Napravi kopiju za puštanje"
     },
     "native": {
