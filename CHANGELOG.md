@@ -5,6 +5,31 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0] - 2026-11-28
+
+### Fixed
+
+- The app no longer crashes at random with "A JavaScript error occurred in the main process: Array buffer allocation failed". While a video sat paused, the app kept reading the whole game file into memory, which ran an 8 GB laptop out of memory. Memory now stays under 100 MB.
+- Exporting a parent category exports its subcategories' clips too. Before, a parent whose clips were all in subcategories exported nothing.
+- Sorting clips by title: "Descending" now sorts Z to A. If you had title sorting saved, it flips once.
+- In Slovenian, Serbian and Lithuanian, counts such as "3 clips" no longer show in Portuguese.
+
+### Added
+
+- **Share project**, in the clip library header, makes a folder you can send to another coach by USB stick, Google Drive, Dropbox or any other way. It holds the project, every cut clip and, if you tick the box, the game videos.
+- **Open shared project**, in the project selector, opens that folder as a new project. It finds game videos you already have, so they aren't copied twice, and asks whether to copy the rest into the app or use them where they are. The same button opens old session files (`.json`).
+- When a project you shared comes back with changes, you see what's new, changed or deleted before anything is applied. If you both edited the same thing, you pick which version to keep. Deletions come unchecked.
+- Deleting a project removes the game videos the app copied for it.
+
+### Changed
+
+- The Import project button is gone. Open shared project does what it did.
+- Reload, Force Reload and Developer Tools are no longer in the View menu.
+- The clip export section is called "Export clips".
+- The bottom clip list keeps words whole, its header stays put, and the selected clip is easy to see.
+- The court map legend counts a parent category's whole family.
+- The clip creator keeps the court picker and its Clear location button in view.
+
 ## [1.15.0] - 2026-11-26
 
 ### Added
