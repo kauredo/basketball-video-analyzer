@@ -76,6 +76,8 @@ interface VideoPlayerProps {
   onClipsUpdated: () => void;
   /** Picks the file again when a received video changed in its shared folder. */
   onLocate?: () => void;
+  /** Makes a playable copy of a video the player refused. */
+  onConvert?: () => void;
   /** Bumped after Locate video: a new URL, so Chromium does not reuse the refused response for the same path. */
   reloadToken?: number;
 }
@@ -106,6 +108,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       clips,
       onClipsUpdated,
       onLocate,
+      onConvert,
       reloadToken = 0,
     },
     ref
@@ -872,9 +875,14 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 </h3>
                 <p>{t("app.video.pathLabel")} {videoPath}</p>
                 {!receivedChanged ? (
-                  <p>
-                    {t("app.video.checkVideoFormat")}
-                  </p>
+                  <>
+                    <p>{t("app.video.checkVideoFormat")}</p>
+                    {onConvert && (
+                      <button type="button" className={styles.locateButton} onClick={onConvert}>
+                        <FontAwesomeIcon icon={faFilm} /> {t("app.convert.button")}
+                      </button>
+                    )}
+                  </>
                 ) : onLocate && (
                   <button type="button" className={styles.locateButton} onClick={onLocate}>
                     <FontAwesomeIcon icon={faFolderOpen} /> {t("app.projects.videoMissingLocate")}

@@ -64,7 +64,8 @@ sudo rpm -i basketball-video-analyzer-*.x86_64.rpm
 
 #### Supported Video Formats
 
-- **Input**: MP4, MOV, AVI, MKV, WebM, M4V
+- **Plays as is**: MP4, MOV, M4V, MKV and WebM with H.264, HEVC, VP9 or AV1 video
+- **Converted first**: camera files (.mts, .m2ts), .ts, .mpg, .vob, .3gp, .mxf, AVI, WMV, FLV and ProRes. The app asks, then writes an MP4 copy next to the original and leaves the original as it is. A copy that only repackages the video takes minutes; one that re-encodes can take as long as the game.
 - **Output**: MP4 (H.264 for maximum compatibility)
 
 ---
@@ -196,7 +197,7 @@ Perfect for building "Opponent Scouting" projects with reusable category presets
 ### 3. Load Your Game Video
 
 - Click **"Select Video"** and choose your basketball game file
-- Supports: MP4, MOV, AVI, MKV, WebM, M4V formats
+- Formats the player can't open get an MP4 copy first (see Supported Video Formats)
 - Video loads within your current project context
 
 ### 4. Navigate and Cut Video Clips
@@ -346,7 +347,7 @@ The app automatically organizes your files with project-based structure:
 
 ### Video Issues
 
-- **Video won't load**: Ensure format is supported (MP4, MOV, AVI, MKV, WebM, M4V)
+- **Video won't load**: press **Make a playable copy** on the error screen. The app re-encodes the game to H.264 and switches the project to the copy.
 - **Playback stutters**: Close other applications or try lower resolution video
 - **Audio issues**: Check system audio settings and volume controls
 

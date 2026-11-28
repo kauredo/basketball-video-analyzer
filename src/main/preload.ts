@@ -175,6 +175,11 @@ export interface ElectronAPI {
   showSharedProject: () => Promise<void>;
   onShareProgress: (callback: (data: ShareProgress) => void) => void;
 
+  // Playable copies of videos the player can't open
+  convertProjectVideo: (videoPath: string) => Promise<string | null>;
+  cancelConvert: () => Promise<void>;
+  onConvertProgress: (callback: (data: { name: string; percent: number } | null) => void) => void;
+
   // Open shared project
   openSharedProject: () => Promise<OpenSharedResult | null>;
   finishSharedProject: (copyVideos: boolean) => Promise<OpenSharedResult>;
@@ -314,6 +319,12 @@ const electronAPI: ElectronAPI = {
   showSharedProject: () => ipcRenderer.invoke("show-shared-project"),
   onShareProgress: callback => {
     ipcRenderer.on("share-progress", (_event, data) => callback(data));
+  },
+
+  convertProjectVideo: videoPath => ipcRenderer.invoke("convert-project-video", videoPath),
+  cancelConvert: () => ipcRenderer.invoke("cancel-convert"),
+  onConvertProgress: callback => {
+    ipcRenderer.on("convert-progress", (_event, data) => callback(data));
   },
 
   // Open shared project
