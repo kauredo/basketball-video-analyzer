@@ -5,6 +5,18 @@ All notable changes to Basketball Video Analyzer will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0] - 2026-11-28
+
+### Added
+
+- Videos the player can't open now get an MP4 copy that plays. This covers camera files (.mts, .m2ts), .ts, AVI, WMV, FLV, MPEG (.mpg, .vob) and ProRes, which played black before. The app asks first, saves the copy where you choose (next to the original by default) and never changes the original. When only the file type is wrong, as with most camera files, the copy takes a few minutes for a full game. Other formats are re-encoded to H.264 at up to 1080p, which can take about as long as the game.
+- If a game in a project still won't play, the error screen has a **Make a playable copy** button. It makes the copy and switches the project to it.
+- The open dialog lists the new formats.
+
+### Changed
+
+- The video format error no longer suggests AVI, since the player can't open it.
+
 ## [1.16.0] - 2026-11-28
 
 ### Fixed
