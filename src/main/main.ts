@@ -410,8 +410,12 @@ const isAllowedMediaPath = (resolved: string): boolean => {
 
 app.whenReady().then(() => {
   setupDatabase();
-  const swept = sweepParts(pendingPartsFile());
-  if (swept.length > 0) console.log("Removed partial copies left by the last run:", swept);
+  try {
+    const swept = sweepParts(pendingPartsFile());
+    if (swept.length > 0) console.log("Removed partial copies left by the last run:", swept);
+  } catch (error) {
+    console.warn("Couldn't sweep partial copies:", error);
+  }
   setAboutPanel();
 
   // Serve local media through the validated custom scheme. We handle Range
@@ -723,6 +727,16 @@ const pendingPartsFile = () => path.join(app.getPath("userData"), "pending-copie
 // Copies made this run, by the file they were made from.
 const copiedFrom = new Map<string, string>();
 
+// The list only serves the next launch's sweep, so failing to write it never
+// stops or hangs a copy.
+const trackPart = (track: (listFile: string, part: string) => void, part: string) => {
+  try {
+    track(pendingPartsFile(), part);
+  } catch (error) {
+    console.warn("Couldn't update the list of partial copies:", error);
+  }
+};
+
 const sendConvertProgress = (progress: ConvertProgress | null) => {
   if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
     mainWindow.webContents.send("convert-progress", progress);
@@ -733,7 +747,7 @@ const runConversion = (inputPath: string, outputPath: string, args: string[], du
   new Promise<"done" | "cancelled">((resolve, reject) => {
     const part = `${outputPath}.${randomUUID().slice(0, 8)}.part`;
     const name = path.basename(inputPath);
-    recordPart(pendingPartsFile(), part);
+    trackPart(recordPart, part);
     const child = spawn(ffmpegPath, ["-hide_banner", "-nostdin", "-y", ...FILE_INPUT_ONLY, "-i", inputPath, ...args, part]);
     const current = { process: child, cancelled: false };
     conversion = current;
@@ -776,7 +790,7 @@ const runConversion = (inputPath: string, outputPath: string, args: string[], du
       if (!error) {
         try {
           fs.renameSync(part, outputPath);
-          forgetPart(pendingPartsFile(), part);
+          trackPart(forgetPart, part);
           resolve("done");
           return;
         } catch (renameError) {
@@ -784,7 +798,7 @@ const runConversion = (inputPath: string, outputPath: string, args: string[], du
         }
       }
       deleteTempFile(part);
-      forgetPart(pendingPartsFile(), part);
+      trackPart(forgetPart, part);
       if (current.cancelled) resolve("cancelled");
       else reject(error);
     };
