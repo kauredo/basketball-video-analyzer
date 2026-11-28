@@ -1,6 +1,35 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { clipNumbers, compareByStart, listColumns, parseListWidth } from "./clipList.ts";
+import { clipNumbers, compareByStart, firstSortOrder, listColumns, parseListWidth, sortClips } from "./clipList.ts";
+
+const sortable = [
+  { title: "Zone press", created_at: "2026-11-01", start_time: 0, end_time: 5 },
+  { title: "ángulo", created_at: "2026-11-03", start_time: 0, end_time: 2 },
+  { title: "Box out", created_at: "2026-11-02", start_time: 0, end_time: 9 },
+];
+const titles = (list: { title: string }[]) => list.map(item => item.title);
+
+test("title sort: asc is A to Z, desc is Z to A, accents sort by letter", () => {
+  assert.deepEqual(titles(sortClips(sortable, "title", "asc")), ["ángulo", "Box out", "Zone press"]);
+  assert.deepEqual(titles(sortClips(sortable, "title", "desc")), ["Zone press", "Box out", "ángulo"]);
+});
+
+test("date desc is newest first and duration desc is longest first", () => {
+  assert.deepEqual(titles(sortClips(sortable, "date", "desc")), ["ángulo", "Box out", "Zone press"]);
+  assert.deepEqual(titles(sortClips(sortable, "duration", "desc")), ["Box out", "Zone press", "ángulo"]);
+});
+
+test("the first click sorts titles A to Z and dates and durations newest or longest first", () => {
+  assert.equal(firstSortOrder("title"), "asc");
+  assert.equal(firstSortOrder("date"), "desc");
+  assert.equal(firstSortOrder("duration"), "desc");
+});
+
+test("sorting leaves the input list alone", () => {
+  const input = [...sortable];
+  sortClips(input, "title", "asc");
+  assert.deepEqual(input, sortable);
+});
 
 test("parseListWidth round-trips the three widths", () => {
   assert.equal(parseListWidth("narrow"), "narrow");

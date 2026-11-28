@@ -53,11 +53,15 @@
   color: var(--text-primary);
   padding: 0 var(--spacing-md);
   border-radius: var(--radius-md);
+  /* Form controls do not inherit the body font: the textarea fell back to the
+     browser's monospace and the input to the system sans. */
+  font-family: inherit;
   font-size: var(--font-size-sm);
   transition: all var(--transition-fast);
 }
 
 .clipNotesInput {
+  font-family: inherit;
   width: 100%;
   min-height: 80px;
   background: var(--bg-quaternary);
@@ -478,6 +482,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-sm);
+}
+
+/* Caps the court by the viewport's height, through its width so the click
+   mapping in Court stays exact (a capped height would letterbox the svg).
+   500 / 470 is the court's viewBox. At 900px tall it is about 300px wide,
+   which leaves the form below it in view. */
+.courtFrame {
+  width: min(100%, calc(35vh * 500 / 470));
 }
 
 .courtClear {

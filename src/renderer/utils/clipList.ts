@@ -36,3 +36,29 @@ export const clipNumbers = (clips: Timed[]): Map<number, number> => {
   const sorted = [...clips].sort(compareByStart);
   return new Map(sorted.map((clip, i) => [clip.id, i + 1]));
 };
+
+export type SortField = "date" | "duration" | "title";
+export type SortOrder = "asc" | "desc";
+
+/** Newest and longest first, but titles A to Z. */
+export const firstSortOrder = (field: SortField): SortOrder => (field === "title" ? "asc" : "desc");
+
+type Sortable = { title: string; created_at?: string | null; start_time: number; end_time: number };
+
+/** "desc" is newest, longest, or Z to A; "asc" the reverse. */
+export const sortClips = <T extends Sortable>(clips: T[], by: SortField, order: SortOrder): T[] =>
+  [...clips].sort((a, b) => {
+    let comparison = 0;
+    switch (by) {
+      case "date":
+        comparison = new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        break;
+      case "duration":
+        comparison = b.end_time - b.start_time - (a.end_time - a.start_time);
+        break;
+      case "title":
+        comparison = b.title.localeCompare(a.title);
+        break;
+    }
+    return order === "asc" ? -comparison : comparison;
+  });

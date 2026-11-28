@@ -12,7 +12,6 @@ import {
   faTrash,
   faCalendar,
   faClock,
-  faShare,
   faVideo,
   faChevronDown,
   faTable,
@@ -39,6 +38,7 @@ import { formatVideoSrc } from "../utils/paths";
 import { Player, ClipStatus } from "../../types/global";
 import { inkOn } from "../utils/contrast";
 import { withCause } from "../utils/errors";
+import { firstSortOrder, sortClips, type SortField } from "../utils/clipList";
 import {
   ClipFilters,
   NO_FILTERS,
@@ -199,37 +199,22 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
     [clips, filters, categoryFamily],
   );
 
-  const sortedClips = useMemo(() => {
-    return [...filteredClips].sort((a, b) => {
-      let comparison = 0;
-      switch (sortBy) {
-        case "date":
-          comparison =
-            new Date(b.created_at || 0).getTime() -
-            new Date(a.created_at || 0).getTime();
-          break;
-        case "duration":
-          comparison =
-            b.end_time - b.start_time - (a.end_time - a.start_time);
-          break;
-        case "title":
-          comparison = a.title.localeCompare(b.title);
-          break;
-      }
-      return sortOrder === "asc" ? -comparison : comparison;
-    });
-  }, [filteredClips, sortBy, sortOrder]);
+  const sortedClips = useMemo(
+    () => sortClips(filteredClips, sortBy, sortOrder),
+    [filteredClips, sortBy, sortOrder],
+  );
 
-  const toggleSort = (field: "date" | "duration" | "title") => {
+  const toggleSort = (field: SortField) => {
     if (sortBy === field) {
       const newOrder = sortOrder === "asc" ? "desc" : "asc";
       setSortOrder(newOrder);
       savePref(STORAGE_KEYS.CLIP_SORT_ORDER, newOrder);
     } else {
+      const firstOrder = firstSortOrder(field);
       setSortBy(field);
-      setSortOrder("desc");
+      setSortOrder(firstOrder);
       savePref(STORAGE_KEYS.CLIP_SORT_BY, field);
-      savePref(STORAGE_KEYS.CLIP_SORT_ORDER, "desc");
+      savePref(STORAGE_KEYS.CLIP_SORT_ORDER, firstOrder);
     }
   };
 
@@ -971,7 +956,7 @@ export const ClipLibrary: React.FC<ClipLibraryProps> = ({
             {filteredClips.length > 0 && (
               <div className={styles.exportInfo}>
                 <h4>
-                  <FontAwesomeIcon icon={faShare} /> {t("app.clips.sharingClips")}
+                  <FontAwesomeIcon icon={faFileExport} /> {t("app.clips.exportSectionTitle")}
                 </h4>
                 <p>
                   {filters.categoryId !== null

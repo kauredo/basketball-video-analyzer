@@ -12,7 +12,7 @@ export interface CourtMapClip {
   start_time: number;
   catIds: number[];
 }
-export interface CourtMapCategory { id: number; name: string; color: string }
+export interface CourtMapCategory { id: number; name: string; color: string; parentId?: number | null }
 /** The Category filter: "all", or a category id plus the ids that count as it
  *  (itself and, for a parent, its subcategories; see clipFilters.categoryFamily). */
 export type CategoryFilter = "all" | { id: number; ids: ReadonlySet<number> };
@@ -55,6 +55,34 @@ export const legendRows = (
   const uncategorised = counts.get(null) ?? 0;
   if (uncategorised > 0) rows.push({ id: null, count: uncategorised });
   return rows;
+};
+
+/** The on-screen legend, built from legendRows. A dot takes its subcategory's
+ *  colour, so subcategory rows stay; a parent row counts its own dots plus its
+ *  subcategories', so a parent whose clips are all tagged with a subcategory
+ *  no longer reads 0. parentId is set only when that parent's row is listed
+ *  too, so a subcategory shown alone (its own filter) is not drawn nested.
+ *  The counts then sum to more than the dots drawn; the exported image keeps
+ *  legendRows' per-colour counts. */
+export const familyLegendRows = (
+  rows: { id: number | null; count: number }[],
+  categories: CourtMapCategory[],
+): { id: number | null; count: number; parentId: number | null }[] => {
+  const parentOf = new Map(categories.map(c => [c.id, c.parentId ?? null]));
+  const listed = new Set(rows.map(row => row.id));
+  const childTotals = new Map<number, number>();
+  rows.forEach(row => {
+    const parent = row.id === null ? null : parentOf.get(row.id) ?? null;
+    if (parent !== null) childTotals.set(parent, (childTotals.get(parent) ?? 0) + row.count);
+  });
+  return rows.map(row => {
+    const parent = row.id === null ? null : parentOf.get(row.id) ?? null;
+    return {
+      id: row.id,
+      count: row.count + (row.id === null ? 0 : childTotals.get(row.id) ?? 0),
+      parentId: parent !== null && listed.has(parent) ? parent : null,
+    };
+  });
 };
 
 /** Clips drawn on the court that share the selected clip's dot category, in

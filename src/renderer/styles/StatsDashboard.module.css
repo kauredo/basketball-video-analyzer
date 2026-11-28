@@ -346,6 +346,13 @@
   color: var(--text-primary);
 }
 
+/* A subcategory row follows its parent, whose count includes it. The same
+   corner glyph the category pickers use marks it as part of that family. */
+.legendSub::before {
+  content: "└";
+  color: var(--text-tertiary);
+}
+
 .legendTotal {
   margin-left: auto;
 }

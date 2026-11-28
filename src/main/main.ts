@@ -84,6 +84,7 @@ import { removeProjectVideosDir } from "./projectVideosDir";
 import { createPickedPaths } from "./pickedPaths";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
+import { exportFoldersFor } from "./exportGroups";
 import { safeName, uniqueName } from "./bundleNames";
 import { buildManifest } from "./bundleManifest";
 import { fingerprintFile } from "./fingerprint";
@@ -1240,8 +1241,9 @@ ipcMain.handle(
       const exportedFiles: string[] = [];
 
       // Paths and titles come from the database, never from the renderer.
-      const storedClips = params.clips
-        .map(clip => getClipById(clip.id))
+      const categoryIds = [...new Set(params.categoryIds)];
+      const storedClips = [...new Set(params.clips.map(clip => clip.id))]
+        .map(id => getClipById(id))
         .filter((clip): clip is NonNullable<typeof clip> => !!clip);
 
       // Get project ID from the first clip (all clips should be from same project)
@@ -1256,12 +1258,11 @@ ipcMain.handle(
       const clipsByCategory = new Map<number, typeof storedClips>();
       storedClips.forEach(clip => {
         try {
-          const clipCategories = JSON.parse(clip.categories);
-          clipCategories.forEach((catId: number) => {
-            if (params.categoryIds.includes(catId)) {
-              const existing = clipsByCategory.get(catId) || [];
-              clipsByCategory.set(catId, [...existing, clip]);
-            }
+          const clipCategories: number[] = JSON.parse(clip.categories);
+          // exportFoldersFor decides which selected folders a clip goes in.
+          exportFoldersFor(clipCategories, categoryIds, categories).forEach(catId => {
+            const existing = clipsByCategory.get(catId) || [];
+            clipsByCategory.set(catId, [...existing, clip]);
           });
         } catch (error) {
           console.warn(`Failed to parse categories for clip ${clip.id}`);
@@ -1269,7 +1270,7 @@ ipcMain.handle(
       });
 
       // Export clips by category
-      for (const categoryId of params.categoryIds) {
+      for (const categoryId of categoryIds) {
         const clips = clipsByCategory.get(categoryId) || [];
         const category = categories.find(c => c.id === categoryId);
 
