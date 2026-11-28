@@ -736,6 +736,7 @@
       "title": "Kuriama paleidžiama kopija",
       "intro": "{{name}} kopijuojamas į MP4, kurį programa gali paleisti. Originalus failas lieka nepakeistas.",
       "percent": "Atlikta {{percent}}%",
+      "written": "Atlikta {{time}} vaizdo įrašo",
       "button": "Sukurti paleidžiamą kopiją"
     },
     "native": {

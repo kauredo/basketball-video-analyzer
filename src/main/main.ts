@@ -83,6 +83,7 @@ import { isInsideDir } from "./insideDir";
 import { RECORDING_ALREADY_IN_PROJECT } from "./relink";
 import { removeProjectVideosDir } from "./projectVideosDir";
 import { createPickedPaths } from "./pickedPaths";
+import { forgetPart, recordPart, sweepParts } from "./pendingParts";
 import { clipRows, clipsCsv, clipsJson } from "./clipsData";
 import { zipEntries } from "./zipEntries";
 import { exportFoldersFor } from "./exportGroups";
@@ -409,6 +410,12 @@ const isAllowedMediaPath = (resolved: string): boolean => {
 
 app.whenReady().then(() => {
   setupDatabase();
+  try {
+    const swept = sweepParts(pendingPartsFile());
+    if (swept.length > 0) console.log("Removed partial copies left by the last run:", swept);
+  } catch (error) {
+    console.warn("Couldn't sweep partial copies:", error);
+  }
   setAboutPanel();
 
   // Serve local media through the validated custom scheme. We handle Range
@@ -713,7 +720,24 @@ let conversion: { process: ChildProcess; cancelled: boolean } | null = null;
 
 // Closing the window quits the app while ffmpeg may still report, so the
 // window can be gone here.
-const sendConvertProgress = (progress: { name: string; percent: number } | null) => {
+type ConvertProgress = { name: string; percent: number | null; seconds: number };
+
+const pendingPartsFile = () => path.join(app.getPath("userData"), "pending-copies.json");
+
+// Copies made this run, by the file they were made from.
+const copiedFrom = new Map<string, string>();
+
+// The list only serves the next launch's sweep, so failing to write it never
+// stops or hangs a copy.
+const trackPart = (track: (listFile: string, part: string) => void, part: string) => {
+  try {
+    track(pendingPartsFile(), part);
+  } catch (error) {
+    console.warn("Couldn't update the list of partial copies:", error);
+  }
+};
+
+const sendConvertProgress = (progress: ConvertProgress | null) => {
   if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
     mainWindow.webContents.send("convert-progress", progress);
   }
@@ -723,13 +747,16 @@ const runConversion = (inputPath: string, outputPath: string, args: string[], du
   new Promise<"done" | "cancelled">((resolve, reject) => {
     const part = `${outputPath}.${randomUUID().slice(0, 8)}.part`;
     const name = path.basename(inputPath);
+    trackPart(recordPart, part);
     const child = spawn(ffmpegPath, ["-hide_banner", "-nostdin", "-y", ...FILE_INPUT_ONLY, "-i", inputPath, ...args, part]);
     const current = { process: child, cancelled: false };
     conversion = current;
     let tail = "";
     let pending = "";
-    let percent = 0;
-    sendConvertProgress({ name, percent });
+    // Without a duration there is no percent, so the overlay shows the time written.
+    let percent: number | null = duration ? 0 : null;
+    let shownSeconds = 0;
+    sendConvertProgress({ name, percent, seconds: 0 });
     child.stderr.on("data", (data: Buffer) => {
       const text = data.toString();
       tail = (tail + text).slice(-2000);
@@ -738,11 +765,18 @@ const runConversion = (inputPath: string, outputPath: string, args: string[], du
       pending = lines.pop() ?? "";
       for (const line of lines) {
         const seconds = progressSeconds(line);
-        if (seconds === null || !duration) continue;
+        if (seconds === null) continue;
+        if (!duration) {
+          if (seconds >= shownSeconds + 1) {
+            shownSeconds = Math.floor(seconds);
+            sendConvertProgress({ name, percent: null, seconds: shownSeconds });
+          }
+          continue;
+        }
         const next = Math.min(99, Math.round((seconds / duration) * 100));
-        if (next > percent) {
+        if (percent !== null && next > percent) {
           percent = next;
-          sendConvertProgress({ name, percent });
+          sendConvertProgress({ name, percent, seconds });
         }
       }
     });
@@ -756,6 +790,7 @@ const runConversion = (inputPath: string, outputPath: string, args: string[], du
       if (!error) {
         try {
           fs.renameSync(part, outputPath);
+          trackPart(forgetPart, part);
           resolve("done");
           return;
         } catch (renameError) {
@@ -763,6 +798,7 @@ const runConversion = (inputPath: string, outputPath: string, args: string[], du
         }
       }
       deleteTempFile(part);
+      trackPart(forgetPart, part);
       if (current.cancelled) resolve("cancelled");
       else reject(error);
     };
@@ -852,7 +888,9 @@ const planAndConvert = async (inputPath: string, force: boolean): Promise<string
     // The dialogs can stay open for minutes, and a received file can change meanwhile.
     assertReceived(inputPath);
     const result = await runConversion(inputPath, outputPath, convertArgs(plan, probe.video ?? ""), probe.durationSeconds);
-    return result === "done" ? outputPath : null;
+    if (result !== "done") return null;
+    copiedFrom.set(outputPath, inputPath);
+    return outputPath;
   } catch (error) {
     console.error("Error making a playable copy:", error);
     await dialog.showMessageBox(mainWindow, {
@@ -2385,7 +2423,10 @@ const pickSessionRecording = async (
   const picked = videoResult.filePaths[0];
   if (videoResult.canceled || !picked) return null;
   // Checked before converting too, so a refused pick doesn't cost a full copy first.
-  if (taken.some(existing => isSamePath(existing, picked))) throw new Error("INVALID_SESSION_FILE");
+  // `taken` holds the copies, so a source already copied for this session counts as taken too.
+  if (taken.some(existing => isSamePath(existing, picked) || isSamePath(copiedFrom.get(existing) ?? "", picked))) {
+    throw new Error("INVALID_SESSION_FILE");
+  }
   const file = await ensurePlayable(picked);
   if (!file) return null;
   if (!isVideoFile(file) || taken.some(existing => isSamePath(existing, file))) {

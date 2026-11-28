@@ -6,10 +6,19 @@ import { faFilm } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/ShareProjectModal.module.css";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 
+type Progress = { name: string; percent: number | null; seconds: number };
+
+const clock = (total: number) => {
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = Math.floor(total % 60);
+  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+};
+
 /** Shown while main writes a playable copy, whichever picker started it. */
 export const ConvertProgress: React.FC = () => {
   const { t } = useTranslation();
-  const [progress, setProgress] = useState<{ name: string; percent: number } | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(null);
   const trapRef = useFocusTrap(progress !== null);
 
   useEffect(() => {
@@ -18,6 +27,8 @@ export const ConvertProgress: React.FC = () => {
   }, []);
 
   if (!progress) return null;
+  // A file whose length ffmpeg can't read has no percent, only the time written so far.
+  const known = progress.percent !== null;
 
   return createPortal(
     <div ref={trapRef} className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="convert-title">
@@ -34,12 +45,17 @@ export const ConvertProgress: React.FC = () => {
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={progress.percent}
+            aria-valuenow={known ? progress.percent ?? 0 : undefined}
+            aria-valuetext={known ? undefined : clock(progress.seconds)}
             aria-label={t("app.convert.title")}
           >
-            <div className={styles.progressFill} style={{ width: `${progress.percent}%` }} />
+            {known && <div className={styles.progressFill} style={{ width: `${progress.percent}%` }} />}
           </div>
-          <p className={styles.progressLabel}>{t("app.convert.percent", { percent: progress.percent })}</p>
+          <p className={styles.progressLabel}>
+            {known
+              ? t("app.convert.percent", { percent: progress.percent })
+              : t("app.convert.written", { time: clock(progress.seconds) })}
+          </p>
           <div className={styles.actions}>
             <button
               type="button"

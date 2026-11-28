@@ -727,6 +727,7 @@
       "title": "Abspielbare Kopie wird erstellt",
       "intro": "{{name}} wird in eine MP4 kopiert, die die App abspielen kann. Deine Originaldatei bleibt unverändert.",
       "percent": "{{percent}} % erledigt",
+      "written": "{{time}} Video erledigt",
       "button": "Abspielbare Kopie erstellen"
     },
     "native": {

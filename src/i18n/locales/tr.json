@@ -728,6 +728,7 @@
       "title": "Oynatılabilir kopya oluşturuluyor",
       "intro": "{{name}}, uygulamanın oynatabileceği bir MP4'e kopyalanıyor. Orijinal dosyanız olduğu gibi kalır.",
       "percent": "%{{percent}} tamamlandı",
+      "written": "{{time}} video tamamlandı",
       "button": "Oynatılabilir kopya oluştur"
     },
     "native": {

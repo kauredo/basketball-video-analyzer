@@ -745,6 +745,7 @@
       "title": "Izdelava predvajljive kopije",
       "intro": "Kopiranje datoteke {{name}} v MP4, ki ga aplikacija lahko predvaja. Izvirna datoteka ostane nespremenjena.",
       "percent": "{{percent}} % končano",
+      "written": "{{time}} videa končano",
       "button": "Naredi predvajljivo kopijo"
     },
     "native": {

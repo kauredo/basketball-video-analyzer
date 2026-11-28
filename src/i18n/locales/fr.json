@@ -728,6 +728,7 @@
       "title": "Copie lisible en cours",
       "intro": "Copie de {{name}} en MP4 lisible par l'application. Votre fichier d'origine reste tel quel.",
       "percent": "{{percent}} % effectués",
+      "written": "{{time}} de vidéo effectués",
       "button": "Faire une copie lisible"
     },
     "native": {

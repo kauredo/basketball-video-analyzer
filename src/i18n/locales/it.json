@@ -727,6 +727,7 @@
       "title": "Creazione della copia riproducibile",
       "intro": "Copia di {{name}} in un MP4 che l'app può riprodurre. Il file originale resta com'è.",
       "percent": "{{percent}}% completato",
+      "written": "{{time}} di video completati",
       "button": "Crea copia riproducibile"
     },
     "native": {
