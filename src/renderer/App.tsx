@@ -44,6 +44,7 @@ import { ShortcutsModal } from "./components/ShortcutsModal";
 import { FeedbackModal } from "./components/FeedbackModal";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { PlayerManager } from "./components/PlayerManager";
+import { ConvertProgress } from "./components/ConvertProgress";
 import { Clip, Category } from "../types/global";
 import { useFocusTrap } from "./hooks/useFocusTrap";
 import { useToastContext } from "./contexts/ToastContext";
@@ -486,10 +487,11 @@ export const App: React.FC = () => {
 
   // Asks for the moved file and relinks the recording to it. Null when the coach gives up or it fails.
   // `ask` is false when the coach already pressed Locate video.
-  const locateRecording = async (missingPath: string, ask = true) => {
+  // `pick` is the playable-copy button's conversion, in place of the file picker.
+  const locateRecording = async (missingPath: string, ask = true, pick = window.electronAPI.selectVideoFile) => {
     if (ask && !(await confirm({ message: t("app.projects.videoMissingMessage", { path: missingPath }),
       confirmLabel: t("app.projects.videoMissingLocate") }))) return null;
-    const path = await window.electronAPI.selectVideoFile();
+    const path = await pick();
     if (!path) return null;
     const name = path.split(/[/\\]/).pop() ?? path;
     const result = await window.electronAPI.relinkVideoPath(missingPath, path, name);
@@ -519,10 +521,13 @@ export const App: React.FC = () => {
   };
 
   // Relinks a recording to the file the coach picks and plays it from there.
-  const relocate = async (recording: ProjectVideo, request: number, time: number | null, ask: boolean) => {
+  const relocate = async (
+    recording: ProjectVideo, request: number, time: number | null, ask: boolean,
+    pick?: () => Promise<string | null>,
+  ) => {
     if (!currentProject) return;
     const id = currentProject.id;
-    const located = await locateRecording(recording.video_path, ask);
+    const located = await locateRecording(recording.video_path, ask, pick);
     if (!located || request !== recordingRequest.current) return;
     const videos = await window.electronAPI.getProjectVideos(id);
     const updated = videos.find(video => video.id === recording.id);
@@ -543,6 +548,18 @@ export const App: React.FC = () => {
     if (!recording) return;
     try {
       await relocate(recording, ++recordingRequest.current, null, false);
+    } catch (error) {
+      showError(withCause(t("app.projects.recordingError"), error));
+    }
+  };
+
+  // The player's "Make a playable copy" button: the copy replaces the game's video.
+  const convertActiveRecording = async () => {
+    const recording = recordings.find(item => item.video_path === videoPath);
+    if (!recording) return;
+    try {
+      await relocate(recording, ++recordingRequest.current, null, false,
+        () => window.electronAPI.convertProjectVideo(recording.video_path));
     } catch (error) {
       showError(withCause(t("app.projects.recordingError"), error));
     }
@@ -951,6 +968,7 @@ export const App: React.FC = () => {
                 clips={gameClips}
                 onClipsUpdated={refreshClips}
                 onLocate={locateActiveRecording}
+                onConvert={convertActiveRecording}
                 reloadToken={playerReload}
               />
             </div>
@@ -1333,6 +1351,7 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+      <ConvertProgress />
     </div>
   );
 };

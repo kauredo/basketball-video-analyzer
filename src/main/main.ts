@@ -77,7 +77,8 @@ import { LineBuffer, downloadOutcome, lastPrintedPath, progressPercent, template
 import { ClipCuts } from "./clipProcesses";
 import { clipFileTitle, clipInputError } from "../shared/clipInput";
 import { safeFolderName } from "../shared/safeFolderName";
-import { hasVideoExtension } from "../shared/videoPath";
+import { hasVideoExtension, PICKER_EXTENSIONS } from "../shared/videoPath";
+import { convertArgs, parseProbe, playablePlan, progressSeconds, ProbedVideo } from "./playable";
 import { isInsideDir } from "./insideDir";
 import { RECORDING_ALREADY_IN_PROJECT } from "./relink";
 import { removeProjectVideosDir } from "./projectVideosDir";
@@ -589,13 +590,13 @@ const selectVideoFile = async () => {
       filters: [
         {
           name: "Videos",
-          extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"],
+          extensions: PICKER_EXTENSIONS,
         },
       ],
     });
 
     if (!result.canceled && result.filePaths.length > 0) {
-      return result.filePaths[0];
+      return await ensurePlayable(result.filePaths[0]);
     }
     return null;
   } catch (error) {
@@ -621,6 +622,17 @@ ipcMain.handle("add-project-video", async (_event, id: number) => {
   const file = await selectVideoFile();
   if (!file || !isVideoFile(file) || !getProjectById(id)) return null;
   return addProjectVideo(id, file, path.basename(file));
+});
+
+// The player's "Make a playable copy" button, for a project video it refused.
+// The copy goes through relink-video-path like a located file.
+ipcMain.handle("convert-project-video", async (_event, videoPath: unknown) => {
+  if (typeof videoPath !== "string" || !getProjectVideoPaths().includes(videoPath) || !fs.existsSync(videoPath)) {
+    return null;
+  }
+  const copy = await ensurePlayable(videoPath, true);
+  if (copy) pickedVideos.remember(copy);
+  return copy;
 });
 
 // Why a recording didn't play: the media scheme can only answer 403.
@@ -686,6 +698,172 @@ const hasAudioStream = (inputPath: string): Promise<boolean> =>
     probe.on("close", () => resolve(/Stream #\d+:\d+.*: Audio:/.test(stderr)));
     probe.on("error", () => resolve(false));
   });
+
+const probeVideo = (inputPath: string): Promise<ProbedVideo | null> =>
+  new Promise(resolve => {
+    let stderr = "";
+    const probe = spawn(ffmpegPath, ["-hide_banner", ...FILE_INPUT_ONLY, "-i", inputPath]);
+    probe.stderr.on("data", (data: Buffer) => (stderr += data.toString()));
+    probe.on("close", () => resolve(stderr.includes("Input #0") ? parseProbe(stderr) : null));
+    probe.on("error", () => resolve(null));
+  });
+
+// The one playable copy being written, so Cancel and quitting can stop it.
+let conversion: { process: ChildProcess; cancelled: boolean } | null = null;
+
+// Closing the window quits the app while ffmpeg may still report, so the
+// window can be gone here.
+const sendConvertProgress = (progress: { name: string; percent: number } | null) => {
+  if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
+    mainWindow.webContents.send("convert-progress", progress);
+  }
+};
+
+const runConversion = (inputPath: string, outputPath: string, args: string[], duration: number | null) =>
+  new Promise<"done" | "cancelled">((resolve, reject) => {
+    const part = `${outputPath}.${randomUUID().slice(0, 8)}.part`;
+    const name = path.basename(inputPath);
+    const child = spawn(ffmpegPath, ["-hide_banner", "-nostdin", "-y", ...FILE_INPUT_ONLY, "-i", inputPath, ...args, part]);
+    const current = { process: child, cancelled: false };
+    conversion = current;
+    let tail = "";
+    let pending = "";
+    let percent = 0;
+    sendConvertProgress({ name, percent });
+    child.stderr.on("data", (data: Buffer) => {
+      const text = data.toString();
+      tail = (tail + text).slice(-2000);
+      // ffmpeg ends progress lines with \r, and a chunk can stop mid-number.
+      const lines = (pending + text).split(/[\r\n]/);
+      pending = lines.pop() ?? "";
+      for (const line of lines) {
+        const seconds = progressSeconds(line);
+        if (seconds === null || !duration) continue;
+        const next = Math.min(99, Math.round((seconds / duration) * 100));
+        if (next > percent) {
+          percent = next;
+          sendConvertProgress({ name, percent });
+        }
+      }
+    });
+    let settled = false;
+    const finish = (error: Error | null) => {
+      // A spawn error is followed by close, so this can be called twice.
+      if (settled) return;
+      settled = true;
+      if (conversion === current) conversion = null;
+      sendConvertProgress(null);
+      if (!error) {
+        try {
+          fs.renameSync(part, outputPath);
+          resolve("done");
+          return;
+        } catch (renameError) {
+          error = renameError as Error;
+        }
+      }
+      deleteTempFile(part);
+      if (current.cancelled) resolve("cancelled");
+      else reject(error);
+    };
+    child.on("error", finish);
+    child.on("close", code => {
+      const lastLine = tail.trim().split("\n").pop() ?? "";
+      finish(code === 0 ? null : new Error(lastLine || `ffmpeg exited with ${code}`));
+    });
+  });
+
+const cancelConversion = () => {
+  if (!conversion) return;
+  conversion.cancelled = true;
+  conversion.process.kill("SIGKILL");
+};
+
+ipcMain.handle("cancel-convert", () => cancelConversion());
+
+/**
+ * The file to use for a video the coach picked: the file itself when the
+ * player opens it, or an MP4 copy the app makes after asking. Null when the
+ * coach says no or the copy fails. The original is never changed. `force` is
+ * for a file the player refused: one whose format should play is re-encoded.
+ */
+let converting = false;
+
+const ensurePlayable = async (inputPath: string, force = false): Promise<string | null> => {
+  // Claimed before the first await, so a second call can't get past the dialogs too.
+  if (converting) return null;
+  converting = true;
+  try {
+    return await planAndConvert(inputPath, force);
+  } finally {
+    converting = false;
+  }
+};
+
+const planAndConvert = async (inputPath: string, force: boolean): Promise<string | null> => {
+  assertReceived(inputPath);
+  const probe = await probeVideo(inputPath);
+  // Without a probe there is nothing to plan from, so the player gets to try.
+  if (!probe && !force) return inputPath;
+  if (!probe) {
+    await dialog.showMessageBox(mainWindow, {
+      type: "error", message: nt("convertFailedTitle"), detail: nt("convertNoProbe"), buttons: [nt("ok")],
+    });
+    return null;
+  }
+  let plan = playablePlan(probe);
+  if (plan.kind === "plays" && force) plan = playablePlan(probe, true);
+  if (plan.kind === "plays") return inputPath;
+  const name = path.basename(inputPath);
+  if (plan.kind === "no-video") {
+    await dialog.showMessageBox(mainWindow, {
+      type: "warning", message: nt("convertNoVideo", { name }), buttons: [nt("ok")],
+    });
+    return null;
+  }
+  const { response } = await dialog.showMessageBox(mainWindow, {
+    type: "question",
+    message: nt("convertMessage", { name }),
+    detail: nt(plan.video === "copy" ? "convertDetailCopy" : "convertDetailEncode"),
+    buttons: [nt("convertConfirm"), nt("cancel")],
+    defaultId: 0,
+    cancelId: 1,
+  });
+  if (response !== 0) return null;
+  const base = path.join(path.dirname(inputPath), path.parse(inputPath).name);
+  const suggested = fs.existsSync(`${base}.mp4`) ? `${base} (${nt("convertSuffix")}).mp4` : `${base}.mp4`;
+  const saved = await dialog.showSaveDialog(mainWindow, {
+    title: nt("convertSaveTitle"),
+    defaultPath: suggested,
+    filters: [{ name: "MP4", extensions: ["mp4"] }],
+  });
+  if (saved.canceled || !saved.filePath) return null;
+  const outputPath = saved.filePath.toLowerCase().endsWith(".mp4") ? saved.filePath : `${saved.filePath}.mp4`;
+  // The dialog only asked about overwriting the name as typed, without .mp4.
+  if (isSamePath(outputPath, inputPath) ||
+    (outputPath !== saved.filePath && fs.existsSync(outputPath)) ||
+    getProjectVideoPaths().some(videoPath => isSamePath(videoPath, outputPath))) {
+    await dialog.showMessageBox(mainWindow, {
+      type: "warning", message: nt("convertFailedTitle"), detail: nt("convertSameFile"), buttons: [nt("ok")],
+    });
+    return null;
+  }
+  try {
+    // The dialogs can stay open for minutes, and a received file can change meanwhile.
+    assertReceived(inputPath);
+    const result = await runConversion(inputPath, outputPath, convertArgs(plan, probe.video ?? ""), probe.durationSeconds);
+    return result === "done" ? outputPath : null;
+  } catch (error) {
+    console.error("Error making a playable copy:", error);
+    await dialog.showMessageBox(mainWindow, {
+      type: "error",
+      message: nt("convertFailedTitle"),
+      detail: error instanceof Error ? error.message : String(error),
+      buttons: [nt("ok")],
+    });
+    return null;
+  }
+};
 
 // Best-effort removal of a temp file.
 const deleteTempFile = (filePath: string): void => {
@@ -2202,10 +2380,14 @@ const pickSessionRecording = async (
       ? `${index + 1}/${count} · ${name}`
       : name || "Select Video File for This Session",
     properties: ["openFile"],
-    filters: [{ name: "Videos", extensions: ["mp4", "mov", "avi", "mkv", "webm", "m4v"] }],
+    filters: [{ name: "Videos", extensions: PICKER_EXTENSIONS }],
   });
-  const file = videoResult.filePaths[0];
-  if (videoResult.canceled || !file) return null;
+  const picked = videoResult.filePaths[0];
+  if (videoResult.canceled || !picked) return null;
+  // Checked before converting too, so a refused pick doesn't cost a full copy first.
+  if (taken.some(existing => isSamePath(existing, picked))) throw new Error("INVALID_SESSION_FILE");
+  const file = await ensurePlayable(picked);
+  if (!file) return null;
   if (!isVideoFile(file) || taken.some(existing => isSamePath(existing, file))) {
     throw new Error("INVALID_SESSION_FILE");
   }
@@ -2230,6 +2412,14 @@ const whileSenderLives = <T>(sender: Electron.WebContents, work: () => Promise<T
 // Closing the window quits the app. A share or import still running is
 // cancelled first, and the quit waits until it has removed what it copied.
 app.on("before-quit", event => {
+  // A conversion stopped by the quit would leave its .part file behind.
+  if (conversion) {
+    event.preventDefault();
+    const { process: child } = conversion;
+    child.once("close", () => setImmediate(() => app.quit()));
+    cancelConversion();
+    return;
+  }
   if (!shareOperations.running) return;
   event.preventDefault();
   shareOperations.cancel();
